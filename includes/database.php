@@ -2203,6 +2203,629 @@ if (!function_exists('generate_employee_update_tasks')) {
     }
 }
 
+// ========================================
+// SUPER ADMIN DASHBOARD STATISTICS
+// ========================================
+
+// Get comprehensive system-wide statistics for Super Admin dashboard
+if (!function_exists('get_super_admin_stats')) {
+    function get_super_admin_stats($filters = []) {
+        $stats = [];
+        
+        try {
+            $pdo = get_db_connection();
+            
+            // Date filters
+            $date_from = $filters['date_from'] ?? date('Y-m-d', strtotime('-30 days'));
+            $date_to = $filters['date_to'] ?? date('Y-m-d');
+            $role_filter = $filters['role'] ?? null;
+            $status_filter = $filters['status'] ?? null;
+            
+            // Build WHERE clause for date filtering
+            $date_where = "WHERE DATE(created_at) BETWEEN ? AND ?";
+            $date_params = [$date_from, $date_to];
+            
+            // USER STATISTICS
+            $user_where = "WHERE 1=1";
+            $user_params = [];
+            
+            if ($role_filter) {
+                $user_where .= " AND role = ?";
+                $user_params[] = $role_filter;
+            }
+            
+            if ($status_filter) {
+                $user_where .= " AND status = ?";
+                $user_params[] = $status_filter;
+            }
+            
+            // Total users
+            $sql = "SELECT COUNT(*) as total FROM users $user_where";
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute($user_params);
+            $stats['total_users'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['total'];
+            
+            // Users by role
+            $sql = "SELECT role, COUNT(*) as count FROM users $user_where GROUP BY role";
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute($user_params);
+            $stats['users_by_role'] = [];
+            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                $stats['users_by_role'][$row['role']] = (int)$row['count'];
+            }
+            
+            // Active users
+            $sql = "SELECT COUNT(*) as active FROM users $user_where AND status = 'active'";
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute($user_params);
+            $stats['active_users'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['active'];
+            
+            // Users logged in today
+            $sql = "SELECT COUNT(*) as today FROM users $user_where AND DATE(last_login) = CURDATE()";
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute($user_params);
+            $stats['users_logged_in_today'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['today'];
+            
+            // EMPLOYEE STATISTICS
+            $emp_where = "WHERE 1=1";
+            $emp_params = [];
+            
+            if ($status_filter) {
+                $emp_where .= " AND LOWER(status) = LOWER(?)";
+                $emp_params[] = $status_filter;
+            }
+            
+            // Total employees
+            $sql = "SELECT COUNT(*) as total FROM employees $emp_where";
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute($emp_params);
+            $stats['total_employees'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['total'];
+            
+            // Active employees
+            $sql = "SELECT COUNT(*) as active FROM employees $emp_where AND LOWER(status) = 'active'";
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute($emp_params);
+            $stats['active_employees'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['active'];
+            
+            // Employees by status (optimized - only counts, no full records)
+            $sql = "SELECT status, COUNT(*) as count 
+                    FROM employees 
+                    GROUP BY status 
+                    ORDER BY count DESC 
+                    LIMIT 10";
+            $stmt = $pdo->query($sql);
+            $stats['employees_by_status'] = [];
+            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                $stats['employees_by_status'][$row['status']] = (int)$row['count'];
+            }
+            
+            // Employees by type
+            $sql = "SELECT employee_type, COUNT(*) as count FROM employees WHERE status = 'Active' GROUP BY employee_type";
+            $stmt = $pdo->query($sql);
+            $stats['employees_by_type'] = [];
+            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                $stats['employees_by_type'][$row['employee_type']] = (int)$row['count'];
+            }
+            
+            // New employees in date range
+            $sql = "SELECT COUNT(*) as new FROM employees WHERE DATE(created_at) BETWEEN ? AND ?";
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute([$date_from, $date_to]);
+            $stats['new_employees'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['new'];
+            
+            // AUDIT LOG STATISTICS
+            $audit_where = $date_where;
+            $audit_params = $date_params;
+            
+            // Total audit logs
+            $sql = "SELECT COUNT(*) as total FROM audit_logs $audit_where";
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute($audit_params);
+            $stats['total_audit_logs'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['total'];
+            
+            // Audit logs by action
+            $sql = "SELECT action, COUNT(*) as count FROM audit_logs $audit_where GROUP BY action ORDER BY count DESC LIMIT 10";
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute($audit_params);
+            $stats['audit_logs_by_action'] = [];
+            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                $stats['audit_logs_by_action'][$row['action']] = (int)$row['count'];
+            }
+            
+            // Audit logs by table
+            $sql = "SELECT table_name, COUNT(*) as count FROM audit_logs $audit_where GROUP BY table_name ORDER BY count DESC LIMIT 10";
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute($audit_params);
+            $stats['audit_logs_by_table'] = [];
+            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                $stats['audit_logs_by_table'][$row['table_name']] = (int)$row['count'];
+            }
+            
+            // Recent audit activity (last 7 days)
+            $sql = "SELECT DATE(created_at) as date, COUNT(*) as count 
+                    FROM audit_logs 
+                    WHERE DATE(created_at) >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+                    GROUP BY DATE(created_at) 
+                    ORDER BY date DESC";
+            $stmt = $pdo->query($sql);
+            $stats['audit_activity_trend'] = [];
+            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                $stats['audit_activity_trend'][$row['date']] = (int)$row['count'];
+            }
+            
+            // POST STATISTICS
+            $sql = "SELECT COUNT(*) as total FROM posts";
+            $stmt = $pdo->query($sql);
+            $stats['total_posts'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['total'];
+            
+            // ALERT STATISTICS
+            $sql = "SELECT COUNT(*) as total FROM employee_alerts WHERE status = 'active'";
+            $stmt = $pdo->query($sql);
+            $stats['active_alerts'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['total'];
+            
+            // LICENSE STATISTICS
+            $sql = "SELECT COUNT(*) as expired FROM employees 
+                    WHERE license_no IS NOT NULL 
+                    AND license_no != '' 
+                    AND license_exp_date IS NOT NULL 
+                    AND license_exp_date != '' 
+                    AND license_exp_date != '0000-00-00'
+                    AND license_exp_date < CURDATE()";
+            $stmt = $pdo->query($sql);
+            $stats['expired_licenses'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['expired'];
+            
+            $sql = "SELECT COUNT(*) as expiring FROM employees 
+                    WHERE license_no IS NOT NULL 
+                    AND license_no != '' 
+                    AND license_exp_date IS NOT NULL 
+                    AND license_exp_date != '' 
+                    AND license_exp_date != '0000-00-00'
+                    AND license_exp_date >= CURDATE() 
+                    AND license_exp_date <= DATE_ADD(CURDATE(), INTERVAL 30 DAY)";
+            $stmt = $pdo->query($sql);
+            $stats['expiring_licenses'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['expiring'];
+            
+            // SYSTEM ACTIVITY (from audit logs)
+            $sql = "SELECT COUNT(DISTINCT user_id) as unique_users 
+                    FROM audit_logs 
+                    WHERE DATE(created_at) BETWEEN ? AND ?";
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute([$date_from, $date_to]);
+            $stats['active_users_period'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['unique_users'];
+            
+        } catch (Exception $e) {
+            error_log("Error in get_super_admin_stats: " . $e->getMessage());
+            // Return empty stats on error
+            return [
+                'total_users' => 0,
+                'active_users' => 0,
+                'total_employees' => 0,
+                'active_employees' => 0,
+                'total_audit_logs' => 0,
+                'users_by_role' => [],
+                'employees_by_status' => [],
+                'audit_logs_by_action' => [],
+                'audit_activity_trend' => []
+            ];
+        }
+        
+        return $stats;
+    }
+}
+
+// Get recent audit logs for dashboard
+if (!function_exists('get_recent_audit_logs')) {
+    function get_recent_audit_logs($limit = 10) {
+        try {
+            $sql = "SELECT al.*, u.name as user_name, u.username, u.role 
+                    FROM audit_logs al 
+                    LEFT JOIN users u ON al.user_id = u.id 
+                    ORDER BY al.created_at DESC 
+                    LIMIT ?";
+            $stmt = execute_query($sql, [$limit]);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (Exception $e) {
+            error_log("Error in get_recent_audit_logs: " . $e->getMessage());
+            return [];
+        }
+    }
+}
+
+// Get security log statistics (from file)
+if (!function_exists('get_security_log_stats')) {
+    function get_security_log_stats($days = 7) {
+        $stats = [
+            'total_events' => 0,
+            'login_attempts' => 0,
+            'failed_logins' => 0,
+            'account_locked' => 0,
+            'recent_events' => []
+        ];
+        
+        $log_file = __DIR__ . '/../storage/logs/security.log';
+        if (!file_exists($log_file)) {
+            return $stats;
+        }
+        
+        try {
+            $lines = file($log_file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+            $cutoff_date = date('Y-m-d', strtotime("-$days days"));
+            
+            foreach ($lines as $line) {
+                if (preg_match('/\[(\d{4}-\d{2}-\d{2})/', $line, $matches)) {
+                    $log_date = $matches[1];
+                    if ($log_date >= $cutoff_date) {
+                        $stats['total_events']++;
+                        
+                        if (stripos($line, 'Login Attempt') !== false || stripos($line, 'Login Success') !== false) {
+                            $stats['login_attempts']++;
+                        }
+                        if (stripos($line, 'Login Failed') !== false) {
+                            $stats['failed_logins']++;
+                        }
+                        if (stripos($line, 'Account Locked') !== false) {
+                            $stats['account_locked']++;
+                        }
+                        
+                        // Keep last 20 events
+                        if (count($stats['recent_events']) < 20) {
+                            $stats['recent_events'][] = $line;
+                        }
+                    }
+                }
+            }
+            
+            // Reverse to show most recent first
+            $stats['recent_events'] = array_reverse($stats['recent_events']);
+            
+        } catch (Exception $e) {
+            error_log("Error reading security log: " . $e->getMessage());
+        }
+        
+        return $stats;
+    }
+}
+
+// ========================================
+// USER MANAGEMENT FUNCTIONS
+// ========================================
+
+// Get all users with filters and pagination
+if (!function_exists('get_all_users')) {
+    function get_all_users($filters = [], $limit = 50, $offset = 0) {
+        try {
+            $pdo = get_db_connection();
+            
+            $where = "WHERE 1=1";
+            $params = [];
+            
+            // Role filter
+            if (!empty($filters['role'])) {
+                $where .= " AND role = ?";
+                $params[] = $filters['role'];
+            }
+            
+            // Status filter
+            if (!empty($filters['status'])) {
+                $where .= " AND status = ?";
+                $params[] = $filters['status'];
+            }
+            
+            // Search filter
+            if (!empty($filters['search'])) {
+                $where .= " AND (name LIKE ? OR username LIKE ? OR email LIKE ?)";
+                $search_term = '%' . $filters['search'] . '%';
+                $params[] = $search_term;
+                $params[] = $search_term;
+                $params[] = $search_term;
+            }
+            
+            // Get total count
+            $count_sql = "SELECT COUNT(*) FROM users $where";
+            $count_stmt = $pdo->prepare($count_sql);
+            $count_stmt->execute($params);
+            $total = (int)$count_stmt->fetchColumn();
+            
+            // Get users
+            $sql = "SELECT u.*, 
+                           creator.name as created_by_name,
+                           e.first_name, e.surname, e.employee_no
+                    FROM users u
+                    LEFT JOIN users creator ON u.created_by = creator.id
+                    LEFT JOIN employees e ON u.employee_id = e.id
+                    $where
+                    ORDER BY u.created_at DESC
+                    LIMIT ? OFFSET ?";
+            
+            $params[] = $limit;
+            $params[] = $offset;
+            
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute($params);
+            $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            return [
+                'users' => $users,
+                'total' => $total
+            ];
+        } catch (Exception $e) {
+            error_log("Error in get_all_users: " . $e->getMessage());
+            return ['users' => [], 'total' => 0];
+        }
+    }
+}
+
+// Update user role
+if (!function_exists('update_user_role')) {
+    function update_user_role($user_id, $new_role, $updated_by = null) {
+        try {
+            $pdo = get_db_connection();
+            
+            // Validate role
+            $valid_roles = ['super_admin', 'hr_admin', 'hr', 'admin', 'accounting', 'operation', 'logistics', 'employee', 'developer'];
+            if (!in_array($new_role, $valid_roles)) {
+                return ['success' => false, 'message' => 'Invalid role specified'];
+            }
+            
+            // Get current user data for audit
+            $current_user = $pdo->prepare("SELECT role, name, username FROM users WHERE id = ?");
+            $current_user->execute([$user_id]);
+            $user_data = $current_user->fetch(PDO::FETCH_ASSOC);
+            
+            if (!$user_data) {
+                return ['success' => false, 'message' => 'User not found'];
+            }
+            
+            // Update role
+            $sql = "UPDATE users SET role = ?, updated_at = NOW() WHERE id = ?";
+            $stmt = $pdo->prepare($sql);
+            $result = $stmt->execute([$new_role, $user_id]);
+            
+            if ($result) {
+                // Log audit event
+                if (function_exists('log_audit_event')) {
+                    log_audit_event(
+                        'USER_ROLE_UPDATED',
+                        'users',
+                        $user_id,
+                        json_encode(['role' => $user_data['role']]),
+                        json_encode(['role' => $new_role]),
+                        $updated_by
+                    );
+                }
+                
+                return ['success' => true, 'message' => 'User role updated successfully'];
+            }
+            
+            return ['success' => false, 'message' => 'Failed to update user role'];
+        } catch (Exception $e) {
+            error_log("Error in update_user_role: " . $e->getMessage());
+            return ['success' => false, 'message' => 'Database error: ' . $e->getMessage()];
+        }
+    }
+}
+
+// Update user status
+if (!function_exists('update_user_status')) {
+    function update_user_status($user_id, $new_status, $updated_by = null) {
+        try {
+            $pdo = get_db_connection();
+            
+            // Validate status
+            $valid_statuses = ['active', 'inactive', 'suspended'];
+            if (!in_array($new_status, $valid_statuses)) {
+                return ['success' => false, 'message' => 'Invalid status specified'];
+            }
+            
+            // Get current user data for audit
+            $current_user = $pdo->prepare("SELECT status, name, username FROM users WHERE id = ?");
+            $current_user->execute([$user_id]);
+            $user_data = $current_user->fetch(PDO::FETCH_ASSOC);
+            
+            if (!$user_data) {
+                return ['success' => false, 'message' => 'User not found'];
+            }
+            
+            // Prevent disabling own account
+            if ($user_id == ($updated_by ?? $_SESSION['user_id'] ?? null) && $new_status !== 'active') {
+                return ['success' => false, 'message' => 'You cannot disable your own account'];
+            }
+            
+            // Update status
+            $sql = "UPDATE users SET status = ?, updated_at = NOW() WHERE id = ?";
+            $stmt = $pdo->prepare($sql);
+            $result = $stmt->execute([$new_status, $user_id]);
+            
+            if ($result) {
+                // If suspending, also lock the account
+                if ($new_status === 'suspended') {
+                    $lock_sql = "UPDATE users SET locked_until = DATE_ADD(NOW(), INTERVAL 1 YEAR) WHERE id = ?";
+                    $lock_stmt = $pdo->prepare($lock_sql);
+                    $lock_stmt->execute([$user_id]);
+                } elseif ($new_status === 'active') {
+                    // If activating, unlock the account
+                    $unlock_sql = "UPDATE users SET locked_until = NULL, failed_login_attempts = 0 WHERE id = ?";
+                    $unlock_stmt = $pdo->prepare($unlock_sql);
+                    $unlock_stmt->execute([$user_id]);
+                }
+                
+                // Log audit event
+                if (function_exists('log_audit_event')) {
+                    log_audit_event(
+                        'USER_STATUS_UPDATED',
+                        'users',
+                        $user_id,
+                        json_encode(['status' => $user_data['status']]),
+                        json_encode(['status' => $new_status]),
+                        $updated_by
+                    );
+                }
+                
+                return ['success' => true, 'message' => 'User status updated successfully'];
+            }
+            
+            return ['success' => false, 'message' => 'Failed to update user status'];
+        } catch (Exception $e) {
+            error_log("Error in update_user_status: " . $e->getMessage());
+            return ['success' => false, 'message' => 'Database error: ' . $e->getMessage()];
+        }
+    }
+}
+
+// Get user by ID
+if (!function_exists('get_user_by_id')) {
+    function get_user_by_id($user_id) {
+        try {
+            $pdo = get_db_connection();
+            $sql = "SELECT u.*, 
+                           creator.name as created_by_name,
+                           e.first_name, e.surname, e.employee_no
+                    FROM users u
+                    LEFT JOIN users creator ON u.created_by = creator.id
+                    LEFT JOIN employees e ON u.employee_id = e.id
+                    WHERE u.id = ?";
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute([$user_id]);
+            return $stmt->fetch(PDO::FETCH_ASSOC);
+        } catch (Exception $e) {
+            error_log("Error in get_user_by_id: " . $e->getMessage());
+            return null;
+        }
+    }
+}
+
+// Create new user
+if (!function_exists('create_user')) {
+    function create_user($user_data, $created_by = null) {
+        try {
+            $pdo = get_db_connection();
+            
+            // Validate required fields
+            $required_fields = ['username', 'email', 'password', 'name', 'role'];
+            foreach ($required_fields as $field) {
+                if (empty($user_data[$field])) {
+                    return ['success' => false, 'message' => "Field '{$field}' is required"];
+                }
+            }
+            
+            // Validate role
+            $valid_roles = ['super_admin', 'hr_admin', 'hr', 'admin', 'accounting', 'operation', 'logistics', 'employee', 'developer'];
+            if (!in_array($user_data['role'], $valid_roles)) {
+                return ['success' => false, 'message' => 'Invalid role specified'];
+            }
+            
+            // Validate status
+            $valid_statuses = ['active', 'inactive', 'suspended'];
+            $status = $user_data['status'] ?? 'active';
+            if (!in_array($status, $valid_statuses)) {
+                $status = 'active';
+            }
+            
+            // Check if username already exists
+            $check_username = $pdo->prepare("SELECT id FROM users WHERE username = ?");
+            $check_username->execute([$user_data['username']]);
+            if ($check_username->fetch()) {
+                return ['success' => false, 'message' => 'Username already exists'];
+            }
+            
+            // Check if email already exists
+            $check_email = $pdo->prepare("SELECT id FROM users WHERE email = ?");
+            $check_email->execute([$user_data['email']]);
+            if ($check_email->fetch()) {
+                return ['success' => false, 'message' => 'Email already exists'];
+            }
+            
+            // Hash password
+            $password_hash = password_hash($user_data['password'], PASSWORD_DEFAULT);
+            
+            // Prepare insert statement (let MySQL handle timestamps automatically)
+            $sql = "INSERT INTO users (
+                        username, 
+                        email, 
+                        password_hash, 
+                        name, 
+                        role, 
+                        status, 
+                        employee_id, 
+                        department, 
+                        phone, 
+                        created_by
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            
+            $params = [
+                $user_data['username'],
+                $user_data['email'],
+                $password_hash,
+                $user_data['name'],
+                $user_data['role'],
+                $status,
+                $user_data['employee_id'] ?? null,
+                $user_data['department'] ?? null,
+                $user_data['phone'] ?? null,
+                $created_by
+            ];
+            
+            $stmt = $pdo->prepare($sql);
+            
+            // Execute with error handling
+            try {
+                $result = $stmt->execute($params);
+            } catch (PDOException $e) {
+                error_log("PDO Error in create_user: " . $e->getMessage());
+                return ['success' => false, 'message' => 'Database error: ' . $e->getMessage()];
+            }
+            
+            if ($result && $stmt->rowCount() > 0) {
+                $new_user_id = $pdo->lastInsertId();
+                
+                // Log audit event
+                if (function_exists('log_audit_event')) {
+                    log_audit_event(
+                        'USER_CREATED',
+                        'users',
+                        $new_user_id,
+                        null,
+                        json_encode([
+                            'username' => $user_data['username'],
+                            'email' => $user_data['email'],
+                            'name' => $user_data['name'],
+                            'role' => $user_data['role'],
+                            'status' => $status
+                        ]),
+                        $created_by
+                    );
+                }
+                
+                // Log security event
+                if (function_exists('log_security_event')) {
+                    log_security_event('User Created', "New user created: {$user_data['username']} ({$user_data['name']}) - Role: {$user_data['role']} - Created by: " . ($created_by ?? 'System'));
+                }
+                
+                return [
+                    'success' => true, 
+                    'message' => 'User created successfully',
+                    'user_id' => $new_user_id
+                ];
+            }
+            
+            // If execution succeeded but no rows affected, something went wrong
+            if ($result && $stmt->rowCount() === 0) {
+                error_log("create_user: Query executed but no rows inserted");
+                return ['success' => false, 'message' => 'Failed to create user - no rows inserted'];
+            }
+            
+            return ['success' => false, 'message' => 'Failed to create user - execution returned false'];
+        } catch (PDOException $e) {
+            error_log("PDO Exception in create_user: " . $e->getMessage());
+            error_log("PDO Error Code: " . $e->getCode());
+            return ['success' => false, 'message' => 'Database error: ' . $e->getMessage()];
+        } catch (Exception $e) {
+            error_log("Exception in create_user: " . $e->getMessage());
+            return ['success' => false, 'message' => 'Error: ' . $e->getMessage()];
+        }
+    }
+}
+
 // Initialize database
 if (function_exists('create_tables')) {
     create_tables();

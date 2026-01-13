@@ -257,7 +257,8 @@ $activeSection = getActiveSection($page);
                         aria-expanded="<?php echo ($activeSection === 'administration') ? 'true' : 'false'; ?>" 
                         aria-controls="administration-submenu"
                         tabindex="0"
-                        data-target="administration-submenu">
+                        data-target="administration-submenu"
+                        onclick="event.preventDefault(); if(window.sidebarNav){window.sidebarNav.toggleSection(event);} else {const submenu=document.getElementById('administration-submenu'); const arrow=this.querySelector('.nav-arrow'); if(submenu.classList.contains('expanded')){submenu.classList.remove('expanded');arrow.classList.remove('rotated');this.setAttribute('aria-expanded','false');}else{submenu.classList.add('expanded');arrow.classList.add('rotated');this.setAttribute('aria-expanded','true');}}">
                     <i class="fas fa-shield-alt" aria-hidden="true"></i>
                     <span>Administration</span>
                     <i class="fas fa-chevron-down nav-arrow <?php echo ($activeSection === 'administration') ? 'rotated' : ''; ?>" aria-hidden="true"></i>
@@ -270,6 +271,8 @@ $activeSection = getActiveSection($page);
                             <i class="fas fa-user-shield" aria-hidden="true"></i>
                             <span>User Management</span>
                         </a>
+                    </li>
+                    <li class="nav-item">
                     </li>
                     <li class="nav-item">
                         <a href="?page=system_logs" 
@@ -367,7 +370,7 @@ $activeSection = getActiveSection($page);
             $pages_path = '../pages/';
             switch ($page) {
                 case 'dashboard':
-                    include $pages_path . 'dashboard.php';
+                    include $pages_path . 'super-admin-dashboard.php';
                     break;
                 case 'employees':
                     include $pages_path . 'employees.php';
@@ -433,6 +436,8 @@ $activeSection = getActiveSection($page);
                     include $pages_path . 'post_assignments.php';
                     break;
                 case 'users':
+                    include $pages_path . 'users.php';
+                    break;
                 case 'system_logs':
                 case 'audit_trail':
                     // Super admin specific pages - create these later
@@ -447,4 +452,45 @@ $activeSection = getActiveSection($page);
     </div>
 
     <?php include '../includes/footer.php'; ?>
+    
+    <script>
+    // Ensure Administration section toggle works
+    document.addEventListener('DOMContentLoaded', function() {
+        const adminToggle = document.querySelector('[data-target="administration-submenu"]');
+        const adminSubmenu = document.getElementById('administration-submenu');
+        
+        if (adminToggle && adminSubmenu) {
+            // Re-attach click handler if needed
+            adminToggle.addEventListener('click', function(e) {
+                e.preventDefault();
+                const isExpanded = adminSubmenu.classList.contains('expanded');
+                const arrow = this.querySelector('.nav-arrow');
+                
+                if (isExpanded) {
+                    adminSubmenu.classList.remove('expanded');
+                    arrow.classList.remove('rotated');
+                    this.setAttribute('aria-expanded', 'false');
+                } else {
+                    adminSubmenu.classList.add('expanded');
+                    arrow.classList.add('rotated');
+                    this.setAttribute('aria-expanded', 'true');
+                }
+                
+                // Also trigger the sidebar navigation if available
+                if (window.sidebarNav && typeof window.sidebarNav.toggleSection === 'function') {
+                    window.sidebarNav.toggleSection(e);
+                }
+            });
+            
+            // Auto-expand if users page is active
+            const usersLink = document.querySelector('.nav-link[data-page="users"]');
+            if (usersLink && usersLink.classList.contains('active')) {
+                adminSubmenu.classList.add('expanded');
+                const arrow = adminToggle.querySelector('.nav-arrow');
+                if (arrow) arrow.classList.add('rotated');
+                adminToggle.setAttribute('aria-expanded', 'true');
+            }
+        }
+    });
+    </script>
 
