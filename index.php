@@ -28,6 +28,9 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
 // Route based on allowed roles only
 $user_role = $_SESSION['user_role'] ?? null;
 switch ($user_role) {
+    case 'super_admin':
+        header('Location: super-admin/index.php');
+        exit;
     case 'hr_admin':
         header('Location: hr-admin/index.php');
         exit;

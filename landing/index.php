@@ -82,6 +82,10 @@ if (isset($_GET['logout']) && $_GET['logout'] == '1') {
 // If already logged in (and password changed), redirect to appropriate portal
 if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true && isset($_SESSION['user_role']) && !isset($_SESSION['require_password_change'])) {
     $role = $_SESSION['user_role'];
+    if ($role === 'super_admin') {
+        header('Location: ../super-admin/index.php');
+        exit;
+    }
     if ($role === 'hr_admin' || in_array($role, ['hr', 'admin', 'accounting', 'operation', 'logistics'])) {
         header('Location: ../hr-admin/index.php');
         exit;
@@ -173,7 +177,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
                 
                 // Redirect based on role
                 $role = $_SESSION['user_role'];
-                if ($role === 'developer') {
+                if ($role === 'super_admin') {
+                    header('Location: ../super-admin/index.php');
+                    exit;
+                } elseif ($role === 'developer') {
                     header('Location: ../developer/index.php');
                     exit;
                 } else {
@@ -279,7 +286,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
                         // Don't redirect, show password change modal instead
                     } else {
                         // Check role
-                        if (!in_array($user['role'], ['hr_admin', 'hr', 'admin', 'accounting', 'operation', 'logistics', 'developer'], true)) {
+                        if (!in_array($user['role'], ['super_admin', 'hr_admin', 'hr', 'admin', 'accounting', 'operation', 'logistics', 'developer'], true)) {
                             $error = 'This account role is not permitted to sign in.';
                             $debug_info[] = "Role not allowed: " . $user['role'];
                         } else {
@@ -305,14 +312,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
                             $_SESSION['department'] = $user['department'] ?? null;
                             
                             $debug_info[] = "Session variables set";
-                            $debug_info[] = "Redirecting to: " . ($user['role'] === 'developer' ? '../developer/index.php' : '../hr-admin/index.php');
                             
                             // Redirect based on role (Role-Based Dashboard Access)
-                            if ($user['role'] === 'developer') {
+                            if ($user['role'] === 'super_admin') {
+                                $debug_info[] = "Redirecting to: ../super-admin/index.php";
+                                header('Location: ../super-admin/index.php');
+                                exit;
+                            } elseif ($user['role'] === 'developer') {
+                                $debug_info[] = "Redirecting to: ../developer/index.php";
                                 header('Location: ../developer/index.php');
                                 exit;
                             } else {
                                 // All other roles (hr_admin, hr, admin, accounting, operation, logistics) go to hr-admin portal
+                                $debug_info[] = "Redirecting to: ../hr-admin/index.php";
                                 header('Location: ../hr-admin/index.php');
                                 exit;
                             }
