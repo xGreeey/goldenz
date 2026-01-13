@@ -1261,116 +1261,71 @@ if (empty($posts)) {
                     </div>
                 </div>
 
-                <!-- Trainings / Seminars Section - Modern Redesign -->
-                <div class="row g-4 mb-5">
+                <!-- Trainings / Seminars Section -->
+                <div class="row g-3 mb-4">
                     <div class="col-12">
-                        <!-- Section Header with Icon -->
-                        <div class="d-flex align-items-center gap-3 mb-4 pb-2" style="border-bottom: 2px solid #e2e8f0;">
-                            <div class="d-flex align-items-center justify-content-center" 
-                                 style="width: 42px; height: 42px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 10px; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);">
-                                <i class="fas fa-certificate text-white" style="font-size: 1.1rem;"></i>
-                            </div>
-                            <div>
-                                <h4 class="mb-0 fw-bold" style="color: #1e293b; font-size: 1.25rem; letter-spacing: -0.02em;">Trainings & Seminars</h4>
-                                <p class="mb-0 text-muted small">Add your professional development and certifications</p>
-                            </div>
-                        </div>
+                        <h4 class="form-section-title">Trainings / Seminars</h4>
                     </div>
 
                     <div class="col-12">
-                        <!-- Training Entries Container -->
-                        <div id="trainingsContainer">
-                            <?php
-                            $trainings = $_POST['trainings'] ?? [];
-                            if (!is_array($trainings)) $trainings = [];
-                            if (count($trainings) === 0) $trainings = [[]];
-                            foreach ($trainings as $i => $t):
-                                $title = is_array($t) ? ($t['title'] ?? '') : '';
-                                $by = is_array($t) ? ($t['by'] ?? '') : '';
-                                $date = is_array($t) ? ($t['date'] ?? '') : '';
-                            ?>
-                            <!-- Training Entry Card -->
-                            <div class="training-entry mb-3" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.04); transition: all 0.2s ease;">
-                                <div class="row g-3 align-items-end">
-                                    <!-- Program/Title Field -->
-                                    <div class="col-lg-5 col-md-12">
-                                        <label class="form-label small fw-semibold text-secondary mb-1">
-                                            <i class="fas fa-bookmark me-1" style="color: #667eea;"></i>Program / Title
-                                        </label>
-                                        <input type="text" class="form-control text-uppercase"
-                                               name="trainings[<?php echo (int)$i; ?>][title]"
-                                               value="<?php echo htmlspecialchars($title); ?>"
-                                               placeholder="e.g., Leadership Training Program"
-                                               maxlength="200"
-                                               style="border-radius: 8px; border: 1px solid #e2e8f0; padding: 0.625rem 0.875rem; box-shadow: 0 1px 2px rgba(0,0,0,0.04);">
-                                    </div>
-                                    <!-- Conducted By Field -->
-                                    <div class="col-lg-4 col-md-6">
-                                        <label class="form-label small fw-semibold text-secondary mb-1">
-                                            <i class="fas fa-building me-1" style="color: #667eea;"></i>Conducted By
-                                        </label>
-                                        <input type="text" class="form-control text-uppercase"
-                                               name="trainings[<?php echo (int)$i; ?>][by]"
-                                               value="<?php echo htmlspecialchars($by); ?>"
-                                               placeholder="e.g., Company or Institution"
-                                               maxlength="200"
-                                               style="border-radius: 8px; border: 1px solid #e2e8f0; padding: 0.625rem 0.875rem; box-shadow: 0 1px 2px rgba(0,0,0,0.04);">
-                                    </div>
-                                    <!-- Date Field -->
-                                    <div class="col-lg-2 col-md-4">
-                                        <label class="form-label small fw-semibold text-secondary mb-1">
-                                            <i class="fas fa-calendar-alt me-1" style="color: #667eea;"></i>Date
-                                        </label>
-                                        <input type="date" class="form-control"
-                                               name="trainings[<?php echo (int)$i; ?>][date]"
-                                               value="<?php echo htmlspecialchars($date); ?>"
-                                               style="border-radius: 8px; border: 1px solid #e2e8f0; padding: 0.625rem 0.875rem; box-shadow: 0 1px 2px rgba(0,0,0,0.04);">
-                                    </div>
-                                    <!-- Remove Button -->
-                                    <div class="col-lg-1 col-md-2 text-end">
-                                        <button type="button" class="btn training-remove d-inline-flex align-items-center justify-content-center"
-                                                title="Remove this training"
-                                                style="width: 38px; height: 38px; border-radius: 8px; background: #fee2e2; border: 1px solid #fecaca; color: #dc2626; transition: all 0.2s ease;">
-                                            <i class="fas fa-trash-alt" style="font-size: 0.875rem;"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                            <?php endforeach; ?>
+                        <div class="table-responsive">
+                            <table class="table table-sm align-middle mb-2" id="trainingsTable">
+                                <thead>
+                                    <tr class="text-muted small">
+                                        <th style="min-width: 260px;">Program / Title</th>
+                                        <th style="min-width: 220px;">Conducted By</th>
+                                        <th style="min-width: 240px;">Date of Training</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="trainingsTbody">
+                                    <?php
+                                    $trainings = $_POST['trainings'] ?? [];
+                                    if (!is_array($trainings)) $trainings = [];
+                                    if (count($trainings) === 0) $trainings = [[]]; // at least one blank row
+                                    foreach ($trainings as $i => $t):
+                                        $title = is_array($t) ? ($t['title'] ?? '') : '';
+                                        $by = is_array($t) ? ($t['by'] ?? '') : '';
+                                        $date = is_array($t) ? ($t['date'] ?? '') : '';
+                                    ?>
+                                    <tr class="training-row">
+                                        <td>
+                                            <input type="text" class="form-control text-uppercase"
+                                                   name="trainings[<?php echo (int)$i; ?>][title]"
+                                                   value="<?php echo htmlspecialchars($title); ?>"
+                                                   placeholder="Program or Title of Training / Seminar" maxlength="200">
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control text-uppercase"
+                                                   name="trainings[<?php echo (int)$i; ?>][by]"
+                                                   value="<?php echo htmlspecialchars($by); ?>"
+                                                   placeholder="Conducted By" maxlength="200">
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center gap-2">
+                                                <input type="date" class="form-control flex-grow-1"
+                                                       name="trainings[<?php echo (int)$i; ?>][date]"
+                                                       value="<?php echo htmlspecialchars($date); ?>">
+                                                <button type="button"
+                                                        class="btn btn-sm p-0 training-remove"
+                                                        aria-label="Remove training"
+                                                        style="min-width: 32px; line-height: 1;">
+                                                    <span class="text-danger fw-bold" aria-hidden="true" style="font-size: 1.35rem; line-height: 1;">&minus;</span>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
                         </div>
 
-                        <!-- Add Training Button -->
-                        <div class="d-flex justify-content-center mt-4">
-                            <button type="button" class="btn d-inline-flex align-items-center gap-2" id="addTrainingBtn"
-                                    style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; padding: 0.625rem 1.25rem; font-weight: 500; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3); transition: all 0.2s ease;">
-                                <i class="fas fa-plus-circle"></i>
-                                <span>Add Training</span>
+                        <div class="d-flex justify-content-end">
+                            <button type="button" class="btn btn-outline-primary btn-sm" id="addTrainingBtn">
+                                <i class="fas fa-plus me-2"></i>Add Training
                             </button>
                         </div>
                     </div>
                 </div>
-
-                <style>
-                    /* Training Entry Hover Effects */
-                    .training-entry:hover {
-                        border-color: #cbd5e1 !important;
-                        box-shadow: 0 4px 12px rgba(0,0,0,0.06) !important;
-                    }
-                    .training-entry input:focus {
-                        border-color: #667eea !important;
-                        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15) !important;
-                        outline: none;
-                    }
-                    .training-remove:hover {
-                        background: #fecaca !important;
-                        border-color: #f87171 !important;
-                        transform: scale(1.05);
-                    }
-                    #addTrainingBtn:hover {
-                        transform: translateY(-2px);
-                        box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4) !important;
-                    }
-                </style>
 
                 <!-- Employment History Section -->
                 <div class="row g-3 mb-4">
@@ -1935,13 +1890,17 @@ document.addEventListener('DOMContentLoaded', function() {
         syncAge();
     }
 
-    // Utility functions for repeatable table rows (used by gov exams, etc.)
+    // Trainings / Seminars (repeatable rows)
+    const trainingsTbody = document.getElementById('trainingsTbody');
+    const addTrainingBtn = document.getElementById('addTrainingBtn');
+
     const reindexRows = (tbody, rowClass, baseName) => {
         if (!tbody) return;
         const rows = Array.from(tbody.querySelectorAll(rowClass));
         rows.forEach((row, idx) => {
             row.querySelectorAll('input').forEach((inp) => {
                 const name = inp.getAttribute('name') || '';
+                // Replace trainings[OLD] with trainings[idx]
                 const updated = name.replace(new RegExp(`^${baseName}\\[\\d+\\]`), `${baseName}[${idx}]`);
                 inp.setAttribute('name', updated);
             });
@@ -1951,6 +1910,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const removeRowOrClear = (tbody, row, rowSelector, baseName) => {
         const rows = tbody.querySelectorAll(rowSelector);
         if (rows.length <= 1) {
+            // Clear instead of removing last row
             row.querySelectorAll('input').forEach(i => i.value = '');
             return;
         }
@@ -1958,86 +1918,46 @@ document.addEventListener('DOMContentLoaded', function() {
         reindexRows(tbody, rowSelector, baseName);
     };
 
-    // Trainings / Seminars - Modern card-based design
-    const trainingsContainer = document.getElementById('trainingsContainer');
-    const addTrainingBtnNew = document.getElementById('addTrainingBtn');
-
-    const reindexTrainings = () => {
-        if (!trainingsContainer) return;
-        const entries = trainingsContainer.querySelectorAll('.training-entry');
-        entries.forEach((entry, idx) => {
-            entry.querySelectorAll('input').forEach((inp) => {
-                const name = inp.getAttribute('name') || '';
-                if (!name) return;
-                inp.setAttribute('name', name.replace(/^trainings\[\d+\]/, `trainings[${idx}]`));
-            });
-        });
-    };
-
-    if (trainingsContainer) {
-        trainingsContainer.addEventListener('click', (e) => {
+    if (trainingsTbody) {
+        trainingsTbody.addEventListener('click', (e) => {
             const btn = e.target.closest('.training-remove');
             if (!btn) return;
-            const entry = btn.closest('.training-entry');
-            if (!entry) return;
-            
-            const allEntries = trainingsContainer.querySelectorAll('.training-entry');
-            if (allEntries.length <= 1) {
-                // Clear inputs instead of removing last entry
-                entry.querySelectorAll('input').forEach(inp => inp.value = '');
-                return;
-            }
-            entry.remove();
-            reindexTrainings();
+            const row = btn.closest('tr');
+            if (!row) return;
+            removeRowOrClear(trainingsTbody, row, '.training-row', 'trainings');
         });
     }
 
-    if (addTrainingBtnNew && trainingsContainer) {
-        addTrainingBtnNew.addEventListener('click', () => {
-            const idx = trainingsContainer.querySelectorAll('.training-entry').length;
-            const newEntry = document.createElement('div');
-            newEntry.className = 'training-entry mb-3';
-            newEntry.style.cssText = 'background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.04); transition: all 0.2s ease;';
-            newEntry.innerHTML = `
-                <div class="row g-3 align-items-end">
-                    <div class="col-lg-5 col-md-12">
-                        <label class="form-label small fw-semibold text-secondary mb-1">
-                            <i class="fas fa-bookmark me-1" style="color: #667eea;"></i>Program / Title
-                        </label>
-                        <input type="text" class="form-control text-uppercase"
-                               name="trainings[${idx}][title]"
-                               placeholder="e.g., Leadership Training Program"
-                               maxlength="200"
-                               style="border-radius: 8px; border: 1px solid #e2e8f0; padding: 0.625rem 0.875rem; box-shadow: 0 1px 2px rgba(0,0,0,0.04);">
-                    </div>
-                    <div class="col-lg-4 col-md-6">
-                        <label class="form-label small fw-semibold text-secondary mb-1">
-                            <i class="fas fa-building me-1" style="color: #667eea;"></i>Conducted By
-                        </label>
-                        <input type="text" class="form-control text-uppercase"
-                               name="trainings[${idx}][by]"
-                               placeholder="e.g., Company or Institution"
-                               maxlength="200"
-                               style="border-radius: 8px; border: 1px solid #e2e8f0; padding: 0.625rem 0.875rem; box-shadow: 0 1px 2px rgba(0,0,0,0.04);">
-                    </div>
-                    <div class="col-lg-2 col-md-4">
-                        <label class="form-label small fw-semibold text-secondary mb-1">
-                            <i class="fas fa-calendar-alt me-1" style="color: #667eea;"></i>Date
-                        </label>
-                        <input type="date" class="form-control"
-                               name="trainings[${idx}][date]"
-                               style="border-radius: 8px; border: 1px solid #e2e8f0; padding: 0.625rem 0.875rem; box-shadow: 0 1px 2px rgba(0,0,0,0.04);">
-                    </div>
-                    <div class="col-lg-1 col-md-2 text-end">
-                        <button type="button" class="btn training-remove d-inline-flex align-items-center justify-content-center"
-                                title="Remove this training"
-                                style="width: 38px; height: 38px; border-radius: 8px; background: #fee2e2; border: 1px solid #fecaca; color: #dc2626; transition: all 0.2s ease;">
-                            <i class="fas fa-trash-alt" style="font-size: 0.875rem;"></i>
+    if (addTrainingBtn && trainingsTbody) {
+        addTrainingBtn.addEventListener('click', () => {
+            const idx = trainingsTbody.querySelectorAll('.training-row').length;
+            const tr = document.createElement('tr');
+            tr.className = 'training-row';
+            tr.innerHTML = `
+                <td>
+                    <input type="text" class="form-control text-uppercase"
+                           name="trainings[${idx}][title]"
+                           placeholder="Program or Title of Training / Seminar" maxlength="200">
+                </td>
+                <td>
+                    <input type="text" class="form-control text-uppercase"
+                           name="trainings[${idx}][by]"
+                           placeholder="Conducted By" maxlength="200">
+                </td>
+                <td>
+                    <div class="d-flex align-items-center gap-2">
+                        <input type="date" class="form-control flex-grow-1"
+                               name="trainings[${idx}][date]">
+                        <button type="button"
+                                class="btn btn-sm p-0 training-remove"
+                                aria-label="Remove training"
+                                style="min-width: 32px; line-height: 1;">
+                            <span class="text-danger fw-bold" aria-hidden="true" style="font-size: 1.35rem; line-height: 1;">&minus;</span>
                         </button>
                     </div>
-                </div>
+                </td>
             `;
-            trainingsContainer.appendChild(newEntry);
+            trainingsTbody.appendChild(tr);
         });
     }
 

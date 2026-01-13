@@ -112,7 +112,8 @@ $menu = [
         </li>
         <li class="nav-item">
             <a href="<?php echo base_url(); ?>/index.php?logout=1"
-               class="nav-link">
+               class="nav-link"
+               data-no-transition="true">
                 <span>Logout</span>
             </a>
         </li>

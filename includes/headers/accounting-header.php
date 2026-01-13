@@ -233,8 +233,9 @@ $activeSection = getActiveSection($page);
             </li>
             
             <li class="nav-item">
-                <a href="../index.php?logout=1" 
-                   class="nav-link">
+<a href="../index.php?logout=1"
+                   class="nav-link"
+                   data-no-transition="true">
                     <i class="fas fa-sign-out-alt" aria-hidden="true"></i>
                     <span>Logout</span>
                 </a>
