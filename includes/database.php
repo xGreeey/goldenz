@@ -2826,6 +2826,371 @@ if (!function_exists('create_user')) {
     }
 }
 
+// ========================================
+// SUPPORT TICKETS SYSTEM
+// ========================================
+
+// Create support tickets table
+if (!function_exists('create_support_tickets_table')) {
+    function create_support_tickets_table() {
+        try {
+            $pdo = get_db_connection();
+            
+            // Create support_tickets table
+            $sql = "CREATE TABLE IF NOT EXISTS support_tickets (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                ticket_no VARCHAR(20) NOT NULL UNIQUE,
+                user_id INT NULL,
+                user_name VARCHAR(100) NOT NULL,
+                user_email VARCHAR(100) NULL,
+                user_role VARCHAR(50) NULL,
+                category ENUM('system_issue', 'access_request', 'data_issue', 'feature_request', 'general_inquiry', 'bug_report') DEFAULT 'general_inquiry',
+                priority ENUM('low', 'medium', 'high', 'urgent') DEFAULT 'medium',
+                subject VARCHAR(255) NOT NULL,
+                description TEXT NOT NULL,
+                status ENUM('open', 'in_progress', 'pending_user', 'resolved', 'closed') DEFAULT 'open',
+                assigned_to INT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                resolved_at TIMESTAMP NULL,
+                INDEX idx_status (status),
+                INDEX idx_priority (priority),
+                INDEX idx_user_id (user_id),
+                INDEX idx_ticket_no (ticket_no)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
+            $pdo->exec($sql);
+            
+            // Create ticket_replies table
+            $sql = "CREATE TABLE IF NOT EXISTS ticket_replies (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                ticket_id INT NOT NULL,
+                user_id INT NULL,
+                user_name VARCHAR(100) NOT NULL,
+                user_role VARCHAR(50) NULL,
+                message TEXT NOT NULL,
+                is_internal TINYINT(1) DEFAULT 0,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (ticket_id) REFERENCES support_tickets(id) ON DELETE CASCADE,
+                INDEX idx_ticket_id (ticket_id)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
+            $pdo->exec($sql);
+            
+            return true;
+        } catch (Exception $e) {
+            error_log("Error creating support tickets tables: " . $e->getMessage());
+            return false;
+        }
+    }
+}
+
+// Generate unique ticket number
+if (!function_exists('generate_ticket_number')) {
+    function generate_ticket_number() {
+        $prefix = 'TKT';
+        $date = date('ymd');
+        $random = strtoupper(substr(md5(uniqid(mt_rand(), true)), 0, 4));
+        return $prefix . $date . $random;
+    }
+}
+
+// Get all support tickets with filters
+if (!function_exists('get_support_tickets')) {
+    function get_support_tickets($filters = [], $limit = 50, $offset = 0) {
+        try {
+            $pdo = get_db_connection();
+            
+            $where = "WHERE 1=1";
+            $params = [];
+            
+            if (!empty($filters['status'])) {
+                $where .= " AND t.status = ?";
+                $params[] = $filters['status'];
+            }
+            
+            if (!empty($filters['priority'])) {
+                $where .= " AND t.priority = ?";
+                $params[] = $filters['priority'];
+            }
+            
+            if (!empty($filters['category'])) {
+                $where .= " AND t.category = ?";
+                $params[] = $filters['category'];
+            }
+            
+            if (!empty($filters['search'])) {
+                $where .= " AND (t.ticket_no LIKE ? OR t.subject LIKE ? OR t.user_name LIKE ?)";
+                $search = '%' . $filters['search'] . '%';
+                $params[] = $search;
+                $params[] = $search;
+                $params[] = $search;
+            }
+            
+            // Get total count
+            $count_sql = "SELECT COUNT(*) FROM support_tickets t $where";
+            $count_stmt = $pdo->prepare($count_sql);
+            $count_stmt->execute($params);
+            $total = (int)$count_stmt->fetchColumn();
+            
+            // Get tickets
+            $sql = "SELECT t.*, 
+                           a.name as assigned_to_name,
+                           (SELECT COUNT(*) FROM ticket_replies WHERE ticket_id = t.id) as reply_count
+                    FROM support_tickets t
+                    LEFT JOIN users a ON t.assigned_to = a.id
+                    $where
+                    ORDER BY 
+                        CASE t.priority 
+                            WHEN 'urgent' THEN 1 
+                            WHEN 'high' THEN 2 
+                            WHEN 'medium' THEN 3 
+                            WHEN 'low' THEN 4 
+                        END,
+                        t.created_at DESC
+                    LIMIT ? OFFSET ?";
+            
+            $params[] = $limit;
+            $params[] = $offset;
+            
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute($params);
+            $tickets = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            return [
+                'tickets' => $tickets,
+                'total' => $total
+            ];
+        } catch (Exception $e) {
+            error_log("Error in get_support_tickets: " . $e->getMessage());
+            return ['tickets' => [], 'total' => 0];
+        }
+    }
+}
+
+// Get single ticket with replies
+if (!function_exists('get_ticket_by_id')) {
+    function get_ticket_by_id($ticket_id) {
+        try {
+            $pdo = get_db_connection();
+            
+            // Get ticket
+            $sql = "SELECT t.*, a.name as assigned_to_name
+                    FROM support_tickets t
+                    LEFT JOIN users a ON t.assigned_to = a.id
+                    WHERE t.id = ?";
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute([$ticket_id]);
+            $ticket = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if (!$ticket) {
+                return null;
+            }
+            
+            // Get replies
+            $sql = "SELECT * FROM ticket_replies WHERE ticket_id = ? ORDER BY created_at ASC";
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute([$ticket_id]);
+            $ticket['replies'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            return $ticket;
+        } catch (Exception $e) {
+            error_log("Error in get_ticket_by_id: " . $e->getMessage());
+            return null;
+        }
+    }
+}
+
+// Create new support ticket
+if (!function_exists('create_support_ticket')) {
+    function create_support_ticket($data) {
+        try {
+            $pdo = get_db_connection();
+            
+            $ticket_no = generate_ticket_number();
+            
+            $sql = "INSERT INTO support_tickets 
+                    (ticket_no, user_id, user_name, user_email, user_role, category, priority, subject, description)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            
+            $stmt = $pdo->prepare($sql);
+            $result = $stmt->execute([
+                $ticket_no,
+                $data['user_id'] ?? null,
+                $data['user_name'],
+                $data['user_email'] ?? null,
+                $data['user_role'] ?? null,
+                $data['category'] ?? 'general_inquiry',
+                $data['priority'] ?? 'medium',
+                $data['subject'],
+                $data['description']
+            ]);
+            
+            if ($result) {
+                return [
+                    'success' => true,
+                    'ticket_id' => $pdo->lastInsertId(),
+                    'ticket_no' => $ticket_no,
+                    'message' => "Ticket $ticket_no created successfully"
+                ];
+            }
+            
+            return ['success' => false, 'message' => 'Failed to create ticket'];
+        } catch (Exception $e) {
+            error_log("Error in create_support_ticket: " . $e->getMessage());
+            return ['success' => false, 'message' => 'Database error: ' . $e->getMessage()];
+        }
+    }
+}
+
+// Add reply to ticket
+if (!function_exists('add_ticket_reply')) {
+    function add_ticket_reply($ticket_id, $data) {
+        try {
+            $pdo = get_db_connection();
+            
+            $sql = "INSERT INTO ticket_replies 
+                    (ticket_id, user_id, user_name, user_role, message, is_internal)
+                    VALUES (?, ?, ?, ?, ?, ?)";
+            
+            $stmt = $pdo->prepare($sql);
+            $result = $stmt->execute([
+                $ticket_id,
+                $data['user_id'] ?? null,
+                $data['user_name'],
+                $data['user_role'] ?? null,
+                $data['message'],
+                $data['is_internal'] ?? 0
+            ]);
+            
+            if ($result) {
+                // Update ticket's updated_at timestamp
+                $update_sql = "UPDATE support_tickets SET updated_at = NOW() WHERE id = ?";
+                $pdo->prepare($update_sql)->execute([$ticket_id]);
+                
+                return ['success' => true, 'message' => 'Reply added successfully'];
+            }
+            
+            return ['success' => false, 'message' => 'Failed to add reply'];
+        } catch (Exception $e) {
+            error_log("Error in add_ticket_reply: " . $e->getMessage());
+            return ['success' => false, 'message' => 'Database error: ' . $e->getMessage()];
+        }
+    }
+}
+
+// Update ticket status
+if (!function_exists('update_ticket_status')) {
+    function update_ticket_status($ticket_id, $status, $updated_by = null) {
+        try {
+            $pdo = get_db_connection();
+            
+            $valid_statuses = ['open', 'in_progress', 'pending_user', 'resolved', 'closed'];
+            if (!in_array($status, $valid_statuses)) {
+                return ['success' => false, 'message' => 'Invalid status'];
+            }
+            
+            $resolved_at = in_array($status, ['resolved', 'closed']) ? 'NOW()' : 'NULL';
+            
+            $sql = "UPDATE support_tickets 
+                    SET status = ?, resolved_at = $resolved_at, updated_at = NOW() 
+                    WHERE id = ?";
+            $stmt = $pdo->prepare($sql);
+            $result = $stmt->execute([$status, $ticket_id]);
+            
+            if ($result) {
+                // Log the status change as a system reply
+                if ($updated_by) {
+                    add_ticket_reply($ticket_id, [
+                        'user_id' => $updated_by['id'] ?? null,
+                        'user_name' => $updated_by['name'] ?? 'System',
+                        'user_role' => $updated_by['role'] ?? 'system',
+                        'message' => "Status changed to: " . ucfirst(str_replace('_', ' ', $status)),
+                        'is_internal' => 1
+                    ]);
+                }
+                
+                return ['success' => true, 'message' => 'Ticket status updated'];
+            }
+            
+            return ['success' => false, 'message' => 'Failed to update status'];
+        } catch (Exception $e) {
+            error_log("Error in update_ticket_status: " . $e->getMessage());
+            return ['success' => false, 'message' => 'Database error: ' . $e->getMessage()];
+        }
+    }
+}
+
+// Assign ticket to user
+if (!function_exists('assign_ticket')) {
+    function assign_ticket($ticket_id, $assigned_to, $updated_by = null) {
+        try {
+            $pdo = get_db_connection();
+            
+            $sql = "UPDATE support_tickets SET assigned_to = ?, updated_at = NOW() WHERE id = ?";
+            $stmt = $pdo->prepare($sql);
+            $result = $stmt->execute([$assigned_to, $ticket_id]);
+            
+            if ($result) {
+                return ['success' => true, 'message' => 'Ticket assigned successfully'];
+            }
+            
+            return ['success' => false, 'message' => 'Failed to assign ticket'];
+        } catch (Exception $e) {
+            error_log("Error in assign_ticket: " . $e->getMessage());
+            return ['success' => false, 'message' => 'Database error: ' . $e->getMessage()];
+        }
+    }
+}
+
+// Get ticket statistics
+if (!function_exists('get_ticket_stats')) {
+    function get_ticket_stats() {
+        try {
+            $pdo = get_db_connection();
+            
+            $stats = [];
+            
+            // By status
+            $sql = "SELECT status, COUNT(*) as count FROM support_tickets GROUP BY status";
+            $stmt = $pdo->query($sql);
+            $stats['by_status'] = [];
+            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                $stats['by_status'][$row['status']] = (int)$row['count'];
+            }
+            
+            // By priority
+            $sql = "SELECT priority, COUNT(*) as count FROM support_tickets WHERE status NOT IN ('resolved', 'closed') GROUP BY priority";
+            $stmt = $pdo->query($sql);
+            $stats['by_priority'] = [];
+            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                $stats['by_priority'][$row['priority']] = (int)$row['count'];
+            }
+            
+            // Total open
+            $sql = "SELECT COUNT(*) FROM support_tickets WHERE status NOT IN ('resolved', 'closed')";
+            $stats['open_tickets'] = (int)$pdo->query($sql)->fetchColumn();
+            
+            // Total today
+            $sql = "SELECT COUNT(*) FROM support_tickets WHERE DATE(created_at) = CURDATE()";
+            $stats['today'] = (int)$pdo->query($sql)->fetchColumn();
+            
+            // Urgent/High priority needing attention
+            $sql = "SELECT COUNT(*) FROM support_tickets WHERE status NOT IN ('resolved', 'closed') AND priority IN ('urgent', 'high')";
+            $stats['urgent_high'] = (int)$pdo->query($sql)->fetchColumn();
+            
+            return $stats;
+        } catch (Exception $e) {
+            error_log("Error in get_ticket_stats: " . $e->getMessage());
+            return [
+                'by_status' => [],
+                'by_priority' => [],
+                'open_tickets' => 0,
+                'today' => 0,
+                'urgent_high' => 0
+            ];
+        }
+    }
+}
+
 // Initialize database
 if (function_exists('create_tables')) {
     create_tables();
@@ -2834,5 +3199,10 @@ if (function_exists('create_tables')) {
 // Create tasks table if it doesn't exist
 if (function_exists('create_tasks_table')) {
     create_tasks_table();
+}
+
+// Create support tickets tables
+if (function_exists('create_support_tickets_table')) {
+    create_support_tickets_table();
 }
 ?>
