@@ -16,10 +16,13 @@ document.addEventListener('DOMContentLoaded', function() {
         return new bootstrap.Tooltip(tooltipTriggerEl);
     });
     
-    // Initialize modals
+    // Initialize modals without backdrops to keep background interactive
     var modalList = [].slice.call(document.querySelectorAll('.modal'));
     var modalArray = modalList.map(function (modalEl) {
-        return new bootstrap.Modal(modalEl);
+        return new bootstrap.Modal(modalEl, {
+            backdrop: false,
+            keyboard: true
+        });
     });
 });
 

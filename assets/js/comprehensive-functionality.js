@@ -838,7 +838,10 @@ class ComprehensiveFunctionalityManager {
         `;
         
         document.body.appendChild(modal);
-        const bsModal = new bootstrap.Modal(modal);
+        const bsModal = new bootstrap.Modal(modal, {
+            backdrop: false,
+            keyboard: true
+        });
         bsModal.show();
         
         modal.addEventListener('hidden.bs.modal', () => {

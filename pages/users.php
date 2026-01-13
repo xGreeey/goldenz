@@ -420,7 +420,7 @@ $role_config = config('roles.roles', []);
 </div>
 
 <!-- Create User Modal -->
-<div class="modal fade" id="createUserModal" tabindex="-1" aria-labelledby="createUserModalLabel" aria-hidden="true" data-bs-backdrop="true" data-bs-keyboard="true">
+<div class="modal fade" id="createUserModal" tabindex="-1" aria-labelledby="createUserModalLabel" aria-hidden="true" data-bs-backdrop="false" data-bs-keyboard="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content" style="position: relative; z-index: 1057;">
             <div class="modal-header">
@@ -607,7 +607,7 @@ $role_config = config('roles.roles', []);
     color: white;
 }
 
-/* Fix modal z-index and backdrop issues - Must be above header (1100) and sidebar (1000) */
+/* Fix modal z-index - Must be above header (1100) and sidebar (1000) */
 #createUserModal {
     z-index: 1200 !important;
 }
@@ -620,42 +620,15 @@ $role_config = config('roles.roles', []);
 #createUserModal .modal-content {
     z-index: 1202 !important;
     position: relative;
-}
-
-/* Ensure modal backdrop is below modal but above header/sidebar */
-.modal-backdrop {
-    z-index: 1101 !important;
-    pointer-events: auto !important;
-}
-
-.modal-backdrop.show {
-    z-index: 1101 !important;
-    pointer-events: auto !important;
-}
-
-/* Critical: Make sure backdrop doesn't block clicks on modal content */
-.modal-backdrop + .modal,
-.modal-backdrop ~ .modal {
-    pointer-events: none !important;
-}
-
-.modal-backdrop + .modal .modal-dialog,
-.modal-backdrop ~ .modal .modal-dialog {
-    pointer-events: auto !important;
+    /* Glassmorphism-style blurred background for nicer appearance */
+    background: rgba(255, 255, 255, 0.85) !important;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
 }
 
 /* Ensure modal dialog and content can receive clicks */
-#createUserModal {
-    pointer-events: none !important;
-}
-
 #createUserModal .modal-dialog {
     pointer-events: auto !important;
-}
-
-/* Ensure modal is above everything when open */
-body.modal-open {
-    overflow: hidden;
 }
 
 body.modal-open .modal-backdrop {
@@ -724,7 +697,7 @@ document.addEventListener('DOMContentLoaded', function() {
         select.addEventListener('change', function() {
             const userId = this.dataset.userId;
             const newRole = this.value;
-            const originalValue = this.getAttribute('data-original-value') || this.options[this.selectedIndex].text;
+            const originalValue = this.getAttribute('data-original-value') || this.value;
             
             if (!this.hasAttribute('data-original-value')) {
                 this.setAttribute('data-original-value', originalValue);
@@ -878,62 +851,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const createUserModal = document.getElementById('createUserModal');
     const createUserForm = document.getElementById('createUserForm');
     
-    // Fix modal backdrop issues
+    // Modal behavior
     if (createUserModal) {
-        // Fix backdrop to not interfere with modal clicks
-        createUserModal.addEventListener('show.bs.modal', function() {
-            // Wait for Bootstrap to create the backdrop
-            setTimeout(function() {
-                // Remove any existing duplicate backdrops
-                const existingBackdrops = document.querySelectorAll('.modal-backdrop');
-                existingBackdrops.forEach((backdrop, index) => {
-                    if (index > 0) {
-                        backdrop.remove();
-                    } else {
-                        // Set backdrop z-index and ensure it doesn't block modal
-                        backdrop.style.zIndex = '1101';
-                        backdrop.style.pointerEvents = 'auto';
-                    }
-                });
-                
-                // Critical: Set modal to not receive pointer events, but dialog should
-                createUserModal.style.zIndex = '1200';
-                createUserModal.style.display = 'block';
-                createUserModal.style.pointerEvents = 'none'; // Modal container doesn't receive clicks
-                
-                const modalDialog = createUserModal.querySelector('.modal-dialog');
-                if (modalDialog) {
-                    modalDialog.style.zIndex = '1201';
-                    modalDialog.style.position = 'relative';
-                    modalDialog.style.pointerEvents = 'auto'; // Dialog receives clicks
-                }
-                const modalContent = createUserModal.querySelector('.modal-content');
-                if (modalContent) {
-                    modalContent.style.zIndex = '1202';
-                    modalContent.style.position = 'relative';
-                    modalContent.style.pointerEvents = 'auto'; // Content receives clicks
-                }
-                
-                // Ensure all form elements are clickable
-                const formElements = createUserModal.querySelectorAll('input, select, textarea, button, label, a');
-                formElements.forEach(el => {
-                    el.style.pointerEvents = 'auto';
-                    el.style.position = 'relative';
-                    el.style.zIndex = '1';
-                });
-            }, 10);
-        });
-        
         // Reset form when modal is closed
         createUserModal.addEventListener('hidden.bs.modal', function() {
-            // Clean up any duplicate backdrops
-            const backdrops = document.querySelectorAll('.modal-backdrop');
-            backdrops.forEach((backdrop, index) => {
-                if (index > 0) {
-                    backdrop.remove();
-                }
-            });
-            
             if (createUserForm) {
                 createUserForm.reset();
             }
@@ -953,18 +874,6 @@ document.addEventListener('DOMContentLoaded', function() {
             // Ensure modal is on top (above header z-index 1100)
             createUserModal.style.zIndex = '1200';
             createUserModal.style.display = 'block';
-            createUserModal.style.pointerEvents = 'none'; // Container doesn't receive clicks
-            
-            // Remove any duplicate backdrops and set correct z-index
-            const backdrops = document.querySelectorAll('.modal-backdrop');
-            backdrops.forEach((backdrop, index) => {
-                if (index > 0) {
-                    backdrop.remove();
-                } else {
-                    backdrop.style.zIndex = '1101';
-                    backdrop.style.pointerEvents = 'auto';
-                }
-            });
             
             // Ensure modal dialog receives clicks
             const modalDialog = createUserModal.querySelector('.modal-dialog');
@@ -978,27 +887,13 @@ document.addEventListener('DOMContentLoaded', function() {
             const modalContent = createUserModal.querySelector('.modal-content');
             if (modalContent) {
                 modalContent.style.pointerEvents = 'auto';
-                modalContent.style.position = 'relative';
-                modalContent.style.zIndex = '1202';
-            }
-            
-            const modalBody = createUserModal.querySelector('.modal-body');
-            if (modalBody) {
-                modalBody.style.pointerEvents = 'auto';
-                modalBody.style.position = 'relative';
-                modalBody.style.zIndex = '1';
             }
             
             // Make sure all inputs are clickable
             const inputs = createUserModal.querySelectorAll('input, select, textarea, button, label, a');
             inputs.forEach(input => {
                 input.style.pointerEvents = 'auto';
-                input.style.position = 'relative';
-                input.style.zIndex = '1';
             });
-            
-            // Force reflow to ensure styles are applied
-            createUserModal.offsetHeight;
             
             const usernameInput = document.getElementById('create_username');
             if (usernameInput) {
