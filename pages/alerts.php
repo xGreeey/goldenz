@@ -1,0 +1,1413 @@
+<?php
+$page_title = 'Employee Alerts - Golden Z-5 HR System';
+$page = 'alerts';
+
+// Handle alert actions
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $action = $_POST['action'] ?? '';
+    $alert_id = $_POST['alert_id'] ?? '';
+    
+    if ($action === 'acknowledge' && $alert_id) {
+        $alert = get_alert($alert_id);
+        acknowledge_alert($alert_id, $_SESSION['user_id'] ?? 1);
+        log_security_event('Alert Acknowledged', "Alert ID: $alert_id");
+        if (function_exists('log_audit_event')) {
+            log_audit_event('ACKNOWLEDGE', 'employee_alerts', $alert_id, 
+                ['status' => $alert['status'] ?? 'active'], 
+                ['status' => 'acknowledged']);
+        }
+        redirect_with_message('?page=alerts', 'Alert acknowledged successfully!', 'success');
+    } elseif ($action === 'resolve' && $alert_id) {
+        $alert = get_alert($alert_id);
+        resolve_alert($alert_id, $_SESSION['user_id'] ?? 1);
+        log_security_event('Alert Resolved', "Alert ID: $alert_id");
+        if (function_exists('log_audit_event')) {
+            log_audit_event('RESOLVE', 'employee_alerts', $alert_id, 
+                ['status' => $alert['status'] ?? 'active'], 
+                ['status' => 'resolved']);
+        }
+        redirect_with_message('?page=alerts', 'Alert resolved successfully!', 'success');
+    } elseif ($action === 'dismiss' && $alert_id) {
+        $alert = get_alert($alert_id);
+        dismiss_alert($alert_id);
+        log_security_event('Alert Dismissed', "Alert ID: $alert_id");
+        if (function_exists('log_audit_event')) {
+            log_audit_event('DISMISS', 'employee_alerts', $alert_id, 
+                ['status' => $alert['status'] ?? 'active'], 
+                ['status' => 'dismissed']);
+        }
+        redirect_with_message('?page=alerts', 'Alert dismissed successfully!', 'info');
+    }
+}
+
+// Handle GET actions (like generate license alerts)
+if (isset($_GET['action']) && $_GET['action'] === 'generate_license_alerts') {
+    $alerts_created = generate_license_expiry_alerts();
+    log_security_event('License Alerts Generated', "Created $alerts_created alerts");
+    if (function_exists('log_audit_event')) {
+        log_audit_event('GENERATE_LICENSE_ALERTS', 'employee_alerts', null, null, 
+            ['alerts_created' => $alerts_created]);
+    }
+    redirect_with_message('?page=alerts', "Successfully generated $alerts_created license expiry alerts!", 'success');
+}
+
+// Handle AJAX request for alert details
+if (isset($_GET['action']) && $_GET['action'] === 'get_alert' && isset($_GET['id'])) {
+    header('Content-Type: application/json');
+    $alert = get_alert($_GET['id']);
+    if ($alert) {
+        echo json_encode(['success' => true, 'alert' => $alert]);
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Alert not found']);
+    }
+    exit;
+}
+
+// Get filter parameters
+$status = $_GET['status'] ?? 'active';
+$priority = $_GET['priority'] ?? '';
+$alert_type = $_GET['alert_type'] ?? '';
+
+// Get audit trail filter parameters
+$audit_action = $_GET['audit_action'] ?? '';
+$audit_table = $_GET['audit_table'] ?? '';
+$audit_date_from = $_GET['audit_date_from'] ?? '';
+$audit_date_to = $_GET['audit_date_to'] ?? '';
+
+// Get alerts based on filters
+try {
+    $alerts = get_employee_alerts($status, $priority ?: null);
+    
+    // Ensure $alerts is an array
+    if (!is_array($alerts)) {
+        $alerts = [];
+    }
+    
+    // Filter by alert type if specified
+    if ($alert_type && !empty($alerts)) {
+        $alerts = array_filter($alerts, function($alert) use ($alert_type) {
+            return isset($alert['alert_type']) && $alert['alert_type'] === $alert_type;
+        });
+        // Re-index array after filtering
+        $alerts = array_values($alerts);
+    }
+} catch (Exception $e) {
+    error_log("Error fetching alerts: " . $e->getMessage());
+    $alerts = [];
+}
+
+// Get alert statistics
+try {
+    $stats = get_alert_statistics();
+    // Ensure stats has default values
+    if (!is_array($stats)) {
+        $stats = [
+            'total_active' => 0,
+            'urgent' => 0,
+            'high' => 0,
+            'overdue' => 0
+        ];
+    }
+} catch (Exception $e) {
+    error_log("Error fetching alert statistics: " . $e->getMessage());
+    $stats = [
+        'total_active' => 0,
+        'urgent' => 0,
+        'high' => 0,
+        'overdue' => 0
+    ];
+}
+?>
+
+<div class="alerts-modern">
+    <!-- Page Header -->
+    <div class="page-header-modern">
+        <div class="page-title-modern">
+            <h1 class="page-title-main">Employee Alerts</h1>
+            <p class="page-subtitle-modern">Monitor and manage employee alerts and notifications</p>
+        </div>
+        <div class="page-actions-modern">
+            <a href="?page=add_alert" class="btn btn-primary-modern">
+                <i class="fas fa-plus me-2"></i>Add New Alert
+            </a>
+        </div>
+    </div>
+
+    <!-- Alert Statistics -->
+    <div class="summary-cards-modern mb-4">
+        <div class="card stat-card-modern h-100">
+            <div class="card-body-modern">
+                <div class="stat-header">
+                    <span class="stat-label">Total Active</span>
+                    <i class="fas fa-bell stat-icon"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 class="stat-number text-primary"><?php echo htmlspecialchars($stats['total_active'] ?? 0); ?></h3>
+                    <span class="badge badge-primary-modern">Live</span>
+                </div>
+                <small class="stat-footer">Open alerts</small>
+            </div>
+        </div>
+        
+        <div class="card stat-card-modern h-100">
+            <div class="card-body-modern">
+                <div class="stat-header">
+                    <span class="stat-label">Urgent</span>
+                    <i class="fas fa-exclamation-triangle stat-icon text-danger"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 class="stat-number text-danger"><?php echo htmlspecialchars($stats['urgent'] ?? 0); ?></h3>
+                    <span class="badge badge-danger-modern">Action</span>
+                </div>
+                <small class="stat-footer">Requires attention</small>
+            </div>
+        </div>
+        
+        <div class="card stat-card-modern h-100">
+            <div class="card-body-modern">
+                <div class="stat-header">
+                    <span class="stat-label">High Priority</span>
+                    <i class="fas fa-exclamation-circle stat-icon text-warning"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 class="stat-number text-warning"><?php echo htmlspecialchars($stats['high'] ?? 0); ?></h3>
+                    <span class="badge badge-warning-modern">Monitor</span>
+                </div>
+                <small class="stat-footer">Escalated</small>
+            </div>
+        </div>
+        
+        <div class="card stat-card-modern h-100">
+            <div class="card-body-modern">
+                <div class="stat-header">
+                    <span class="stat-label">Overdue</span>
+                    <i class="fas fa-clock stat-icon text-danger"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 class="stat-number text-danger"><?php echo htmlspecialchars($stats['overdue'] ?? 0); ?></h3>
+                    <span class="badge badge-danger-modern">Urgent</span>
+                </div>
+                <small class="stat-footer">Past due</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alerts Card -->
+    <div class="card alerts-card-modern">
+        <div class="card-header-modern">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 card-title-modern"><i class="fas fa-bell me-2"></i>Employee Alerts</h5>
+                <div class="page-actions-modern">
+                    <button class="btn btn-primary-modern btn-sm" data-bs-toggle="modal" data-bs-target="#addAlertModal">
+                        <i class="fas fa-plus me-2"></i>Add Alert
+                    </button>
+                    <button class="btn btn-outline-modern btn-sm" onclick="generateLicenseAlerts()">
+                        <i class="fas fa-sync me-2"></i>Generate License Alerts
+                    </button>
+                </div>
+            </div>
+        </div>
+            <div class="card-body">
+                <!-- Filter Section -->
+                <div class="filter-section mb-4">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <label for="statusFilter" class="form-label">Status</label>
+                            <select class="form-select" id="statusFilter" onchange="filterAlerts()">
+                                <option value="active" <?php echo $status === 'active' ? 'selected' : ''; ?>>Active</option>
+                                <option value="acknowledged" <?php echo $status === 'acknowledged' ? 'selected' : ''; ?>>Acknowledged</option>
+                                <option value="resolved" <?php echo $status === 'resolved' ? 'selected' : ''; ?>>Resolved</option>
+                                <option value="dismissed" <?php echo $status === 'dismissed' ? 'selected' : ''; ?>>Dismissed</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="priorityFilter" class="form-label">Priority</label>
+                            <select class="form-select" id="priorityFilter" onchange="filterAlerts()">
+                                <option value="">All Priorities</option>
+                                <option value="urgent" <?php echo $priority === 'urgent' ? 'selected' : ''; ?>>Urgent</option>
+                                <option value="high" <?php echo $priority === 'high' ? 'selected' : ''; ?>>High</option>
+                                <option value="medium" <?php echo $priority === 'medium' ? 'selected' : ''; ?>>Medium</option>
+                                <option value="low" <?php echo $priority === 'low' ? 'selected' : ''; ?>>Low</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="typeFilter" class="form-label">Alert Type</label>
+                            <select class="form-select" id="typeFilter" onchange="filterAlerts()">
+                                <option value="">All Types</option>
+                                <option value="license_expiry" <?php echo $alert_type === 'license_expiry' ? 'selected' : ''; ?>>License Expiry</option>
+                                <option value="document_expiry" <?php echo $alert_type === 'document_expiry' ? 'selected' : ''; ?>>Document Expiry</option>
+                                <option value="missing_document" <?php echo $alert_type === 'missing_document' ? 'selected' : ''; ?>>Missing Document</option>
+                                <option value="contract_expiry" <?php echo $alert_type === 'contract_expiry' ? 'selected' : ''; ?>>Contract Expiry</option>
+                                <option value="training_due" <?php echo $alert_type === 'training_due' ? 'selected' : ''; ?>>Training Due</option>
+                                <option value="medical_expiry" <?php echo $alert_type === 'medical_expiry' ? 'selected' : ''; ?>>Medical Expiry</option>
+                                <option value="other" <?php echo $alert_type === 'other' ? 'selected' : ''; ?>>Other</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">&nbsp;</label>
+                            <button class="btn btn-outline-secondary w-100" onclick="clearFilters()">
+                                <i class="fas fa-times me-2"></i>Clear Filters
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Alerts Table -->
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Priority</th>
+                                <th>Employee</th>
+                                <th>Alert Type</th>
+                                <th>Title</th>
+                                <th>Due Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (empty($alerts)): ?>
+                            <tr>
+                                <td colspan="7" class="text-center py-5">
+                                    <div class="text-muted">
+                                        <i class="fas fa-bell-slash fa-3x mb-3" style="opacity: 0.3;"></i>
+                                        <h5 class="mb-2">No Alerts Found</h5>
+                                        <p class="mb-3">
+                                            <?php if ($status !== 'active'): ?>
+                                                No <?php echo htmlspecialchars($status); ?> alerts found.
+                                            <?php else: ?>
+                                                There are currently no active alerts in the system.
+                                            <?php endif; ?>
+                                        </p>
+                                        <div class="d-flex gap-2 justify-content-center flex-wrap">
+                                            <a href="?page=add_alert" class="btn btn-primary btn-sm">
+                                                <i class="fas fa-plus me-1"></i>Create Alert
+                                            </a>
+                                            <?php if ($status === 'active'): ?>
+                                            <button class="btn btn-info btn-sm" onclick="generateLicenseAlerts()">
+                                                <i class="fas fa-sync me-1"></i>Generate License Alerts
+                                            </button>
+                                            <?php endif; ?>
+                                            <?php if ($status !== 'active' || $priority || $alert_type): ?>
+                                            <a href="?page=alerts" class="btn btn-outline-secondary btn-sm">
+                                                <i class="fas fa-times me-1"></i>Clear Filters
+                                            </a>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <?php else: ?>
+                                <?php foreach ($alerts as $alert): ?>
+                                <tr class="alert-row" data-id="<?php echo htmlspecialchars($alert['id'] ?? ''); ?>">
+                                    <td>
+                                        <span class="priority-badge <?php echo htmlspecialchars($alert['priority'] ?? 'medium'); ?>">
+                                            <?php echo strtoupper(htmlspecialchars($alert['priority'] ?? 'medium')); ?>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div>
+                                            <strong><?php echo htmlspecialchars(($alert['surname'] ?? '') . ', ' . ($alert['first_name'] ?? '') . ' ' . ($alert['middle_name'] ?? '')); ?></strong>
+                                            <br>
+                                            <small class="text-muted">#<?php echo htmlspecialchars($alert['employee_no'] ?? 'N/A'); ?> - <?php echo htmlspecialchars($alert['post'] ?? 'Unassigned'); ?></small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info text-white">
+                                            <?php echo ucwords(str_replace('_', ' ', htmlspecialchars($alert['alert_type'] ?? 'other'))); ?>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div>
+                                            <strong><?php echo htmlspecialchars($alert['title'] ?? 'No Title'); ?></strong>
+                                            <?php if (!empty($alert['description'])): ?>
+                                            <br>
+                                            <small class="text-muted"><?php echo htmlspecialchars(substr($alert['description'], 0, 100)) . (strlen($alert['description']) > 100 ? '...' : ''); ?></small>
+                                            <?php endif; ?>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <?php if (!empty($alert['due_date'])): ?>
+                                            <?php 
+                                            try {
+                                                $due_date = new DateTime($alert['due_date']);
+                                                $today = new DateTime();
+                                                $is_overdue = $due_date < $today;
+                                                $today_copy = new DateTime();
+                                                $is_due_soon = $due_date <= $today_copy->modify('+7 days');
+                                            } catch (Exception $e) {
+                                                $is_overdue = false;
+                                                $is_due_soon = false;
+                                            }
+                                            ?>
+                                            <span class="text-<?php echo $is_overdue ? 'danger' : ($is_due_soon ? 'warning' : 'success'); ?>">
+                                                <?php echo htmlspecialchars($alert['due_date'] ? date('M j, Y', strtotime($alert['due_date'])) : 'N/A'); ?>
+                                            </span>
+                                            <?php if ($is_overdue): ?>
+                                            <br><small class="text-danger">Overdue</small>
+                                            <?php elseif ($is_due_soon): ?>
+                                            <br><small class="text-warning">Due Soon</small>
+                                            <?php endif; ?>
+                                        <?php else: ?>
+                                            <span class="text-muted">No due date</span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td>
+                                        <span class="alert-badge <?php echo htmlspecialchars($alert['status'] ?? 'active'); ?>">
+                                            <?php echo ucfirst(htmlspecialchars($alert['status'] ?? 'active')); ?>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group-modern" role="group">
+                                            <?php if (($alert['status'] ?? '') === 'active'): ?>
+                                            <button class="btn btn-action-modern btn-info-modern" onclick="acknowledgeAlert(<?php echo htmlspecialchars($alert['id'] ?? 0); ?>)" title="Acknowledge">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                            <button class="btn btn-action-modern btn-success-modern" onclick="resolveAlert(<?php echo htmlspecialchars($alert['id'] ?? 0); ?>)" title="Resolve">
+                                                <i class="fas fa-check-double"></i>
+                                            </button>
+                                            <?php endif; ?>
+                                            <button class="btn btn-action-modern btn-secondary-modern" onclick="dismissAlert(<?php echo htmlspecialchars($alert['id'] ?? 0); ?>)" title="Dismiss">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                            <button class="btn btn-action-modern btn-primary-modern" onclick="viewAlert(<?php echo htmlspecialchars($alert['id'] ?? 0); ?>)" title="View Details">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    <!-- Audit Trail Section -->
+    <div class="card alerts-card-modern mt-4">
+        <div class="card-header-modern">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 card-title-modern"><i class="fas fa-history me-2"></i>Audit Trail</h5>
+                <div class="page-actions-modern">
+                    <button class="btn btn-outline-modern btn-sm" onclick="refreshAuditTrail()">
+                        <i class="fas fa-sync me-1"></i>Refresh
+                    </button>
+                    <button class="btn btn-outline-modern btn-sm" onclick="exportAuditTrail()">
+                        <i class="fas fa-download me-1"></i>Export
+                    </button>
+                </div>
+            </div>
+        </div>
+            <div class="card-body">
+                <!-- Audit Trail Filters -->
+                <div class="filter-section mb-4">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <label for="auditActionFilter" class="form-label">Action</label>
+                            <select class="form-select form-select-sm" id="auditActionFilter" onchange="filterAuditTrail()">
+                                <option value="" <?php echo $audit_action === '' ? 'selected' : ''; ?>>All Actions</option>
+                                <option value="INSERT" <?php echo $audit_action === 'INSERT' ? 'selected' : ''; ?>>Created</option>
+                                <option value="UPDATE" <?php echo $audit_action === 'UPDATE' ? 'selected' : ''; ?>>Updated</option>
+                                <option value="DELETE" <?php echo $audit_action === 'DELETE' ? 'selected' : ''; ?>>Deleted</option>
+                                <option value="Alert" <?php echo $audit_action === 'Alert' ? 'selected' : ''; ?>>Alert Actions</option>
+                                <option value="Employee" <?php echo $audit_action === 'Employee' ? 'selected' : ''; ?>>Employee Actions</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="auditTableFilter" class="form-label">Table</label>
+                            <select class="form-select form-select-sm" id="auditTableFilter" onchange="filterAuditTrail()">
+                                <option value="" <?php echo $audit_table === '' ? 'selected' : ''; ?>>All Tables</option>
+                                <option value="employees" <?php echo $audit_table === 'employees' ? 'selected' : ''; ?>>Employees</option>
+                                <option value="employee_alerts" <?php echo $audit_table === 'employee_alerts' ? 'selected' : ''; ?>>Alerts</option>
+                                <option value="posts" <?php echo $audit_table === 'posts' ? 'selected' : ''; ?>>Posts</option>
+                                <option value="users" <?php echo $audit_table === 'users' ? 'selected' : ''; ?>>Users</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <label for="auditDateFrom" class="form-label">Date From</label>
+                            <input type="date" class="form-control form-control-sm" id="auditDateFrom" value="<?php echo htmlspecialchars($audit_date_from); ?>" onchange="filterAuditTrail()">
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <label for="auditDateTo" class="form-label">Date To</label>
+                            <input type="date" class="form-control form-control-sm" id="auditDateTo" value="<?php echo htmlspecialchars($audit_date_to); ?>" onchange="filterAuditTrail()">
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <label class="form-label">&nbsp;</label>
+                            <button class="btn btn-outline-secondary btn-sm w-100" onclick="clearAuditFilters()">
+                                <i class="fas fa-times me-1"></i>Clear
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Audit Trail Table -->
+                <div class="table-responsive">
+                    <table class="table table-hover table-sm">
+                        <thead>
+                            <tr>
+                                <th style="width: 5%;"></th>
+                                <th style="width: 12%;">Timestamp</th>
+                                <th style="width: 12%;">User</th>
+                                <th style="width: 8%;">Action</th>
+                                <th style="width: 10%;">Table</th>
+                                <th style="width: 15%;">Record</th>
+                                <th style="width: 25%;">Changes</th>
+                                <th style="width: 8%;">IP Address</th>
+                                <th style="width: 5%;">Details</th>
+                            </tr>
+                        </thead>
+                        <tbody id="auditTrailBody">
+                            <?php
+                            // Get audit trail filters
+                            $audit_filters = [
+                                'action' => $audit_action,
+                                'table_name' => $audit_table,
+                                'date_from' => $audit_date_from,
+                                'date_to' => $audit_date_to
+                            ];
+                            
+                            // Get audit logs (check if function exists and table exists)
+                            $audit_logs = [];
+                            if (function_exists('get_audit_logs')) {
+                                try {
+                                    $audit_logs = get_audit_logs($audit_filters, 50, 0);
+                                } catch (Exception $e) {
+                                    // Table might not exist yet
+                                    error_log("Audit logs error: " . $e->getMessage());
+                                }
+                            }
+                            
+                            if (empty($audit_logs)):
+                            ?>
+                            <tr>
+                                <td colspan="7" class="text-center py-4">
+                                    <div class="text-muted">
+                                        <i class="fas fa-inbox fa-2x mb-2"></i>
+                                        <p class="mb-0">No audit logs found</p>
+                                        <small>Audit logs will appear here as system activities occur</small>
+                                    </div>
+                                </td>
+                            </tr>
+                            <?php else: ?>
+                                <?php foreach ($audit_logs as $log): ?>
+                                <tr>
+                                    <td>
+                                        <small><?php echo date('M j, Y', strtotime($log['created_at'])); ?></small><br>
+                                        <small class="text-muted"><?php echo date('H:i:s', strtotime($log['created_at'])); ?></small>
+                                    </td>
+                                    <td>
+                                        <?php if ($log['user_name']): ?>
+                                            <strong><?php echo htmlspecialchars($log['user_name']); ?></strong><br>
+                                            <small class="text-muted"><?php echo htmlspecialchars($log['username'] ?? ''); ?></small>
+                                        <?php else: ?>
+                                            <span class="text-muted">System</span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-<?php 
+                                            echo $log['action'] === 'INSERT' ? 'success' : 
+                                                ($log['action'] === 'UPDATE' ? 'info' : 
+                                                ($log['action'] === 'DELETE' ? 'danger' : 'secondary')); 
+                                        ?>">
+                                            <?php echo htmlspecialchars($log['action']); ?>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <code><?php echo htmlspecialchars($log['table_name'] ?? 'N/A'); ?></code>
+                                    </td>
+                                    <td>
+                                        <?php if ($log['record_id']): ?>
+                                            <span class="badge bg-light text-dark">#<?php echo $log['record_id']; ?></span>
+                                        <?php else: ?>
+                                            <span class="text-muted">-</span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td>
+                                        <div class="audit-details">
+                                            <?php
+                                            $old = null;
+                                            $new = null;
+                                            
+                                            if ($log['old_values']) {
+                                                $old = is_string($log['old_values']) ? json_decode($log['old_values'], true) : $log['old_values'];
+                                            }
+                                            if ($log['new_values']) {
+                                                $new = is_string($log['new_values']) ? json_decode($log['new_values'], true) : $log['new_values'];
+                                            }
+                                            
+                                            if ($old || $new):
+                                            ?>
+                                                <?php if ($old): ?>
+                                                <div class="mb-1">
+                                                    <small class="text-danger"><strong>Old:</strong></small>
+                                                    <small class="text-muted">
+                                                        <?php 
+                                                        $old_str = [];
+                                                        foreach ($old as $key => $value) {
+                                                            if ($value !== null) {
+                                                                $old_str[] = "<strong>" . htmlspecialchars($key) . ":</strong> " . htmlspecialchars($value);
+                                                            }
+                                                        }
+                                                        echo implode(', ', $old_str);
+                                                        ?>
+                                                    </small>
+                                                </div>
+                                                <?php endif; ?>
+                                                
+                                                <?php if ($new): ?>
+                                                <div>
+                                                    <small class="text-success"><strong>New:</strong></small>
+                                                    <small class="text-muted">
+                                                        <?php 
+                                                        $new_str = [];
+                                                        foreach ($new as $key => $value) {
+                                                            if ($value !== null) {
+                                                                $new_str[] = "<strong>" . htmlspecialchars($key) . ":</strong> " . htmlspecialchars($value);
+                                                            }
+                                                        }
+                                                        echo implode(', ', $new_str);
+                                                        ?>
+                                                    </small>
+                                                </div>
+                                                <?php endif; ?>
+                                            <?php else: ?>
+                                                <small class="text-muted"><?php echo htmlspecialchars($log['action']); ?></small>
+                                            <?php endif; ?>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <small class="text-muted"><?php echo htmlspecialchars($log['ip_address'] ?? 'N/A'); ?></small>
+                                    </td>
+                                </tr>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Audit Trail Pagination -->
+                <?php if (!empty($audit_logs)): ?>
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                    <div>
+                        <small class="text-muted">Showing <?php echo count($audit_logs); ?> recent audit logs</small>
+                    </div>
+                    <div>
+                        <button class="btn btn-sm btn-outline-primary" onclick="loadMoreAuditLogs()">
+                            <i class="fas fa-chevron-down me-1"></i>Load More
+                        </button>
+                    </div>
+                </div>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- Add Alert Modal -->
+<div class="modal fade" id="addAlertModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add New Alert</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="?page=add_alert">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="employee_id" class="form-label">Employee *</label>
+                            <select class="form-select" id="employee_id" name="employee_id" required>
+                                <option value="">Select Employee</option>
+                                <?php
+                                $employees = get_employees();
+                                foreach ($employees as $employee) {
+                                    echo '<option value="' . $employee['id'] . '">' . 
+                                         htmlspecialchars($employee['surname'] . ', ' . $employee['first_name'] . ' ' . ($employee['middle_name'] ?? '')) . 
+                                         ' (#' . $employee['employee_no'] . ')</option>';
+                                }
+                                ?>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="alert_type" class="form-label">Alert Type *</label>
+                            <select class="form-select" id="alert_type" name="alert_type" required>
+                                <option value="">Select Type</option>
+                                <option value="license_expiry">License Expiry</option>
+                                <option value="document_expiry">Document Expiry</option>
+                                <option value="missing_document">Missing Document</option>
+                                <option value="contract_expiry">Contract Expiry</option>
+                                <option value="training_due">Training Due</option>
+                                <option value="medical_expiry">Medical Expiry</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="priority" class="form-label">Priority *</label>
+                            <select class="form-select" id="priority" name="priority" required>
+                                <option value="low">Low</option>
+                                <option value="medium" selected>Medium</option>
+                                <option value="high">High</option>
+                                <option value="urgent">Urgent</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="due_date" class="form-label">Due Date</label>
+                            <input type="date" class="form-control" id="due_date" name="due_date">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Title *</label>
+                        <input type="text" class="form-control" id="title" name="title" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Alert</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function filterAlerts() {
+    const status = document.getElementById('statusFilter').value;
+    const priority = document.getElementById('priorityFilter').value;
+    const type = document.getElementById('typeFilter').value;
+    
+    let url = '?page=alerts';
+    const params = [];
+    
+    if (status) params.push('status=' + status);
+    if (priority) params.push('priority=' + priority);
+    if (type) params.push('alert_type=' + type);
+    
+    if (params.length > 0) {
+        url += '&' + params.join('&');
+    }
+    
+    window.location.href = url;
+}
+
+function clearFilters() {
+    window.location.href = '?page=alerts';
+}
+
+function acknowledgeAlert(id) {
+    if (confirm('Are you sure you want to acknowledge this alert?')) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.innerHTML = '<input type="hidden" name="action" value="acknowledge">' +
+                        '<input type="hidden" name="alert_id" value="' + id + '">';
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+function resolveAlert(id) {
+    if (confirm('Are you sure you want to resolve this alert?')) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.innerHTML = '<input type="hidden" name="action" value="resolve">' +
+                        '<input type="hidden" name="alert_id" value="' + id + '">';
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+function dismissAlert(id) {
+    if (confirm('Are you sure you want to dismiss this alert?')) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.innerHTML = '<input type="hidden" name="action" value="dismiss">' +
+                        '<input type="hidden" name="alert_id" value="' + id + '">';
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+function viewAlert(id) {
+    // Fetch alert details and show in modal
+    fetch(`?page=alerts&action=get_alert&id=${id}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success && data.alert) {
+                const alert = data.alert;
+                document.getElementById('viewAlertTitle').textContent = alert.title || 'Alert Details';
+                document.getElementById('viewAlertEmployee').textContent = (alert.surname || '') + ', ' + (alert.first_name || '') + ' ' + (alert.middle_name || '');
+                document.getElementById('viewAlertType').textContent = (alert.alert_type || '').replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                document.getElementById('viewAlertPriority').textContent = (alert.priority || 'medium').toUpperCase();
+                document.getElementById('viewAlertPriority').className = 'badge priority-badge ' + (alert.priority || 'medium');
+                document.getElementById('viewAlertStatus').textContent = (alert.status || 'active').charAt(0).toUpperCase() + (alert.status || 'active').slice(1);
+                document.getElementById('viewAlertStatus').className = 'badge alert-badge ' + (alert.status || 'active');
+                document.getElementById('viewAlertDueDate').textContent = alert.due_date ? new Date(alert.due_date).toLocaleDateString() : 'No due date';
+                document.getElementById('viewAlertDescription').textContent = alert.description || 'No description provided';
+                document.getElementById('viewAlertCreated').textContent = alert.created_at ? new Date(alert.created_at).toLocaleString() : 'N/A';
+                
+                const modal = new bootstrap.Modal(document.getElementById('viewAlertModal'));
+                modal.show();
+            } else {
+                alert('Error loading alert details: ' + (data.message || 'Unknown error'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error loading alert details. Please try again.');
+        });
+}
+
+function generateLicenseAlerts() {
+    if (confirm('Generate automatic license expiry alerts for all employees with licenses expiring in the next 30 days?')) {
+        window.location.href = '?page=alerts&action=generate_license_alerts';
+    }
+}
+
+// Audit Trail Functions
+function filterAuditTrail() {
+    const action = document.getElementById('auditActionFilter').value;
+    const table = document.getElementById('auditTableFilter').value;
+    const dateFrom = document.getElementById('auditDateFrom').value;
+    const dateTo = document.getElementById('auditDateTo').value;
+    
+    let url = '?page=alerts';
+    const params = [];
+    
+    // Keep existing alert filters
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('status')) params.push('status=' + urlParams.get('status'));
+    if (urlParams.get('priority')) params.push('priority=' + urlParams.get('priority'));
+    if (urlParams.get('alert_type')) params.push('alert_type=' + urlParams.get('alert_type'));
+    
+    // Add audit filters
+    if (action) params.push('audit_action=' + action);
+    if (table) params.push('audit_table=' + table);
+    if (dateFrom) params.push('audit_date_from=' + dateFrom);
+    if (dateTo) params.push('audit_date_to=' + dateTo);
+    
+    if (params.length > 0) {
+        url += '&' + params.join('&');
+    }
+    
+    window.location.href = url;
+}
+
+function clearAuditFilters() {
+    const urlParams = new URLSearchParams(window.location.search);
+    let url = '?page=alerts';
+    
+    // Keep alert filters, remove audit filters
+    if (urlParams.get('status')) url += '&status=' + urlParams.get('status');
+    if (urlParams.get('priority')) url += '&priority=' + urlParams.get('priority');
+    if (urlParams.get('alert_type')) url += '&alert_type=' + urlParams.get('alert_type');
+    
+    window.location.href = url;
+}
+
+function refreshAuditTrail() {
+    // Scroll to audit trail section and reload
+    document.getElementById('auditTrailBody').scrollIntoView({ behavior: 'smooth' });
+    setTimeout(() => {
+        filterAuditTrail();
+    }, 300);
+}
+
+function exportAuditTrail() {
+    // Export audit trail to CSV
+    const table = document.querySelector('#auditTrailBody').closest('table');
+    let csv = 'Timestamp,User,Action,Table,Record ID,Details,IP Address\n';
+    
+    const rows = table.querySelectorAll('tbody tr');
+    rows.forEach(row => {
+        const cells = row.querySelectorAll('td');
+        if (cells.length >= 7) {
+            const timestamp = cells[0].textContent.trim().replace(/\n/g, ' ');
+            const user = cells[1].textContent.trim().replace(/\n/g, ' ');
+            const action = cells[2].textContent.trim();
+            const tableName = cells[3].textContent.trim();
+            const recordId = cells[4].textContent.trim();
+            const details = cells[5].textContent.trim();
+            const ip = cells[6].textContent.trim();
+            
+            csv += `"${timestamp}","${user}","${action}","${tableName}","${recordId}","${details}","${ip}"\n`;
+        }
+    });
+    
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `audit_trail_${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+}
+
+function loadMoreAuditLogs() {
+    // This would load more audit logs via AJAX
+    alert('Load more functionality - to be implemented with pagination');
+}
+</script>
+
+<style>
+/* Modern Alerts Page Styling */
+.alerts-modern {
+    padding: 1rem 2.5rem 2rem 2.5rem;
+    max-width: 100%;
+    overflow-x: hidden;
+    background: #f8fafc;
+    min-height: 100vh;
+}
+
+/* Hide the main header with black background */
+.main-content .header {
+    display: none !important;
+}
+
+/* Page Header */
+.page-header-modern {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+    margin-top: 0;
+    padding-top: 0;
+}
+
+.page-title-modern {
+    flex: 1;
+}
+
+.page-title-main {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 0.5rem 0;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+}
+
+.page-subtitle-modern {
+    color: #64748b;
+    font-size: 0.875rem;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.page-actions-modern {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+/* Modern Buttons */
+.btn-primary-modern {
+    background: linear-gradient(135deg, #1fb2d5 0%, #0ea5e9 100%);
+    color: #ffffff;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(31, 178, 213, 0.25);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+}
+
+.btn-primary-modern:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(31, 178, 213, 0.35);
+    background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+    color: #ffffff;
+}
+
+.btn-outline-modern {
+    border: 1.5px solid #e2e8f0;
+    color: #475569;
+    background: #ffffff;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+}
+
+.btn-outline-modern:hover {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+    color: #334155;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* Summary Cards */
+.summary-cards-modern {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.25rem;
+    margin-bottom: 1.5rem;
+}
+
+.stat-card-modern {
+    background: #ffffff;
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.04);
+    transition: all 0.2s ease;
+    overflow: hidden;
+}
+
+.stat-card-modern:hover {
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08), 0 8px 16px rgba(0, 0, 0, 0.06);
+    transform: translateY(-2px);
+}
+
+.card-body-modern {
+    padding: 1.5rem;
+}
+
+.stat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.stat-label {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.stat-icon {
+    font-size: 1.125rem;
+    color: #94a3b8;
+}
+
+.stat-content {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+    line-height: 1;
+    letter-spacing: -0.02em;
+}
+
+.stat-footer {
+    font-size: 0.8125rem;
+    color: #94a3b8;
+    display: block;
+    margin-top: 0.5rem;
+}
+
+/* Badges */
+.badge-primary-modern,
+.badge-danger-modern,
+.badge-warning-modern {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.375rem 0.75rem;
+    border-radius: 6px;
+    letter-spacing: 0.01em;
+}
+
+.badge-primary-modern {
+    background: #dbeafe;
+    color: #2563eb;
+}
+
+.badge-danger-modern {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.badge-warning-modern {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+/* Cards */
+.alerts-card-modern {
+    background: #ffffff;
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.04);
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+    transition: box-shadow 0.2s ease;
+}
+
+.alerts-card-modern:hover {
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08), 0 8px 16px rgba(0, 0, 0, 0.06);
+}
+
+.card-header-modern {
+    padding: 1rem 1.5rem;
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.card-title-modern {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin: 0;
+    letter-spacing: -0.01em;
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+.audit-details {
+    max-width: 400px;
+    font-size: 0.75rem;
+}
+
+.audit-details strong {
+    font-weight: 600;
+}
+
+.table-sm td {
+    padding: 0.5rem;
+    vertical-align: middle;
+}
+
+/* Alerts Table Styling */
+.table-responsive {
+    border-radius: 8px;
+    overflow: hidden;
+    background: #ffffff;
+}
+
+.table thead th {
+    background-color: #f8fafc;
+    border-bottom: 2px solid #e2e8f0;
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 1rem 1.25rem;
+    white-space: nowrap;
+    color: #64748b;
+}
+
+.table tbody tr {
+    border-bottom: 1px solid #f1f5f9;
+    transition: all 0.2s ease;
+}
+
+.table tbody tr:hover {
+    background-color: #f8fafc;
+    transform: translateX(2px);
+}
+
+.table tbody td {
+    padding: 1rem 1.25rem;
+    vertical-align: middle;
+    color: #475569;
+    font-size: 0.875rem;
+}
+
+/* Empty State Styling */
+.table tbody td.text-center {
+    padding: 3rem 1rem;
+}
+
+.table tbody td.text-center i {
+    display: block;
+    margin-bottom: 1rem;
+}
+
+/* Badge Styling */
+.badge.bg-info {
+    background-color: #0ea5e9 !important;
+    color: white !important;
+}
+
+/* Priority Badges */
+.priority-badge {
+    padding: 0.375rem 0.75rem;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.75rem;
+    letter-spacing: 0.01em;
+    display: inline-block;
+}
+
+.priority-badge.urgent {
+    background-color: #fee2e2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+}
+
+.priority-badge.high {
+    background-color: #fef3c7;
+    color: #d97706;
+    border: 1px solid #fde68a;
+}
+
+.priority-badge.medium {
+    background-color: #dbeafe;
+    color: #2563eb;
+    border: 1px solid #bfdbfe;
+}
+
+.priority-badge.low {
+    background-color: #f1f5f9;
+    color: #64748b;
+    border: 1px solid #e2e8f0;
+}
+
+/* Alert Status Badges */
+.alert-badge {
+    padding: 0.375rem 0.75rem;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.75rem;
+    letter-spacing: 0.01em;
+    display: inline-block;
+}
+
+.alert-badge.active {
+    background-color: #fee2e2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+}
+
+.alert-badge.acknowledged {
+    background-color: #dbeafe;
+    color: #2563eb;
+    border: 1px solid #bfdbfe;
+}
+
+.alert-badge.resolved {
+    background-color: #dcfce7;
+    color: #16a34a;
+    border: 1px solid #bbf7d0;
+}
+
+.alert-badge.dismissed {
+    background-color: #f1f5f9;
+    color: #64748b;
+    border: 1px solid #e2e8f0;
+}
+
+/* Button Group Spacing */
+.btn-group .btn {
+    margin-right: 0.25rem;
+}
+
+.btn-group .btn:last-child {
+    margin-right: 0;
+}
+
+/* Action Buttons */
+.btn-group-modern {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.btn-action-modern {
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    padding: 0.375rem 0.75rem;
+    font-size: 0.8125rem;
+    border: 1.5px solid;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+}
+
+.btn-info-modern {
+    background: #eff6ff;
+    border-color: #bfdbfe;
+    color: #2563eb;
+}
+
+.btn-info-modern:hover {
+    background: #dbeafe;
+    border-color: #93c5fd;
+    color: #1d4ed8;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2);
+}
+
+.btn-success-modern {
+    background: #dcfce7;
+    border-color: #bbf7d0;
+    color: #16a34a;
+}
+
+.btn-success-modern:hover {
+    background: #bbf7d0;
+    border-color: #86efac;
+    color: #15803d;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(22, 163, 74, 0.2);
+}
+
+.btn-secondary-modern {
+    background: #f1f5f9;
+    border-color: #e2e8f0;
+    color: #64748b;
+}
+
+.btn-secondary-modern:hover {
+    background: #e2e8f0;
+    border-color: #cbd5e1;
+    color: #475569;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.btn-action-modern.btn-primary-modern {
+    background: linear-gradient(135deg, #1fb2d5 0%, #0ea5e9 100%);
+    border-color: #1fb2d5;
+    color: #ffffff;
+    box-shadow: 0 2px 4px rgba(31, 178, 213, 0.2);
+}
+
+.btn-action-modern.btn-primary-modern:hover {
+    background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+    border-color: #0ea5e9;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(31, 178, 213, 0.3);
+}
+
+/* Filter Section */
+.filter-section {
+    background: #f8fafc;
+    padding: 1.25rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+}
+
+.filter-section .form-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #334155;
+    margin-bottom: 0.5rem;
+}
+
+.filter-section .form-select,
+.filter-section .form-control {
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+}
+
+.filter-section .form-select:focus,
+.filter-section .form-control:focus {
+    border-color: #1fb2d5;
+    box-shadow: 0 0 0 3px rgba(31, 178, 213, 0.1);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .alerts-modern {
+        padding: 1rem 1rem 2rem 1rem;
+    }
+    
+    .page-header-modern {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+    
+    .page-actions-modern {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+    
+    .summary-cards-modern {
+        grid-template-columns: 1fr;
+    }
+}
+
+</style>
+
+<!-- View Alert Modal -->
+<div class="modal fade" id="viewAlertModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewAlertTitle">Alert Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong>Employee:</strong>
+                        <p id="viewAlertEmployee" class="mb-0"></p>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Alert Type:</strong>
+                        <p id="viewAlertType" class="mb-0"></p>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong>Priority:</strong>
+                        <p class="mb-0"><span id="viewAlertPriority" class="badge"></span></p>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Status:</strong>
+                        <p class="mb-0"><span id="viewAlertStatus" class="badge"></span></p>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong>Due Date:</strong>
+                        <p id="viewAlertDueDate" class="mb-0"></p>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Created:</strong>
+                        <p id="viewAlertCreated" class="mb-0"></p>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <strong>Description:</strong>
+                    <p id="viewAlertDescription" class="mb-0"></p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
