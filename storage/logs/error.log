@@ -1,0 +1,3650 @@
+[2025-12-14 15:59:11] [execute_query] User: hradmin (ID: 25) | IP: ::1
+Error: PDO Error [23000]: SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry 'ROOO-200032094232' for key 'license_no'
+Data: Array
+(
+    [sql] => INSERT INTO employees (employee_no, employee_type, surname, first_name, middle_name, post, license_no, license_exp_date, rlm_exp, date_hired, cp_number, sss_no, pagibig_no, tin_number, philhealth_no, birth_date, height, weight, address, contact_person, relationship, contact_person_address, contact_person_number, blood_type, religion, status, created_by, created_by_name) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    [params] => Array
+        (
+            [0] => 23432
+            [1] => SO
+            [2] => ASDFASDF
+            [3] => ASDFASDF
+            [4] => 
+            [5] => LADY GUARD - OFFICE BUILDING
+            [6] => ROOO-200032094232
+            [7] => 2025-12-14
+            [8] => 
+            [9] => 2025-12-14
+            [10] => 
+            [11] => 23-2343432-2
+            [12] => 3123-2321-3213
+            [13] => 123-432-345-343
+            [14] => 32-321343543-1
+            [15] => 2025-12-14
+            [16] => 
+            [17] => 4324
+            [18] => ASDFASFD
+            [19] => 23423432
+            [20] => Friend
+            [21] => 
+            [22] => 
+            [23] => B-
+            [24] => Sikh
+            [25] => Active
+            [26] => 25
+            [27] => HR Administrator
+        )
+
+    [trace] => #0 C:\xampp\htdocs\projects\goldenz-hr-system\includes\database.php(87): PDOStatement->execute(Array)
+#1 C:\xampp\htdocs\projects\goldenz-hr-system\includes\database.php(251): execute_query('INSERT INTO emp...', Array)
+#2 C:\xampp\htdocs\projects\goldenz-hr-system\pages\add_employee.php(131): add_employee(Array)
+#3 C:\xampp\htdocs\projects\goldenz-hr-system\includes\header.php(114): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\projects\goldenz-hr-system\hr-admin\index.php(36): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /projects/goldenz-hr-system/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2025-12-14 16:01:38] [add_employee_page] User: hradmin (ID: 25) | IP: ::1
+Error: Starting employee creation from form
+Data: Array
+(
+    [post_data] => Array
+        (
+            [employee_no] => 23423
+            [employee_type] => LG
+            [status] => Terminated
+            [surname] => sadf
+            [first_name] => asdfas
+            [middle_name] => asdfasd
+            [birth_date] => 2025-12-15
+            [height] => 
+            [weight] => 23423
+            [blood_type] => B-
+            [religion] => Taoist
+            [address] => asdfasdf
+            [cp_number] => 
+            [contact_person] => 432423
+            [relationship] => Friend
+            [contact_person_number] => 
+            [contact_person_address] => 
+            [contact_person_alt] => 
+            [relationship_alt] => 
+            [contact_person_number_alt] => 
+            [contact_person_address_alt] => 
+            [post] => Security Officer - Field Operations
+            [date_hired] => 2025-12-07
+            [license_no] => ROOO-200032094232
+            [license_exp_date] => 2025-12-14
+            [rlm_exp] => 
+            [sss_no] => 23-2343432-2
+            [pagibig_no] => 3123-2321-3213
+            [tin_number] => 123-432-345-343
+            [philhealth_no] => 32-321343543-1
+            [hr_remarks] => 
+            [status_summary] => 
+        )
+
+    [files] => Array
+        (
+            [employee_photo] => Array
+                (
+                    [name] => 
+                    [size] => 0
+                    [error] => 4
+                )
+
+        )
+
+)
+
+File: /projects/goldenz-hr-system/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2025-12-14 16:01:38] [add_employee_page] User: hradmin (ID: 25) | IP: ::1
+Error: Calling add_employee function
+Data: Array
+(
+    [employee_data] => Array
+        (
+            [employee_no] => 23423
+            [employee_type] => LG
+            [surname] => SADF
+            [first_name] => ASDFAS
+            [middle_name] => ASDFASD
+            [post] => SECURITY OFFICER - FIELD OPERATIONS
+            [license_no] => ROOO-200032094232
+            [license_exp_date] => 2025-12-14
+            [rlm_exp] => 
+            [date_hired] => 2025-12-07
+            [cp_number] => 
+            [sss_no] => 23-2343432-2
+            [pagibig_no] => 3123-2321-3213
+            [tin_number] => 123-432-345-343
+            [philhealth_no] => 32-321343543-1
+            [birth_date] => 2025-12-15
+            [height] => 
+            [weight] => 23423
+            [address] => ASDFASDF
+            [contact_person] => 432423
+            [relationship] => Friend
+            [contact_person_address] => 
+            [contact_person_number] => 
+            [blood_type] => B-
+            [religion] => Taoist
+            [status] => Terminated
+            [created_by] => 25
+            [created_by_name] => HR Administrator
+        )
+
+)
+
+File: /projects/goldenz-hr-system/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2025-12-14 16:01:38] [add_employee] User: hradmin (ID: 25) | IP: ::1
+Error: Starting employee creation
+Data: Array
+(
+    [input_data] => Array
+        (
+            [employee_no] => 23423
+            [employee_type] => LG
+            [surname] => SADF
+            [first_name] => ASDFAS
+            [middle_name] => ASDFASD
+            [post] => SECURITY OFFICER - FIELD OPERATIONS
+            [license_no] => ROOO-200032094232
+            [license_exp_date] => 2025-12-14
+            [rlm_exp] => 
+            [date_hired] => 2025-12-07
+            [cp_number] => 
+            [sss_no] => 23-2343432-2
+            [pagibig_no] => 3123-2321-3213
+            [tin_number] => 123-432-345-343
+            [philhealth_no] => 32-321343543-1
+            [birth_date] => 2025-12-15
+            [height] => 
+            [weight] => 23423
+            [address] => ASDFASDF
+            [contact_person] => 432423
+            [relationship] => Friend
+            [contact_person_address] => 
+            [contact_person_number] => 
+            [blood_type] => B-
+            [religion] => Taoist
+            [status] => Terminated
+            [created_by] => 25
+            [created_by_name] => HR Administrator
+        )
+
+)
+
+File: /projects/goldenz-hr-system/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2025-12-14 16:01:38] [add_employee] User: hradmin (ID: 25) | IP: ::1
+Error: Prepared SQL and parameters
+Data: Array
+(
+    [sql] => INSERT INTO employees (employee_no, employee_type, surname, first_name, middle_name, post, license_no, license_exp_date, rlm_exp, date_hired, cp_number, sss_no, pagibig_no, tin_number, philhealth_no, birth_date, height, weight, address, contact_person, relationship, contact_person_address, contact_person_number, blood_type, religion, status, created_by, created_by_name) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    [params_count] => 28
+    [params] => Array
+        (
+            [0] => 23423
+            [1] => LG
+            [2] => SADF
+            [3] => ASDFAS
+            [4] => ASDFASD
+            [5] => SECURITY OFFICER - FIELD OPERATIONS
+            [6] => ROOO-200032094232
+            [7] => 2025-12-14
+            [8] => 
+            [9] => 2025-12-07
+            [10] => 
+            [11] => 23-2343432-2
+            [12] => 3123-2321-3213
+            [13] => 123-432-345-343
+            [14] => 32-321343543-1
+            [15] => 2025-12-15
+            [16] => 
+            [17] => 23423
+            [18] => ASDFASDF
+            [19] => 432423
+            [20] => Friend
+            [21] => 
+            [22] => 
+            [23] => B-
+            [24] => Taoist
+            [25] => Terminated
+            [26] => 25
+            [27] => HR Administrator
+        )
+
+)
+
+File: /projects/goldenz-hr-system/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2025-12-14 16:01:38] [execute_query] User: hradmin (ID: 25) | IP: ::1
+Error: PDO Error [23000]: SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry 'ROOO-200032094232' for key 'license_no'
+Data: Array
+(
+    [sql] => INSERT INTO employees (employee_no, employee_type, surname, first_name, middle_name, post, license_no, license_exp_date, rlm_exp, date_hired, cp_number, sss_no, pagibig_no, tin_number, philhealth_no, birth_date, height, weight, address, contact_person, relationship, contact_person_address, contact_person_number, blood_type, religion, status, created_by, created_by_name) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    [params] => Array
+        (
+            [0] => 23423
+            [1] => LG
+            [2] => SADF
+            [3] => ASDFAS
+            [4] => ASDFASD
+            [5] => SECURITY OFFICER - FIELD OPERATIONS
+            [6] => ROOO-200032094232
+            [7] => 2025-12-14
+            [8] => 
+            [9] => 2025-12-07
+            [10] => 
+            [11] => 23-2343432-2
+            [12] => 3123-2321-3213
+            [13] => 123-432-345-343
+            [14] => 32-321343543-1
+            [15] => 2025-12-15
+            [16] => 
+            [17] => 23423
+            [18] => ASDFASDF
+            [19] => 432423
+            [20] => Friend
+            [21] => 
+            [22] => 
+            [23] => B-
+            [24] => Taoist
+            [25] => Terminated
+            [26] => 25
+            [27] => HR Administrator
+        )
+
+    [trace] => #0 C:\xampp\htdocs\projects\goldenz-hr-system\includes\database.php(87): PDOStatement->execute(Array)
+#1 C:\xampp\htdocs\projects\goldenz-hr-system\includes\database.php(261): execute_query('INSERT INTO emp...', Array)
+#2 C:\xampp\htdocs\projects\goldenz-hr-system\pages\add_employee.php(143): add_employee(Array)
+#3 C:\xampp\htdocs\projects\goldenz-hr-system\includes\header.php(114): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\projects\goldenz-hr-system\hr-admin\index.php(36): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /projects/goldenz-hr-system/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2025-12-14 16:01:38] [add_employee] User: hradmin (ID: 25) | IP: ::1
+Error: Exception caught during employee creation
+Data: Array
+(
+    [error] => Database error: SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry 'ROOO-200032094232' for key 'license_no'
+    [code] => 0
+    [file] => C:\xampp\htdocs\projects\goldenz-hr-system\includes\database.php
+    [line] => 104
+    [trace] => #0 C:\xampp\htdocs\projects\goldenz-hr-system\includes\database.php(261): execute_query('INSERT INTO emp...', Array)
+#1 C:\xampp\htdocs\projects\goldenz-hr-system\pages\add_employee.php(143): add_employee(Array)
+#2 C:\xampp\htdocs\projects\goldenz-hr-system\includes\header.php(114): include('C:\\xampp\\htdocs...')
+#3 C:\xampp\htdocs\projects\goldenz-hr-system\hr-admin\index.php(36): include('C:\\xampp\\htdocs...')
+#4 {main}
+    [sql] => INSERT INTO employees (employee_no, employee_type, surname, first_name, middle_name, post, license_no, license_exp_date, rlm_exp, date_hired, cp_number, sss_no, pagibig_no, tin_number, philhealth_no, birth_date, height, weight, address, contact_person, relationship, contact_person_address, contact_person_number, blood_type, religion, status, created_by, created_by_name) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    [params] => Array
+        (
+            [0] => 23423
+            [1] => LG
+            [2] => SADF
+            [3] => ASDFAS
+            [4] => ASDFASD
+            [5] => SECURITY OFFICER - FIELD OPERATIONS
+            [6] => ROOO-200032094232
+            [7] => 2025-12-14
+            [8] => 
+            [9] => 2025-12-07
+            [10] => 
+            [11] => 23-2343432-2
+            [12] => 3123-2321-3213
+            [13] => 123-432-345-343
+            [14] => 32-321343543-1
+            [15] => 2025-12-15
+            [16] => 
+            [17] => 23423
+            [18] => ASDFASDF
+            [19] => 432423
+            [20] => Friend
+            [21] => 
+            [22] => 
+            [23] => B-
+            [24] => Taoist
+            [25] => Terminated
+            [26] => 25
+            [27] => HR Administrator
+        )
+
+)
+
+File: /projects/goldenz-hr-system/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2025-12-14 16:01:38] [add_employee_page] User: hradmin (ID: 25) | IP: ::1
+Error: add_employee function returned
+Data: Array
+(
+    [result] => false
+)
+
+File: /projects/goldenz-hr-system/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2025-12-14 16:01:38] [add_employee_page] User: hradmin (ID: 25) | IP: ::1
+Error: add_employee returned false - employee creation failed
+Data: Array
+(
+    [employee_data] => Array
+        (
+            [employee_no] => 23423
+            [employee_type] => LG
+            [surname] => SADF
+            [first_name] => ASDFAS
+            [middle_name] => ASDFASD
+            [post] => SECURITY OFFICER - FIELD OPERATIONS
+            [license_no] => ROOO-200032094232
+            [license_exp_date] => 2025-12-14
+            [rlm_exp] => 
+            [date_hired] => 2025-12-07
+            [cp_number] => 
+            [sss_no] => 23-2343432-2
+            [pagibig_no] => 3123-2321-3213
+            [tin_number] => 123-432-345-343
+            [philhealth_no] => 32-321343543-1
+            [birth_date] => 2025-12-15
+            [height] => 
+            [weight] => 23423
+            [address] => ASDFASDF
+            [contact_person] => 432423
+            [relationship] => Friend
+            [contact_person_address] => 
+            [contact_person_number] => 
+            [blood_type] => B-
+            [religion] => Taoist
+            [status] => Terminated
+            [created_by] => 25
+            [created_by_name] => HR Administrator
+        )
+
+    [employee_no] => 23423
+)
+
+File: /projects/goldenz-hr-system/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2025-12-14 16:15:05] [phone_validation] User: hradmin (ID: 25) | IP: ::1
+Error: Validating contact phone number
+Data: Array
+(
+    [original] => 9243243242
+    [cleaned] => 9243243242
+    [length] => 10
+    [matches_pattern] => yes
+)
+
+File: /projects/goldenz-hr-system/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2025-12-14 16:15:05] [phone_validation] User: hradmin (ID: 25) | IP: ::1
+Error: Validating emergency contact number
+Data: Array
+(
+    [original] => 9242342342
+    [cleaned] => 9242342342
+    [length] => 10
+    [matches_pattern] => yes
+)
+
+File: /projects/goldenz-hr-system/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2025-12-14 16:15:05] [add_employee_page] User: hradmin (ID: 25) | IP: ::1
+Error: Starting employee creation from form
+Data: Array
+(
+    [post_data] => Array
+        (
+            [employee_no] => 23423
+            [employee_type] => SG
+            [status] => Terminated
+            [surname] => ASDFSADF
+            [first_name] => SADFSADF
+            [middle_name] => 
+            [birth_date] => 2025-12-14
+            [height] => 5'5"
+            [weight] => 34324
+            [blood_type] => B+
+            [religion] => Taoist
+            [address] => 
+            [cp_number] => 9243243242
+            [contact_person] => 9324324234
+            [relationship] => Guardian
+            [contact_person_number] => 9242342342
+            [contact_person_address] => ASDFSADFSADF
+            [contact_person_alt] => 
+            [relationship_alt] => 
+            [contact_person_number_alt] => 
+            [contact_person_address_alt] => 
+            [post] => LADY GUARD - OFFICE BUILDING
+            [date_hired] => 2025-12-14
+            [license_no] => SDFS-3034234234234
+            [license_exp_date] => 2025-12-14
+            [sss_no] => 23-4324324-3
+            [pagibig_no] => 4234-3242-3432
+            [tin_number] => 324-234-324-324
+            [philhealth_no] => 23-423423423-4
+            [hr_remarks] => 
+            [status_summary] => 
+        )
+
+    [files] => Array
+        (
+            [employee_photo] => Array
+                (
+                    [name] => goodmoral_InocencioJohnAldrin.jpg
+                    [size] => 301039
+                    [error] => 0
+                )
+
+        )
+
+)
+
+File: /projects/goldenz-hr-system/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2025-12-14 16:15:05] [add_employee_page] User: hradmin (ID: 25) | IP: ::1
+Error: Calling add_employee function
+Data: Array
+(
+    [employee_data] => Array
+        (
+            [employee_no] => 23423
+            [employee_type] => SG
+            [surname] => ASDFSADF
+            [first_name] => SADFSADF
+            [middle_name] => 
+            [post] => LADY GUARD - OFFICE BUILDING
+            [license_no] => SDFS-3034234234234
+            [license_exp_date] => 2025-12-14
+            [rlm_exp] => 
+            [date_hired] => 2025-12-14
+            [cp_number] => 9243243242
+            [sss_no] => 23-4324324-3
+            [pagibig_no] => 4234-3242-3432
+            [tin_number] => 324-234-324-324
+            [philhealth_no] => 23-423423423-4
+            [birth_date] => 2025-12-14
+            [height] => 5'5"
+            [weight] => 34324
+            [address] => 
+            [contact_person] => 9324324234
+            [relationship] => Guardian
+            [contact_person_address] => ASDFSADFSADF
+            [contact_person_number] => 9242342342
+            [blood_type] => B+
+            [religion] => Taoist
+            [status] => Terminated
+            [created_by] => 25
+            [created_by_name] => HR Administrator
+        )
+
+)
+
+File: /projects/goldenz-hr-system/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2025-12-14 16:15:05] [add_employee] User: hradmin (ID: 25) | IP: ::1
+Error: Starting employee creation
+Data: Array
+(
+    [input_data] => Array
+        (
+            [employee_no] => 23423
+            [employee_type] => SG
+            [surname] => ASDFSADF
+            [first_name] => SADFSADF
+            [middle_name] => 
+            [post] => LADY GUARD - OFFICE BUILDING
+            [license_no] => SDFS-3034234234234
+            [license_exp_date] => 2025-12-14
+            [rlm_exp] => 
+            [date_hired] => 2025-12-14
+            [cp_number] => 9243243242
+            [sss_no] => 23-4324324-3
+            [pagibig_no] => 4234-3242-3432
+            [tin_number] => 324-234-324-324
+            [philhealth_no] => 23-423423423-4
+            [birth_date] => 2025-12-14
+            [height] => 5'5"
+            [weight] => 34324
+            [address] => 
+            [contact_person] => 9324324234
+            [relationship] => Guardian
+            [contact_person_address] => ASDFSADFSADF
+            [contact_person_number] => 9242342342
+            [blood_type] => B+
+            [religion] => Taoist
+            [status] => Terminated
+            [created_by] => 25
+            [created_by_name] => HR Administrator
+        )
+
+)
+
+File: /projects/goldenz-hr-system/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2025-12-14 16:15:05] [add_employee] User: hradmin (ID: 25) | IP: ::1
+Error: Prepared SQL and parameters
+Data: Array
+(
+    [sql] => INSERT INTO employees (employee_no, employee_type, surname, first_name, middle_name, post, license_no, license_exp_date, rlm_exp, date_hired, cp_number, sss_no, pagibig_no, tin_number, philhealth_no, birth_date, height, weight, address, contact_person, relationship, contact_person_address, contact_person_number, blood_type, religion, status, created_by, created_by_name) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    [params_count] => 28
+    [params] => Array
+        (
+            [0] => 23423
+            [1] => SG
+            [2] => ASDFSADF
+            [3] => SADFSADF
+            [4] => 
+            [5] => LADY GUARD - OFFICE BUILDING
+            [6] => SDFS-3034234234234
+            [7] => 2025-12-14
+            [8] => 
+            [9] => 2025-12-14
+            [10] => 9243243242
+            [11] => 23-4324324-3
+            [12] => 4234-3242-3432
+            [13] => 324-234-324-324
+            [14] => 23-423423423-4
+            [15] => 2025-12-14
+            [16] => 5'5"
+            [17] => 34324
+            [18] => 
+            [19] => 9324324234
+            [20] => Guardian
+            [21] => ASDFSADFSADF
+            [22] => 9242342342
+            [23] => B+
+            [24] => Taoist
+            [25] => Terminated
+            [26] => 25
+            [27] => HR Administrator
+        )
+
+)
+
+File: /projects/goldenz-hr-system/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2025-12-14 16:15:05] [add_employee] User: hradmin (ID: 25) | IP: ::1
+Error: Employee created successfully
+Data: Array
+(
+    [last_insert_id] => 3750
+    [employee_no] => 23423
+)
+
+File: /projects/goldenz-hr-system/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2025-12-14 16:15:05] [add_employee_page] User: hradmin (ID: 25) | IP: ::1
+Error: add_employee function returned
+Data: Array
+(
+    [result] => true
+)
+
+File: /projects/goldenz-hr-system/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2025-12-14 16:17:00] [phone_validation] User: hradmin (ID: 25) | IP: ::1
+Error: Validating contact phone number
+Data: Array
+(
+    [original] => 9243243243
+    [cleaned] => 9243243243
+    [length] => 10
+    [matches_pattern] => yes
+)
+
+File: /projects/goldenz-hr-system/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2025-12-14 16:17:00] [phone_validation] User: hradmin (ID: 25) | IP: ::1
+Error: Validating emergency contact number
+Data: Array
+(
+    [original] => 9424324234
+    [cleaned] => 9424324234
+    [length] => 10
+    [matches_pattern] => yes
+)
+
+File: /projects/goldenz-hr-system/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2025-12-14 16:17:00] [add_employee_page] User: hradmin (ID: 25) | IP: ::1
+Error: Starting employee creation from form
+Data: Array
+(
+    [post_data] => Array
+        (
+            [employee_no] => 24234
+            [employee_type] => SG
+            [status] => Inactive
+            [surname] => SAFASDF
+            [first_name] => SDFASDFSFA
+            [middle_name] => 
+            [birth_date] => 2025-12-08
+            [height] => 5'5"
+            [weight] => 234234
+            [blood_type] => B-
+            [religion] => Taoist
+            [address] => 
+            [cp_number] => 9243243243
+            [contact_person] => 9243243242
+            [relationship] => Sibling
+            [contact_person_number] => 9424324234
+            [contact_person_address] => 
+            [contact_person_alt] => 
+            [relationship_alt] => 
+            [contact_person_number_alt] => 
+            [contact_person_address_alt] => 
+            [post] => LADY GUARD - OFFICE BUILDING
+            [date_hired] => 2025-12-14
+            [license_no] => SDF2-342343232423
+            [license_exp_date] => 2025-12-21
+            [sss_no] => 23-4234324-3
+            [pagibig_no] => 4324-3223-4232
+            [tin_number] => 432-432-432-432
+            [philhealth_no] => 34-323243243-4
+            [hr_remarks] => 
+            [status_summary] => 
+        )
+
+    [files] => Array
+        (
+            [employee_photo] => Array
+                (
+                    [name] => goodmoral_InocencioJohnAldrin.jpg
+                    [size] => 301039
+                    [error] => 0
+                )
+
+        )
+
+)
+
+File: /projects/goldenz-hr-system/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2025-12-14 16:17:00] [add_employee_page] User: hradmin (ID: 25) | IP: ::1
+Error: Calling add_employee function
+Data: Array
+(
+    [employee_data] => Array
+        (
+            [employee_no] => 24234
+            [employee_type] => SG
+            [surname] => SAFASDF
+            [first_name] => SDFASDFSFA
+            [middle_name] => 
+            [post] => LADY GUARD - OFFICE BUILDING
+            [license_no] => SDF2-342343232423
+            [license_exp_date] => 2025-12-21
+            [rlm_exp] => 
+            [date_hired] => 2025-12-14
+            [cp_number] => 9243243243
+            [sss_no] => 23-4234324-3
+            [pagibig_no] => 4324-3223-4232
+            [tin_number] => 432-432-432-432
+            [philhealth_no] => 34-323243243-4
+            [birth_date] => 2025-12-08
+            [height] => 5'5"
+            [weight] => 234234
+            [address] => 
+            [contact_person] => 9243243242
+            [relationship] => Sibling
+            [contact_person_address] => 
+            [contact_person_number] => 9424324234
+            [blood_type] => B-
+            [religion] => Taoist
+            [status] => Inactive
+            [created_by] => 25
+            [created_by_name] => HR Administrator
+        )
+
+)
+
+File: /projects/goldenz-hr-system/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2025-12-14 16:17:00] [add_employee] User: hradmin (ID: 25) | IP: ::1
+Error: Starting employee creation
+Data: Array
+(
+    [input_data] => Array
+        (
+            [employee_no] => 24234
+            [employee_type] => SG
+            [surname] => SAFASDF
+            [first_name] => SDFASDFSFA
+            [middle_name] => 
+            [post] => LADY GUARD - OFFICE BUILDING
+            [license_no] => SDF2-342343232423
+            [license_exp_date] => 2025-12-21
+            [rlm_exp] => 
+            [date_hired] => 2025-12-14
+            [cp_number] => 9243243243
+            [sss_no] => 23-4234324-3
+            [pagibig_no] => 4324-3223-4232
+            [tin_number] => 432-432-432-432
+            [philhealth_no] => 34-323243243-4
+            [birth_date] => 2025-12-08
+            [height] => 5'5"
+            [weight] => 234234
+            [address] => 
+            [contact_person] => 9243243242
+            [relationship] => Sibling
+            [contact_person_address] => 
+            [contact_person_number] => 9424324234
+            [blood_type] => B-
+            [religion] => Taoist
+            [status] => Inactive
+            [created_by] => 25
+            [created_by_name] => HR Administrator
+        )
+
+)
+
+File: /projects/goldenz-hr-system/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2025-12-14 16:17:00] [add_employee] User: hradmin (ID: 25) | IP: ::1
+Error: Prepared SQL and parameters
+Data: Array
+(
+    [sql] => INSERT INTO employees (employee_no, employee_type, surname, first_name, middle_name, post, license_no, license_exp_date, rlm_exp, date_hired, cp_number, sss_no, pagibig_no, tin_number, philhealth_no, birth_date, height, weight, address, contact_person, relationship, contact_person_address, contact_person_number, blood_type, religion, status, created_by, created_by_name) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    [params_count] => 28
+    [params] => Array
+        (
+            [0] => 24234
+            [1] => SG
+            [2] => SAFASDF
+            [3] => SDFASDFSFA
+            [4] => 
+            [5] => LADY GUARD - OFFICE BUILDING
+            [6] => SDF2-342343232423
+            [7] => 2025-12-21
+            [8] => 
+            [9] => 2025-12-14
+            [10] => 9243243243
+            [11] => 23-4234324-3
+            [12] => 4324-3223-4232
+            [13] => 432-432-432-432
+            [14] => 34-323243243-4
+            [15] => 2025-12-08
+            [16] => 5'5"
+            [17] => 234234
+            [18] => 
+            [19] => 9243243242
+            [20] => Sibling
+            [21] => 
+            [22] => 9424324234
+            [23] => B-
+            [24] => Taoist
+            [25] => Inactive
+            [26] => 25
+            [27] => HR Administrator
+        )
+
+)
+
+File: /projects/goldenz-hr-system/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2025-12-14 16:17:00] [add_employee] User: hradmin (ID: 25) | IP: ::1
+Error: Employee created successfully
+Data: Array
+(
+    [last_insert_id] => 3783
+    [employee_no] => 24234
+)
+
+File: /projects/goldenz-hr-system/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2025-12-14 16:17:00] [add_employee_page] User: hradmin (ID: 25) | IP: ::1
+Error: add_employee function returned
+Data: Array
+(
+    [result] => true
+)
+
+File: /projects/goldenz-hr-system/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2025-12-14 16:20:07] [phone_validation] User: hradmin (ID: 25) | IP: ::1
+Error: Validating contact phone number
+Data: Array
+(
+    [original] => 9243243243
+    [cleaned] => 9243243243
+    [length] => 10
+    [matches_pattern] => yes
+)
+
+File: /projects/goldenz-hr-system/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2025-12-14 16:20:07] [phone_validation] User: hradmin (ID: 25) | IP: ::1
+Error: Validating emergency contact number
+Data: Array
+(
+    [original] => 9424324234
+    [cleaned] => 9424324234
+    [length] => 10
+    [matches_pattern] => yes
+)
+
+File: /projects/goldenz-hr-system/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2025-12-14 16:20:07] [add_employee_page] User: hradmin (ID: 25) | IP: ::1
+Error: Starting employee creation from form
+Data: Array
+(
+    [post_data] => Array
+        (
+            [employee_no] => 24234
+            [employee_type] => SG
+            [status] => Inactive
+            [surname] => SAFASDF
+            [first_name] => SDFASDFSFA
+            [middle_name] => 
+            [birth_date] => 2025-12-08
+            [height] => 5'5"
+            [weight] => 234234
+            [blood_type] => B-
+            [religion] => Taoist
+            [address] => 
+            [cp_number] => 9243243243
+            [contact_person] => 9243243242
+            [relationship] => Sibling
+            [contact_person_number] => 9424324234
+            [contact_person_address] => 
+            [contact_person_alt] => 
+            [relationship_alt] => 
+            [contact_person_number_alt] => 
+            [contact_person_address_alt] => 
+            [post] => LADY GUARD - OFFICE BUILDING
+            [date_hired] => 2025-12-14
+            [license_no] => SDF2-342343232423
+            [license_exp_date] => 2025-12-21
+            [sss_no] => 23-4234324-3
+            [pagibig_no] => 4324-3223-4232
+            [tin_number] => 432-432-432-432
+            [philhealth_no] => 34-323243243-4
+            [hr_remarks] => 
+            [status_summary] => 
+        )
+
+    [files] => Array
+        (
+            [employee_photo] => Array
+                (
+                    [name] => goodmoral_InocencioJohnAldrin.jpg
+                    [size] => 301039
+                    [error] => 0
+                )
+
+        )
+
+)
+
+File: /projects/goldenz-hr-system/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2025-12-14 16:20:07] [add_employee_page] User: hradmin (ID: 25) | IP: ::1
+Error: Calling add_employee function
+Data: Array
+(
+    [employee_data] => Array
+        (
+            [employee_no] => 24234
+            [employee_type] => SG
+            [surname] => SAFASDF
+            [first_name] => SDFASDFSFA
+            [middle_name] => 
+            [post] => LADY GUARD - OFFICE BUILDING
+            [license_no] => SDF2-342343232423
+            [license_exp_date] => 2025-12-21
+            [rlm_exp] => 
+            [date_hired] => 2025-12-14
+            [cp_number] => 9243243243
+            [sss_no] => 23-4234324-3
+            [pagibig_no] => 4324-3223-4232
+            [tin_number] => 432-432-432-432
+            [philhealth_no] => 34-323243243-4
+            [birth_date] => 2025-12-08
+            [height] => 5'5"
+            [weight] => 234234
+            [address] => 
+            [contact_person] => 9243243242
+            [relationship] => Sibling
+            [contact_person_address] => 
+            [contact_person_number] => 9424324234
+            [blood_type] => B-
+            [religion] => Taoist
+            [status] => Inactive
+            [created_by] => 25
+            [created_by_name] => HR Administrator
+        )
+
+)
+
+File: /projects/goldenz-hr-system/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2025-12-14 16:20:07] [add_employee] User: hradmin (ID: 25) | IP: ::1
+Error: Starting employee creation
+Data: Array
+(
+    [input_data] => Array
+        (
+            [employee_no] => 24234
+            [employee_type] => SG
+            [surname] => SAFASDF
+            [first_name] => SDFASDFSFA
+            [middle_name] => 
+            [post] => LADY GUARD - OFFICE BUILDING
+            [license_no] => SDF2-342343232423
+            [license_exp_date] => 2025-12-21
+            [rlm_exp] => 
+            [date_hired] => 2025-12-14
+            [cp_number] => 9243243243
+            [sss_no] => 23-4234324-3
+            [pagibig_no] => 4324-3223-4232
+            [tin_number] => 432-432-432-432
+            [philhealth_no] => 34-323243243-4
+            [birth_date] => 2025-12-08
+            [height] => 5'5"
+            [weight] => 234234
+            [address] => 
+            [contact_person] => 9243243242
+            [relationship] => Sibling
+            [contact_person_address] => 
+            [contact_person_number] => 9424324234
+            [blood_type] => B-
+            [religion] => Taoist
+            [status] => Inactive
+            [created_by] => 25
+            [created_by_name] => HR Administrator
+        )
+
+)
+
+File: /projects/goldenz-hr-system/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2025-12-14 16:20:07] [add_employee] User: hradmin (ID: 25) | IP: ::1
+Error: Prepared SQL and parameters
+Data: Array
+(
+    [sql] => INSERT INTO employees (employee_no, employee_type, surname, first_name, middle_name, post, license_no, license_exp_date, rlm_exp, date_hired, cp_number, sss_no, pagibig_no, tin_number, philhealth_no, birth_date, height, weight, address, contact_person, relationship, contact_person_address, contact_person_number, blood_type, religion, status, created_by, created_by_name) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    [params_count] => 28
+    [params] => Array
+        (
+            [0] => 24234
+            [1] => SG
+            [2] => SAFASDF
+            [3] => SDFASDFSFA
+            [4] => 
+            [5] => LADY GUARD - OFFICE BUILDING
+            [6] => SDF2-342343232423
+            [7] => 2025-12-21
+            [8] => 
+            [9] => 2025-12-14
+            [10] => 9243243243
+            [11] => 23-4234324-3
+            [12] => 4324-3223-4232
+            [13] => 432-432-432-432
+            [14] => 34-323243243-4
+            [15] => 2025-12-08
+            [16] => 5'5"
+            [17] => 234234
+            [18] => 
+            [19] => 9243243242
+            [20] => Sibling
+            [21] => 
+            [22] => 9424324234
+            [23] => B-
+            [24] => Taoist
+            [25] => Inactive
+            [26] => 25
+            [27] => HR Administrator
+        )
+
+)
+
+File: /projects/goldenz-hr-system/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2025-12-14 16:20:07] [execute_query] User: hradmin (ID: 25) | IP: ::1
+Error: PDO Error [23000]: SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry 'SDF2-342343232423' for key 'license_no'
+Data: Array
+(
+    [sql] => INSERT INTO employees (employee_no, employee_type, surname, first_name, middle_name, post, license_no, license_exp_date, rlm_exp, date_hired, cp_number, sss_no, pagibig_no, tin_number, philhealth_no, birth_date, height, weight, address, contact_person, relationship, contact_person_address, contact_person_number, blood_type, religion, status, created_by, created_by_name) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    [params] => Array
+        (
+            [0] => 24234
+            [1] => SG
+            [2] => SAFASDF
+            [3] => SDFASDFSFA
+            [4] => 
+            [5] => LADY GUARD - OFFICE BUILDING
+            [6] => SDF2-342343232423
+            [7] => 2025-12-21
+            [8] => 
+            [9] => 2025-12-14
+            [10] => 9243243243
+            [11] => 23-4234324-3
+            [12] => 4324-3223-4232
+            [13] => 432-432-432-432
+            [14] => 34-323243243-4
+            [15] => 2025-12-08
+            [16] => 5'5"
+            [17] => 234234
+            [18] => 
+            [19] => 9243243242
+            [20] => Sibling
+            [21] => 
+            [22] => 9424324234
+            [23] => B-
+            [24] => Taoist
+            [25] => Inactive
+            [26] => 25
+            [27] => HR Administrator
+        )
+
+    [trace] => #0 C:\xampp\htdocs\projects\goldenz-hr-system\includes\database.php(87): PDOStatement->execute(Array)
+#1 C:\xampp\htdocs\projects\goldenz-hr-system\includes\database.php(261): execute_query('INSERT INTO emp...', Array)
+#2 C:\xampp\htdocs\projects\goldenz-hr-system\pages\add_employee.php(168): add_employee(Array)
+#3 C:\xampp\htdocs\projects\goldenz-hr-system\includes\header.php(114): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\projects\goldenz-hr-system\hr-admin\index.php(36): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /projects/goldenz-hr-system/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2025-12-14 16:20:07] [add_employee] User: hradmin (ID: 25) | IP: ::1
+Error: Exception caught during employee creation
+Data: Array
+(
+    [error] => Database error: SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry 'SDF2-342343232423' for key 'license_no'
+    [code] => 0
+    [file] => C:\xampp\htdocs\projects\goldenz-hr-system\includes\database.php
+    [line] => 104
+    [trace] => #0 C:\xampp\htdocs\projects\goldenz-hr-system\includes\database.php(261): execute_query('INSERT INTO emp...', Array)
+#1 C:\xampp\htdocs\projects\goldenz-hr-system\pages\add_employee.php(168): add_employee(Array)
+#2 C:\xampp\htdocs\projects\goldenz-hr-system\includes\header.php(114): include('C:\\xampp\\htdocs...')
+#3 C:\xampp\htdocs\projects\goldenz-hr-system\hr-admin\index.php(36): include('C:\\xampp\\htdocs...')
+#4 {main}
+    [sql] => INSERT INTO employees (employee_no, employee_type, surname, first_name, middle_name, post, license_no, license_exp_date, rlm_exp, date_hired, cp_number, sss_no, pagibig_no, tin_number, philhealth_no, birth_date, height, weight, address, contact_person, relationship, contact_person_address, contact_person_number, blood_type, religion, status, created_by, created_by_name) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    [params] => Array
+        (
+            [0] => 24234
+            [1] => SG
+            [2] => SAFASDF
+            [3] => SDFASDFSFA
+            [4] => 
+            [5] => LADY GUARD - OFFICE BUILDING
+            [6] => SDF2-342343232423
+            [7] => 2025-12-21
+            [8] => 
+            [9] => 2025-12-14
+            [10] => 9243243243
+            [11] => 23-4234324-3
+            [12] => 4324-3223-4232
+            [13] => 432-432-432-432
+            [14] => 34-323243243-4
+            [15] => 2025-12-08
+            [16] => 5'5"
+            [17] => 234234
+            [18] => 
+            [19] => 9243243242
+            [20] => Sibling
+            [21] => 
+            [22] => 9424324234
+            [23] => B-
+            [24] => Taoist
+            [25] => Inactive
+            [26] => 25
+            [27] => HR Administrator
+        )
+
+)
+
+File: /projects/goldenz-hr-system/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2025-12-14 16:20:07] [add_employee_page] User: hradmin (ID: 25) | IP: ::1
+Error: add_employee function returned
+Data: Array
+(
+    [result] => false
+)
+
+File: /projects/goldenz-hr-system/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2025-12-14 16:20:07] [add_employee_page] User: hradmin (ID: 25) | IP: ::1
+Error: add_employee returned false - employee creation failed
+Data: Array
+(
+    [employee_data] => Array
+        (
+            [employee_no] => 24234
+            [employee_type] => SG
+            [surname] => SAFASDF
+            [first_name] => SDFASDFSFA
+            [middle_name] => 
+            [post] => LADY GUARD - OFFICE BUILDING
+            [license_no] => SDF2-342343232423
+            [license_exp_date] => 2025-12-21
+            [rlm_exp] => 
+            [date_hired] => 2025-12-14
+            [cp_number] => 9243243243
+            [sss_no] => 23-4234324-3
+            [pagibig_no] => 4324-3223-4232
+            [tin_number] => 432-432-432-432
+            [philhealth_no] => 34-323243243-4
+            [birth_date] => 2025-12-08
+            [height] => 5'5"
+            [weight] => 234234
+            [address] => 
+            [contact_person] => 9243243242
+            [relationship] => Sibling
+            [contact_person_address] => 
+            [contact_person_number] => 9424324234
+            [blood_type] => B-
+            [religion] => Taoist
+            [status] => Inactive
+            [created_by] => 25
+            [created_by_name] => HR Administrator
+        )
+
+    [employee_no] => 24234
+)
+
+File: /projects/goldenz-hr-system/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2025-12-14 16:20:48] [phone_validation] User: hradmin (ID: 25) | IP: ::1
+Error: Validating contact phone number
+Data: Array
+(
+    [original] => 9342342343
+    [cleaned] => 9342342343
+    [length] => 10
+    [matches_pattern] => yes
+)
+
+File: /projects/goldenz-hr-system/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2025-12-14 16:20:48] [phone_validation] User: hradmin (ID: 25) | IP: ::1
+Error: Validating emergency contact number
+Data: Array
+(
+    [original] => 9342343243
+    [cleaned] => 9342343243
+    [length] => 10
+    [matches_pattern] => yes
+)
+
+File: /projects/goldenz-hr-system/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2025-12-14 16:20:48] [add_employee_page] User: hradmin (ID: 25) | IP: ::1
+Error: Starting employee creation from form
+Data: Array
+(
+    [post_data] => Array
+        (
+            [employee_no] => 23423
+            [employee_type] => SG
+            [status] => Inactive
+            [surname] => SADFSADFASD
+            [first_name] => FASDFSADFS
+            [middle_name] => 
+            [birth_date] => 2025-12-14
+            [height] => 5'5"
+            [weight] => 324234
+            [blood_type] => B+
+            [religion] => Muslim
+            [address] => SADFASDFSD
+            [cp_number] => 9342342343
+            [contact_person] => 9243243242
+            [relationship] => Friend
+            [contact_person_number] => 9342343243
+            [contact_person_address] => 
+            [contact_person_alt] => 
+            [relationship_alt] => 
+            [contact_person_number_alt] => 
+            [contact_person_address_alt] => 
+            [post] => SECURITY GUARD - RESIDENTIAL
+            [date_hired] => 2025-12-14
+            [license_no] => SFD3-432423432423
+            [license_exp_date] => 2025-12-14
+            [sss_no] => 34-5365345-4
+            [pagibig_no] => 4355-4354-3543
+            [tin_number] => 345-345-435-345
+            [philhealth_no] => 34-543543534-5
+            [hr_remarks] => 
+            [status_summary] => 
+        )
+
+    [files] => Array
+        (
+            [employee_photo] => Array
+                (
+                    [name] => goodmoral_InocencioJohnAldrin.jpg
+                    [size] => 301039
+                    [error] => 0
+                )
+
+        )
+
+)
+
+File: /projects/goldenz-hr-system/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2025-12-14 16:20:48] [add_employee_page] User: hradmin (ID: 25) | IP: ::1
+Error: Calling add_employee function
+Data: Array
+(
+    [employee_data] => Array
+        (
+            [employee_no] => 23423
+            [employee_type] => SG
+            [surname] => SADFSADFASD
+            [first_name] => FASDFSADFS
+            [middle_name] => 
+            [post] => SECURITY GUARD - RESIDENTIAL
+            [license_no] => SFD3-432423432423
+            [license_exp_date] => 2025-12-14
+            [rlm_exp] => 
+            [date_hired] => 2025-12-14
+            [cp_number] => 9342342343
+            [sss_no] => 34-5365345-4
+            [pagibig_no] => 4355-4354-3543
+            [tin_number] => 345-345-435-345
+            [philhealth_no] => 34-543543534-5
+            [birth_date] => 2025-12-14
+            [height] => 5'5"
+            [weight] => 324234
+            [address] => SADFASDFSD
+            [contact_person] => 9243243242
+            [relationship] => Friend
+            [contact_person_address] => 
+            [contact_person_number] => 9342343243
+            [blood_type] => B+
+            [religion] => Muslim
+            [status] => Inactive
+            [created_by] => 25
+            [created_by_name] => HR Administrator
+        )
+
+)
+
+File: /projects/goldenz-hr-system/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2025-12-14 16:20:48] [add_employee] User: hradmin (ID: 25) | IP: ::1
+Error: Starting employee creation
+Data: Array
+(
+    [input_data] => Array
+        (
+            [employee_no] => 23423
+            [employee_type] => SG
+            [surname] => SADFSADFASD
+            [first_name] => FASDFSADFS
+            [middle_name] => 
+            [post] => SECURITY GUARD - RESIDENTIAL
+            [license_no] => SFD3-432423432423
+            [license_exp_date] => 2025-12-14
+            [rlm_exp] => 
+            [date_hired] => 2025-12-14
+            [cp_number] => 9342342343
+            [sss_no] => 34-5365345-4
+            [pagibig_no] => 4355-4354-3543
+            [tin_number] => 345-345-435-345
+            [philhealth_no] => 34-543543534-5
+            [birth_date] => 2025-12-14
+            [height] => 5'5"
+            [weight] => 324234
+            [address] => SADFASDFSD
+            [contact_person] => 9243243242
+            [relationship] => Friend
+            [contact_person_address] => 
+            [contact_person_number] => 9342343243
+            [blood_type] => B+
+            [religion] => Muslim
+            [status] => Inactive
+            [created_by] => 25
+            [created_by_name] => HR Administrator
+        )
+
+)
+
+File: /projects/goldenz-hr-system/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2025-12-14 16:20:48] [add_employee] User: hradmin (ID: 25) | IP: ::1
+Error: Prepared SQL and parameters
+Data: Array
+(
+    [sql] => INSERT INTO employees (employee_no, employee_type, surname, first_name, middle_name, post, license_no, license_exp_date, rlm_exp, date_hired, cp_number, sss_no, pagibig_no, tin_number, philhealth_no, birth_date, height, weight, address, contact_person, relationship, contact_person_address, contact_person_number, blood_type, religion, status, created_by, created_by_name) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    [params_count] => 28
+    [params] => Array
+        (
+            [0] => 23423
+            [1] => SG
+            [2] => SADFSADFASD
+            [3] => FASDFSADFS
+            [4] => 
+            [5] => SECURITY GUARD - RESIDENTIAL
+            [6] => SFD3-432423432423
+            [7] => 2025-12-14
+            [8] => 
+            [9] => 2025-12-14
+            [10] => 9342342343
+            [11] => 34-5365345-4
+            [12] => 4355-4354-3543
+            [13] => 345-345-435-345
+            [14] => 34-543543534-5
+            [15] => 2025-12-14
+            [16] => 5'5"
+            [17] => 324234
+            [18] => SADFASDFSD
+            [19] => 9243243242
+            [20] => Friend
+            [21] => 
+            [22] => 9342343243
+            [23] => B+
+            [24] => Muslim
+            [25] => Inactive
+            [26] => 25
+            [27] => HR Administrator
+        )
+
+)
+
+File: /projects/goldenz-hr-system/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2025-12-14 16:20:48] [add_employee] User: hradmin (ID: 25) | IP: ::1
+Error: Employee created successfully
+Data: Array
+(
+    [last_insert_id] => 3817
+    [employee_no] => 23423
+)
+
+File: /projects/goldenz-hr-system/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2025-12-14 16:20:48] [add_employee_page] User: hradmin (ID: 25) | IP: ::1
+Error: add_employee function returned
+Data: Array
+(
+    [result] => true
+)
+
+File: /projects/goldenz-hr-system/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2025-12-14 16:20:48] [photo_upload] User: hradmin (ID: 25) | IP: ::1
+Error: Profile image uploaded successfully
+Data: Array
+(
+    [employee_id] => 3817
+    [filename] => 3817.jpg
+    [path] => uploads/employees/3817.jpg
+)
+
+File: /projects/goldenz-hr-system/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2025-12-14 16:27:18] [phone_validation] User: hradmin (ID: 25) | IP: ::1
+Error: Validating contact phone number
+Data: Array
+(
+    [original] => 9243243243
+    [cleaned] => 9243243243
+    [length] => 10
+    [matches_pattern] => yes
+)
+
+File: /projects/goldenz-hr-system/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2025-12-14 16:27:18] [phone_validation] User: hradmin (ID: 25) | IP: ::1
+Error: Validating emergency contact number
+Data: Array
+(
+    [original] => 9324324234
+    [cleaned] => 9324324234
+    [length] => 10
+    [matches_pattern] => yes
+)
+
+File: /projects/goldenz-hr-system/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2025-12-14 16:27:18] [add_employee_page] User: hradmin (ID: 25) | IP: ::1
+Error: Starting employee creation from form
+Data: Array
+(
+    [post_data] => Array
+        (
+            [employee_no] => 24324
+            [employee_type] => SG
+            [status] => Inactive
+            [surname] => SDFASDFASDF
+            [first_name] => SADFASFASFSADF
+            [middle_name] => 
+            [birth_date] => 2025-12-14
+            [height] => 5'5"
+            [weight] => 34234
+            [blood_type] => B+
+            [religion] => Hindu
+            [address] => 
+            [cp_number] => 9243243243
+            [contact_person] => 9242342343
+            [relationship] => Father
+            [contact_person_number] => 9324324234
+            [contact_person_address] => 
+            [contact_person_alt] => 
+            [relationship_alt] => 
+            [contact_person_number_alt] => 
+            [contact_person_address_alt] => 
+            [post] => LADY GUARD - OFFICE BUILDING
+            [date_hired] => 2025-12-14
+            [license_no] => ASDF-34324234324324
+            [license_exp_date] => 2025-12-22
+            [sss_no] => 23-4234324-2
+            [pagibig_no] => 5635-3454-3534
+            [tin_number] => 345-435-345-543
+            [philhealth_no] => 54-354353454-3
+            [hr_remarks] => 
+            [status_summary] => 
+        )
+
+    [files] => Array
+        (
+            [employee_photo] => Array
+                (
+                    [name] => goodmoral_InocencioJohnAldrin.jpg
+                    [size] => 301039
+                    [error] => 0
+                )
+
+        )
+
+)
+
+File: /projects/goldenz-hr-system/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2025-12-14 16:27:18] [add_employee_page] User: hradmin (ID: 25) | IP: ::1
+Error: Calling add_employee function
+Data: Array
+(
+    [employee_data] => Array
+        (
+            [employee_no] => 24324
+            [employee_type] => SG
+            [surname] => SDFASDFASDF
+            [first_name] => SADFASFASFSADF
+            [middle_name] => 
+            [post] => LADY GUARD - OFFICE BUILDING
+            [license_no] => ASDF-34324234324324
+            [license_exp_date] => 2025-12-22
+            [rlm_exp] => 
+            [date_hired] => 2025-12-14
+            [cp_number] => 9243243243
+            [sss_no] => 23-4234324-2
+            [pagibig_no] => 5635-3454-3534
+            [tin_number] => 345-435-345-543
+            [philhealth_no] => 54-354353454-3
+            [birth_date] => 2025-12-14
+            [height] => 5'5"
+            [weight] => 34234
+            [address] => 
+            [contact_person] => 9242342343
+            [relationship] => Father
+            [contact_person_address] => 
+            [contact_person_number] => 9324324234
+            [blood_type] => B+
+            [religion] => Hindu
+            [status] => Inactive
+            [created_by] => 25
+            [created_by_name] => HR Administrator
+        )
+
+)
+
+File: /projects/goldenz-hr-system/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2025-12-14 16:27:18] [add_employee] User: hradmin (ID: 25) | IP: ::1
+Error: Starting employee creation
+Data: Array
+(
+    [input_data] => Array
+        (
+            [employee_no] => 24324
+            [employee_type] => SG
+            [surname] => SDFASDFASDF
+            [first_name] => SADFASFASFSADF
+            [middle_name] => 
+            [post] => LADY GUARD - OFFICE BUILDING
+            [license_no] => ASDF-34324234324324
+            [license_exp_date] => 2025-12-22
+            [rlm_exp] => 
+            [date_hired] => 2025-12-14
+            [cp_number] => 9243243243
+            [sss_no] => 23-4234324-2
+            [pagibig_no] => 5635-3454-3534
+            [tin_number] => 345-435-345-543
+            [philhealth_no] => 54-354353454-3
+            [birth_date] => 2025-12-14
+            [height] => 5'5"
+            [weight] => 34234
+            [address] => 
+            [contact_person] => 9242342343
+            [relationship] => Father
+            [contact_person_address] => 
+            [contact_person_number] => 9324324234
+            [blood_type] => B+
+            [religion] => Hindu
+            [status] => Inactive
+            [created_by] => 25
+            [created_by_name] => HR Administrator
+        )
+
+)
+
+File: /projects/goldenz-hr-system/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2025-12-14 16:27:18] [add_employee] User: hradmin (ID: 25) | IP: ::1
+Error: Prepared SQL and parameters
+Data: Array
+(
+    [sql] => INSERT INTO employees (employee_no, employee_type, surname, first_name, middle_name, post, license_no, license_exp_date, rlm_exp, date_hired, cp_number, sss_no, pagibig_no, tin_number, philhealth_no, birth_date, height, weight, address, contact_person, relationship, contact_person_address, contact_person_number, blood_type, religion, status, created_by, created_by_name) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    [params_count] => 28
+    [params] => Array
+        (
+            [0] => 24324
+            [1] => SG
+            [2] => SDFASDFASDF
+            [3] => SADFASFASFSADF
+            [4] => 
+            [5] => LADY GUARD - OFFICE BUILDING
+            [6] => ASDF-34324234324324
+            [7] => 2025-12-22
+            [8] => 
+            [9] => 2025-12-14
+            [10] => 9243243243
+            [11] => 23-4234324-2
+            [12] => 5635-3454-3534
+            [13] => 345-435-345-543
+            [14] => 54-354353454-3
+            [15] => 2025-12-14
+            [16] => 5'5"
+            [17] => 34234
+            [18] => 
+            [19] => 9242342343
+            [20] => Father
+            [21] => 
+            [22] => 9324324234
+            [23] => B+
+            [24] => Hindu
+            [25] => Inactive
+            [26] => 25
+            [27] => HR Administrator
+        )
+
+)
+
+File: /projects/goldenz-hr-system/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2025-12-14 16:27:18] [add_employee] User: hradmin (ID: 25) | IP: ::1
+Error: Employee created successfully
+Data: Array
+(
+    [last_insert_id] => 3866
+    [employee_no] => 24324
+)
+
+File: /projects/goldenz-hr-system/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2025-12-14 16:27:18] [add_employee_page] User: hradmin (ID: 25) | IP: ::1
+Error: add_employee function returned
+Data: Array
+(
+    [result] => true
+)
+
+File: /projects/goldenz-hr-system/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2025-12-14 16:27:18] [photo_upload] User: hradmin (ID: 25) | IP: ::1
+Error: Profile image uploaded successfully
+Data: Array
+(
+    [employee_id] => 3866
+    [filename] => 3866.jpg
+    [path] => uploads/employees/3866.jpg
+)
+
+File: /projects/goldenz-hr-system/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2025-12-14 16:30:41] [phone_validation] User: hradmin (ID: 25) | IP: ::1
+Error: Validating contact phone number
+Data: Array
+(
+    [original] => 9242343243
+    [cleaned] => 9242343243
+    [length] => 10
+    [matches_pattern] => yes
+)
+
+File: /projects/goldenz-hr-system/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2025-12-14 16:30:41] [phone_validation] User: hradmin (ID: 25) | IP: ::1
+Error: Validating emergency contact number
+Data: Array
+(
+    [original] => 9234324324
+    [cleaned] => 9234324324
+    [length] => 10
+    [matches_pattern] => yes
+)
+
+File: /projects/goldenz-hr-system/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2025-12-14 16:30:41] [add_employee_page] User: hradmin (ID: 25) | IP: ::1
+Error: Starting employee creation from form
+Data: Array
+(
+    [post_data] => Array
+        (
+            [employee_no] => 23432
+            [employee_type] => LG
+            [status] => Suspended
+            [surname] => ASFSDFSADFASDF
+            [first_name] => ASDFSDFSD
+            [middle_name] => 
+            [birth_date] => 2025-12-14
+            [height] => 5'5"
+            [weight] => 34324
+            [blood_type] => A-
+            [religion] => Taoist
+            [address] => 
+            [cp_number] => 9242343243
+            [contact_person] => 9234324324
+            [relationship] => Partner
+            [contact_person_number] => 9234324324
+            [contact_person_address] => 
+            [contact_person_alt] => 
+            [relationship_alt] => 
+            [contact_person_number_alt] => 
+            [contact_person_address_alt] => 
+            [post] => SECURITY GUARD - RESIDENTIAL
+            [date_hired] => 2025-12-14
+            [license_no] => SDF3-2423432423
+            [license_exp_date] => 2025-12-14
+            [sss_no] => 23-4324324-2
+            [pagibig_no] => 4234-2342-3423
+            [tin_number] => 423-423-423-432
+            [philhealth_no] => 42-342323425-2
+            [hr_remarks] => 
+            [status_summary] => 
+        )
+
+    [files] => Array
+        (
+            [employee_photo] => Array
+                (
+                    [name] => 243457337_3041548036117280_752687922961771_n.jpg
+                    [size] => 3078
+                    [error] => 0
+                )
+
+        )
+
+)
+
+File: /projects/goldenz-hr-system/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2025-12-14 16:30:41] [add_employee_page] User: hradmin (ID: 25) | IP: ::1
+Error: Calling add_employee function
+Data: Array
+(
+    [employee_data] => Array
+        (
+            [employee_no] => 23432
+            [employee_type] => LG
+            [surname] => ASFSDFSADFASDF
+            [first_name] => ASDFSDFSD
+            [middle_name] => 
+            [post] => SECURITY GUARD - RESIDENTIAL
+            [license_no] => SDF3-2423432423
+            [license_exp_date] => 2025-12-14
+            [rlm_exp] => 
+            [date_hired] => 2025-12-14
+            [cp_number] => 9242343243
+            [sss_no] => 23-4324324-2
+            [pagibig_no] => 4234-2342-3423
+            [tin_number] => 423-423-423-432
+            [philhealth_no] => 42-342323425-2
+            [birth_date] => 2025-12-14
+            [height] => 5'5"
+            [weight] => 34324
+            [address] => 
+            [contact_person] => 9234324324
+            [relationship] => Partner
+            [contact_person_address] => 
+            [contact_person_number] => 9234324324
+            [blood_type] => A-
+            [religion] => Taoist
+            [status] => Suspended
+            [created_by] => 25
+            [created_by_name] => HR Administrator
+        )
+
+)
+
+File: /projects/goldenz-hr-system/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2025-12-14 16:30:41] [add_employee] User: hradmin (ID: 25) | IP: ::1
+Error: Starting employee creation
+Data: Array
+(
+    [input_data] => Array
+        (
+            [employee_no] => 23432
+            [employee_type] => LG
+            [surname] => ASFSDFSADFASDF
+            [first_name] => ASDFSDFSD
+            [middle_name] => 
+            [post] => SECURITY GUARD - RESIDENTIAL
+            [license_no] => SDF3-2423432423
+            [license_exp_date] => 2025-12-14
+            [rlm_exp] => 
+            [date_hired] => 2025-12-14
+            [cp_number] => 9242343243
+            [sss_no] => 23-4324324-2
+            [pagibig_no] => 4234-2342-3423
+            [tin_number] => 423-423-423-432
+            [philhealth_no] => 42-342323425-2
+            [birth_date] => 2025-12-14
+            [height] => 5'5"
+            [weight] => 34324
+            [address] => 
+            [contact_person] => 9234324324
+            [relationship] => Partner
+            [contact_person_address] => 
+            [contact_person_number] => 9234324324
+            [blood_type] => A-
+            [religion] => Taoist
+            [status] => Suspended
+            [created_by] => 25
+            [created_by_name] => HR Administrator
+        )
+
+)
+
+File: /projects/goldenz-hr-system/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2025-12-14 16:30:41] [add_employee] User: hradmin (ID: 25) | IP: ::1
+Error: Prepared SQL and parameters
+Data: Array
+(
+    [sql] => INSERT INTO employees (employee_no, employee_type, surname, first_name, middle_name, post, license_no, license_exp_date, rlm_exp, date_hired, cp_number, sss_no, pagibig_no, tin_number, philhealth_no, birth_date, height, weight, address, contact_person, relationship, contact_person_address, contact_person_number, blood_type, religion, status, created_by, created_by_name) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    [params_count] => 28
+    [params] => Array
+        (
+            [0] => 23432
+            [1] => LG
+            [2] => ASFSDFSADFASDF
+            [3] => ASDFSDFSD
+            [4] => 
+            [5] => SECURITY GUARD - RESIDENTIAL
+            [6] => SDF3-2423432423
+            [7] => 2025-12-14
+            [8] => 
+            [9] => 2025-12-14
+            [10] => 9242343243
+            [11] => 23-4324324-2
+            [12] => 4234-2342-3423
+            [13] => 423-423-423-432
+            [14] => 42-342323425-2
+            [15] => 2025-12-14
+            [16] => 5'5"
+            [17] => 34324
+            [18] => 
+            [19] => 9234324324
+            [20] => Partner
+            [21] => 
+            [22] => 9234324324
+            [23] => A-
+            [24] => Taoist
+            [25] => Suspended
+            [26] => 25
+            [27] => HR Administrator
+        )
+
+)
+
+File: /projects/goldenz-hr-system/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2025-12-14 16:30:41] [add_employee] User: hradmin (ID: 25) | IP: ::1
+Error: Employee created successfully
+Data: Array
+(
+    [last_insert_id] => 3907
+    [employee_no] => 23432
+)
+
+File: /projects/goldenz-hr-system/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2025-12-14 16:30:41] [add_employee_page] User: hradmin (ID: 25) | IP: ::1
+Error: add_employee function returned
+Data: Array
+(
+    [result] => true
+)
+
+File: /projects/goldenz-hr-system/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2025-12-14 16:30:42] [photo_upload] User: hradmin (ID: 25) | IP: ::1
+Error: Profile image uploaded successfully
+Data: Array
+(
+    [employee_id] => 3907
+    [filename] => 3907.jpg
+    [path] => uploads/employees/3907.jpg
+)
+
+File: /projects/goldenz-hr-system/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2025-12-14 16:30:42] [employee_created] User: hradmin (ID: 25) | IP: ::1
+Error: Employee created successfully, redirecting
+Data: Array
+(
+    [employee_id] => 3907
+    [redirect_url] => /projects/goldenz-hr-system/hr-admin/index.php?page=add_employee&success=1
+)
+
+File: /projects/goldenz-hr-system/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2025-12-14 16:33:42] [phone_validation] User: hradmin (ID: 25) | IP: ::1
+Error: Validating contact phone number
+Data: Array
+(
+    [original] => 9242343243
+    [cleaned] => 9242343243
+    [length] => 10
+    [matches_pattern] => yes
+)
+
+File: /projects/goldenz-hr-system/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2025-12-14 16:33:42] [phone_validation] User: hradmin (ID: 25) | IP: ::1
+Error: Validating emergency contact number
+Data: Array
+(
+    [original] => 9242343243
+    [cleaned] => 9242343243
+    [length] => 10
+    [matches_pattern] => yes
+)
+
+File: /projects/goldenz-hr-system/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2025-12-14 16:33:42] [add_employee_page] User: hradmin (ID: 25) | IP: ::1
+Error: Starting employee creation from form
+Data: Array
+(
+    [post_data] => Array
+        (
+            [employee_no] => 23423
+            [employee_type] => LG
+            [status] => Suspended
+            [surname] => ASDFASDFSADFS
+            [first_name] => SDFSADFASDFSDAF
+            [middle_name] => 
+            [birth_date] => 2025-12-14
+            [height] => 5'5"
+            [weight] => 1312321
+            [blood_type] => B+
+            [religion] => Sikh
+            [address] => 
+            [cp_number] => 9242343243
+            [contact_person] => 9242343243
+            [relationship] => Partner
+            [contact_person_number] => 9242343243
+            [contact_person_address] => 
+            [contact_person_alt] => 
+            [relationship_alt] => 
+            [contact_person_number_alt] => 
+            [contact_person_address_alt] => 
+            [post] => SECURITY OFFICER - FIELD OPERATIONS
+            [date_hired] => 2025-12-14
+            [license_no] => ASDF-23432432432
+            [license_exp_date] => 2025-12-14
+            [sss_no] => 23-4234234-3
+            [pagibig_no] => 3243-2345-4354
+            [tin_number] => 435-435-345-345
+            [philhealth_no] => 43-543534543-5
+            [hr_remarks] => 
+            [status_summary] => 
+        )
+
+    [files] => Array
+        (
+            [employee_photo] => Array
+                (
+                    [name] => 243457337_3041548036117280_752687922961771_n.jpg
+                    [size] => 3078
+                    [error] => 0
+                )
+
+        )
+
+)
+
+File: /projects/goldenz-hr-system/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2025-12-14 16:33:42] [add_employee_page] User: hradmin (ID: 25) | IP: ::1
+Error: Calling add_employee function
+Data: Array
+(
+    [employee_data] => Array
+        (
+            [employee_no] => 23423
+            [employee_type] => LG
+            [surname] => ASDFASDFSADFS
+            [first_name] => SDFSADFASDFSDAF
+            [middle_name] => 
+            [post] => SECURITY OFFICER - FIELD OPERATIONS
+            [license_no] => ASDF-23432432432
+            [license_exp_date] => 2025-12-14
+            [rlm_exp] => 
+            [date_hired] => 2025-12-14
+            [cp_number] => 9242343243
+            [sss_no] => 23-4234234-3
+            [pagibig_no] => 3243-2345-4354
+            [tin_number] => 435-435-345-345
+            [philhealth_no] => 43-543534543-5
+            [birth_date] => 2025-12-14
+            [height] => 5'5"
+            [weight] => 1312321
+            [address] => 
+            [contact_person] => 9242343243
+            [relationship] => Partner
+            [contact_person_address] => 
+            [contact_person_number] => 9242343243
+            [blood_type] => B+
+            [religion] => Sikh
+            [status] => Suspended
+            [created_by] => 25
+            [created_by_name] => HR Administrator
+        )
+
+)
+
+File: /projects/goldenz-hr-system/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2025-12-14 16:33:42] [add_employee] User: hradmin (ID: 25) | IP: ::1
+Error: Starting employee creation
+Data: Array
+(
+    [input_data] => Array
+        (
+            [employee_no] => 23423
+            [employee_type] => LG
+            [surname] => ASDFASDFSADFS
+            [first_name] => SDFSADFASDFSDAF
+            [middle_name] => 
+            [post] => SECURITY OFFICER - FIELD OPERATIONS
+            [license_no] => ASDF-23432432432
+            [license_exp_date] => 2025-12-14
+            [rlm_exp] => 
+            [date_hired] => 2025-12-14
+            [cp_number] => 9242343243
+            [sss_no] => 23-4234234-3
+            [pagibig_no] => 3243-2345-4354
+            [tin_number] => 435-435-345-345
+            [philhealth_no] => 43-543534543-5
+            [birth_date] => 2025-12-14
+            [height] => 5'5"
+            [weight] => 1312321
+            [address] => 
+            [contact_person] => 9242343243
+            [relationship] => Partner
+            [contact_person_address] => 
+            [contact_person_number] => 9242343243
+            [blood_type] => B+
+            [religion] => Sikh
+            [status] => Suspended
+            [created_by] => 25
+            [created_by_name] => HR Administrator
+        )
+
+)
+
+File: /projects/goldenz-hr-system/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2025-12-14 16:33:42] [add_employee] User: hradmin (ID: 25) | IP: ::1
+Error: Prepared SQL and parameters
+Data: Array
+(
+    [sql] => INSERT INTO employees (employee_no, employee_type, surname, first_name, middle_name, post, license_no, license_exp_date, rlm_exp, date_hired, cp_number, sss_no, pagibig_no, tin_number, philhealth_no, birth_date, height, weight, address, contact_person, relationship, contact_person_address, contact_person_number, blood_type, religion, status, created_by, created_by_name) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    [params_count] => 28
+    [params] => Array
+        (
+            [0] => 23423
+            [1] => LG
+            [2] => ASDFASDFSADFS
+            [3] => SDFSADFASDFSDAF
+            [4] => 
+            [5] => SECURITY OFFICER - FIELD OPERATIONS
+            [6] => ASDF-23432432432
+            [7] => 2025-12-14
+            [8] => 
+            [9] => 2025-12-14
+            [10] => 9242343243
+            [11] => 23-4234234-3
+            [12] => 3243-2345-4354
+            [13] => 435-435-345-345
+            [14] => 43-543534543-5
+            [15] => 2025-12-14
+            [16] => 5'5"
+            [17] => 1312321
+            [18] => 
+            [19] => 9242343243
+            [20] => Partner
+            [21] => 
+            [22] => 9242343243
+            [23] => B+
+            [24] => Sikh
+            [25] => Suspended
+            [26] => 25
+            [27] => HR Administrator
+        )
+
+)
+
+File: /projects/goldenz-hr-system/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2025-12-14 16:33:42] [add_employee] User: hradmin (ID: 25) | IP: ::1
+Error: Employee created successfully
+Data: Array
+(
+    [last_insert_id] => 3996
+    [employee_no] => 23423
+)
+
+File: /projects/goldenz-hr-system/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2025-12-14 16:33:42] [add_employee_page] User: hradmin (ID: 25) | IP: ::1
+Error: add_employee function returned
+Data: Array
+(
+    [result] => true
+)
+
+File: /projects/goldenz-hr-system/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2025-12-14 16:33:42] [photo_upload] User: hradmin (ID: 25) | IP: ::1
+Error: Profile image uploaded successfully
+Data: Array
+(
+    [employee_id] => 3996
+    [filename] => 3996.jpg
+    [path] => uploads/employees/3996.jpg
+)
+
+File: /projects/goldenz-hr-system/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2025-12-14 16:33:42] [employee_created] User: hradmin (ID: 25) | IP: ::1
+Error: Employee created successfully, redirecting
+Data: Array
+(
+    [employee_id] => 3996
+    [redirect_url] => /projects/goldenz-hr-system/hr-admin/index.php?page=add_employee&success=1
+)
+
+File: /projects/goldenz-hr-system/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-12 15:25:16] [phone_validation] User: hradmin (ID: 25) | IP: 192.168.1.7
+Error: Validating contact phone number
+Data: Array
+(
+    [original] => 9563211331
+    [cleaned] => 9563211331
+    [length] => 10
+    [matches_pattern] => yes
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-12 15:25:16] [phone_validation] User: hradmin (ID: 25) | IP: 192.168.1.7
+Error: Validating emergency contact number
+Data: Array
+(
+    [original] => 9563211331
+    [cleaned] => 9563211331
+    [length] => 10
+    [matches_pattern] => yes
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-12 15:26:24] [phone_validation] User: hradmin (ID: 25) | IP: 192.168.1.7
+Error: Validating contact phone number
+Data: Array
+(
+    [original] => 9563212312
+    [cleaned] => 9563212312
+    [length] => 10
+    [matches_pattern] => yes
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-12 15:26:24] [phone_validation] User: hradmin (ID: 25) | IP: 192.168.1.7
+Error: Validating emergency contact number
+Data: Array
+(
+    [original] => 9563211331
+    [cleaned] => 9563211331
+    [length] => 10
+    [matches_pattern] => yes
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-12 15:26:24] [add_employee_page] User: hradmin (ID: 25) | IP: 192.168.1.7
+Error: Starting employee creation from form
+Data: Array
+(
+    [post_data] => Array
+        (
+            [employee_no] => 34324
+            [employee_type] => SG
+            [status] => Active
+            [surname] => HAHA
+            [first_name] => HEHE
+            [middle_name] => HOHO
+            [birth_date] => 2000-08-27
+            [age] => 25
+            [gender] => Female
+            [civil_status] => Separated
+            [birthplace] => DIYAN LANG 
+            [citizenship] => PINOY
+            [address] => KUNGSAAN
+            [provincial_address] => DITO LANG 
+            [height] => 
+            [weight] => 800
+            [blood_type] => A-
+            [religion] => No Religion
+            [special_skills] => MADAMI
+            [spouse_name] => DIKO ALAM
+            [spouse_age] => 59
+            [spouse_occupation] =>  SA MAY
+            [father_name] => MALAY KO 
+            [father_age] => 50
+            [father_occupation] => DOON
+            [mother_name] => HAYS
+            [mother_age] => 50
+            [mother_occupation] => DUNNO
+            [children_names] => DAMI
+            [college_course] => 
+            [college_school_name] => 
+            [college_years] => 
+            [college_school_address] => 
+            [vocational_course] => 
+            [vocational_school_name] => 
+            [vocational_years] => 
+            [vocational_school_address] => 
+            [highschool_school_name] => SADFSADFSD
+            [highschool_years] => 2012-2018
+            [highschool_school_address] => ASDFSDFA
+            [elementary_school_name] => SDAFSADF
+            [elementary_years] => 2012-2018
+            [elementary_school_address] => SADFSD
+            [trainings] => Array
+                (
+                    [0] => Array
+                        (
+                            [title] => SAFSDFSDA
+                            [by] => SADFSDSADF
+                            [date] => 2026-01-14
+                        )
+
+                )
+
+            [employment_history] => Array
+                (
+                    [0] => Array
+                        (
+                            [position] => SADFSADFS
+                            [period] => 03/2025 - 03/2030
+                            [reason] => SFAASDFSA
+                            [company_name] => 
+                            [company_phone] => 
+                            [company_address] => 
+                        )
+
+                )
+
+            [gov_exam_taken] => No
+            [cp_number] => 9563212312
+            [contact_person] => ALDRIN
+            [relationship] => Mother
+            [contact_person_number] => 9563211331
+            [contact_person_address] => ASDFSAFSAD
+            [contact_person_alt] => 
+            [relationship_alt] => 
+            [contact_person_number_alt] => 
+            [contact_person_address_alt] => 
+            [post] => UNASSIGNED
+            [date_hired] => 2026-01-12
+            [license_no] => NCR2-13872183182973
+            [license_exp_date] => 2026-01-12
+            [sss_no] => 12-3213213-1
+            [pagibig_no] => 1232-1312-3121
+            [tin_number] => 312-321-312-312
+            [philhealth_no] => 21-312321312-3
+            [hr_remarks] => ASDFSDAF
+            [status_summary] => Completed
+        )
+
+    [files] => Array
+        (
+            [employee_photo] => Array
+                (
+                    [name] => 
+                    [size] => 0
+                    [error] => 4
+                )
+
+        )
+
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-12 15:26:24] [add_employee_page] User: hradmin (ID: 25) | IP: 192.168.1.7
+Error: Calling add_employee function
+Data: Array
+(
+    [employee_data] => Array
+        (
+            [employee_no] => 34324
+            [employee_type] => SG
+            [surname] => HAHA
+            [first_name] => HEHE
+            [middle_name] => HOHO
+            [post] => UNASSIGNED
+            [license_no] => NCR2-13872183182973
+            [license_exp_date] => 2026-01-12
+            [rlm_exp] => 
+            [date_hired] => 2026-01-12
+            [cp_number] => 9563212312
+            [sss_no] => 12-3213213-1
+            [pagibig_no] => 1232-1312-3121
+            [tin_number] => 312-321-312-312
+            [philhealth_no] => 21-312321312-3
+            [birth_date] => 2000-08-27
+            [gender] => Female
+            [civil_status] => Separated
+            [age] => 25
+            [birthplace] => DIYAN LANG
+            [citizenship] => PINOY
+            [provincial_address] => DITO LANG
+            [special_skills] => MADAMI
+            [spouse_name] => DIKO ALAM
+            [spouse_age] => 59
+            [spouse_occupation] => SA MAY
+            [father_name] => MALAY KO
+            [father_age] => 50
+            [father_occupation] => DOON
+            [mother_name] => HAYS
+            [mother_age] => 50
+            [mother_occupation] => DUNNO
+            [children_names] => DAMI
+            [college_course] => 
+            [college_school_name] => 
+            [college_school_address] => 
+            [college_years] => 
+            [vocational_course] => 
+            [vocational_school_name] => 
+            [vocational_school_address] => 
+            [vocational_years] => 
+            [highschool_school_name] => SADFSADFSD
+            [highschool_school_address] => ASDFSDFA
+            [highschool_years] => 2012-2018
+            [elementary_school_name] => SDAFSADF
+            [elementary_school_address] => SADFSD
+            [elementary_years] => 2012-2018
+            [trainings_json] => [{"title":"SAFSDFSDA","by":"SADFSDSADF","date":"2026-01-14"}]
+            [gov_exam_taken] => 0
+            [gov_exam_json] => 
+            [employment_history_json] => [{"position":"SADFSADFS","company_name":"","company_address":"","company_phone":"","period":"03\/2025 - 03\/2030","reason":"SFAASDFSA"}]
+            [height] => 
+            [weight] => 800
+            [address] => KUNGSAAN
+            [contact_person] => ALDRIN
+            [relationship] => Mother
+            [contact_person_address] => ASDFSAFSAD
+            [contact_person_number] => 9563211331
+            [blood_type] => A-
+            [religion] => No Religion
+            [status] => Active
+            [created_by] => 25
+            [created_by_name] => HR Administrator
+        )
+
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-12 15:26:24] [add_employee] User: hradmin (ID: 25) | IP: 192.168.1.7
+Error: Starting employee creation
+Data: Array
+(
+    [input_data] => Array
+        (
+            [employee_no] => 34324
+            [employee_type] => SG
+            [surname] => HAHA
+            [first_name] => HEHE
+            [middle_name] => HOHO
+            [post] => UNASSIGNED
+            [license_no] => NCR2-13872183182973
+            [license_exp_date] => 2026-01-12
+            [rlm_exp] => 
+            [date_hired] => 2026-01-12
+            [cp_number] => 9563212312
+            [sss_no] => 12-3213213-1
+            [pagibig_no] => 1232-1312-3121
+            [tin_number] => 312-321-312-312
+            [philhealth_no] => 21-312321312-3
+            [birth_date] => 2000-08-27
+            [gender] => Female
+            [civil_status] => Separated
+            [age] => 25
+            [birthplace] => DIYAN LANG
+            [citizenship] => PINOY
+            [provincial_address] => DITO LANG
+            [special_skills] => MADAMI
+            [spouse_name] => DIKO ALAM
+            [spouse_age] => 59
+            [spouse_occupation] => SA MAY
+            [father_name] => MALAY KO
+            [father_age] => 50
+            [father_occupation] => DOON
+            [mother_name] => HAYS
+            [mother_age] => 50
+            [mother_occupation] => DUNNO
+            [children_names] => DAMI
+            [college_course] => 
+            [college_school_name] => 
+            [college_school_address] => 
+            [college_years] => 
+            [vocational_course] => 
+            [vocational_school_name] => 
+            [vocational_school_address] => 
+            [vocational_years] => 
+            [highschool_school_name] => SADFSADFSD
+            [highschool_school_address] => ASDFSDFA
+            [highschool_years] => 2012-2018
+            [elementary_school_name] => SDAFSADF
+            [elementary_school_address] => SADFSD
+            [elementary_years] => 2012-2018
+            [trainings_json] => [{"title":"SAFSDFSDA","by":"SADFSDSADF","date":"2026-01-14"}]
+            [gov_exam_taken] => 0
+            [gov_exam_json] => 
+            [employment_history_json] => [{"position":"SADFSADFS","company_name":"","company_address":"","company_phone":"","period":"03\/2025 - 03\/2030","reason":"SFAASDFSA"}]
+            [height] => 
+            [weight] => 800
+            [address] => KUNGSAAN
+            [contact_person] => ALDRIN
+            [relationship] => Mother
+            [contact_person_address] => ASDFSAFSAD
+            [contact_person_number] => 9563211331
+            [blood_type] => A-
+            [religion] => No Religion
+            [status] => Active
+            [created_by] => 25
+            [created_by_name] => HR Administrator
+        )
+
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-12 15:26:24] [add_employee] User: hradmin (ID: 25) | IP: 192.168.1.7
+Error: Prepared SQL and parameters
+Data: Array
+(
+    [sql] => INSERT INTO employees (employee_no, employee_type, surname, first_name, middle_name, post, license_no, license_exp_date, rlm_exp, date_hired, cp_number, sss_no, pagibig_no, tin_number, philhealth_no, birth_date, gender, civil_status, age, birthplace, citizenship, provincial_address, special_skills, spouse_name, spouse_age, spouse_occupation, father_name, father_age, father_occupation, mother_name, mother_age, mother_occupation, children_names, college_course, college_school_name, college_school_address, college_years, vocational_course, vocational_school_name, vocational_school_address, vocational_years, highschool_school_name, highschool_school_address, highschool_years, elementary_school_name, elementary_school_address, elementary_years, trainings_json, gov_exam_taken, gov_exam_json, employment_history_json, height, weight, address, contact_person, relationship, contact_person_address, contact_person_number, blood_type, religion, status, created_by, created_by_name) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    [params_count] => 63
+    [params] => Array
+        (
+            [0] => 34324
+            [1] => SG
+            [2] => HAHA
+            [3] => HEHE
+            [4] => HOHO
+            [5] => UNASSIGNED
+            [6] => NCR2-13872183182973
+            [7] => 2026-01-12
+            [8] => 
+            [9] => 2026-01-12
+            [10] => 9563212312
+            [11] => 12-3213213-1
+            [12] => 1232-1312-3121
+            [13] => 312-321-312-312
+            [14] => 21-312321312-3
+            [15] => 2000-08-27
+            [16] => Female
+            [17] => Separated
+            [18] => 25
+            [19] => DIYAN LANG
+            [20] => PINOY
+            [21] => DITO LANG
+            [22] => MADAMI
+            [23] => DIKO ALAM
+            [24] => 59
+            [25] => SA MAY
+            [26] => MALAY KO
+            [27] => 50
+            [28] => DOON
+            [29] => HAYS
+            [30] => 50
+            [31] => DUNNO
+            [32] => DAMI
+            [33] => 
+            [34] => 
+            [35] => 
+            [36] => 
+            [37] => 
+            [38] => 
+            [39] => 
+            [40] => 
+            [41] => SADFSADFSD
+            [42] => ASDFSDFA
+            [43] => 2012-2018
+            [44] => SDAFSADF
+            [45] => SADFSD
+            [46] => 2012-2018
+            [47] => [{"title":"SAFSDFSDA","by":"SADFSDSADF","date":"2026-01-14"}]
+            [48] => 0
+            [49] => 
+            [50] => [{"position":"SADFSADFS","company_name":"","company_address":"","company_phone":"","period":"03\/2025 - 03\/2030","reason":"SFAASDFSA"}]
+            [51] => 
+            [52] => 800
+            [53] => KUNGSAAN
+            [54] => ALDRIN
+            [55] => Mother
+            [56] => ASDFSAFSAD
+            [57] => 9563211331
+            [58] => A-
+            [59] => No Religion
+            [60] => Active
+            [61] => 25
+            [62] => HR Administrator
+        )
+
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-12 15:26:24] [execute_query] User: hradmin (ID: 25) | IP: 192.168.1.7
+Error: PDO Error [21S01]: SQLSTATE[21S01]: Insert value list does not match column list: 1136 Column count doesn't match value count at row 1
+Data: Array
+(
+    [sql] => INSERT INTO employees (employee_no, employee_type, surname, first_name, middle_name, post, license_no, license_exp_date, rlm_exp, date_hired, cp_number, sss_no, pagibig_no, tin_number, philhealth_no, birth_date, gender, civil_status, age, birthplace, citizenship, provincial_address, special_skills, spouse_name, spouse_age, spouse_occupation, father_name, father_age, father_occupation, mother_name, mother_age, mother_occupation, children_names, college_course, college_school_name, college_school_address, college_years, vocational_course, vocational_school_name, vocational_school_address, vocational_years, highschool_school_name, highschool_school_address, highschool_years, elementary_school_name, elementary_school_address, elementary_years, trainings_json, gov_exam_taken, gov_exam_json, employment_history_json, height, weight, address, contact_person, relationship, contact_person_address, contact_person_number, blood_type, religion, status, created_by, created_by_name) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    [params] => Array
+        (
+            [0] => 34324
+            [1] => SG
+            [2] => HAHA
+            [3] => HEHE
+            [4] => HOHO
+            [5] => UNASSIGNED
+            [6] => NCR2-13872183182973
+            [7] => 2026-01-12
+            [8] => 
+            [9] => 2026-01-12
+            [10] => 9563212312
+            [11] => 12-3213213-1
+            [12] => 1232-1312-3121
+            [13] => 312-321-312-312
+            [14] => 21-312321312-3
+            [15] => 2000-08-27
+            [16] => Female
+            [17] => Separated
+            [18] => 25
+            [19] => DIYAN LANG
+            [20] => PINOY
+            [21] => DITO LANG
+            [22] => MADAMI
+            [23] => DIKO ALAM
+            [24] => 59
+            [25] => SA MAY
+            [26] => MALAY KO
+            [27] => 50
+            [28] => DOON
+            [29] => HAYS
+            [30] => 50
+            [31] => DUNNO
+            [32] => DAMI
+            [33] => 
+            [34] => 
+            [35] => 
+            [36] => 
+            [37] => 
+            [38] => 
+            [39] => 
+            [40] => 
+            [41] => SADFSADFSD
+            [42] => ASDFSDFA
+            [43] => 2012-2018
+            [44] => SDAFSADF
+            [45] => SADFSD
+            [46] => 2012-2018
+            [47] => [{"title":"SAFSDFSDA","by":"SADFSDSADF","date":"2026-01-14"}]
+            [48] => 0
+            [49] => 
+            [50] => [{"position":"SADFSADFS","company_name":"","company_address":"","company_phone":"","period":"03\/2025 - 03\/2030","reason":"SFAASDFSA"}]
+            [51] => 
+            [52] => 800
+            [53] => KUNGSAAN
+            [54] => ALDRIN
+            [55] => Mother
+            [56] => ASDFSAFSAD
+            [57] => 9563211331
+            [58] => A-
+            [59] => No Religion
+            [60] => Active
+            [61] => 25
+            [62] => HR Administrator
+        )
+
+    [trace] => #0 C:\xampp\htdocs\goldenz\includes\database.php(86): PDO->prepare('INSERT INTO emp...')
+#1 C:\xampp\htdocs\goldenz\includes\database.php(448): execute_query('INSERT INTO emp...', Array)
+#2 C:\xampp\htdocs\goldenz\pages\add_employee.php(427): add_employee(Array)
+#3 C:\xampp\htdocs\goldenz\includes\header.php(114): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\goldenz\hr-admin\index.php(36): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-12 15:26:24] [add_employee] User: hradmin (ID: 25) | IP: 192.168.1.7
+Error: Exception caught during employee creation
+Data: Array
+(
+    [error] => Database error: SQLSTATE[21S01]: Insert value list does not match column list: 1136 Column count doesn't match value count at row 1
+    [code] => 0
+    [file] => C:\xampp\htdocs\goldenz\includes\database.php
+    [line] => 104
+    [trace] => #0 C:\xampp\htdocs\goldenz\includes\database.php(448): execute_query('INSERT INTO emp...', Array)
+#1 C:\xampp\htdocs\goldenz\pages\add_employee.php(427): add_employee(Array)
+#2 C:\xampp\htdocs\goldenz\includes\header.php(114): include('C:\\xampp\\htdocs...')
+#3 C:\xampp\htdocs\goldenz\hr-admin\index.php(36): include('C:\\xampp\\htdocs...')
+#4 {main}
+    [sql] => INSERT INTO employees (employee_no, employee_type, surname, first_name, middle_name, post, license_no, license_exp_date, rlm_exp, date_hired, cp_number, sss_no, pagibig_no, tin_number, philhealth_no, birth_date, gender, civil_status, age, birthplace, citizenship, provincial_address, special_skills, spouse_name, spouse_age, spouse_occupation, father_name, father_age, father_occupation, mother_name, mother_age, mother_occupation, children_names, college_course, college_school_name, college_school_address, college_years, vocational_course, vocational_school_name, vocational_school_address, vocational_years, highschool_school_name, highschool_school_address, highschool_years, elementary_school_name, elementary_school_address, elementary_years, trainings_json, gov_exam_taken, gov_exam_json, employment_history_json, height, weight, address, contact_person, relationship, contact_person_address, contact_person_number, blood_type, religion, status, created_by, created_by_name) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    [params] => Array
+        (
+            [0] => 34324
+            [1] => SG
+            [2] => HAHA
+            [3] => HEHE
+            [4] => HOHO
+            [5] => UNASSIGNED
+            [6] => NCR2-13872183182973
+            [7] => 2026-01-12
+            [8] => 
+            [9] => 2026-01-12
+            [10] => 9563212312
+            [11] => 12-3213213-1
+            [12] => 1232-1312-3121
+            [13] => 312-321-312-312
+            [14] => 21-312321312-3
+            [15] => 2000-08-27
+            [16] => Female
+            [17] => Separated
+            [18] => 25
+            [19] => DIYAN LANG
+            [20] => PINOY
+            [21] => DITO LANG
+            [22] => MADAMI
+            [23] => DIKO ALAM
+            [24] => 59
+            [25] => SA MAY
+            [26] => MALAY KO
+            [27] => 50
+            [28] => DOON
+            [29] => HAYS
+            [30] => 50
+            [31] => DUNNO
+            [32] => DAMI
+            [33] => 
+            [34] => 
+            [35] => 
+            [36] => 
+            [37] => 
+            [38] => 
+            [39] => 
+            [40] => 
+            [41] => SADFSADFSD
+            [42] => ASDFSDFA
+            [43] => 2012-2018
+            [44] => SDAFSADF
+            [45] => SADFSD
+            [46] => 2012-2018
+            [47] => [{"title":"SAFSDFSDA","by":"SADFSDSADF","date":"2026-01-14"}]
+            [48] => 0
+            [49] => 
+            [50] => [{"position":"SADFSADFS","company_name":"","company_address":"","company_phone":"","period":"03\/2025 - 03\/2030","reason":"SFAASDFSA"}]
+            [51] => 
+            [52] => 800
+            [53] => KUNGSAAN
+            [54] => ALDRIN
+            [55] => Mother
+            [56] => ASDFSAFSAD
+            [57] => 9563211331
+            [58] => A-
+            [59] => No Religion
+            [60] => Active
+            [61] => 25
+            [62] => HR Administrator
+        )
+
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-12 15:26:24] [add_employee_page] User: hradmin (ID: 25) | IP: 192.168.1.7
+Error: add_employee function returned
+Data: Array
+(
+    [result] => false
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-12 15:26:24] [add_employee_page] User: hradmin (ID: 25) | IP: 192.168.1.7
+Error: add_employee returned false - employee creation failed
+Data: Array KO
+(
+    [employee_data] => Array
+        (
+            [employee_no] => 34324
+            [employee_type] => SG
+            [surname] => HAHA
+            [first_name] => HEHE
+            [middle_name] => HOHO
+            [post] => UNASSIGNED
+            [license_no] => NCR2-13872183182973
+            [license_exp_date] => 2026-01-12
+            [rlm_exp] => 
+            [date_hired] => 2026-01-12
+            [cp_number] => 9563212312
+            [sss_no] => 12-3213213-1
+            [pagibig_no] => 1232-1312-3121
+            [tin_number] => 312-321-312-312
+            [philhealth_no] => 21-312321312-3
+            [birth_date] => 2000-08-27
+            [gender] => Female
+            [civil_status] => Separated
+            [age] => 25
+            [birthplace] => DIYAN LANG
+            [citizenship] => PINOY
+            [provincial_address] => DITO LANG
+            [special_skills] => MADAMI
+            [spouse_name] => DIKO ALAM
+            [spouse_age] => 59
+            [spouse_occupation] => SA MAY
+            [father_name] => MALAY KO
+            [father_age] => 50
+            [father_occupation] => DOON
+            [mother_name] => HAYS
+            [mother_age] => 50
+            [mother_occupation] => DUNNO
+            [children_names] => DAMI
+            [college_course] => 
+            [college_school_name] => 
+            [college_school_address] => 
+            [college_years] => 
+            [vocational_course] => 
+            [vocational_school_name] => 
+            [vocational_school_address] => 
+            [vocational_years] => 
+            [highschool_school_name] => SADFSADFSD
+            [highschool_school_address] => ASDFSDFA
+            [highschool_years] => 2012-2018
+            [elementary_school_name] => SDAFSADF
+            [elementary_school_address] => SADFSD
+            [elementary_years] => 2012-2018
+            [trainings_json] => [{"title":"SAFSDFSDA","by":"SADFSDSADF","date":"2026-01-14"}]
+            [gov_exam_taken] => 0
+            [gov_exam_json] => 
+            [employment_history_json] => [{"position":"SADFSADFS","company_name":"","company_address":"","company_phone":"","period":"03\/2025 - 03\/2030","reason":"SFAASDFSA"}]
+            [height] => 
+            [weight] => 800
+            [address] => KUNGSAAN
+            [contact_person] => ALDRIN
+            [relationship] => Mother
+            [contact_person_address] => ASDFSAFSAD
+            [contact_person_number] => 9563211331
+            [blood_type] => A-
+            [religion] => No Religion
+            [status] => Active
+            [created_by] => 25
+            [created_by_name] => HR Administrator
+        )
+
+    [employee_no] => 34324
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-12 15:30:42] [phone_validation] User: hradmin (ID: 25) | IP: 192.168.1.7
+Error: Validating contact phone number
+Data: Array
+(
+    [original] => 9563212312
+    [cleaned] => 9563212312
+    [length] => 10
+    [matches_pattern] => yes
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-12 15:30:42] [phone_validation] User: hradmin (ID: 25) | IP: 192.168.1.7
+Error: Validating emergency contact number
+Data: Array
+(
+    [original] => 9563211331
+    [cleaned] => 9563211331
+    [length] => 10
+    [matches_pattern] => yes
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-12 15:30:42] [add_employee_page] User: hradmin (ID: 25) | IP: 192.168.1.7
+Error: Starting employee creation from form
+Data: Array
+(
+    [post_data] => Array
+        (
+            [employee_no] => 34324
+            [employee_type] => SG
+            [status] => Active
+            [surname] => HAHA
+            [first_name] => HEHE
+            [middle_name] => HOHO
+            [birth_date] => 2000-08-27
+            [age] => 25
+            [gender] => Female
+            [civil_status] => Separated
+            [birthplace] => DIYAN LANG 
+            [citizenship] => PINOY
+            [address] => KUNGSAAN
+            [provincial_address] => DITO LANG 
+            [height] => 
+            [weight] => 800
+            [blood_type] => A-
+            [religion] => No Religion
+            [special_skills] => MADAMI
+            [spouse_name] => DIKO ALAM
+            [spouse_age] => 59
+            [spouse_occupation] =>  SA MAY
+            [father_name] => MALAY KO 
+            [father_age] => 50
+            [father_occupation] => DOON
+            [mother_name] => HAYS
+            [mother_age] => 50
+            [mother_occupation] => DUNNO
+            [children_names] => DAMI
+            [college_course] => 
+            [college_school_name] => 
+            [college_years] => 
+            [college_school_address] => 
+            [vocational_course] => 
+            [vocational_school_name] => 
+            [vocational_years] => 
+            [vocational_school_address] => 
+            [highschool_school_name] => SADFSADFSD
+            [highschool_years] => 2012-2018
+            [highschool_school_address] => ASDFSDFA
+            [elementary_school_name] => SDAFSADF
+            [elementary_years] => 2012-2018
+            [elementary_school_address] => SADFSD
+            [trainings] => Array
+                (
+                    [0] => Array
+                        (
+                            [title] => SAFSDFSDA
+                            [by] => SADFSDSADF
+                            [date] => 2026-01-14
+                        )
+
+                )
+
+            [employment_history] => Array
+                (
+                    [0] => Array
+                        (
+                            [position] => SADFSADFS
+                            [period] => 03/2025 - 03/2030
+                            [reason] => SFAASDFSA
+                            [company_name] => 
+                            [company_phone] => 
+                            [company_address] => 
+                        )
+
+                )
+
+            [gov_exam_taken] => No
+            [cp_number] => 9563212312
+            [contact_person] => ALDRIN
+            [relationship] => Mother
+            [contact_person_number] => 9563211331
+            [contact_person_address] => ASDFSAFSAD
+            [contact_person_alt] => 
+            [relationship_alt] => 
+            [contact_person_number_alt] => 
+            [contact_person_address_alt] => 
+            [post] => UNASSIGNED
+            [date_hired] => 2026-01-12
+            [license_no] => NCR2-13872183182973
+            [license_exp_date] => 2026-01-12
+            [sss_no] => 12-3213213-1
+            [pagibig_no] => 1232-1312-3121
+            [tin_number] => 312-321-312-312
+            [philhealth_no] => 21-312321312-3
+            [hr_remarks] => ASDFSDAF
+            [status_summary] => Completed
+        )
+
+    [files] => Array
+        (
+            [employee_photo] => Array
+                (
+                    [name] => 
+                    [size] => 0
+                    [error] => 4
+                )
+
+        )
+
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-12 15:30:42] [add_employee_page] User: hradmin (ID: 25) | IP: 192.168.1.7
+Error: Calling add_employee function
+Data: Array
+(
+    [employee_data] => Array
+        (
+            [employee_no] => 34324
+            [employee_type] => SG
+            [surname] => HAHA
+            [first_name] => HEHE
+            [middle_name] => HOHO
+            [post] => UNASSIGNED
+            [license_no] => NCR2-13872183182973
+            [license_exp_date] => 2026-01-12
+            [rlm_exp] => 
+            [date_hired] => 2026-01-12
+            [cp_number] => 9563212312
+            [sss_no] => 12-3213213-1
+            [pagibig_no] => 1232-1312-3121
+            [tin_number] => 312-321-312-312
+            [philhealth_no] => 21-312321312-3
+            [birth_date] => 2000-08-27
+            [gender] => Female
+            [civil_status] => Separated
+            [age] => 25
+            [birthplace] => DIYAN LANG
+            [citizenship] => PINOY
+            [provincial_address] => DITO LANG
+            [special_skills] => MADAMI
+            [spouse_name] => DIKO ALAM
+            [spouse_age] => 59
+            [spouse_occupation] => SA MAY
+            [father_name] => MALAY KO
+            [father_age] => 50
+            [father_occupation] => DOON
+            [mother_name] => HAYS
+            [mother_age] => 50
+            [mother_occupation] => DUNNO
+            [children_names] => DAMI
+            [college_course] => 
+            [college_school_name] => 
+            [college_school_address] => 
+            [college_years] => 
+            [vocational_course] => 
+            [vocational_school_name] => 
+            [vocational_school_address] => 
+            [vocational_years] => 
+            [highschool_school_name] => SADFSADFSD
+            [highschool_school_address] => ASDFSDFA
+            [highschool_years] => 2012-2018
+            [elementary_school_name] => SDAFSADF
+            [elementary_school_address] => SADFSD
+            [elementary_years] => 2012-2018
+            [trainings_json] => [{"title":"SAFSDFSDA","by":"SADFSDSADF","date":"2026-01-14"}]
+            [gov_exam_taken] => 0
+            [gov_exam_json] => 
+            [employment_history_json] => [{"position":"SADFSADFS","company_name":"","company_address":"","company_phone":"","period":"03\/2025 - 03\/2030","reason":"SFAASDFSA"}]
+            [height] => 
+            [weight] => 800
+            [address] => KUNGSAAN
+            [contact_person] => ALDRIN
+            [relationship] => Mother
+            [contact_person_address] => ASDFSAFSAD
+            [contact_person_number] => 9563211331
+            [blood_type] => A-
+            [religion] => No Religion
+            [status] => Active
+            [created_by] => 25
+            [created_by_name] => HR Administrator
+        )
+
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-12 15:30:42] [add_employee] User: hradmin (ID: 25) | IP: 192.168.1.7
+Error: Starting employee creation
+Data: Array
+(
+    [input_data] => Array
+        (
+            [employee_no] => 34324
+            [employee_type] => SG
+            [surname] => HAHA
+            [first_name] => HEHE
+            [middle_name] => HOHO
+            [post] => UNASSIGNED
+            [license_no] => NCR2-13872183182973
+            [license_exp_date] => 2026-01-12
+            [rlm_exp] => 
+            [date_hired] => 2026-01-12
+            [cp_number] => 9563212312
+            [sss_no] => 12-3213213-1
+            [pagibig_no] => 1232-1312-3121
+            [tin_number] => 312-321-312-312
+            [philhealth_no] => 21-312321312-3
+            [birth_date] => 2000-08-27
+            [gender] => Female
+            [civil_status] => Separated
+            [age] => 25
+            [birthplace] => DIYAN LANG
+            [citizenship] => PINOY
+            [provincial_address] => DITO LANG
+            [special_skills] => MADAMI
+            [spouse_name] => DIKO ALAM
+            [spouse_age] => 59
+            [spouse_occupation] => SA MAY
+            [father_name] => MALAY KO
+            [father_age] => 50
+            [father_occupation] => DOON
+            [mother_name] => HAYS
+            [mother_age] => 50
+            [mother_occupation] => DUNNO
+            [children_names] => DAMI
+            [college_course] => 
+            [college_school_name] => 
+            [college_school_address] => 
+            [college_years] => 
+            [vocational_course] => 
+            [vocational_school_name] => 
+            [vocational_school_address] => 
+            [vocational_years] => 
+            [highschool_school_name] => SADFSADFSD
+            [highschool_school_address] => ASDFSDFA
+            [highschool_years] => 2012-2018
+            [elementary_school_name] => SDAFSADF
+            [elementary_school_address] => SADFSD
+            [elementary_years] => 2012-2018
+            [trainings_json] => [{"title":"SAFSDFSDA","by":"SADFSDSADF","date":"2026-01-14"}]
+            [gov_exam_taken] => 0
+            [gov_exam_json] => 
+            [employment_history_json] => [{"position":"SADFSADFS","company_name":"","company_address":"","company_phone":"","period":"03\/2025 - 03\/2030","reason":"SFAASDFSA"}]
+            [height] => 
+            [weight] => 800
+            [address] => KUNGSAAN
+            [contact_person] => ALDRIN
+            [relationship] => Mother
+            [contact_person_address] => ASDFSAFSAD
+            [contact_person_number] => 9563211331
+            [blood_type] => A-
+            [religion] => No Religion
+            [status] => Active
+            [created_by] => 25
+            [created_by_name] => HR Administrator
+        )
+
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-12 15:30:43] [add_employee] User: hradmin (ID: 25) | IP: 192.168.1.7
+Error: Prepared SQL and parameters
+Data: Array
+(
+    [sql] => INSERT INTO employees (employee_no, employee_type, surname, first_name, middle_name, post, license_no, license_exp_date, rlm_exp, date_hired, cp_number, sss_no, pagibig_no, tin_number, philhealth_no, birth_date, gender, civil_status, age, birthplace, citizenship, provincial_address, special_skills, spouse_name, spouse_age, spouse_occupation, father_name, father_age, father_occupation, mother_name, mother_age, mother_occupation, children_names, college_course, college_school_name, college_school_address, college_years, vocational_course, vocational_school_name, vocational_school_address, vocational_years, highschool_school_name, highschool_school_address, highschool_years, elementary_school_name, elementary_school_address, elementary_years, trainings_json, gov_exam_taken, gov_exam_json, employment_history_json, height, weight, address, contact_person, relationship, contact_person_address, contact_person_number, blood_type, religion, status, created_by, created_by_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    [params_count] => 63
+    [params] => Array
+        (
+            [0] => 34324
+            [1] => SG
+            [2] => HAHA
+            [3] => HEHE
+            [4] => HOHO
+            [5] => UNASSIGNED
+            [6] => NCR2-13872183182973
+            [7] => 2026-01-12
+            [8] => 
+            [9] => 2026-01-12
+            [10] => 9563212312
+            [11] => 12-3213213-1
+            [12] => 1232-1312-3121
+            [13] => 312-321-312-312
+            [14] => 21-312321312-3
+            [15] => 2000-08-27
+            [16] => Female
+            [17] => Separated
+            [18] => 25
+            [19] => DIYAN LANG
+            [20] => PINOY
+            [21] => DITO LANG
+            [22] => MADAMI
+            [23] => DIKO ALAM
+            [24] => 59
+            [25] => SA MAY
+            [26] => MALAY KO
+            [27] => 50
+            [28] => DOON
+            [29] => HAYS
+            [30] => 50
+            [31] => DUNNO
+            [32] => DAMI
+            [33] => 
+            [34] => 
+            [35] => 
+            [36] => 
+            [37] => 
+            [38] => 
+            [39] => 
+            [40] => 
+            [41] => SADFSADFSD
+            [42] => ASDFSDFA
+            [43] => 2012-2018
+            [44] => SDAFSADF
+            [45] => SADFSD
+            [46] => 2012-2018
+            [47] => [{"title":"SAFSDFSDA","by":"SADFSDSADF","date":"2026-01-14"}]
+            [48] => 0
+            [49] => 
+            [50] => [{"position":"SADFSADFS","company_name":"","company_address":"","company_phone":"","period":"03\/2025 - 03\/2030","reason":"SFAASDFSA"}]
+            [51] => 
+            [52] => 800
+            [53] => KUNGSAAN
+            [54] => ALDRIN
+            [55] => Mother
+            [56] => ASDFSAFSAD
+            [57] => 9563211331
+            [58] => A-
+            [59] => No Religion
+            [60] => Active
+            [61] => 25
+            [62] => HR Administrator
+        )
+
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-12 15:30:43] [add_employee] User: hradmin (ID: 25) | IP: 192.168.1.7
+Error: Employee created successfully
+Data: Array
+(
+    [last_insert_id] => 12729
+    [employee_no] => 34324
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-12 15:30:43] [add_employee_page] User: hradmin (ID: 25) | IP: 192.168.1.7
+Error: add_employee function returned
+Data: Array
+(
+    [result] => true
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-12 15:30:43] [photo_upload] User: hradmin (ID: 25) | IP: 192.168.1.7
+Error: File upload error
+Data: Array
+(
+    [employee_id] => 12729
+    [error_code] => 4
+    [error_message] => Upload error occurred
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-12 15:30:43] [employee_created] User: hradmin (ID: 25) | IP: 192.168.1.7
+Error: Employee created successfully, redirecting
+Data: Array
+(
+    [employee_id] => 12729
+    [redirect_url] => /hr-admin/index.php?page=add_employee&success=1
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-12 15:40:47] [phone_validation] User: hradmin (ID: 25) | IP: 192.168.1.7
+Error: Validating contact phone number
+Data: Array
+(
+    [original] => 9613014462
+    [cleaned] => 9613014462
+    [length] => 10
+    [matches_pattern] => yes
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-12 15:40:47] [phone_validation] User: hradmin (ID: 25) | IP: 192.168.1.7
+Error: Validating emergency contact number
+Data: Array
+(
+    [original] => 9352325523
+    [cleaned] => 9352325523
+    [length] => 10
+    [matches_pattern] => yes
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-12 15:44:00] [phone_validation] User: hradmin (ID: 25) | IP: 192.168.1.7
+Error: Validating contact phone number
+Data: Array
+(
+    [original] => 9432872387
+    [cleaned] => 9432872387
+    [length] => 10
+    [matches_pattern] => yes
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-12 15:44:00] [phone_validation] User: hradmin (ID: 25) | IP: 192.168.1.7
+Error: Validating emergency contact number
+Data: Array
+(
+    [original] => 9564322493
+    [cleaned] => 9564322493
+    [length] => 10
+    [matches_pattern] => yes
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-12 15:45:00] [phone_validation] User: hradmin (ID: 25) | IP: 192.168.1.7
+Error: Validating contact phone number
+Data: Array
+(
+    [original] => 9237642783
+    [cleaned] => 9237642783
+    [length] => 10
+    [matches_pattern] => yes
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-12 15:45:00] [phone_validation] User: hradmin (ID: 25) | IP: 192.168.1.7
+Error: Validating emergency contact number
+Data: Array
+(
+    [original] => 9348732648
+    [cleaned] => 9348732648
+    [length] => 10
+    [matches_pattern] => yes
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-12 15:46:04] [phone_validation] User: hradmin (ID: 25) | IP: 192.168.1.7
+Error: Validating contact phone number
+Data: Array
+(
+    [original] => 9887326478
+    [cleaned] => 9887326478
+    [length] => 10
+    [matches_pattern] => yes
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-12 15:46:04] [phone_validation] User: hradmin (ID: 25) | IP: 192.168.1.7
+Error: Validating emergency contact number
+Data: Array
+(
+    [original] => 9243876234
+    [cleaned] => 9243876234
+    [length] => 10
+    [matches_pattern] => yes
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-12 15:47:53] [phone_validation] User: hradmin (ID: 25) | IP: 192.168.1.7
+Error: Validating contact phone number
+Data: Array
+(
+    [original] => 9123876127
+    [cleaned] => 9123876127
+    [length] => 10
+    [matches_pattern] => yes
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-12 15:47:53] [phone_validation] User: hradmin (ID: 25) | IP: 192.168.1.7
+Error: Validating emergency contact number
+Data: Array
+(
+    [original] => 9217361278
+    [cleaned] => 9217361278
+    [length] => 10
+    [matches_pattern] => yes
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-12 15:47:53] [add_employee_page] User: hradmin (ID: 25) | IP: 192.168.1.7
+Error: Starting employee creation from form
+Data: Array
+(
+    [post_data] => Array
+        (
+            [employee_no] => 24324
+            [employee_type] => SG
+            [status] => Active
+            [surname] => AMOR
+            [first_name] => CHRISTIAN
+            [middle_name] => B
+            [birth_date] => 2002-04-04
+            [age] => 23
+            [gender] => Male
+            [civil_status] => Single
+            [birthplace] => MANDALUYONG
+            [citizenship] => FILIPINA
+            [address] => SAMIN
+            [provincial_address] => WADS
+            [height] => 5'1"
+            [weight] => 45
+            [blood_type] => O+
+            [religion] => Sikh
+            [special_skills] => wala batugan
+            [spouse_name] => SDASDW
+            [spouse_age] => 12
+            [spouse_occupation] => SDSADA
+            [father_name] => WDAWD
+            [father_age] => 23
+            [father_occupation] => DASASD
+            [mother_name] => WDAWDW
+            [mother_age] => 12
+            [mother_occupation] => ADSADSADAS
+            [children_names] => ASDDASSDADSADSA
+            [college_course] => SDASADDSASDA
+            [college_school_name] => ASDASDDSA
+            [college_years] => 2001-2020
+            [college_school_address] => DSAASDSDASAD
+            [vocational_course] => ASDSADASD
+            [vocational_school_name] => ASDSADSDA
+            [vocational_years] => 2001-2020
+            [vocational_school_address] => SASASADDSAD
+            [highschool_school_name] => SDSD
+            [highschool_years] => 2001-2020
+            [highschool_school_address] => DSASDSDADDSA
+            [elementary_school_name] => DSSDAASDSADSDA
+            [elementary_years] => 2001-2020
+            [elementary_school_address] => DSASDSDADASASD
+            [trainings] => Array
+                (
+                    [0] => Array
+                        (
+                            [title] => SDASADSDA
+                            [by] => SSADDSADSA
+                            [date] => 2022-03-04
+                        )
+
+                )
+
+            [employment_history] => Array
+                (
+                    [0] => Array
+                        (
+                            [position] => 34432324342
+                            [period] => 03/2021 - 03/2025
+                            [reason] => SDSDAADSSAD
+                            [company_name] => SDADAW
+                            [company_phone] => 342332ASDA
+                            [company_address] => AWAWDDWA
+                        )
+
+                )
+
+            [gov_exam_taken] => No
+            [cp_number] => 9123876127
+            [contact_person] => SASADDSADASDAS
+            [relationship] => Colleague
+            [contact_person_number] => 9217361278
+            [contact_person_address] => SDFSDAASDSDFASDFA
+            [contact_person_alt] => 
+            [relationship_alt] => 
+            [contact_person_number_alt] => 
+            [contact_person_address_alt] => 
+            [post] => KAHIT SAN
+            [date_hired] => 0012-02-02
+            [license_no] => R332-32323232322333
+            [license_exp_date] => 2001-03-22
+            [sss_no] => 23-3232323-2
+            [pagibig_no] => 2332-4234-3423
+            [tin_number] => 233-232-322-323
+            [philhealth_no] => 32-324324432-3
+            [hr_remarks] => 34242342DSFSDFF
+            [status_summary] => Completed
+        )
+
+    [files] => Array
+        (
+            [employee_photo] => Array
+                (
+                    [name] => 
+                    [size] => 0
+                    [error] => 4
+                )
+
+        )
+
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-12 15:47:53] [add_employee_page] User: hradmin (ID: 25) | IP: 192.168.1.7
+Error: Calling add_employee function
+Data: Array
+(
+    [employee_data] => Array
+        (
+            [employee_no] => 24324
+            [employee_type] => SG
+            [surname] => AMOR
+            [first_name] => CHRISTIAN
+            [middle_name] => B
+            [post] => KAHIT SAN
+            [license_no] => R332-32323232322333
+            [license_exp_date] => 2001-03-22
+            [rlm_exp] => 
+            [date_hired] => 0012-02-02
+            [cp_number] => 9123876127
+            [sss_no] => 23-3232323-2
+            [pagibig_no] => 2332-4234-3423
+            [tin_number] => 233-232-322-323
+            [philhealth_no] => 32-324324432-3
+            [birth_date] => 2002-04-04
+            [gender] => Male
+            [civil_status] => Single
+            [age] => 23
+            [birthplace] => MANDALUYONG
+            [citizenship] => FILIPINA
+            [provincial_address] => WADS
+            [special_skills] => wala batugan
+            [spouse_name] => SDASDW
+            [spouse_age] => 12
+            [spouse_occupation] => SDSADA
+            [father_name] => WDAWD
+            [father_age] => 23
+            [father_occupation] => DASASD
+            [mother_name] => WDAWDW
+            [mother_age] => 12
+            [mother_occupation] => ADSADSADAS
+            [children_names] => ASDDASSDADSADSA
+            [college_course] => SDASADDSASDA
+            [college_school_name] => ASDASDDSA
+            [college_school_address] => DSAASDSDASAD
+            [college_years] => 2001-2020
+            [vocational_course] => ASDSADASD
+            [vocational_school_name] => ASDSADSDA
+            [vocational_school_address] => SASASADDSAD
+            [vocational_years] => 2001-2020
+            [highschool_school_name] => SDSD
+            [highschool_school_address] => DSASDSDADDSA
+            [highschool_years] => 2001-2020
+            [elementary_school_name] => DSSDAASDSADSDA
+            [elementary_school_address] => DSASDSDADASASD
+            [elementary_years] => 2001-2020
+            [trainings_json] => [{"title":"SDASADSDA","by":"SSADDSADSA","date":"2022-03-04"}]
+            [gov_exam_taken] => 0
+            [gov_exam_json] => 
+            [employment_history_json] => [{"position":"34432324342","company_name":"SDADAW","company_address":"AWAWDDWA","company_phone":"342332ASDA","period":"03\/2021 - 03\/2025","reason":"SDSDAADSSAD"}]
+            [height] => 5'1"
+            [weight] => 45
+            [address] => SAMIN
+            [contact_person] => SASADDSADASDAS
+            [relationship] => Colleague
+            [contact_person_address] => SDFSDAASDSDFASDFA
+            [contact_person_number] => 9217361278
+            [blood_type] => O+
+            [religion] => Sikh
+            [status] => Active
+            [created_by] => 25
+            [created_by_name] => HR Administrator
+        )
+
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-12 15:47:53] [add_employee] User: hradmin (ID: 25) | IP: 192.168.1.7
+Error: Starting employee creation
+Data: Array
+(
+    [input_data] => Array
+        (
+            [employee_no] => 24324
+            [employee_type] => SG
+            [surname] => AMOR
+            [first_name] => CHRISTIAN
+            [middle_name] => B
+            [post] => KAHIT SAN
+            [license_no] => R332-32323232322333
+            [license_exp_date] => 2001-03-22
+            [rlm_exp] => 
+            [date_hired] => 0012-02-02
+            [cp_number] => 9123876127
+            [sss_no] => 23-3232323-2
+            [pagibig_no] => 2332-4234-3423
+            [tin_number] => 233-232-322-323
+            [philhealth_no] => 32-324324432-3
+            [birth_date] => 2002-04-04
+            [gender] => Male
+            [civil_status] => Single
+            [age] => 23
+            [birthplace] => MANDALUYONG
+            [citizenship] => FILIPINA
+            [provincial_address] => WADS
+            [special_skills] => wala batugan
+            [spouse_name] => SDASDW
+            [spouse_age] => 12
+            [spouse_occupation] => SDSADA
+            [father_name] => WDAWD
+            [father_age] => 23
+            [father_occupation] => DASASD
+            [mother_name] => WDAWDW
+            [mother_age] => 12
+            [mother_occupation] => ADSADSADAS
+            [children_names] => ASDDASSDADSADSA
+            [college_course] => SDASADDSASDA
+            [college_school_name] => ASDASDDSA
+            [college_school_address] => DSAASDSDASAD
+            [college_years] => 2001-2020
+            [vocational_course] => ASDSADASD
+            [vocational_school_name] => ASDSADSDA
+            [vocational_school_address] => SASASADDSAD
+            [vocational_years] => 2001-2020
+            [highschool_school_name] => SDSD
+            [highschool_school_address] => DSASDSDADDSA
+            [highschool_years] => 2001-2020
+            [elementary_school_name] => DSSDAASDSADSDA
+            [elementary_school_address] => DSASDSDADASASD
+            [elementary_years] => 2001-2020
+            [trainings_json] => [{"title":"SDASADSDA","by":"SSADDSADSA","date":"2022-03-04"}]
+            [gov_exam_taken] => 0
+            [gov_exam_json] => 
+            [employment_history_json] => [{"position":"34432324342","company_name":"SDADAW","company_address":"AWAWDDWA","company_phone":"342332ASDA","period":"03\/2021 - 03\/2025","reason":"SDSDAADSSAD"}]
+            [height] => 5'1"
+            [weight] => 45
+            [address] => SAMIN
+            [contact_person] => SASADDSADASDAS
+            [relationship] => Colleague
+            [contact_person_address] => SDFSDAASDSDFASDFA
+            [contact_person_number] => 9217361278
+            [blood_type] => O+
+            [religion] => Sikh
+            [status] => Active
+            [created_by] => 25
+            [created_by_name] => HR Administrator
+        )
+
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-12 15:47:54] [add_employee] User: hradmin (ID: 25) | IP: 192.168.1.7
+Error: Prepared SQL and parameters
+Data: Array
+(
+    [sql] => INSERT INTO employees (employee_no, employee_type, surname, first_name, middle_name, post, license_no, license_exp_date, rlm_exp, date_hired, cp_number, sss_no, pagibig_no, tin_number, philhealth_no, birth_date, gender, civil_status, age, birthplace, citizenship, provincial_address, special_skills, spouse_name, spouse_age, spouse_occupation, father_name, father_age, father_occupation, mother_name, mother_age, mother_occupation, children_names, college_course, college_school_name, college_school_address, college_years, vocational_course, vocational_school_name, vocational_school_address, vocational_years, highschool_school_name, highschool_school_address, highschool_years, elementary_school_name, elementary_school_address, elementary_years, trainings_json, gov_exam_taken, gov_exam_json, employment_history_json, height, weight, address, contact_person, relationship, contact_person_address, contact_person_number, blood_type, religion, status, created_by, created_by_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    [params_count] => 63
+    [params] => Array
+        (
+            [0] => 24324
+            [1] => SG
+            [2] => AMOR
+            [3] => CHRISTIAN
+            [4] => B
+            [5] => KAHIT SAN
+            [6] => R332-32323232322333
+            [7] => 2001-03-22
+            [8] => 
+            [9] => 0012-02-02
+            [10] => 9123876127
+            [11] => 23-3232323-2
+            [12] => 2332-4234-3423
+            [13] => 233-232-322-323
+            [14] => 32-324324432-3
+            [15] => 2002-04-04
+            [16] => Male
+            [17] => Single
+            [18] => 23
+            [19] => MANDALUYONG
+            [20] => FILIPINA
+            [21] => WADS
+            [22] => wala batugan
+            [23] => SDASDW
+            [24] => 12
+            [25] => SDSADA
+            [26] => WDAWD
+            [27] => 23
+            [28] => DASASD
+            [29] => WDAWDW
+            [30] => 12
+            [31] => ADSADSADAS
+            [32] => ASDDASSDADSADSA
+            [33] => SDASADDSASDA
+            [34] => ASDASDDSA
+            [35] => DSAASDSDASAD
+            [36] => 2001-2020
+            [37] => ASDSADASD
+            [38] => ASDSADSDA
+            [39] => SASASADDSAD
+            [40] => 2001-2020
+            [41] => SDSD
+            [42] => DSASDSDADDSA
+            [43] => 2001-2020
+            [44] => DSSDAASDSADSDA
+            [45] => DSASDSDADASASD
+            [46] => 2001-2020
+            [47] => [{"title":"SDASADSDA","by":"SSADDSADSA","date":"2022-03-04"}]
+            [48] => 0
+            [49] => 
+            [50] => [{"position":"34432324342","company_name":"SDADAW","company_address":"AWAWDDWA","company_phone":"342332ASDA","period":"03\/2021 - 03\/2025","reason":"SDSDAADSSAD"}]
+            [51] => 5'1"
+            [52] => 45
+            [53] => SAMIN
+            [54] => SASADDSADASDAS
+            [55] => Colleague
+            [56] => SDFSDAASDSDFASDFA
+            [57] => 9217361278
+            [58] => O+
+            [59] => Sikh
+            [60] => Active
+            [61] => 25
+            [62] => HR Administrator
+        )
+
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-12 15:47:54] [add_employee] User: hradmin (ID: 25) | IP: 192.168.1.7
+Error: Employee created successfully
+Data: Array
+(
+    [last_insert_id] => 13042
+    [employee_no] => 24324
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-12 15:47:54] [add_employee_page] User: hradmin (ID: 25) | IP: 192.168.1.7
+Error: add_employee function returned
+Data: Array
+(
+    [result] => true
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-12 15:47:54] [photo_upload] User: hradmin (ID: 25) | IP: 192.168.1.7
+Error: File upload error
+Data: Array
+(
+    [employee_id] => 13042
+    [error_code] => 4
+    [error_message] => Upload error occurred
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-12 15:47:54] [employee_created] User: hradmin (ID: 25) | IP: 192.168.1.7
+Error: Employee created successfully, redirecting
+Data: Array
+(
+    [employee_id] => 13042
+    [redirect_url] => /hr-admin/index.php?page=add_employee&success=1
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------

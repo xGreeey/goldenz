@@ -1,0 +1,771 @@
+<?php
+// Get post ID from URL
+$post_id = $_GET['post_id'] ?? null;
+$selected_post = null;
+
+if ($post_id) {
+    $selected_post = get_post_by_id($post_id);
+}
+
+// Get all posts for dropdown
+$all_posts = get_posts(['status' => 'Active']);
+
+// Get employees assigned to specific post
+$assigned_employees = [];
+if ($post_id) {
+    $sql = "SELECT * FROM employees WHERE post = ? AND status = 'Active' ORDER BY first_name, surname";
+    $stmt = execute_query($sql, [$selected_post['post_title']]);
+    $assigned_employees = $stmt->fetchAll();
+}
+
+// Get all employees for assignment
+$all_employees = get_employees();
+?>
+
+<div class="container-fluid post-assignments-modern">
+    <!-- Page Header -->
+    <div class="page-header-modern mb-5">
+        <div class="page-title-modern">
+            <h1 class="page-title-main">Post Assignments</h1>
+            <p class="page-subtitle">Manage employee assignments to specific posts and locations</p>
+        </div>
+        <div class="page-actions-modern">
+            <a href="?page=posts" class="btn btn-outline-modern">
+                <i class="fas fa-arrow-left me-2"></i>Back to Posts
+            </a>
+        </div>
+    </div>
+
+    <!-- Post Selection -->
+    <div class="card card-modern mb-4">
+        <div class="card-header-modern">
+            <h5 class="card-title-modern">Select Post to Manage</h5>
+        </div>
+        <div class="card-body-modern">
+            <div class="row g-3">
+                <div class="col-md-8">
+                    <label for="postSelect" class="form-label-modern">Choose a Post</label>
+                    <select class="form-select-modern" id="postSelect" onchange="loadPostAssignments(this.value)">
+                        <option value="">Select a post to view assignments...</option>
+                        <?php foreach ($all_posts as $post): ?>
+                            <option value="<?php echo $post['id']; ?>" 
+                                    <?php echo $post_id == $post['id'] ? 'selected' : ''; ?>>
+                                <?php echo htmlspecialchars($post['post_title']); ?> 
+                                (<?php echo htmlspecialchars($post['location']); ?>)
+                                - <?php echo $post['current_employees']; ?>/<?php echo $post['required_count']; ?> filled
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label-modern">&nbsp;</label>
+                    <div>
+                        <button class="btn btn-primary-modern w-100" onclick="loadPostAssignments(document.getElementById('postSelect').value)">
+                            <i class="fas fa-search me-2"></i>Load Assignments
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <?php if ($selected_post): ?>
+        <!-- Post Information -->
+        <div class="card card-modern mb-4">
+            <div class="card-header-modern">
+                <h5 class="card-title-modern">Post Information</h5>
+            </div>
+            <div class="card-body-modern">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="post-title-main"><?php echo htmlspecialchars($selected_post['post_title']); ?></h6>
+                        <p class="post-info-item mb-2">
+                            <i class="fas fa-map-marker-alt me-2"></i>
+                            <?php echo htmlspecialchars($selected_post['location']); ?>
+                        </p>
+                        <p class="post-info-item mb-0">
+                            <i class="fas fa-building me-2"></i>
+                            <?php echo htmlspecialchars($selected_post['department']); ?> - 
+                            <?php 
+                            $type_labels = ['SG' => 'Security Guard', 'LG' => 'Lady Guard', 'SO' => 'Security Officer'];
+                            echo $type_labels[$selected_post['employee_type']] ?? $selected_post['employee_type'];
+                            ?>
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="info-row">
+                            <span class="info-label">Positions Required:</span>
+                            <strong class="info-value"><?php echo $selected_post['required_count']; ?></strong>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Currently Filled:</span>
+                            <strong class="info-value text-success"><?php echo $selected_post['current_employees']; ?></strong>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Remaining Vacancies:</span>
+                            <strong class="info-value text-warning"><?php echo $selected_post['remaining_vacancies']; ?></strong>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Priority:</span>
+                            <span class="priority-badge priority-<?php echo strtolower($selected_post['priority']); ?>">
+                                <?php echo htmlspecialchars($selected_post['priority']); ?>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Assignment Management -->
+        <div class="row g-4">
+            <!-- Currently Assigned Employees -->
+            <div class="col-lg-6">
+                <div class="card card-modern h-100">
+                    <div class="card-header-modern d-flex justify-content-between align-items-center">
+                        <h5 class="card-title-modern mb-0">Currently Assigned (<?php echo count($assigned_employees); ?>)</h5>
+                        <span class="badge badge-success-modern"><?php echo count($assigned_employees); ?>/<?php echo $selected_post['required_count']; ?></span>
+                    </div>
+                    <div class="card-body-modern">
+                        <?php if (empty($assigned_employees)): ?>
+                            <div class="text-center py-4">
+                                <i class="fas fa-users fa-2x text-muted mb-3"></i>
+                                <p class="text-muted">No employees assigned to this post yet.</p>
+                            </div>
+                        <?php else: ?>
+                            <div class="assigned-employees-list">
+                                <?php foreach ($assigned_employees as $employee): ?>
+                                    <div class="employee-assignment-item">
+                                        <div class="d-flex align-items-center">
+                                            <div class="employee-avatar me-3">
+                                                <?php echo strtoupper(substr($employee['first_name'], 0, 1) . substr($employee['surname'], 0, 1)); ?>
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <h6 class="mb-1"><?php echo htmlspecialchars($employee['first_name'] . ' ' . $employee['surname']); ?></h6>
+                                                <small class="text-muted">
+                                                    Employee #<?php echo $employee['employee_no']; ?> | 
+                                                    <?php echo $employee['employee_type']; ?>
+                                                </small>
+                                            </div>
+                                            <div class="assignment-actions">
+                                                <button class="btn btn-sm btn-outline-danger" 
+                                                        onclick="removeAssignment(<?php echo $employee['id']; ?>, '<?php echo htmlspecialchars($selected_post['post_title']); ?>')"
+                                                        title="Remove Assignment">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Available Employees for Assignment -->
+            <div class="col-lg-6">
+                <div class="card card-modern h-100">
+                    <div class="card-header-modern">
+                        <h5 class="card-title-modern mb-0">Available Employees</h5>
+                    </div>
+                    <div class="card-body-modern">
+                        <div class="mb-3">
+                            <div class="search-input-modern">
+                                <i class="fas fa-search search-icon"></i>
+                                <input type="text" id="employeeSearch" class="search-field" placeholder="Search employees..." 
+                                       onkeyup="filterEmployees(this.value)">
+                            </div>
+                        </div>
+                        
+                        <div class="available-employees-list" id="availableEmployeesList">
+                            <?php 
+                            $assigned_employee_ids = array_column($assigned_employees, 'id');
+                            $available_employees = array_filter($all_employees, function($emp) use ($assigned_employee_ids) {
+                                return !in_array($emp['id'], $assigned_employee_ids) && $emp['status'] === 'Active';
+                            });
+                            ?>
+                            
+                            <?php if (empty($available_employees)): ?>
+                                <div class="text-center py-4">
+                                    <i class="fas fa-user-plus fa-2x text-muted mb-3"></i>
+                                    <p class="text-muted">No available employees to assign.</p>
+                                </div>
+                            <?php else: ?>
+                                <?php foreach ($available_employees as $employee): ?>
+                                    <div class="employee-item" data-employee-id="<?php echo $employee['id']; ?>">
+                                        <div class="d-flex align-items-center">
+                                            <div class="employee-avatar me-3">
+                                                <?php echo strtoupper(substr($employee['first_name'], 0, 1) . substr($employee['surname'], 0, 1)); ?>
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <h6 class="mb-1"><?php echo htmlspecialchars($employee['first_name'] . ' ' . $employee['surname']); ?></h6>
+                                                <small class="text-muted">
+                                                    Employee #<?php echo $employee['employee_no']; ?> | 
+                                                    <?php echo $employee['employee_type']; ?> | 
+                                                    Current: <?php echo htmlspecialchars($employee['post']); ?>
+                                                </small>
+                                            </div>
+                                            <div class="assignment-actions">
+                                                <button class="btn btn-sm btn-primary" 
+                                                        onclick="assignEmployee(<?php echo $employee['id']; ?>, '<?php echo htmlspecialchars($selected_post['post_title']); ?>')"
+                                                        title="Assign to Post">
+                                                    <i class="fas fa-plus"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    <?php else: ?>
+        <!-- No Post Selected -->
+        <div class="card card-modern">
+            <div class="card-body-modern text-center py-5">
+                <i class="fas fa-map-marker-alt fa-3x text-muted mb-4"></i>
+                <h4 class="empty-state-title">Select a Post</h4>
+                <p class="empty-state-text">Choose a post from the dropdown above to view and manage employee assignments.</p>
+            </div>
+        </div>
+    <?php endif; ?>
+</div>
+
+<style>
+/* ============================================
+   MODERN POST ASSIGNMENTS PAGE STYLES
+   ============================================ */
+
+/* Hide the main header with black background */
+.main-content .header {
+    display: none !important;
+}
+
+/* Container */
+.post-assignments-modern {
+    padding: 2rem 2.5rem;
+    max-width: 100%;
+    overflow-x: hidden;
+    background: #f8fafc;
+    min-height: 100vh;
+}
+
+/* Page Header */
+.page-header-modern {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+}
+
+.page-title-modern {
+    flex: 1;
+}
+
+.page-title-main {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 0.5rem 0;
+    letter-spacing: -0.02em;
+}
+
+.page-subtitle {
+    font-size: 0.9375rem;
+    color: #64748b;
+    margin: 0;
+    font-weight: 400;
+}
+
+.page-actions-modern {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+/* Buttons */
+.btn-primary-modern {
+    background: linear-gradient(135deg, #1fb2d5 0%, #0ea5e9 100%);
+    color: #ffffff;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(31, 178, 213, 0.25);
+}
+
+.btn-primary-modern:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(31, 178, 213, 0.35);
+    background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+}
+
+.btn-outline-modern {
+    border: 1.5px solid #e2e8f0;
+    color: #475569;
+    background: #ffffff;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+}
+
+.btn-outline-modern:hover {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+    color: #334155;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* Cards */
+.card-modern {
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.04);
+    background: #ffffff;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.card-modern:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08), 0 8px 24px rgba(0, 0, 0, 0.06);
+}
+
+.card-header-modern {
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 1.25rem 1.5rem;
+}
+
+.card-title-modern {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin: 0;
+    letter-spacing: -0.01em;
+}
+
+.card-body-modern {
+    padding: 1.5rem;
+}
+
+/* Form Controls */
+.form-label-modern {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #475569;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.form-select-modern {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    color: #475569;
+    background: #ffffff;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.form-select-modern:focus {
+    outline: none;
+    border-color: #1fb2d5;
+    box-shadow: 0 0 0 3px rgba(31, 178, 213, 0.1);
+}
+
+/* Search Input */
+.search-input-modern {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.search-icon {
+    position: absolute;
+    left: 1rem;
+    color: #94a3b8;
+    font-size: 0.875rem;
+    z-index: 2;
+}
+
+.search-field {
+    width: 100%;
+    padding: 0.75rem 1rem 0.75rem 2.75rem;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    color: #475569;
+    background: #ffffff;
+    transition: all 0.2s ease;
+}
+
+.search-field:focus {
+    outline: none;
+    border-color: #1fb2d5;
+    box-shadow: 0 0 0 3px rgba(31, 178, 213, 0.1);
+}
+
+/* Post Info */
+.post-title-main {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 1rem;
+}
+
+.post-info-item {
+    color: #64748b;
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+}
+
+.post-info-item i {
+    color: #94a3b8;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.info-row:last-child {
+    border-bottom: none;
+}
+
+.info-label {
+    color: #64748b;
+    font-size: 0.875rem;
+}
+
+.info-value {
+    color: #1e293b;
+    font-weight: 600;
+    font-size: 0.9375rem;
+}
+
+/* Employee Items */
+.employee-assignment-item,
+.employee-item {
+    padding: 1rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    margin-bottom: 0.75rem;
+    background: #ffffff;
+    transition: all 0.2s ease;
+}
+
+.employee-assignment-item:hover,
+.employee-item:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border-color: #1fb2d5;
+    transform: translateX(2px);
+}
+
+.employee-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1fb2d5 0%, #0ea5e9 100%);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.875rem;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(31, 178, 213, 0.2);
+}
+
+.employee-assignment-item h6,
+.employee-item h6 {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin: 0 0 0.25rem 0;
+}
+
+.employee-assignment-item small,
+.employee-item small {
+    color: #64748b;
+    font-size: 0.8125rem;
+}
+
+.assignment-actions .btn {
+    padding: 0.5rem;
+    min-width: 36px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    border: 1.5px solid;
+}
+
+.assignment-actions .btn-sm {
+    font-size: 0.875rem;
+}
+
+.assignment-actions .btn-primary {
+    background: linear-gradient(135deg, #1fb2d5 0%, #0ea5e9 100%);
+    border-color: #1fb2d5;
+    color: #ffffff;
+}
+
+.assignment-actions .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(31, 178, 213, 0.3);
+}
+
+.assignment-actions .btn-outline-danger {
+    border-color: #ef4444;
+    color: #ef4444;
+    background: #ffffff;
+}
+
+.assignment-actions .btn-outline-danger:hover {
+    background: #fee2e2;
+    border-color: #ef4444;
+    color: #dc2626;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2);
+}
+
+/* Priority Badge */
+.priority-badge {
+    padding: 0.375rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    border: none;
+    display: inline-block;
+}
+
+.priority-badge.priority-urgent {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.priority-badge.priority-high {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+.priority-badge.priority-medium {
+    background: #dbeafe;
+    color: #2563eb;
+}
+
+.priority-badge.priority-low {
+    background: #f1f5f9;
+    color: #64748b;
+}
+
+/* Badges */
+.badge-success-modern {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.375rem 0.75rem;
+    border-radius: 6px;
+    background: #dcfce7;
+    color: #16a34a;
+}
+
+/* Lists */
+.assigned-employees-list,
+.available-employees-list {
+    max-height: 500px;
+    overflow-y: auto;
+    padding-right: 0.5rem;
+}
+
+.assigned-employees-list::-webkit-scrollbar,
+.available-employees-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.assigned-employees-list::-webkit-scrollbar-track,
+.available-employees-list::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 3px;
+}
+
+.assigned-employees-list::-webkit-scrollbar-thumb,
+.available-employees-list::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+}
+
+.assigned-employees-list::-webkit-scrollbar-thumb:hover,
+.available-employees-list::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+.employee-item.hidden {
+    display: none;
+}
+
+/* Empty State */
+.empty-state-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 0.5rem;
+}
+
+.empty-state-text {
+    color: #64748b;
+    font-size: 0.9375rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .post-assignments-modern {
+        padding: 1.5rem 1rem;
+    }
+    
+    .page-header-modern {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .page-actions-modern {
+        width: 100%;
+        justify-content: flex-start;
+    }
+    
+    .card-body-modern {
+        padding: 1rem;
+    }
+    
+    .info-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+    }
+}
+</style>
+
+<script>
+function loadPostAssignments(postId) {
+    if (postId) {
+        window.location.href = '?page=post_assignments&post_id=' + postId;
+    }
+}
+
+function filterEmployees(searchTerm) {
+    const employeeItems = document.querySelectorAll('.employee-item');
+    const term = searchTerm.toLowerCase();
+    
+    employeeItems.forEach(item => {
+        const employeeName = item.querySelector('h6').textContent.toLowerCase();
+        const employeeNumber = item.querySelector('small').textContent.toLowerCase();
+        
+        if (employeeName.includes(term) || employeeNumber.includes(term)) {
+            item.classList.remove('hidden');
+        } else {
+            item.classList.add('hidden');
+        }
+    });
+}
+
+function assignEmployee(employeeId, postTitle) {
+    if (confirm('Are you sure you want to assign this employee to the post?')) {
+        // Create form and submit
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '?page=post_assignments&post_id=<?php echo $post_id; ?>';
+        
+        const actionInput = document.createElement('input');
+        actionInput.type = 'hidden';
+        actionInput.name = 'action';
+        actionInput.value = 'assign';
+        
+        const employeeInput = document.createElement('input');
+        employeeInput.type = 'hidden';
+        employeeInput.name = 'employee_id';
+        employeeInput.value = employeeId;
+        
+        const postInput = document.createElement('input');
+        postInput.type = 'hidden';
+        postInput.name = 'post_title';
+        postInput.value = postTitle;
+        
+        form.appendChild(actionInput);
+        form.appendChild(employeeInput);
+        form.appendChild(postInput);
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+function removeAssignment(employeeId, postTitle) {
+    if (confirm('Are you sure you want to remove this employee from the post?')) {
+        // Create form and submit
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '?page=post_assignments&post_id=<?php echo $post_id; ?>';
+        
+        const actionInput = document.createElement('input');
+        actionInput.type = 'hidden';
+        actionInput.name = 'action';
+        actionInput.value = 'remove';
+        
+        const employeeInput = document.createElement('input');
+        employeeInput.type = 'hidden';
+        employeeInput.name = 'employee_id';
+        employeeInput.value = employeeId;
+        
+        const postInput = document.createElement('input');
+        postInput.type = 'hidden';
+        postInput.name = 'post_title';
+        postInput.value = postTitle;
+        
+        form.appendChild(actionInput);
+        form.appendChild(employeeInput);
+        form.appendChild(postInput);
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+</script>
+
+<?php
+// Handle form submissions
+if ($_POST['action'] ?? '' === 'assign') {
+    $employee_id = $_POST['employee_id'] ?? 0;
+    $post_title = $_POST['post_title'] ?? '';
+    
+    if ($employee_id && $post_title) {
+        $sql = "UPDATE employees SET post = ? WHERE id = ?";
+        if (execute_query($sql, [$post_title, $employee_id])) {
+            echo '<script>alert("Employee assigned successfully!"); window.location.reload();</script>';
+        } else {
+            echo '<script>alert("Error assigning employee. Please try again.");</script>';
+        }
+    }
+}
+
+if ($_POST['action'] ?? '' === 'remove') {
+    $employee_id = $_POST['employee_id'] ?? 0;
+    $post_title = $_POST['post_title'] ?? '';
+    
+    if ($employee_id && $post_title) {
+        $sql = "UPDATE employees SET post = 'Unassigned' WHERE id = ?";
+        if (execute_query($sql, [$employee_id])) {
+            echo '<script>alert("Employee removed from post successfully!"); window.location.reload();</script>';
+        } else {
+            echo '<script>alert("Error removing employee. Please try again.");</script>';
+        }
+    }
+}
+?>
