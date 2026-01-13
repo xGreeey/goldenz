@@ -126,12 +126,21 @@ $activeSection = getActiveSection($page);
                         aria-expanded="<?php echo ($activeSection === 'teams') ? 'true' : 'false'; ?>" 
                         aria-controls="teams-submenu"
                         tabindex="0"
-                        data-target="teams-submenu">
+                        data-target="teams-submenu"
+                        onclick="event.preventDefault(); if(window.sidebarNav){window.sidebarNav.toggleSection(event);} else {const submenu=document.getElementById('teams-submenu'); const arrow=this.querySelector('.nav-arrow'); if(submenu.classList.contains('expanded')){submenu.classList.remove('expanded');arrow.classList.remove('rotated');this.setAttribute('aria-expanded','false');}else{submenu.classList.add('expanded');arrow.classList.add('rotated');this.setAttribute('aria-expanded','true');}}">
                     <i class="fas fa-users" aria-hidden="true"></i>
                     <span>Teams</span>
                     <i class="fas fa-chevron-down nav-arrow <?php echo ($activeSection === 'teams') ? 'rotated' : ''; ?>" aria-hidden="true"></i>
                 </button>
                 <ul class="nav-submenu <?php echo ($activeSection === 'teams') ? 'expanded' : ''; ?>" id="teams-submenu" role="menu">
+                    <li class="nav-item">
+                        <a href="?page=teams" 
+                           class="nav-link <?php echo ($page === 'teams') ? 'active' : ''; ?>"
+                           data-page="teams">
+                            <i class="fas fa-users-cog" aria-hidden="true"></i>
+                            <span>Teams</span>
+                        </a>
+                    </li>
                     <li class="nav-item">
                         <a href="?page=employees" 
                            class="nav-link <?php echo ($page === 'employees') ? 'active' : ''; ?>"
@@ -376,6 +385,9 @@ $activeSection = getActiveSection($page);
                 case 'employees':
                     include $pages_path . 'employees.php';
                     break;
+                case 'teams':
+                    include $pages_path . 'teams.php';
+                    break;
                 case 'add_employee':
                     include $pages_path . 'add_employee.php';
                     break;
@@ -455,86 +467,47 @@ $activeSection = getActiveSection($page);
     <?php include '../includes/footer.php'; ?>
     
     <script>
-    // Ensure Administration and Posts sections toggle work
+    // Ensure Teams, Posts, Administration toggles work
     document.addEventListener('DOMContentLoaded', function() {
-        // Administration section toggle
-        const adminToggle = document.querySelector('[data-target="administration-submenu"]');
-        const adminSubmenu = document.getElementById('administration-submenu');
-        
-        if (adminToggle && adminSubmenu) {
-            // Re-attach click handler if needed
-            adminToggle.addEventListener('click', function(e) {
+        function wireToggle(toggleSelector, submenuId, activePages = []) {
+            const toggle = document.querySelector(toggleSelector);
+            const submenu = document.getElementById(submenuId);
+            if (!toggle || !submenu) return;
+
+            toggle.addEventListener('click', function(e) {
                 e.preventDefault();
-                const isExpanded = adminSubmenu.classList.contains('expanded');
+                const isExpanded = submenu.classList.contains('expanded');
                 const arrow = this.querySelector('.nav-arrow');
-                
                 if (isExpanded) {
-                    adminSubmenu.classList.remove('expanded');
-                    arrow.classList.remove('rotated');
+                    submenu.classList.remove('expanded');
+                    if (arrow) arrow.classList.remove('rotated');
                     this.setAttribute('aria-expanded', 'false');
                 } else {
-                    adminSubmenu.classList.add('expanded');
-                    arrow.classList.add('rotated');
+                    submenu.classList.add('expanded');
+                    if (arrow) arrow.classList.add('rotated');
                     this.setAttribute('aria-expanded', 'true');
                 }
-                
-                // Also trigger the sidebar navigation if available
                 if (window.sidebarNav && typeof window.sidebarNav.toggleSection === 'function') {
                     window.sidebarNav.toggleSection(e);
                 }
             });
-            
-            // Auto-expand if users page is active
-            const usersLink = document.querySelector('.nav-link[data-page="users"]');
-            if (usersLink && usersLink.classList.contains('active')) {
-                adminSubmenu.classList.add('expanded');
-                const arrow = adminToggle.querySelector('.nav-arrow');
-                if (arrow) arrow.classList.add('rotated');
-                adminToggle.setAttribute('aria-expanded', 'true');
-            }
-        }
-        
-        // Posts section toggle
-        const postsToggle = document.querySelector('[data-target="posts-submenu"]');
-        const postsSubmenu = document.getElementById('posts-submenu');
-        
-        if (postsToggle && postsSubmenu) {
-            // Re-attach click handler if needed
-            postsToggle.addEventListener('click', function(e) {
-                e.preventDefault();
-                const isExpanded = postsSubmenu.classList.contains('expanded');
-                const arrow = this.querySelector('.nav-arrow');
-                
-                if (isExpanded) {
-                    postsSubmenu.classList.remove('expanded');
-                    arrow.classList.remove('rotated');
-                    this.setAttribute('aria-expanded', 'false');
-                } else {
-                    postsSubmenu.classList.add('expanded');
-                    arrow.classList.add('rotated');
-                    this.setAttribute('aria-expanded', 'true');
-                }
-                
-                // Also trigger the sidebar navigation if available
-                if (window.sidebarNav && typeof window.sidebarNav.toggleSection === 'function') {
-                    window.sidebarNav.toggleSection(e);
-                }
+
+            // Auto-expand if current page matches
+            const shouldExpand = activePages.some(p => {
+                const link = document.querySelector('.nav-link[data-page="' + p + '"]');
+                return link && link.classList.contains('active');
             });
-            
-            // Auto-expand if posts/add_post/post_assignments page is active
-            const postsLink = document.querySelector('.nav-link[data-page="posts"]');
-            const addPostLink = document.querySelector('.nav-link[data-page="add_post"]');
-            const assignmentsLink = document.querySelector('.nav-link[data-page="post_assignments"]');
-            
-            if ((postsLink && postsLink.classList.contains('active')) ||
-                (addPostLink && addPostLink.classList.contains('active')) ||
-                (assignmentsLink && assignmentsLink.classList.contains('active'))) {
-                postsSubmenu.classList.add('expanded');
-                const arrow = postsToggle.querySelector('.nav-arrow');
+            if (shouldExpand) {
+                submenu.classList.add('expanded');
+                const arrow = toggle.querySelector('.nav-arrow');
                 if (arrow) arrow.classList.add('rotated');
-                postsToggle.setAttribute('aria-expanded', 'true');
+                toggle.setAttribute('aria-expanded', 'true');
             }
         }
+
+        wireToggle('[data-target="administration-submenu"]', 'administration-submenu', ['users', 'system_logs', 'audit_trail']);
+        wireToggle('[data-target="posts-submenu"]', 'posts-submenu', ['posts', 'add_post', 'post_assignments']);
+        wireToggle('[data-target="teams-submenu"]', 'teams-submenu', ['teams', 'employees', 'dtr', 'checklist', 'timeoff']);
     });
     </script>
 
