@@ -10,6 +10,7 @@ function getPageTitle($page) {
         'employees' => 'Employee Management',
         'add_employee' => 'Add New Employee',
         'edit_employee' => 'Edit Employee',
+        'view_employee' => 'View Employee',
         'dtr' => 'Daily Time Record',
         'timeoff' => 'Time Off Management',
         'checklist' => 'Employee Checklist',
@@ -23,8 +24,8 @@ function getPageTitle($page) {
         'edit_post' => 'Edit Post',
         'post_assignments' => 'Post Assignments',
         'settings' => 'System Settings',
-        'help' => 'Help & Support',
-        'permissions' => 'Permissions Management'
+        'tasks' => 'Tasks',
+        'help' => 'Help & Support'
     ];
     
     return $titles[$page] ?? 'Dashboard';
@@ -276,16 +277,25 @@ $activeSection = getActiveSection($page);
             </li>
             
             <li class="nav-item">
-                <a href="?page=permissions" 
-                   class="nav-link <?php echo ($page === 'permissions') ? 'active' : ''; ?>"
-                   data-page="permissions">
-                    <i class="fas fa-shield-alt" aria-hidden="true"></i>
-                    <span>Permissions</span>
+                <a href="?page=tasks" 
+                   class="nav-link <?php echo ($page === 'tasks') ? 'active' : ''; ?>"
+                   data-page="tasks">
+                    <i class="fas fa-tasks" aria-hidden="true"></i>
+                    <span>Tasks</span>
                 </a>
             </li>
             
             <li class="nav-item">
-<a href="../index.php?logout=1"
+                <a href="?page=help" 
+                   class="nav-link <?php echo ($page === 'help') ? 'active' : ''; ?>"
+                   data-page="help">
+                    <i class="fas fa-headset" aria-hidden="true"></i>
+                    <span>Help & Support</span>
+                </a>
+            </li>
+            
+            <li class="nav-item">
+                <a href="../index.php?logout=1"
                    class="nav-link"
                    data-no-transition="true">
                     <i class="fas fa-sign-out-alt" aria-hidden="true"></i>
@@ -360,8 +370,11 @@ $activeSection = getActiveSection($page);
                 case 'handbook':
                     include $pages_path . 'handbook.php';
                     break;
+                case 'tasks':
+                    include $pages_path . 'tasks.php';
+                    break;
                 case 'help':
-                    include $pages_path . 'help.php';
+                    include $pages_path . 'hr-help.php';
                     break;
                 case 'permissions':
                     include $pages_path . 'permissions.php';

@@ -30,12 +30,6 @@ $menu = [
         'page' => 'alerts',
         'section' => null,
     ],
-    [
-        'title' => 'Permissions',
-        'page' => 'permissions',
-        'section' => null,
-        'icon' => 'fa-shield-alt',
-    ],
 ];
 ?>
 
@@ -97,8 +91,8 @@ $menu = [
             <a href="?page=tasks"
                class="nav-link <?php echo ($page === 'tasks') ? 'active' : ''; ?>"
                data-page="tasks">
-                <i class="fas fa-inbox me-2"></i>
-                <span>Task</span>
+                <i class="fas fa-tasks me-2"></i>
+                <span>Tasks</span>
                 <?php
                 // Get pending task count
                 if (function_exists('get_pending_task_count')) {
@@ -111,9 +105,18 @@ $menu = [
             </a>
         </li>
         <li class="nav-item">
+            <a href="?page=help"
+               class="nav-link <?php echo ($page === 'help') ? 'active' : ''; ?>"
+               data-page="help">
+                <i class="fas fa-headset me-2"></i>
+                <span>Help & Support</span>
+            </a>
+        </li>
+        <li class="nav-item">
             <a href="<?php echo base_url(); ?>/index.php?logout=1"
                class="nav-link"
                data-no-transition="true">
+                <i class="fas fa-sign-out-alt me-2"></i>
                 <span>Logout</span>
             </a>
         </li>

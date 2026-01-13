@@ -30,7 +30,6 @@ function getPageTitle($page) {
         'settings' => 'System Settings',
         'integrations' => 'Integrations',
         'help' => 'Help & Support',
-        'permissions' => 'Permissions Management'
     ];
     
     return $titles[$page] ?? 'Dashboard';
@@ -128,7 +127,9 @@ $activeSection = getActiveSection($page);
                 case 'tasks':
                     include $pagesPath . 'tasks.php';
                     break;
-                // Removed pages (time/attendance, hire/onboard, settings/help/integrations) are intentionally not routed for now.
+                case 'help':
+                    include $pagesPath . 'hr-help.php';
+                    break;
                 case 'posts':
                     include $pagesPath . 'posts.php';
                     break;
@@ -140,9 +141,6 @@ $activeSection = getActiveSection($page);
                     break;
                 case 'post_assignments':
                     include $pagesPath . 'post_assignments.php';
-                    break;
-                case 'permissions':
-                    include $pagesPath . 'permissions.php';
                     break;
                 default:
                     include $pagesPath . 'dashboard.php';
