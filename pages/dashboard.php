@@ -204,7 +204,7 @@ $display_employees = array_slice($all_employees, 0, 10); // Show first 10 employ
     <div class="page-header-modern mb-5">
         <div class="page-title-modern">
             <h1 class="page-title-main">Dashboard</h1>
-            <p class="page-subtitle"><?php echo $greeting; ?>! Welcome back.</p>
+            <p class="page-subtitle"><?php echo $greeting; ?>! Welcome back, <?php echo htmlspecialchars($_SESSION['name'] ?? 'User'); ?>!</p>
         </div>
     </div>
 
