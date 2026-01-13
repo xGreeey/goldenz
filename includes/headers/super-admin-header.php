@@ -216,7 +216,8 @@ $activeSection = getActiveSection($page);
                         aria-expanded="<?php echo ($activeSection === 'posts') ? 'true' : 'false'; ?>" 
                         aria-controls="posts-submenu"
                         tabindex="0"
-                        data-target="posts-submenu">
+                        data-target="posts-submenu"
+                        onclick="event.preventDefault(); if(window.sidebarNav){window.sidebarNav.toggleSection(event);} else {const submenu=document.getElementById('posts-submenu'); const arrow=this.querySelector('.nav-arrow'); if(submenu.classList.contains('expanded')){submenu.classList.remove('expanded');arrow.classList.remove('rotated');this.setAttribute('aria-expanded','false');}else{submenu.classList.add('expanded');arrow.classList.add('rotated');this.setAttribute('aria-expanded','true');}}">
                     <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
                     <span>Posts & Locations</span>
                     <i class="fas fa-chevron-down nav-arrow <?php echo ($activeSection === 'posts') ? 'rotated' : ''; ?>" aria-hidden="true"></i>
@@ -454,8 +455,9 @@ $activeSection = getActiveSection($page);
     <?php include '../includes/footer.php'; ?>
     
     <script>
-    // Ensure Administration section toggle works
+    // Ensure Administration and Posts sections toggle work
     document.addEventListener('DOMContentLoaded', function() {
+        // Administration section toggle
         const adminToggle = document.querySelector('[data-target="administration-submenu"]');
         const adminSubmenu = document.getElementById('administration-submenu');
         
@@ -489,6 +491,48 @@ $activeSection = getActiveSection($page);
                 const arrow = adminToggle.querySelector('.nav-arrow');
                 if (arrow) arrow.classList.add('rotated');
                 adminToggle.setAttribute('aria-expanded', 'true');
+            }
+        }
+        
+        // Posts section toggle
+        const postsToggle = document.querySelector('[data-target="posts-submenu"]');
+        const postsSubmenu = document.getElementById('posts-submenu');
+        
+        if (postsToggle && postsSubmenu) {
+            // Re-attach click handler if needed
+            postsToggle.addEventListener('click', function(e) {
+                e.preventDefault();
+                const isExpanded = postsSubmenu.classList.contains('expanded');
+                const arrow = this.querySelector('.nav-arrow');
+                
+                if (isExpanded) {
+                    postsSubmenu.classList.remove('expanded');
+                    arrow.classList.remove('rotated');
+                    this.setAttribute('aria-expanded', 'false');
+                } else {
+                    postsSubmenu.classList.add('expanded');
+                    arrow.classList.add('rotated');
+                    this.setAttribute('aria-expanded', 'true');
+                }
+                
+                // Also trigger the sidebar navigation if available
+                if (window.sidebarNav && typeof window.sidebarNav.toggleSection === 'function') {
+                    window.sidebarNav.toggleSection(e);
+                }
+            });
+            
+            // Auto-expand if posts/add_post/post_assignments page is active
+            const postsLink = document.querySelector('.nav-link[data-page="posts"]');
+            const addPostLink = document.querySelector('.nav-link[data-page="add_post"]');
+            const assignmentsLink = document.querySelector('.nav-link[data-page="post_assignments"]');
+            
+            if ((postsLink && postsLink.classList.contains('active')) ||
+                (addPostLink && addPostLink.classList.contains('active')) ||
+                (assignmentsLink && assignmentsLink.classList.contains('active'))) {
+                postsSubmenu.classList.add('expanded');
+                const arrow = postsToggle.querySelector('.nav-arrow');
+                if (arrow) arrow.classList.add('rotated');
+                postsToggle.setAttribute('aria-expanded', 'true');
             }
         }
     });
