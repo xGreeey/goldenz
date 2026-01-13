@@ -35,6 +35,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             echo json_encode($result);
             exit;
             
+        case 'create_user':
+            $user_data = [
+                'username' => trim($_POST['username'] ?? ''),
+                'email' => trim($_POST['email'] ?? ''),
+                'password' => $_POST['password'] ?? '',
+                'name' => trim($_POST['name'] ?? ''),
+                'role' => $_POST['role'] ?? 'hr_admin',
+                'status' => $_POST['status'] ?? 'active',
+                'department' => trim($_POST['department'] ?? ''),
+                'phone' => trim($_POST['phone'] ?? ''),
+                'employee_id' => !empty($_POST['employee_id']) ? (int)$_POST['employee_id'] : null
+            ];
+            $result = create_user($user_data, $current_user_id);
+            echo json_encode($result);
+            exit;
+            
         default:
             echo json_encode(['success' => false, 'message' => 'Invalid action']);
             exit;

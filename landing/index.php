@@ -269,12 +269,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
                         log_audit_event('LOGIN_ATTEMPT', 'users', $user['id'], null, ['login_time' => date('Y-m-d H:i:s')], $user['id']);
                     }
                     
-                    // Check if this is a first-time login (password_changed_at is NULL)
-                    // This flags accounts that need to change their password on first login
-                    $is_temporary_password = empty($user['password_changed_at']);
+                    // First-time password change check DISABLED
+                    // Previously checked if password_changed_at is NULL to force password change
+                    // Now users can login directly without changing password
+                    $is_temporary_password = false; // Disabled - always allow direct login
                     
                     if ($is_temporary_password) {
                         // First login with temporary password - show password change modal
+                        // This block is now disabled (is_temporary_password always false)
                         $_SESSION['temp_user_id'] = $user['id'];
                         $_SESSION['temp_username'] = $user['username'];
                         $_SESSION['temp_name'] = $user['name'];
