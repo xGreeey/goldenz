@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jan 13, 2026 at 07:53 AM
+-- Generation Time: Jan 14, 2026 at 12:46 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -133,7 +133,38 @@ INSERT INTO `audit_logs` (`id`, `user_id`, `action`, `table_name`, `record_id`, 
 (21, 25, 'LOGIN_ATTEMPT', 'users', 25, NULL, '{\"login_time\":\"2026-01-13 13:22:12\"}', '192.168.1.7', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36', '2026-01-13 05:22:12'),
 (22, 25, 'LOGIN_ATTEMPT', 'users', 25, NULL, '{\"login_time\":\"2026-01-13 13:22:17\"}', '192.168.1.7', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36', '2026-01-13 05:22:17'),
 (23, 25, 'LOGIN_ATTEMPT', 'users', 25, NULL, '{\"login_time\":\"2026-01-13 13:45:41\"}', '192.168.1.7', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36', '2026-01-13 05:45:41'),
-(24, 25, 'LOGIN_ATTEMPT', 'users', 25, NULL, '{\"login_time\":\"2026-01-13 13:49:45\"}', '192.168.1.7', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36', '2026-01-13 05:49:45');
+(24, 25, 'LOGIN_ATTEMPT', 'users', 25, NULL, '{\"login_time\":\"2026-01-13 13:49:45\"}', '192.168.1.7', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36', '2026-01-13 05:49:45'),
+(25, 25, 'LOGIN_ATTEMPT', 'users', 25, NULL, '{\"login_time\":\"2026-01-13 16:02:37\"}', '192.168.1.7', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36', '2026-01-13 08:02:37'),
+(26, 25, 'LOGIN_ATTEMPT', 'users', 25, NULL, '{\"login_time\":\"2026-01-13 16:06:17\"}', '192.168.1.7', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36', '2026-01-13 08:06:17'),
+(27, 25, 'LOGIN_ATTEMPT', 'users', 25, NULL, '{\"login_time\":\"2026-01-13 16:08:29\"}', '192.168.1.7', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36', '2026-01-13 08:08:29'),
+(28, 25, 'LOGIN_ATTEMPT', 'users', 25, NULL, '{\"login_time\":\"2026-01-13 16:08:36\"}', '192.168.1.7', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36', '2026-01-13 08:08:36'),
+(29, 25, 'LOGIN_ATTEMPT', 'users', 25, NULL, '{\"login_time\":\"2026-01-13 16:09:04\"}', '192.168.1.7', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36', '2026-01-13 08:09:04'),
+(30, 25, 'LOGIN_ATTEMPT', 'users', 25, NULL, '{\"login_time\":\"2026-01-13 16:10:03\"}', '192.168.1.7', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36', '2026-01-13 08:10:03'),
+(31, 25, 'LOGIN_ATTEMPT', 'users', 25, NULL, '{\"login_time\":\"2026-01-13 16:12:39\"}', '192.168.1.7', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36', '2026-01-13 08:12:39'),
+(32, 25, 'USER_CREATED', 'users', 30, NULL, '{\"username\":\"grey\",\"email\":\"greycruz00000000@gmail.com\",\"name\":\"aldrin\",\"role\":\"hr_admin\",\"status\":\"active\"}', '192.168.1.7', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36', '2026-01-13 08:36:54'),
+(33, 30, 'LOGIN_ATTEMPT', 'users', 30, NULL, '{\"login_time\":\"2026-01-13 16:37:46\"}', '192.168.1.7', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36', '2026-01-13 08:37:46'),
+(34, 30, 'LOGIN_ATTEMPT', 'users', 30, NULL, '{\"login_time\":\"2026-01-13 16:38:08\"}', '192.168.1.7', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36', '2026-01-13 08:38:08'),
+(35, 30, 'LOGIN_ATTEMPT', 'users', 30, NULL, '{\"login_time\":\"2026-01-13 16:42:01\"}', '192.168.1.7', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36', '2026-01-13 08:42:01'),
+(36, 30, 'LOGIN_ATTEMPT', 'users', 30, NULL, '{\"login_time\":\"2026-01-13 16:52:06\"}', '192.168.1.7', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36', '2026-01-13 08:52:06'),
+(37, 25, 'LOGIN_ATTEMPT', 'users', 25, NULL, '{\"login_time\":\"2026-01-13 16:52:12\"}', '192.168.1.7', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36', '2026-01-13 08:52:12'),
+(38, 30, 'LOGIN_ATTEMPT', 'users', 30, NULL, '{\"login_time\":\"2026-01-13 16:52:42\"}', '192.168.1.7', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36', '2026-01-13 08:52:42'),
+(39, 30, 'LOGIN_ATTEMPT', 'users', 30, NULL, '{\"login_time\":\"2026-01-13 17:10:10\"}', '192.168.1.7', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36', '2026-01-13 09:10:10'),
+(40, 25, 'LOGIN_ATTEMPT', 'users', 25, NULL, '{\"login_time\":\"2026-01-13 17:16:42\"}', '192.168.1.7', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36', '2026-01-13 09:16:42'),
+(41, 30, 'LOGIN_ATTEMPT', 'users', 30, NULL, '{\"login_time\":\"2026-01-13 17:17:12\"}', '192.168.1.7', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36', '2026-01-13 09:17:12'),
+(42, 30, 'LOGIN_ATTEMPT', 'users', 30, NULL, '{\"login_time\":\"2026-01-13 17:23:58\"}', '192.168.1.7', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36', '2026-01-13 09:23:58'),
+(43, 30, 'LOGIN_ATTEMPT', 'users', 30, NULL, '{\"login_time\":\"2026-01-13 17:42:17\"}', '192.168.1.7', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36', '2026-01-13 09:42:17'),
+(44, 30, 'USER_ROLE_UPDATED', 'users', 25, '{\"role\":\"hr_admin\"}', '{\"role\":\"super_admin\"}', '192.168.1.7', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36', '2026-01-13 09:45:59'),
+(45, 25, 'LOGIN_ATTEMPT', 'users', 25, NULL, '{\"login_time\":\"2026-01-13 17:46:06\"}', '192.168.1.7', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36', '2026-01-13 09:46:06'),
+(46, 25, 'USER_ROLE_UPDATED', 'users', 25, '{\"role\":\"super_admin\"}', '{\"role\":\"hr_admin\"}', '192.168.1.7', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36', '2026-01-13 09:46:29'),
+(47, 25, 'USER_ROLE_UPDATED', 'users', 25, '{\"role\":\"hr_admin\"}', '{\"role\":\"super_admin\"}', '192.168.1.7', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36', '2026-01-13 09:46:34'),
+(48, 25, 'USER_ROLE_UPDATED', 'users', 25, '{\"role\":\"super_admin\"}', '{\"role\":\"hr_admin\"}', '192.168.1.7', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36', '2026-01-13 09:46:36'),
+(49, 25, 'LOGIN_ATTEMPT', 'users', 25, NULL, '{\"login_time\":\"2026-01-13 17:46:51\"}', '192.168.1.7', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36', '2026-01-13 09:46:51'),
+(50, 30, 'LOGIN_ATTEMPT', 'users', 30, NULL, '{\"login_time\":\"2026-01-13 17:47:04\"}', '192.168.1.7', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36', '2026-01-13 09:47:04'),
+(51, 30, 'LOGIN_ATTEMPT', 'users', 30, NULL, '{\"login_time\":\"2026-01-13 17:49:29\"}', '192.168.1.7', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36', '2026-01-13 09:49:29'),
+(52, 30, 'USER_CREATED', 'users', 31, NULL, '{\"username\":\"amor\",\"email\":\"amor@gmail.com\",\"name\":\"amor\",\"role\":\"hr_admin\",\"status\":\"active\"}', '192.168.1.7', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36', '2026-01-13 09:58:43'),
+(53, 30, 'USER_CREATED', 'users', 32, NULL, '{\"username\":\"ChristianAmor\",\"email\":\"christian5787264@gmail.com\",\"name\":\"christian amor\",\"role\":\"super_admin\",\"status\":\"active\"}', '192.168.1.7', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36', '2026-01-13 10:01:09'),
+(54, 32, 'LOGIN_ATTEMPT', 'users', 32, NULL, '{\"login_time\":\"2026-01-13 18:01:59\"}', '192.168.1.7', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36', '2026-01-13 10:01:59'),
+(55, 30, 'LOGIN_ATTEMPT', 'users', 30, NULL, '{\"login_time\":\"2026-01-14 07:42:03\"}', '192.168.1.7', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36', '2026-01-13 23:42:03');
 
 -- --------------------------------------------------------
 
@@ -549,6 +580,47 @@ CREATE TABLE `post_statistics` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `support_tickets`
+--
+
+CREATE TABLE `support_tickets` (
+  `id` int(11) NOT NULL,
+  `ticket_no` varchar(20) NOT NULL,
+  `user_id` int(11) DEFAULT NULL,
+  `user_name` varchar(100) NOT NULL,
+  `user_email` varchar(100) DEFAULT NULL,
+  `user_role` varchar(50) DEFAULT NULL,
+  `category` enum('system_issue','access_request','data_issue','feature_request','general_inquiry','bug_report') DEFAULT 'general_inquiry',
+  `priority` enum('low','medium','high','urgent') DEFAULT 'medium',
+  `subject` varchar(255) NOT NULL,
+  `description` text NOT NULL,
+  `status` enum('open','in_progress','pending_user','resolved','closed') DEFAULT 'open',
+  `assigned_to` int(11) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `resolved_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `ticket_replies`
+--
+
+CREATE TABLE `ticket_replies` (
+  `id` int(11) NOT NULL,
+  `ticket_id` int(11) NOT NULL,
+  `user_id` int(11) DEFAULT NULL,
+  `user_name` varchar(100) NOT NULL,
+  `user_role` varchar(50) DEFAULT NULL,
+  `message` text NOT NULL,
+  `is_internal` tinyint(1) DEFAULT 0,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `time_off_requests`
 --
 
@@ -619,7 +691,10 @@ INSERT INTO `users` (`id`, `username`, `email`, `password_hash`, `name`, `role`,
 (4, 'dev.lead', 'dev.lead@goldenz5.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Jacob R. Villanueva', 'developer', 'active', NULL, 'IT/Development', '0917-200-0001', NULL, NULL, NULL, 0, NULL, NULL, NULL, 1, '2025-12-01 02:11:35', '2025-12-01 02:11:35'),
 (5, 'dev.engineer', 'dev.engineer@goldenz5.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Lara S. Mendoza', 'developer', 'active', NULL, 'IT/Development', '0917-200-0002', NULL, NULL, NULL, 0, NULL, NULL, NULL, 1, '2025-12-01 02:11:35', '2025-12-01 02:11:35'),
 (6, 'dev.ops', 'dev.ops@goldenz5.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Noel T. Cruz', 'developer', 'active', NULL, 'IT/Development', '0917-200-0003', NULL, NULL, NULL, 0, NULL, NULL, NULL, 1, '2025-12-01 02:11:35', '2025-12-01 02:11:35'),
-(25, 'hradmin', 'hradmin@goldenz5.com', '$2y$10$2Fp4cu96Oey7AQ87V/fWd.EVqmVzV5chLxspeoyzzSPooNUOXxYDq', 'HR Administrator', 'super_admin', 'active', NULL, NULL, NULL, NULL, '2026-01-13 05:49:45', '192.168.1.7', 0, NULL, '2026-01-13 05:22:28', NULL, NULL, '2025-12-11 17:49:50', '2026-01-13 05:49:45');
+(25, 'hradmin', 'hradmin@goldenz5.com', '$2y$10$2Fp4cu96Oey7AQ87V/fWd.EVqmVzV5chLxspeoyzzSPooNUOXxYDq', 'HR Administrator', 'hr_admin', 'active', NULL, NULL, NULL, NULL, '2026-01-13 09:46:51', '192.168.1.7', 0, NULL, '2026-01-13 05:22:28', NULL, NULL, '2025-12-11 17:49:50', '2026-01-13 09:46:51'),
+(30, 'grey', 'greycruz00000000@gmail.com', '$2y$10$6Q1oBkI/zKA2UL9gvWggW.bbUGpXVezwHYjm7VgF9SB..gH8NSD6q', 'aldrin', 'super_admin', 'active', NULL, 'dikoalam', '09563211331', NULL, '2026-01-13 23:42:03', '192.168.1.7', 0, NULL, '2026-01-13 08:40:00', NULL, 25, '2026-01-13 08:36:54', '2026-01-13 23:42:03'),
+(31, 'amor', 'amor@gmail.com', '$2y$10$evvPUIl.aoXr/icZ85PNH.zTj4wnx.TEzKxHqijLpO0NgoAw7OyAa', 'amor', 'hr_admin', 'active', NULL, 'asdfjh', '09562312321', NULL, NULL, NULL, 0, NULL, NULL, NULL, 30, '2026-01-13 09:58:43', '2026-01-13 09:58:43'),
+(32, 'ChristianAmor', 'christian5787264@gmail.com', '$2y$10$6KSwq4UNuSBGN9up2Nw4A.9NobQbOVzeybdNn5SixwsoRmmI.5eIS', 'christian amor', 'super_admin', 'active', NULL, 'it', '09613014462', NULL, '2026-01-13 10:01:59', '192.168.1.7', 0, NULL, NULL, NULL, 30, '2026-01-13 10:01:09', '2026-01-13 10:01:59');
 
 -- --------------------------------------------------------
 
@@ -752,6 +827,24 @@ ALTER TABLE `posts`
   ADD KEY `idx_department` (`department`);
 
 --
+-- Indexes for table `support_tickets`
+--
+ALTER TABLE `support_tickets`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `ticket_no` (`ticket_no`),
+  ADD KEY `idx_status` (`status`),
+  ADD KEY `idx_priority` (`priority`),
+  ADD KEY `idx_user_id` (`user_id`),
+  ADD KEY `idx_ticket_no` (`ticket_no`);
+
+--
+-- Indexes for table `ticket_replies`
+--
+ALTER TABLE `ticket_replies`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_ticket_id` (`ticket_id`);
+
+--
 -- Indexes for table `time_off_requests`
 --
 ALTER TABLE `time_off_requests`
@@ -785,7 +878,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `audit_logs`
 --
 ALTER TABLE `audit_logs`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=56;
 
 --
 -- AUTO_INCREMENT for table `dtr_entries`
@@ -797,7 +890,7 @@ ALTER TABLE `dtr_entries`
 -- AUTO_INCREMENT for table `employees`
 --
 ALTER TABLE `employees`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21783;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29871;
 
 --
 -- AUTO_INCREMENT for table `employee_alerts`
@@ -830,6 +923,18 @@ ALTER TABLE `posts`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
+-- AUTO_INCREMENT for table `support_tickets`
+--
+ALTER TABLE `support_tickets`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `ticket_replies`
+--
+ALTER TABLE `ticket_replies`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `time_off_requests`
 --
 ALTER TABLE `time_off_requests`
@@ -839,7 +944,7 @@ ALTER TABLE `time_off_requests`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
 
 --
 -- Constraints for dumped tables
@@ -875,6 +980,12 @@ ALTER TABLE `employee_checklist`
 --
 ALTER TABLE `leave_balances`
   ADD CONSTRAINT `leave_balances_ibfk_1` FOREIGN KEY (`employee_id`) REFERENCES `employees` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `ticket_replies`
+--
+ALTER TABLE `ticket_replies`
+  ADD CONSTRAINT `ticket_replies_ibfk_1` FOREIGN KEY (`ticket_id`) REFERENCES `support_tickets` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `time_off_requests`
