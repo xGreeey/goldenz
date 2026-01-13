@@ -2735,6 +2735,17 @@ if (!function_exists('create_user')) {
                 return ['success' => false, 'message' => 'Email already exists'];
             }
             
+            // Validate employee_id if provided
+            $employee_id = null;
+            if (!empty($user_data['employee_id'])) {
+                $check_employee = $pdo->prepare("SELECT id FROM employees WHERE id = ?");
+                $check_employee->execute([$user_data['employee_id']]);
+                if (!$check_employee->fetch()) {
+                    return ['success' => false, 'message' => 'Invalid Employee ID - employee does not exist'];
+                }
+                $employee_id = (int)$user_data['employee_id'];
+            }
+            
             // Hash password
             $password_hash = password_hash($user_data['password'], PASSWORD_DEFAULT);
             
@@ -2759,7 +2770,7 @@ if (!function_exists('create_user')) {
                 $user_data['name'],
                 $user_data['role'],
                 $status,
-                $user_data['employee_id'] ?? null,
+                $employee_id,
                 $user_data['department'] ?? null,
                 $user_data['phone'] ?? null,
                 $created_by
