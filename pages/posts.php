@@ -210,15 +210,21 @@ $posts = get_posts($filters);
                             <td>
                                 <div class="position-info">
                                     <div class="d-flex align-items-center">
-                                        <span class="me-2"><?php echo $post['current_employees']; ?>/<?php echo $post['required_count']; ?></span>
+                                        <?php
+                                        $requiredCount = (int)($post['required_count'] ?? 0);
+                                        $currentEmployees = (int)($post['current_employees'] ?? 0);
+                                        $remainingVacancies = (int)($post['remaining_vacancies'] ?? max(0, $requiredCount - $currentEmployees));
+                                        $fillPercent = $requiredCount > 0 ? min(100, ($currentEmployees / $requiredCount) * 100) : 0;
+                                        ?>
+                                        <span class="me-2"><?php echo $currentEmployees; ?>/<?php echo $requiredCount; ?></span>
                                         <div class="progress" style="width: 60px; height: 6px;">
-                                            <div class="progress-bar <?php echo $post['current_employees'] >= $post['required_count'] ? 'bg-success' : 'bg-warning'; ?>" 
-                                                 style="width: <?php echo min(100, ($post['current_employees'] / $post['required_count']) * 100); ?>%">
+                                            <div class="progress-bar <?php echo ($requiredCount > 0 && $currentEmployees >= $requiredCount) ? 'bg-success' : 'bg-warning'; ?>" 
+                                                 style="width: <?php echo $fillPercent; ?>%">
                                             </div>
                                         </div>
                                     </div>
                                     <small class="text-muted">
-                                        <?php echo $post['remaining_vacancies']; ?> remaining
+                                        <?php echo $remainingVacancies; ?> remaining
                                     </small>
                                 </div>
                             </td>

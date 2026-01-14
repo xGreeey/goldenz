@@ -84,6 +84,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 // This must come first to handle POST requests properly
 $page = $_GET['page'] ?? 'dashboard';
 
+// Handle system log downloads (GET) before any HTML output
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && $page === 'system_logs' && isset($_GET['download'])) {
+    $logKey = $_GET['log'] ?? 'security';
+    $basePath = dirname(__DIR__);
+    $logsDir = $basePath . '/storage/logs/';
+
+    $map = [
+        'security' => $logsDir . 'security.log',
+        'error' => $logsDir . 'error.log',
+    ];
+
+    $path = $map[$logKey] ?? $map['security'];
+    if (!is_file($path)) {
+        header('HTTP/1.1 404 Not Found');
+        echo 'Log file not found.';
+        exit;
+    }
+
+    header('Content-Type: text/plain; charset=utf-8');
+    header('Content-Disposition: attachment; filename="' . $logKey . '-' . date('Ymd-His') . '.log"');
+    header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+    header('Pragma: no-cache');
+    header('Expires: 0');
+    readfile($path);
+    exit;
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     // Ensure session is started and active (bootstrap/app.php should have started it, but double-check)
     if (session_status() === PHP_SESSION_NONE) {
@@ -94,6 +121,62 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     if (!isset($_SESSION['last_regeneration']) || (time() - $_SESSION['last_regeneration']) > 300) {
         session_regenerate_id(true);
         $_SESSION['last_regeneration'] = time();
+    }
+
+    // If this is a normal form POST (non-AJAX), handle settings change_password with a redirect+flash message
+    $action = $_POST['action'] ?? '';
+    $isAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
+    if (!$isAjax && $page === 'settings' && $action === 'change_password') {
+        $current_password = $_POST['current_password'] ?? '';
+        $new_password = $_POST['new_password'] ?? '';
+        $confirm_password = $_POST['confirm_password'] ?? '';
+
+        if (empty($current_password) || empty($new_password) || empty($confirm_password)) {
+            redirect_with_message('?page=settings', 'All password fields are required', 'error');
+        }
+        if (strlen($new_password) < 8) {
+            redirect_with_message('?page=settings', 'New password must be at least 8 characters long', 'error');
+        }
+        if ($new_password !== $confirm_password) {
+            redirect_with_message('?page=settings', 'New password and confirmation do not match', 'error');
+        }
+        if ($new_password === $current_password) {
+            redirect_with_message('?page=settings', 'New password must be different from current password', 'error');
+        }
+
+        try {
+            $pdo = get_db_connection();
+            $user_id = $_SESSION['user_id'] ?? null;
+            if (!$user_id) {
+                redirect_with_message('?page=settings', 'User not authenticated', 'error');
+            }
+
+            $stmt = $pdo->prepare("SELECT password_hash FROM users WHERE id = ?");
+            $stmt->execute([$user_id]);
+            $user = $stmt->fetch(PDO::FETCH_ASSOC);
+            if (!$user) {
+                redirect_with_message('?page=settings', 'User not found', 'error');
+            }
+            if (!password_verify($current_password, $user['password_hash'])) {
+                redirect_with_message('?page=settings', 'Current password is incorrect', 'error');
+            }
+
+            $new_password_hash = password_hash($new_password, PASSWORD_DEFAULT);
+            $update_stmt = $pdo->prepare("UPDATE users SET password_hash = ?, password_changed_at = NOW(), updated_at = NOW() WHERE id = ?");
+            $result = $update_stmt->execute([$new_password_hash, $user_id]);
+
+            if ($result && $update_stmt->rowCount() > 0) {
+                if (function_exists('log_security_event')) {
+                    log_security_event('INFO Password Changed', "User ID: $user_id - Username: " . ($_SESSION['username'] ?? 'Unknown') . " - Password changed via settings");
+                }
+                redirect_with_message('?page=settings', 'Password changed successfully', 'success');
+            }
+
+            redirect_with_message('?page=settings', 'Failed to update password. No rows were updated.', 'error');
+        } catch (Exception $e) {
+            error_log('Password change error: ' . $e->getMessage());
+            redirect_with_message('?page=settings', 'An error occurred while changing password', 'error');
+        }
     }
     
     // Prevent any output before JSON response
@@ -129,6 +212,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             case 'update_status':
                 $new_status = $_POST['status'] ?? '';
                 $result = update_user_status($user_id, $new_status, $current_user_id);
+                echo json_encode($result);
+                exit;
+
+            case 'delete_user':
+                $result = delete_user($user_id, $current_user_id);
                 echo json_encode($result);
                 exit;
                 
@@ -186,6 +274,82 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                     echo json_encode(['success' => false, 'message' => 'A fatal error occurred: ' . $e->getMessage()], JSON_UNESCAPED_UNICODE);
                     exit;
                 }
+        }
+    }
+
+    // Handle system logs AJAX
+    if ($page === 'system_logs') {
+        $action = $_POST['action'] ?? '';
+        $logKey = $_POST['log'] ?? 'security';
+        $search = trim($_POST['search'] ?? '');
+        $level = strtoupper(trim($_POST['level'] ?? ''));
+        if ($level === 'ALL') $level = '';
+        $p = max(1, (int)($_POST['p'] ?? 1));
+        $perPage = max(10, min(500, (int)($_POST['per_page'] ?? 100)));
+
+        $basePath = dirname(__DIR__);
+        $logsDir = $basePath . '/storage/logs/';
+        $map = [
+            'security' => $logsDir . 'security.log',
+            'error' => $logsDir . 'error.log',
+        ];
+        $path = $map[$logKey] ?? $map['security'];
+
+        switch ($action) {
+            case 'clear_log':
+                if (!is_file($path)) {
+                    echo json_encode(['success' => true, 'message' => 'Log does not exist yet']);
+                    exit;
+                }
+                $ok = @file_put_contents($path, '');
+                echo json_encode(['success' => $ok !== false, 'message' => $ok !== false ? 'Log cleared' : 'Failed to clear log']);
+                exit;
+
+            case 'fetch_log':
+                // Returns latest filtered lines (newest-first) for live refresh
+                $lines = [];
+                if (is_file($path)) {
+                    $raw = @file($path, FILE_IGNORE_NEW_LINES);
+                    if (is_array($raw)) {
+                        $lines = array_reverse($raw);
+                    }
+                }
+
+                $filtered = [];
+                foreach ($lines as $ln) {
+                    if ($search !== '' && stripos($ln, $search) === false) continue;
+                    if ($level !== '' && stripos($ln, $level) === false) continue;
+                    $filtered[] = $ln;
+                }
+
+                $total = count($filtered);
+                $totalPages = max(1, (int)ceil($total / $perPage));
+                $p = min($p, $totalPages);
+                $offset = ($p - 1) * $perPage;
+                $pageLines = array_slice($filtered, $offset, $perPage);
+
+                // Render minimal HTML for the log view (same classes as system_logs.php)
+                $html = '';
+                foreach ($pageLines as $ln) {
+                    $cls = 'log-line';
+                    $u = strtoupper($ln);
+                    if (strpos($u, 'ERROR') !== false) $cls .= ' is-error';
+                    elseif (strpos($u, 'WARN') !== false) $cls .= ' is-warn';
+                    elseif (strpos($u, 'INFO') !== false) $cls .= ' is-info';
+                    $html .= '<div class="' . $cls . '">' . htmlspecialchars($ln, ENT_QUOTES, 'UTF-8') . '</div>';
+                }
+
+                echo json_encode([
+                    'success' => true,
+                    'html' => $html,
+                    'total' => $total,
+                    'shown' => count($pageLines),
+                    'page' => $p,
+                    'total_pages' => $totalPages,
+                    'file_exists' => is_file($path),
+                    'file_mtime' => is_file($path) ? filemtime($path) : null,
+                ]);
+                exit;
         }
     }
     
@@ -255,7 +419,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                     if ($result && $update_stmt->rowCount() > 0) {
                         // Log security event
                         if (function_exists('log_security_event')) {
-                            log_security_event('Password Changed', "User ID: $user_id - Username: " . ($_SESSION['username'] ?? 'Unknown') . " - Password changed via settings");
+                            log_security_event('INFO Password Changed', "User ID: $user_id - Username: " . ($_SESSION['username'] ?? 'Unknown') . " - Password changed via settings");
                         }
                         
                         echo json_encode(['success' => true, 'message' => 'Password changed successfully']);
