@@ -1144,8 +1144,8 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             
             // Check password length if password is provided
-            const passwordValue = document.getElementById('create_password').value;
-            if (passwordValue && passwordValue.length < 8) {
+            const password = document.getElementById('create_password').value;
+            if (password && password.length < 8) {
                 if (alertDiv) {
                     alertDiv.innerHTML = '<div class="alert alert-danger"><i class="fas fa-exclamation-circle me-2"></i>Password must be at least 8 characters long</div>';
                     document.getElementById('create_password').classList.add('is-invalid');
@@ -1190,55 +1190,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
             
-            // Prepare form data - explicitly get values to ensure they're captured
-            const formData = new FormData();
-            
-            // Get all field values explicitly
-            const username = document.getElementById('create_username').value.trim();
-            const email = document.getElementById('create_email').value.trim();
-            const password = document.getElementById('create_password').value;
-            const name = document.getElementById('create_name').value.trim();
-            const role = document.getElementById('create_role').value;
-            const status = document.getElementById('create_status').value;
-            const department = document.getElementById('create_department').value.trim();
-            const phone = document.getElementById('create_phone').value.trim();
-            const employeeId = document.getElementById('create_employee_id').value;
-            
-            // Debug: Log values being collected
-            console.log('Form values being collected:');
-            console.log('username:', username || '(empty)');
-            console.log('email:', email || '(empty)');
-            console.log('password:', password ? '(provided, length: ' + password.length + ')' : '(empty)');
-            console.log('name:', name || '(empty)');
-            console.log('role:', role || '(empty)');
-            console.log('status:', status || '(empty)');
-            console.log('department:', department || '(empty)');
-            console.log('phone:', phone || '(empty)');
-            console.log('employee_id:', employeeId || '(empty)');
-            
-            // Append all values to FormData
+            // Prepare form data
+            const formData = new FormData(createUserForm);
             formData.append('action', 'create_user');
-            formData.append('username', username);
-            formData.append('email', email);
-            formData.append('password', password);
-            formData.append('name', name);
-            formData.append('role', role);
-            formData.append('status', status);
-            formData.append('department', department);
-            formData.append('phone', phone);
-            if (employeeId) {
-                formData.append('employee_id', employeeId);
-            }
-            
-            // Debug: Log FormData being sent
-            console.log('FormData entries:');
-            for (let [key, value] of formData.entries()) {
-                if (key === 'password') {
-                    console.log(key + ':', value ? '(password provided, length: ' + value.length + ')' : '(empty)');
-                } else {
-                    console.log(key + ':', value || '(empty)');
-                }
-            }
             
             // Submit via AJAX - ensure page parameter is included
             // Use absolute URL to avoid any routing issues

@@ -58,10 +58,8 @@ if ($user_role !== 'super_admin') {
 $page = $_GET['page'] ?? 'dashboard';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
-    // Prevent any output before JSON response (only if output buffering is active)
-    if (ob_get_level() > 0) {
-        ob_clean();
-    }
+    // Prevent any output before JSON response
+    ob_clean();
     
     // Set JSON header immediately
     header('Content-Type: application/json; charset=utf-8');
@@ -96,65 +94,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                         error_log('Create user request without X-Requested-With header');
                     }
                     
-                    // Debug: Log received POST data
-                    error_log('Received POST data: ' . print_r($_POST, true));
-                    
-                    // Get raw values first
-                    $raw_username = $_POST['username'] ?? '';
-                    $raw_email = $_POST['email'] ?? '';
-                    $raw_password = $_POST['password'] ?? '';
-                    $raw_name = $_POST['name'] ?? '';
-                    $raw_department = $_POST['department'] ?? '';
-                    $raw_phone = $_POST['phone'] ?? '';
-                    
-                    // Trim and process
                     $user_data = [
-                        'username' => trim($raw_username),
-                        'email' => trim($raw_email),
-                        'password' => $raw_password, // Don't trim password
-                        'name' => trim($raw_name),
+                        'username' => trim($_POST['username'] ?? ''),
+                        'email' => trim($_POST['email'] ?? ''),
+                        'password' => $_POST['password'] ?? '',
+                        'name' => trim($_POST['name'] ?? ''),
                         'role' => $_POST['role'] ?? 'hr_admin',
                         'status' => $_POST['status'] ?? 'active',
-                        'department' => trim($raw_department),
-                        'phone' => trim($raw_phone),
+                        'department' => trim($_POST['department'] ?? ''),
+                        'phone' => trim($_POST['phone'] ?? ''),
                         'employee_id' => !empty($_POST['employee_id']) ? (int)$_POST['employee_id'] : null
                     ];
                     
-                    // Debug: Log processed data
-                    error_log('Processed user_data: ' . json_encode($user_data));
-                    
-                    // Validate required fields before processing (Employee ID is optional)
-                    // Check if trimmed values have length > 0
-                    $missing_fields = [];
-                    if (strlen(trim($user_data['username'])) === 0) {
-                        $missing_fields[] = 'Username';
-                        error_log('Username validation failed. Raw: "' . $raw_username . '", Processed: "' . $user_data['username'] . '", Length: ' . strlen($user_data['username']));
-                    }
-                    if (strlen(trim($user_data['email'])) === 0) {
-                        $missing_fields[] = 'Email';
-                        error_log('Email validation failed. Raw: "' . $raw_email . '", Processed: "' . $user_data['email'] . '", Length: ' . strlen($user_data['email']));
-                    }
-                    if (strlen($user_data['password']) === 0) {
-                        $missing_fields[] = 'Password';
-                        error_log('Password validation failed. Length: ' . strlen($user_data['password']));
-                    }
-                    if (strlen(trim($user_data['name'])) === 0) {
-                        $missing_fields[] = 'Full Name';
-                        error_log('Name validation failed. Raw: "' . $raw_name . '", Processed: "' . $user_data['name'] . '", Length: ' . strlen($user_data['name']));
-                    }
-                    if (strlen(trim($user_data['department'])) === 0) {
-                        $missing_fields[] = 'Department';
-                        error_log('Department validation failed. Raw: "' . $raw_department . '", Processed: "' . $user_data['department'] . '", Length: ' . strlen($user_data['department']));
-                    }
-                    if (strlen(trim($user_data['phone'])) === 0) {
-                        $missing_fields[] = 'Phone';
-                        error_log('Phone validation failed. Raw: "' . $raw_phone . '", Processed: "' . $user_data['phone'] . '", Length: ' . strlen($user_data['phone']));
-                    }
-                    
-                    if (!empty($missing_fields)) {
-                        $message = 'Please fill in the following required fields: ' . implode(', ', $missing_fields);
-                        error_log('Validation failed. Missing fields: ' . implode(', ', $missing_fields));
-                        echo json_encode(['success' => false, 'message' => $message]);
+                    // Validate required fields before processing
+                    if (empty($user_data['username']) || empty($user_data['email']) || empty($user_data['password']) || empty($user_data['name'])) {
+                        echo json_encode(['success' => false, 'message' => 'All required fields must be filled']);
                         exit;
                     }
                     

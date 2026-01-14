@@ -12,6 +12,9 @@ define('STORAGE_PATH', BASE_PATH . '/storage');
 define('RESOURCES_PATH', BASE_PATH . '/resources');
 define('PUBLIC_PATH', BASE_PATH . '/public');
 
+// Load environment variables FIRST (before any other configuration)
+require_once __DIR__ . '/env.php';
+
 // Set error reporting based on environment
 $env = $_ENV['APP_ENV'] ?? 'production';
 $debug = ($_ENV['APP_DEBUG'] ?? 'false') === 'true';
