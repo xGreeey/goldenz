@@ -608,6 +608,12 @@ ob_end_flush();
                         </button>
                     </div>
 
+                    <div class="text-center mt-3">
+                        <a href="forgot-password.php" class="text-decoration-none" style="color: #2563eb; font-size: 0.875rem; font-weight: 500;">
+                            Forgot your password?
+                        </a>
+                    </div>
+
                     <div class="text-center text-muted small mt-3">
                         Need access? Contact your administrator.
                     </div>

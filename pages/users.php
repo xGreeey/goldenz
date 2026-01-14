@@ -429,7 +429,7 @@ $role_config = config('roles.roles', []);
                 <h5 class="modal-title" id="createUserModalLabel">Create New User</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form id="createUserForm">
+            <form id="createUserForm" novalidate>
                 <div class="modal-body">
                     <div id="createUserAlert"></div>
                     
@@ -1015,12 +1015,23 @@ document.addEventListener('DOMContentLoaded', function() {
     if (createUserModal) {
         // Reset form when modal is closed
         createUserModal.addEventListener('hidden.bs.modal', function() {
+            // Reset submitting flag
+            if (typeof isSubmitting !== 'undefined') {
+                isSubmitting = false;
+            }
+            
             if (createUserForm) {
                 createUserForm.reset();
                 // Remove all invalid classes
                 const invalidFields = createUserForm.querySelectorAll('.is-invalid');
                 invalidFields.forEach(field => {
                     field.classList.remove('is-invalid');
+                });
+                
+                // Re-enable all form inputs
+                const formInputs = createUserForm.querySelectorAll('input, select, button');
+                formInputs.forEach(input => {
+                    input.disabled = false;
                 });
             }
             const alertDiv = document.getElementById('createUserAlert');
@@ -1083,9 +1094,17 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Form submission handler
     if (createUserForm) {
+        let isSubmitting = false; // Prevent double submissions
+        
         createUserForm.addEventListener('submit', function(e) {
             e.preventDefault();
             e.stopPropagation();
+            
+            // Prevent double submission
+            if (isSubmitting) {
+                console.log('Form submission already in progress, ignoring duplicate submit');
+                return false;
+            }
             
             const alertDiv = document.getElementById('createUserAlert');
             const submitBtn = document.getElementById('createUserSubmitBtn');
@@ -1125,8 +1144,8 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             
             // Check password length if password is provided
-            const password = document.getElementById('create_password').value;
-            if (password && password.length < 8) {
+            const passwordValue = document.getElementById('create_password').value;
+            if (passwordValue && passwordValue.length < 8) {
                 if (alertDiv) {
                     alertDiv.innerHTML = '<div class="alert alert-danger"><i class="fas fa-exclamation-circle me-2"></i>Password must be at least 8 characters long</div>';
                     document.getElementById('create_password').classList.add('is-invalid');
@@ -1154,46 +1173,126 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
-            // Disable submit button
+            // Set submitting flag
+            isSubmitting = true;
+            
+            // Disable submit button and form inputs
             if (submitBtn) {
                 submitBtn.disabled = true;
                 submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Creating...';
             }
             
-            // Prepare form data
-            const formData = new FormData(createUserForm);
+            // Disable all form inputs to prevent changes during submission
+            const formInputs = createUserForm.querySelectorAll('input, select, button');
+            formInputs.forEach(input => {
+                if (input !== submitBtn) {
+                    input.disabled = true;
+                }
+            });
+            
+            // Prepare form data - explicitly get values to ensure they're captured
+            const formData = new FormData();
+            
+            // Get all field values explicitly
+            const username = document.getElementById('create_username').value.trim();
+            const email = document.getElementById('create_email').value.trim();
+            const password = document.getElementById('create_password').value;
+            const name = document.getElementById('create_name').value.trim();
+            const role = document.getElementById('create_role').value;
+            const status = document.getElementById('create_status').value;
+            const department = document.getElementById('create_department').value.trim();
+            const phone = document.getElementById('create_phone').value.trim();
+            const employeeId = document.getElementById('create_employee_id').value;
+            
+            // Debug: Log values being collected
+            console.log('Form values being collected:');
+            console.log('username:', username || '(empty)');
+            console.log('email:', email || '(empty)');
+            console.log('password:', password ? '(provided, length: ' + password.length + ')' : '(empty)');
+            console.log('name:', name || '(empty)');
+            console.log('role:', role || '(empty)');
+            console.log('status:', status || '(empty)');
+            console.log('department:', department || '(empty)');
+            console.log('phone:', phone || '(empty)');
+            console.log('employee_id:', employeeId || '(empty)');
+            
+            // Append all values to FormData
             formData.append('action', 'create_user');
+            formData.append('username', username);
+            formData.append('email', email);
+            formData.append('password', password);
+            formData.append('name', name);
+            formData.append('role', role);
+            formData.append('status', status);
+            formData.append('department', department);
+            formData.append('phone', phone);
+            if (employeeId) {
+                formData.append('employee_id', employeeId);
+            }
+            
+            // Debug: Log FormData being sent
+            console.log('FormData entries:');
+            for (let [key, value] of formData.entries()) {
+                if (key === 'password') {
+                    console.log(key + ':', value ? '(password provided, length: ' + value.length + ')' : '(empty)');
+                } else {
+                    console.log(key + ':', value || '(empty)');
+                }
+            }
             
             // Submit via AJAX - ensure page parameter is included
-            let formAction = window.location.pathname;
+            // Use absolute URL to avoid any routing issues
+            let formAction = window.location.origin + window.location.pathname;
             const urlParams = new URLSearchParams(window.location.search);
             if (!urlParams.has('page')) {
                 urlParams.set('page', 'users');
             }
             formAction += '?' + urlParams.toString();
             
+            console.log('Submitting user creation request to:', formAction);
+            
             fetch(formAction, {
                 method: 'POST',
                 body: formData,
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest'
-                }
+                },
+                cache: 'no-cache' // Prevent caching
             })
             .then(response => {
+                // Check if response is a redirect (status 302, 301, etc.)
+                if (response.redirected) {
+                    console.error('Server redirected:', response.url);
+                    throw new Error('Server redirected to: ' + response.url);
+                }
+                
                 if (!response.ok) {
                     return response.text().then(text => {
-                        throw new Error('Server error: ' + response.status);
+                        console.error('Server error response:', text);
+                        throw new Error('Server error: ' + response.status + ' - ' + text.substring(0, 200));
                     });
                 }
+                
                 const contentType = response.headers.get('content-type');
                 if (!contentType || !contentType.includes('application/json')) {
                     return response.text().then(text => {
-                        throw new Error('Server returned non-JSON response');
+                        console.error('Non-JSON response:', text.substring(0, 500));
+                        throw new Error('Server returned non-JSON response. Check console for details.');
                     });
                 }
                 return response.json();
             })
             .then(data => {
+                console.log('Create user response:', data);
+                
+                // Reset submitting flag
+                isSubmitting = false;
+                
+                // Re-enable form inputs
+                formInputs.forEach(input => {
+                    input.disabled = false;
+                });
+                
                 if (submitBtn) {
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = '<i class="fas fa-user-plus me-2"></i>Create User';
@@ -1225,12 +1324,21 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .catch(error => {
                 console.error('Create User Error:', error);
+                
+                // Reset submitting flag
+                isSubmitting = false;
+                
+                // Re-enable form inputs
+                formInputs.forEach(input => {
+                    input.disabled = false;
+                });
+                
                 if (submitBtn) {
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = '<i class="fas fa-user-plus me-2"></i>Create User';
                 }
                 if (alertDiv) {
-                    alertDiv.innerHTML = '<div class="alert alert-danger"><i class="fas fa-exclamation-triangle me-2"></i>An error occurred while creating the user. Please try again.</div>';
+                    alertDiv.innerHTML = '<div class="alert alert-danger"><i class="fas fa-exclamation-triangle me-2"></i>An error occurred while creating the user: ' + error.message + '. Please try again.</div>';
                     alertDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                 }
             });
