@@ -98,6 +98,88 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         }
     }
     
+    // Handle settings AJAX
+    if ($page === 'settings') {
+        switch ($action) {
+            case 'change_password':
+                $current_password = $_POST['current_password'] ?? '';
+                $new_password = $_POST['new_password'] ?? '';
+                $confirm_password = $_POST['confirm_password'] ?? '';
+                
+                // Validate inputs
+                if (empty($current_password) || empty($new_password) || empty($confirm_password)) {
+                    echo json_encode(['success' => false, 'message' => 'All password fields are required']);
+                    exit;
+                }
+                
+                if (strlen($new_password) < 8) {
+                    echo json_encode(['success' => false, 'message' => 'New password must be at least 8 characters long']);
+                    exit;
+                }
+                
+                if ($new_password !== $confirm_password) {
+                    echo json_encode(['success' => false, 'message' => 'New password and confirmation do not match']);
+                    exit;
+                }
+                
+                if ($new_password === $current_password) {
+                    echo json_encode(['success' => false, 'message' => 'New password must be different from current password']);
+                    exit;
+                }
+                
+                // Verify current password and update
+                try {
+                    $pdo = get_db_connection();
+                    $user_id = $_SESSION['user_id'] ?? null;
+                    
+                    if (!$user_id) {
+                        echo json_encode(['success' => false, 'message' => 'User not authenticated']);
+                        exit;
+                    }
+                    
+                    // Get current password hash
+                    $stmt = $pdo->prepare("SELECT password_hash FROM users WHERE id = ?");
+                    $stmt->execute([$user_id]);
+                    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+                    
+                    if (!$user) {
+                        echo json_encode(['success' => false, 'message' => 'User not found']);
+                        exit;
+                    }
+                    
+                    // Verify current password
+                    if (!password_verify($current_password, $user['password_hash'])) {
+                        echo json_encode(['success' => false, 'message' => 'Current password is incorrect']);
+                        exit;
+                    }
+                    
+                    // Hash new password
+                    $new_password_hash = password_hash($new_password, PASSWORD_DEFAULT);
+                    
+                    // Update password in users table
+                    // Updates: password_hash, password_changed_at, and updated_at
+                    $update_stmt = $pdo->prepare("UPDATE users SET password_hash = ?, password_changed_at = NOW(), updated_at = NOW() WHERE id = ?");
+                    $result = $update_stmt->execute([$new_password_hash, $user_id]);
+                    
+                    if ($result && $update_stmt->rowCount() > 0) {
+                        // Log security event
+                        if (function_exists('log_security_event')) {
+                            log_security_event('Password Changed', "User ID: $user_id - Username: " . ($_SESSION['username'] ?? 'Unknown') . " - Password changed via settings");
+                        }
+                        
+                        echo json_encode(['success' => true, 'message' => 'Password changed successfully']);
+                    } else {
+                        error_log("Password update failed: No rows affected for user ID: $user_id");
+                        echo json_encode(['success' => false, 'message' => 'Failed to update password. No rows were updated.']);
+                    }
+                } catch (Exception $e) {
+                    error_log('Password change error: ' . $e->getMessage());
+                    echo json_encode(['success' => false, 'message' => 'An error occurred while changing password']);
+                }
+                exit;
+        }
+    }
+    
     // Handle help/tickets AJAX
     if ($page === 'help') {
         $ticket_id = (int)($_POST['ticket_id'] ?? 0);
