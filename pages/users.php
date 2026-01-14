@@ -304,6 +304,8 @@ $role_config = config('roles.roles', []);
                                     <td>
                                         <select class="form-select form-select-sm user-role-select" 
                                                 data-user-id="<?php echo $user['id']; ?>"
+                                                data-username="<?php echo htmlspecialchars($user['username']); ?>"
+                                                data-user-name="<?php echo htmlspecialchars($user['name']); ?>"
                                                 style="min-width: 150px;">
                                             <?php foreach ($role_config as $role_key => $role_data): ?>
                                                 <option value="<?php echo $role_key; ?>" 
@@ -569,6 +571,42 @@ $role_config = config('roles.roles', []);
     </div>
 </div>
 
+<!-- Role Change Confirmation Modal -->
+<div class="modal fade" id="roleChangeModal" tabindex="-1" aria-labelledby="roleChangeModalLabel" aria-hidden="true" data-bs-backdrop="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="roleChangeModalLabel">
+                    <i class="fas fa-user-cog me-2"></i>Confirm Role Change
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-exclamation-triangle text-warning" style="font-size: 2.5rem;"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <p class="mb-0" id="roleChangeMessage">Are you sure you want to change the user's role?</p>
+                    </div>
+                </div>
+                <div class="alert alert-info mb-0">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Note:</strong> This action will immediately update the user's role and permissions.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-modern" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Cancel
+                </button>
+                <button type="button" class="btn btn-primary-modern" id="confirmRoleChangeBtn">
+                    <i class="fas fa-check me-2"></i>Confirm Change
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <style>
 .user-role-select,
 .user-status-select {
@@ -669,6 +707,45 @@ body.modal-open #createUserModal {
     position: relative;
     z-index: 1;
 }
+
+/* Role Change Confirmation Modal */
+#roleChangeModal {
+    z-index: 1200 !important;
+}
+
+#roleChangeModal .modal-dialog {
+    z-index: 1201 !important;
+    position: relative;
+}
+
+#roleChangeModal .modal-content {
+    z-index: 1202 !important;
+    position: relative;
+    border: none;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+}
+
+body.modal-open #roleChangeModal {
+    z-index: 1200 !important;
+}
+
+#roleChangeModal .modal-body {
+    padding: 1.5rem;
+}
+
+#roleChangeModal .modal-footer {
+    border-top: 1px solid #e2e8f0;
+    padding: 1rem 1.5rem;
+}
+
+/* Hide backdrop for role change modal */
+body:has(#roleChangeModal.show) .modal-backdrop,
+#roleChangeModal.show ~ .modal-backdrop,
+.modal-backdrop:has(+ #roleChangeModal.show) {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+}
 </style>
 
 <script>
@@ -695,10 +772,15 @@ body.modal-open #createUserModal {
 document.addEventListener('DOMContentLoaded', function() {
     // Main page functionality
     // Handle role changes
+    let pendingRoleChange = null; // Store pending role change data
+    
     document.querySelectorAll('.user-role-select').forEach(select => {
         select.addEventListener('change', function() {
             const userId = this.dataset.userId;
+            const username = this.dataset.username || 'User';
+            const userName = this.dataset.userName || username;
             const newRole = this.value;
+            const newRoleText = this.options[this.selectedIndex].text;
             const originalValue = this.getAttribute('data-original-value') || this.value;
             
             if (!this.hasAttribute('data-original-value')) {
@@ -707,16 +789,92 @@ document.addEventListener('DOMContentLoaded', function() {
             
             this.classList.add('changed');
             
-            // Show confirmation
-            if (confirm(`Change user role to "${this.options[this.selectedIndex].text}"?`)) {
-                updateUserRole(userId, newRole, this);
-            } else {
-                // Revert selection
-                this.value = this.getAttribute('data-original-value');
-                this.classList.remove('changed');
-            }
+            // Store pending change data
+            pendingRoleChange = {
+                userId: userId,
+                username: username,
+                userName: userName,
+                newRole: newRole,
+                newRoleText: newRoleText,
+                selectElement: this,
+                originalValue: originalValue
+            };
+            
+            // Show confirmation modal
+            showRoleChangeModal(userName, newRoleText);
         });
     });
+    
+    // Function to show role change confirmation modal
+    function showRoleChangeModal(userName, newRoleText) {
+        const modalElement = document.getElementById('roleChangeModal');
+        const modal = new bootstrap.Modal(modalElement, {
+            backdrop: false,
+            keyboard: true
+        });
+        const messageEl = document.getElementById('roleChangeMessage');
+        
+        if (messageEl && pendingRoleChange) {
+            messageEl.innerHTML = `Are you sure you want to change <strong>${userName}</strong>'s role to <strong>"${newRoleText}"</strong>?`;
+        }
+        
+        modal.show();
+        
+        // Remove any backdrop that might have been created
+        setTimeout(() => {
+            const backdrops = document.querySelectorAll('.modal-backdrop');
+            backdrops.forEach(backdrop => {
+                if (backdrop && backdrop.parentNode) {
+                    backdrop.remove();
+                }
+            });
+        }, 10);
+    }
+    
+    // Handle confirmation button click
+    const confirmRoleChangeBtn = document.getElementById('confirmRoleChangeBtn');
+    if (confirmRoleChangeBtn) {
+        confirmRoleChangeBtn.addEventListener('click', function() {
+            if (pendingRoleChange) {
+                const { userId, newRole, selectElement } = pendingRoleChange;
+                
+                // Close modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('roleChangeModal'));
+                if (modal) {
+                    modal.hide();
+                }
+                
+                // Proceed with role update
+                updateUserRole(userId, newRole, selectElement);
+                
+                // Clear pending change
+                pendingRoleChange = null;
+            }
+        });
+    }
+    
+    // Handle modal cancel - revert selection
+    const roleChangeModal = document.getElementById('roleChangeModal');
+    if (roleChangeModal) {
+        // Remove backdrop when modal is shown
+        roleChangeModal.addEventListener('shown.bs.modal', function() {
+            const backdrops = document.querySelectorAll('.modal-backdrop');
+            backdrops.forEach(backdrop => {
+                if (backdrop && backdrop.parentNode) {
+                    backdrop.remove();
+                }
+            });
+        });
+        
+        roleChangeModal.addEventListener('hidden.bs.modal', function() {
+            if (pendingRoleChange) {
+                // Revert selection if modal was closed without confirming
+                pendingRoleChange.selectElement.value = pendingRoleChange.originalValue;
+                pendingRoleChange.selectElement.classList.remove('changed');
+                pendingRoleChange = null;
+            }
+        });
+    }
     
     // Handle status changes
     document.querySelectorAll('.user-status-select').forEach(select => {
