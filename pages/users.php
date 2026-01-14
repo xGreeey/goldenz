@@ -955,8 +955,13 @@ document.addEventListener('DOMContentLoaded', function() {
             const formData = new FormData(createUserForm);
             formData.append('action', 'create_user');
             
-            // Submit via AJAX
-            const formAction = window.location.pathname + window.location.search;
+            // Submit via AJAX - ensure page parameter is included
+            let formAction = window.location.pathname;
+            const urlParams = new URLSearchParams(window.location.search);
+            if (!urlParams.has('page')) {
+                urlParams.set('page', 'users');
+            }
+            formAction += '?' + urlParams.toString();
             
             fetch(formAction, {
                 method: 'POST',
