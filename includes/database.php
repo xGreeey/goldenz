@@ -2781,13 +2781,24 @@ if (!function_exists('create_user')) {
             // Execute with error handling
             try {
                 $result = $stmt->execute($params);
+                
+                // Check for execution errors
+                if (!$result) {
+                    $error_info = $stmt->errorInfo();
+                    error_log("PDO Execute Error in create_user: " . print_r($error_info, true));
+                    return ['success' => false, 'message' => 'Database error: Failed to execute query'];
+                }
             } catch (PDOException $e) {
-                error_log("PDO Error in create_user: " . $e->getMessage());
+                error_log("PDO Exception in create_user: " . $e->getMessage());
+                error_log("PDO Error Code: " . $e->getCode());
+                error_log("SQL: " . $sql);
+                error_log("Params: " . print_r($params, true));
                 return ['success' => false, 'message' => 'Database error: ' . $e->getMessage()];
             }
             
-            if ($result && $stmt->rowCount() > 0) {
-                $new_user_id = $pdo->lastInsertId();
+            // Check if insert was successful (rowCount may not work reliably for INSERT, so check lastInsertId)
+            $new_user_id = $pdo->lastInsertId();
+            if ($result && $new_user_id) {
                 
                 // Log audit event
                 if (function_exists('log_audit_event')) {
@@ -2820,12 +2831,18 @@ if (!function_exists('create_user')) {
             }
             
             // If execution succeeded but no rows affected, something went wrong
+            $error_info = $stmt->errorInfo();
+            error_log("create_user: Query executed but no rows inserted");
+            error_log("PDO Error Info: " . print_r($error_info, true));
+            error_log("Last Insert ID: " . ($pdo->lastInsertId() ?: 'null'));
+            error_log("SQL: " . $sql);
+            error_log("Params: " . print_r($params, true));
+            
             if ($result && $stmt->rowCount() === 0) {
-                error_log("create_user: Query executed but no rows inserted");
-                return ['success' => false, 'message' => 'Failed to create user - no rows inserted'];
+                return ['success' => false, 'message' => 'Failed to create user - no rows inserted. Check logs for details.'];
             }
             
-            return ['success' => false, 'message' => 'Failed to create user - execution returned false'];
+            return ['success' => false, 'message' => 'Failed to create user - execution returned false. Check logs for details.'];
         } catch (PDOException $e) {
             error_log("PDO Exception in create_user: " . $e->getMessage());
             error_log("PDO Error Code: " . $e->getCode());
