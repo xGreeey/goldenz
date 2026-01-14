@@ -348,10 +348,11 @@
     }
     
     // Security features
-    document.addEventListener('contextmenu', function(e) {
-        e.preventDefault();
-        showAlert('Right-click disabled for security', 'warning');
-    });
+    // Right-click disabled - commented out to allow developer tools access
+    // document.addEventListener('contextmenu', function(e) {
+    //     e.preventDefault();
+    //     showAlert('Right-click disabled for security', 'warning');
+    // });
     
     // Disable F12 and dev tools
     document.addEventListener('keydown', function(e) {
