@@ -354,15 +354,15 @@
     //     showAlert('Right-click disabled for security', 'warning');
     // });
     
-    // Disable F12 and dev tools
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'F12' || 
-            (e.ctrlKey && e.shiftKey && e.key === 'I') ||
-            (e.ctrlKey && e.shiftKey && e.key === 'C')) {
-            e.preventDefault();
-            showAlert('Developer tools disabled for security', 'warning');
-        }
-    });
+    // Disable F12 and dev tools - commented out to allow developer tools access
+    // document.addEventListener('keydown', function(e) {
+    //     if (e.key === 'F12' || 
+    //         (e.ctrlKey && e.shiftKey && e.key === 'I') ||
+    //         (e.ctrlKey && e.shiftKey && e.key === 'C')) {
+    //         e.preventDefault();
+    //         showAlert('Developer tools disabled for security', 'warning');
+    //     }
+    // });
     
     // Show alert
     function showAlert(message, type = 'info') {
