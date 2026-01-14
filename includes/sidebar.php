@@ -116,7 +116,7 @@ $menu = [
             <a href="<?php echo base_url(); ?>/index.php?logout=1"
                class="nav-link"
                data-no-transition="true">
-                <i class="fas fa-sign-out-alt me-2"></i>
+                <i class="fas fa-right-from-bracket me-2"></i>
                 <span>Logout</span>
             </a>
         </li>

@@ -210,7 +210,7 @@ function isTaskOverdue($due_date, $status) {
                 <button type="button" class="btn btn-link p-0 text-primary" data-bs-toggle="popover" data-bs-trigger="hover focus" data-bs-placement="bottom" 
                         data-bs-content="Tasks are automatically generated when employee records need updates. Tasks can only be removed once they are accomplished (completed). Click on the location page link to go directly to the employee record." 
                         title="How Tasks Work" style="font-size: 1.25rem; line-height: 1;">
-                    <i class="fas fa-question-circle"></i>
+                    <i class="fas fa-circle-question"></i>
                 </button>
             </div>
             <p class="text-muted mb-0">Manage your assigned tasks and priorities</p>
@@ -224,7 +224,7 @@ function isTaskOverdue($due_date, $status) {
 
     <!-- Info Alert -->
     <div class="alert alert-info mb-4">
-        <i class="fas fa-info-circle me-2"></i>
+        <i class="fas fa-circle-info me-2"></i>
         <strong>Auto-Generated Tasks:</strong> Tasks are automatically created when employee records require updates (missing required fields, expired licenses, etc.). Click on the location page link to go directly to the employee record.
     </div>
 
@@ -250,7 +250,7 @@ function isTaskOverdue($due_date, $status) {
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center mb-2">
                         <span class="text-muted small">Needs Action</span>
-                        <i class="fas fa-exclamation-circle text-warning"></i>
+                        <i class="fas fa-circle-exclamation text-warning"></i>
                     </div>
                     <div class="d-flex align-items-center gap-2">
                         <h3 class="mb-0 text-warning"><?php echo number_format($task_stats['needs_action'] ?? 0); ?></h3>
@@ -282,7 +282,7 @@ function isTaskOverdue($due_date, $status) {
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center mb-2">
                         <span class="text-muted small">Completed</span>
-                        <i class="fas fa-check-circle text-success"></i>
+                        <i class="fas fa-circle-check text-success"></i>
                     </div>
                     <div class="d-flex align-items-center gap-2">
                         <h3 class="mb-0 text-success"><?php echo number_format($task_stats['completed'] ?? 0); ?></h3>
