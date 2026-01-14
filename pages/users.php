@@ -518,28 +518,30 @@ $role_config = config('roles.roles', []);
                             <small class="text-muted">User can login if Active</small>
                         </div>
                         
-                        <!-- Optional Fields -->
+                        <!-- Additional Fields -->
                         <div class="col-12 mt-3">
-                            <h6 class="text-muted mb-3 border-bottom pb-2">Additional Information (Optional)</h6>
+                            <h6 class="text-muted mb-3 border-bottom pb-2">Additional Information</h6>
                         </div>
                         
                         <div class="col-md-6">
-                            <label for="create_department" class="form-label">Department</label>
+                            <label for="create_department" class="form-label">Department <span class="text-danger">*</span></label>
                             <input type="text" 
                                    class="form-control" 
                                    id="create_department" 
                                    name="department" 
+                                   required
                                    maxlength="100"
                                    placeholder="e.g., Human Resources">
                             <small class="text-muted">Max 100 characters</small>
                         </div>
                         
                         <div class="col-md-6">
-                            <label for="create_phone" class="form-label">Phone</label>
+                            <label for="create_phone" class="form-label">Phone <span class="text-danger">*</span></label>
                             <input type="tel" 
                                    class="form-control" 
                                    id="create_phone" 
                                    name="phone" 
+                                   required
                                    maxlength="20"
                                    placeholder="0917-123-4567">
                             <small class="text-muted">Max 20 characters</small>
@@ -857,6 +859,11 @@ document.addEventListener('DOMContentLoaded', function() {
         createUserModal.addEventListener('hidden.bs.modal', function() {
             if (createUserForm) {
                 createUserForm.reset();
+                // Remove all invalid classes
+                const invalidFields = createUserForm.querySelectorAll('.is-invalid');
+                invalidFields.forEach(field => {
+                    field.classList.remove('is-invalid');
+                });
             }
             const alertDiv = document.getElementById('createUserAlert');
             if (alertDiv) {
@@ -930,18 +937,62 @@ document.addEventListener('DOMContentLoaded', function() {
                 alertDiv.innerHTML = '';
             }
             
-            // Validate form
-            if (!createUserForm.checkValidity()) {
-                createUserForm.reportValidity();
+            // Custom validation for required fields (marked with *)
+            const requiredFields = [
+                { id: 'create_username', name: 'Username' },
+                { id: 'create_email', name: 'Email' },
+                { id: 'create_password', name: 'Password' },
+                { id: 'create_name', name: 'Full Name' },
+                { id: 'create_role', name: 'Role' },
+                { id: 'create_department', name: 'Department' },
+                { id: 'create_phone', name: 'Phone' }
+            ];
+            
+            const missingFields = [];
+            const emptyFields = [];
+            
+            requiredFields.forEach(field => {
+                const input = document.getElementById(field.id);
+                if (input) {
+                    const value = input.value.trim();
+                    if (!value) {
+                        missingFields.push(field.name);
+                        emptyFields.push(input);
+                        // Add visual indicator
+                        input.classList.add('is-invalid');
+                    } else {
+                        input.classList.remove('is-invalid');
+                    }
+                }
+            });
+            
+            // Check password length if password is provided
+            const password = document.getElementById('create_password').value;
+            if (password && password.length < 8) {
+                if (alertDiv) {
+                    alertDiv.innerHTML = '<div class="alert alert-danger"><i class="fas fa-exclamation-circle me-2"></i>Password must be at least 8 characters long</div>';
+                    document.getElementById('create_password').classList.add('is-invalid');
+                }
                 return;
             }
             
-            // Validate password length
-            const password = document.getElementById('create_password').value;
-            if (password.length < 8) {
+            // Show error message if any required fields are missing
+            if (missingFields.length > 0) {
+                const fieldList = missingFields.join(', ');
+                const message = missingFields.length === 1 
+                    ? `Please fill up the required field: ${fieldList}`
+                    : `Please fill up all required fields marked with *: ${fieldList}`;
+                
                 if (alertDiv) {
-                    alertDiv.innerHTML = '<div class="alert alert-danger"><i class="fas fa-exclamation-circle me-2"></i>Password must be at least 8 characters long</div>';
+                    alertDiv.innerHTML = '<div class="alert alert-danger"><i class="fas fa-exclamation-circle me-2"></i>' + message + '</div>';
+                    alertDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                 }
+                
+                // Focus on first empty field
+                if (emptyFields.length > 0) {
+                    emptyFields[0].focus();
+                }
+                
                 return;
             }
             
@@ -1025,6 +1076,23 @@ document.addEventListener('DOMContentLoaded', function() {
                     alertDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                 }
             });
+        });
+        
+        // Real-time validation feedback - remove error state when user starts typing
+        const requiredFieldIds = ['create_username', 'create_email', 'create_password', 'create_name', 'create_role', 'create_department', 'create_phone'];
+        requiredFieldIds.forEach(fieldId => {
+            const field = document.getElementById(fieldId);
+            if (field) {
+                // Remove invalid class on input/change
+                field.addEventListener('input', function() {
+                    this.classList.remove('is-invalid');
+                });
+                field.addEventListener('change', function() {
+                    if (this.value.trim()) {
+                        this.classList.remove('is-invalid');
+                    }
+                });
+            }
         });
     }
 });

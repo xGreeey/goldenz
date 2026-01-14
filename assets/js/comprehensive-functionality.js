@@ -142,7 +142,10 @@ class ComprehensiveFunctionalityManager {
         document.querySelectorAll('.view-container').forEach(container => {
             container.style.display = 'none';
         });
-        document.getElementById(`${viewId}ViewContainer`)?.style.display = 'block';
+        const viewContainer = document.getElementById(`${viewId}ViewContainer`);
+        if (viewContainer) {
+            viewContainer.style.display = 'block';
+        }
         
         // Load view-specific data
         this.loadViewData(viewId);
