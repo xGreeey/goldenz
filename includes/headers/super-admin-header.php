@@ -114,7 +114,7 @@ $activeSection = getActiveSection($page);
                         onclick="event.preventDefault(); if(window.sidebarNav){window.sidebarNav.toggleSection(event);} else {const submenu=document.getElementById('teams-submenu'); const arrow=this.querySelector('.nav-arrow'); if(submenu.classList.contains('expanded')){submenu.classList.remove('expanded');arrow.classList.remove('rotated');this.setAttribute('aria-expanded','false');}else{submenu.classList.add('expanded');arrow.classList.add('rotated');this.setAttribute('aria-expanded','true');}}">
                     <i class="fas fa-users" aria-hidden="true"></i>
                     <span>Teams</span>
-                    <i class="fas fa-chevron-down nav-arrow <?php echo ($activeSection === 'teams') ? 'rotated' : ''; ?>" aria-hidden="true"></i>
+                    <span class="nav-arrow <?php echo ($activeSection === 'teams') ? 'rotated' : ''; ?>" aria-hidden="true">▼</span>
                 </button>
                 <ul class="nav-submenu <?php echo ($activeSection === 'teams') ? 'expanded' : ''; ?>" id="teams-submenu" role="menu">
                     <li class="nav-item">
@@ -172,7 +172,7 @@ $activeSection = getActiveSection($page);
                         onclick="event.preventDefault(); if(window.sidebarNav){window.sidebarNav.toggleSection(event);} else {const submenu=document.getElementById('hire-submenu'); const arrow=this.querySelector('.nav-arrow'); if(submenu.classList.contains('expanded')){submenu.classList.remove('expanded');arrow.classList.remove('rotated');this.setAttribute('aria-expanded','false');}else{submenu.classList.add('expanded');arrow.classList.add('rotated');this.setAttribute('aria-expanded','true');}}">
                     <i class="fas fa-briefcase" aria-hidden="true"></i>
                     <span>Hire</span>
-                    <i class="fas fa-chevron-down nav-arrow <?php echo ($activeSection === 'hire') ? 'rotated' : ''; ?>" aria-hidden="true"></i>
+                    <span class="nav-arrow <?php echo ($activeSection === 'hire') ? 'rotated' : ''; ?>" aria-hidden="true">▼</span>
                 </button>
                 <ul class="nav-submenu <?php echo ($activeSection === 'hire') ? 'expanded' : ''; ?>" id="hire-submenu" role="menu">
                     <li class="nav-item">
@@ -214,7 +214,7 @@ $activeSection = getActiveSection($page);
                         onclick="event.preventDefault(); if(window.sidebarNav){window.sidebarNav.toggleSection(event);} else {const submenu=document.getElementById('posts-submenu'); const arrow=this.querySelector('.nav-arrow'); if(submenu.classList.contains('expanded')){submenu.classList.remove('expanded');arrow.classList.remove('rotated');this.setAttribute('aria-expanded','false');}else{submenu.classList.add('expanded');arrow.classList.add('rotated');this.setAttribute('aria-expanded','true');}}">
                     <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
                     <span>Posts & Locations</span>
-                    <i class="fas fa-chevron-down nav-arrow <?php echo ($activeSection === 'posts') ? 'rotated' : ''; ?>" aria-hidden="true"></i>
+                    <span class="nav-arrow <?php echo ($activeSection === 'posts') ? 'rotated' : ''; ?>" aria-hidden="true">▼</span>
                 </button>
                 <ul class="nav-submenu <?php echo ($activeSection === 'posts') ? 'expanded' : ''; ?>" id="posts-submenu" role="menu">
                     <li class="nav-item">
@@ -256,7 +256,7 @@ $activeSection = getActiveSection($page);
                         onclick="event.preventDefault(); if(window.sidebarNav){window.sidebarNav.toggleSection(event);} else {const submenu=document.getElementById('administration-submenu'); const arrow=this.querySelector('.nav-arrow'); if(submenu.classList.contains('expanded')){submenu.classList.remove('expanded');arrow.classList.remove('rotated');this.setAttribute('aria-expanded','false');}else{submenu.classList.add('expanded');arrow.classList.add('rotated');this.setAttribute('aria-expanded','true');}}">
                     <i class="fas fa-shield-alt" aria-hidden="true"></i>
                     <span>Administration</span>
-                    <i class="fas fa-chevron-down nav-arrow <?php echo ($activeSection === 'administration') ? 'rotated' : ''; ?>" aria-hidden="true"></i>
+                    <span class="nav-arrow <?php echo ($activeSection === 'administration') ? 'rotated' : ''; ?>" aria-hidden="true">▼</span>
                 </button>
                 <ul class="nav-submenu <?php echo ($activeSection === 'administration') ? 'expanded' : ''; ?>" id="administration-submenu" role="menu">
                     <li class="nav-item">
