@@ -33,9 +33,18 @@ class PageTransitionManager {
         });
 
         // Handle back/forward navigation
-        window.addEventListener('popstate', () => {
-            this.handlePageLoad();
+        window.addEventListener('popstate', (e) => {
+            // Prevent default if we're handling it
+            if (e.state) {
+                this.handlePageLoad();
+            } else {
+                // If no state, do a full page reload to be safe
+                window.location.reload();
+            }
         });
+        
+        // Store initial page state on load
+        this.storeInitialState();
     }
 
     shouldTransition(link) {
@@ -50,8 +59,12 @@ class PageTransitionManager {
     }
 
     async transitionToPage(url) {
-        if (this.isTransitioning) return;
+        if (this.isTransitioning) {
+            console.log('⏸️ Transition already in progress, skipping');
+            return;
+        }
 
+        console.log('🚀 Starting page transition to:', url);
         this.isTransitioning = true;
         
         try {
@@ -59,6 +72,7 @@ class PageTransitionManager {
             this.showPageLoading();
             
             // Fetch the new page
+            console.log('📡 Fetching page content...');
             const response = await fetch(url, {
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest'
@@ -70,6 +84,7 @@ class PageTransitionManager {
             }
             
             const html = await response.text();
+            console.log('📥 Page content received (', html.length, 'chars)');
             
             // Parse the response
             const parser = new DOMParser();
@@ -79,22 +94,89 @@ class PageTransitionManager {
             const newContent = doc.querySelector('.main-content');
             const currentContent = document.querySelector('.main-content');
             
-            if (newContent && currentContent) {
-                // Animate out current content
-                await this.animateOut(currentContent);
-                
-                // Replace content
-                currentContent.innerHTML = newContent.innerHTML;
-                
-                // Animate in new content
-                await this.animateIn(currentContent);
-                
-                // Update URL without page reload
-                history.pushState({}, '', url);
-                
-                // Reinitialize page-specific JavaScript
-                this.reinitializePageScripts();
+            if (!newContent) {
+                console.error('❌ .main-content not found in fetched page');
+                throw new Error('.main-content element not found');
             }
+            
+            if (!currentContent) {
+                console.error('❌ .main-content not found in current page');
+                throw new Error('.main-content element not found in current DOM');
+            }
+            
+            // Extract page title from the fetched document
+            let newTitle = doc.querySelector('title')?.textContent;
+            
+            // If title not found in head, try to extract from page content
+            if (!newTitle) {
+                const pageTitleElement = newContent?.querySelector('.page-title-main, .page-title h1, h1.page-title-main');
+                if (pageTitleElement) {
+                    const pageTitleText = pageTitleElement.textContent.trim();
+                    // Extract role prefix from current document title
+                    const currentTitle = document.title;
+                    let rolePrefix = 'Super Admin';
+                    if (currentTitle.includes('HR Admin')) {
+                        rolePrefix = 'HR Admin';
+                    } else if (currentTitle.includes('Accounting')) {
+                        rolePrefix = 'Accounting';
+                    } else if (currentTitle.includes('Operation')) {
+                        rolePrefix = 'Operation';
+                    } else if (currentTitle.includes('Employee Portal')) {
+                        rolePrefix = 'Employee Portal';
+                    }
+                    newTitle = `${pageTitleText} - ${rolePrefix} - Golden Z-5 HR System`;
+                } else {
+                    // Fallback to current title
+                    newTitle = document.title;
+                }
+            }
+            
+            // Extract page name from URL for state storage
+            const urlObj = new URL(url, window.location.origin);
+            const pageParam = urlObj.searchParams.get('page') || 'dashboard';
+            
+            // IMPORTANT: Inline scripts inside injected HTML do NOT execute when using innerHTML.
+            // We must extract scripts, inject HTML without scripts, then execute them manually.
+            console.log('🔍 Extracting content and scripts...');
+            const extracted = this.extractContentAndScripts(newContent);
+            console.log(`📦 Extracted: ${extracted.scripts.length} script(s), ${extracted.html.length} chars of HTML`);
+
+            // Animate out current content
+            await this.animateOut(currentContent);
+            
+            // Replace content
+            console.log('🔄 Injecting new content into DOM...');
+            currentContent.innerHTML = extracted.html;
+            
+            // Update document title
+            document.title = newTitle;
+            console.log('📝 Updated page title:', newTitle);
+            
+            // Update URL and store state for back/forward navigation
+            const state = {
+                url: url,
+                title: newTitle,
+                page: pageParam,
+                content: extracted.html,
+                scripts: extracted.scripts,
+                timestamp: Date.now()
+            };
+            
+            history.pushState(state, newTitle, url);
+            console.log('📍 Updated URL and history state');
+            
+            // Animate in new content
+            await this.animateIn(currentContent);
+            
+            // Execute extracted page scripts AFTER DOM is in place
+            console.log('⚡ Executing page scripts...');
+            this.executeScripts(extracted.scripts);
+
+            // Reinitialize page-specific JavaScript
+            console.log('🔄 Reinitializing page scripts...');
+            this.reinitializePageScripts({ page: pageParam, url });
+            
+            console.log('✅ Page transition completed successfully');
             
         } catch (error) {
             console.error('Page transition failed:', error);
@@ -162,15 +244,94 @@ class PageTransitionManager {
         }
     }
 
-    handlePageLoad() {
-        // Reinitialize page-specific functionality
-        this.reinitializePageScripts();
+    async handlePageLoad() {
+        // This is called when back/forward buttons are used
+        // We need to restore the content from the URL
+        
+        const url = window.location.href;
+        const state = history.state;
+        
+        // If we have stored state with content, use it (faster)
+        if (state && state.content && state.timestamp) {
+            // Check if state is recent (less than 5 minutes old)
+            const stateAge = Date.now() - state.timestamp;
+            if (stateAge < 300000) { // 5 minutes
+                const currentContent = document.querySelector('.main-content');
+                if (currentContent) {
+                    // Restore content from state
+                    currentContent.innerHTML = state.content;
+                    document.title = state.title || document.title;
+                    // Execute scripts stored in state (needed for injected pages)
+                    if (Array.isArray(state.scripts) && state.scripts.length) {
+                        this.executeScripts(state.scripts);
+                    }
+                    this.reinitializePageScripts({ page: state.page, url: state.url || url });
+                    return;
+                }
+            }
+        }
+        
+        // Otherwise, fetch the page fresh
+        try {
+            this.showPageLoading();
+            
+            const response = await fetch(url, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error('Page not found');
+            }
+            
+            const html = await response.text();
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            
+            const newContent = doc.querySelector('.main-content');
+            const currentContent = document.querySelector('.main-content');
+            const newTitle = doc.querySelector('title')?.textContent || document.title;
+            
+            if (newContent && currentContent) {
+                const extracted = this.extractContentAndScripts(newContent);
+                currentContent.innerHTML = extracted.html;
+                document.title = newTitle;
+                
+                // Update state with new content
+                const urlObj = new URL(url, window.location.origin);
+                const pageParam = urlObj.searchParams.get('page') || 'dashboard';
+                
+                const newState = {
+                    url: url,
+                    title: newTitle,
+                    page: pageParam,
+                    content: extracted.html,
+                    scripts: extracted.scripts,
+                    timestamp: Date.now()
+                };
+                
+                // Replace current state with updated one
+                history.replaceState(newState, newTitle, url);
+                
+                this.executeScripts(extracted.scripts);
+                this.reinitializePageScripts({ page: pageParam, url });
+            }
+        } catch (error) {
+            console.error('Failed to restore page:', error);
+            // Fallback to full page reload
+            window.location.href = url;
+        } finally {
+            this.hidePageLoading();
+        }
     }
 
-    reinitializePageScripts() {
+    reinitializePageScripts(detail = {}) {
         // Reinitialize any page-specific JavaScript
-        const event = new CustomEvent('pageLoaded');
-        document.dispatchEvent(event);
+        // Keep backward compatibility with existing listeners
+        document.dispatchEvent(new CustomEvent('pageLoaded', { detail }));
+        // New event: richer semantic name for SPA page swaps
+        document.dispatchEvent(new CustomEvent('pageContentLoaded', { detail }));
         
         // Reinitialize common components
         this.initializeCommonComponents();
@@ -184,6 +345,95 @@ class PageTransitionManager {
             tooltipTriggerList.map(function (tooltipTriggerEl) {
                 return new bootstrap.Tooltip(tooltipTriggerEl);
             });
+        }
+    }
+
+    /**
+     * Extract HTML content and <script> blocks from a container.
+     * Returns { html, scripts } where scripts is an array like:
+     *  - { src: string } OR { code: string }
+     */
+    extractContentAndScripts(containerEl) {
+        const clone = containerEl.cloneNode(true);
+        const scripts = [];
+
+        // Extract script tags
+        clone.querySelectorAll('script').forEach((s) => {
+            const src = s.getAttribute('src');
+            if (src) {
+                scripts.push({ src });
+            } else {
+                const code = s.textContent || s.innerHTML || '';
+                if (code.trim()) {
+                    scripts.push({ code });
+                }
+            }
+            s.remove();
+        });
+
+        console.log(`📋 Found ${scripts.length} script tag(s) in page content`);
+        return { html: clone.innerHTML, scripts };
+    }
+
+    /**
+     * Execute extracted scripts. Inline scripts are executed by creating a new
+     * <script> element and injecting it into the DOM, then removing it.
+     */
+    executeScripts(scripts = []) {
+        if (!Array.isArray(scripts) || scripts.length === 0) {
+            console.log('📜 No scripts to execute');
+            return;
+        }
+
+        console.log(`📜 Executing ${scripts.length} script(s) from loaded page...`);
+        
+        scripts.forEach((s, index) => {
+            try {
+                const scriptEl = document.createElement('script');
+                scriptEl.type = 'text/javascript';
+
+                if (s.src) {
+                    console.log(`📜 Loading external script ${index + 1}:`, s.src);
+                    scriptEl.src = s.src;
+                    scriptEl.async = false;
+                    scriptEl.onload = () => console.log(`✅ External script loaded:`, s.src);
+                    scriptEl.onerror = () => console.error(`❌ Failed to load external script:`, s.src);
+                    document.head.appendChild(scriptEl);
+                    // keep external scripts in head
+                } else if (s.code) {
+                    console.log(`📜 Executing inline script ${index + 1} (${s.code.length} chars)`);
+                    scriptEl.text = s.code;
+                    document.body.appendChild(scriptEl);
+                    // Script executes when appended to DOM
+                    scriptEl.remove();
+                    console.log(`✅ Inline script ${index + 1} executed`);
+                }
+            } catch (err) {
+                console.error(`❌ Failed to execute page script ${index + 1}:`, err);
+            }
+        });
+        
+        console.log('📜 All scripts execution completed');
+    }
+    
+    storeInitialState() {
+        // Store the initial page state for back/forward navigation
+        const currentContent = document.querySelector('.main-content');
+        if (currentContent) {
+            const url = window.location.href;
+            const urlObj = new URL(url, window.location.origin);
+            const pageParam = urlObj.searchParams.get('page') || 'dashboard';
+            
+            const state = {
+                url: url,
+                title: document.title,
+                page: pageParam,
+                content: currentContent.innerHTML,
+                timestamp: Date.now()
+            };
+            
+            // Replace the current history entry with our state
+            history.replaceState(state, document.title, url);
         }
     }
 
@@ -260,10 +510,104 @@ class ContentAnimationManager {
 }
 
 // Initialize all managers when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-    new PageTransitionManager();
+let pageTransitionManager;
+
+// Initialize immediately if DOM is already ready, otherwise wait
+function initializePageTransitions() {
+    pageTransitionManager = new PageTransitionManager();
+    // Expose for other scripts (e.g., sidebar nav) to call explicitly
+    window.pageTransitionManager = pageTransitionManager;
+    console.log('✅ PageTransitionManager initialized and exposed as window.pageTransitionManager');
     new SmoothScrollManager();
     new ContentAnimationManager();
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializePageTransitions);
+} else {
+    // DOM already ready, initialize immediately
+    initializePageTransitions();
+}
+
+// Export utility function for updating page title programmatically
+window.updatePageTitle = function(newTitle) {
+    if (newTitle) {
+        document.title = newTitle;
+        // Update history state if it exists
+        if (history.state) {
+            const updatedState = {
+                ...history.state,
+                title: newTitle,
+                timestamp: Date.now()
+            };
+            history.replaceState(updatedState, newTitle, window.location.href);
+        }
+    }
+};
+
+// Export utility function for getting page title from current page
+window.getPageTitleFromContent = function() {
+    // Try to get title from page title element
+    const pageTitleElement = document.querySelector('.page-title-main, .page-title h1, h1.page-title-main');
+    if (pageTitleElement) {
+        return pageTitleElement.textContent.trim();
+    }
+    
+    // Fallback to document title
+    return document.title;
+};
+
+// Listen for pageLoaded event to ensure title is updated
+document.addEventListener('pageLoaded', function() {
+    // Small delay to ensure DOM is updated
+    setTimeout(() => {
+        const pageTitle = window.getPageTitleFromContent();
+        if (pageTitle && pageTitle !== document.title) {
+            // Extract base title format (e.g., "User Management - Super Admin - Golden Z-5 HR System")
+            const urlParams = new URLSearchParams(window.location.search);
+            const page = urlParams.get('page') || 'dashboard';
+            
+            // Try to match the title format from header
+            const titleMap = {
+                'dashboard': 'Dashboard',
+                'employees': 'Employee Management',
+                'users': 'User Management',
+                'settings': 'System Settings',
+                'posts': 'Posts & Locations',
+                'alerts': 'Employee Alerts',
+                'help': 'Help & Support',
+                'integrations': 'Integrations',
+                'teams': 'Teams',
+                'dtr': 'Daily Time Record',
+                'timeoff': 'Time Off Management',
+                'checklist': 'Employee Checklist',
+                'hiring': 'Hiring Process',
+                'onboarding': 'Employee Onboarding',
+                'handbook': 'Hiring Handbook',
+                'add_employee': 'Add New Employee',
+                'add_post': 'Add New Post',
+                'add_alert': 'Add New Alert',
+                'post_assignments': 'Post Assignments'
+            };
+            
+            const pageTitleName = titleMap[page] || page.charAt(0).toUpperCase() + page.slice(1).replace(/_/g, ' ');
+            
+            // Determine role prefix from current URL or document title
+            let rolePrefix = 'Super Admin';
+            if (document.title.includes('HR Admin')) {
+                rolePrefix = 'HR Admin';
+            } else if (document.title.includes('Accounting')) {
+                rolePrefix = 'Accounting';
+            } else if (document.title.includes('Operation')) {
+                rolePrefix = 'Operation';
+            } else if (document.title.includes('Employee Portal')) {
+                rolePrefix = 'Employee Portal';
+            }
+            
+            const fullTitle = `${pageTitleName} - ${rolePrefix} - Golden Z-5 HR System`;
+            window.updatePageTitle(fullTitle);
+        }
+    }, 100);
 });
 
 // Add CSS for loading spinner

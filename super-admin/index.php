@@ -11,6 +11,11 @@ require_once __DIR__ . '/../bootstrap/app.php';
 require_once '../includes/security.php';
 require_once '../includes/database.php';
 
+// Set security headers
+header('X-Frame-Options: DENY');
+header('X-Content-Type-Options: nosniff');
+header('X-XSS-Protection: 1; mode=block');
+
 // Handle logout
 if (isset($_GET['logout'])) {
     // Clear all session data
@@ -48,17 +53,64 @@ if ($user_role !== 'super_admin') {
     exit;
 }
 
-// Redirect to dashboard if no page parameter is set
-if (!isset($_GET['page'])) {
-    header('Location: ?page=dashboard');
-    exit;
+/**
+ * One-time auto-refresh after login/session start
+ *
+ * Some pages are loaded dynamically and certain JS bindings may require a fresh
+ * request right after login. To avoid manual Ctrl+R, we do a single redirect
+ * per session with a cache-busting query param.
+ */
+if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+    $alreadyRefreshed = !empty($_SESSION['super_admin_autorefresh_done']);
+    $hasRefreshParam = isset($_GET['_r']);
+
+    if (!$alreadyRefreshed && !$hasRefreshParam) {
+        $_SESSION['super_admin_autorefresh_done'] = true;
+
+        // Rebuild current URL + query string, add cache-buster
+        $query = $_GET;
+        $query['_r'] = time();
+        $location = strtok($_SERVER['REQUEST_URI'], '?') . '?' . http_build_query($query);
+
+        header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+        header('Pragma: no-cache');
+        header('Expires: 0');
+        header('Location: ' . $location);
+        exit;
+    }
 }
 
-// Handle AJAX requests BEFORE including header (to avoid HTML output)
+// Handle AJAX requests BEFORE redirect (to avoid HTML output)
+// This must come first to handle POST requests properly
 $page = $_GET['page'] ?? 'dashboard';
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
-    // Set JSON header immediately
-    header('Content-Type: application/json');
+    // Ensure session is started and active (bootstrap/app.php should have started it, but double-check)
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+    // Regenerate session ID periodically for security (but not on every request to avoid issues)
+    // Only regenerate if session is older than 5 minutes
+    if (!isset($_SESSION['last_regeneration']) || (time() - $_SESSION['last_regeneration']) > 300) {
+        session_regenerate_id(true);
+        $_SESSION['last_regeneration'] = time();
+    }
+    
+    // Prevent any output before JSON response
+    // Clean output buffer if it exists, otherwise start one
+    if (ob_get_level() > 0) {
+        ob_clean();
+    } else {
+        ob_start();
+    }
+    
+    // Set comprehensive cache control headers to prevent browser caching
+    header('Content-Type: application/json; charset=utf-8');
+    header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+    header('Cache-Control: post-check=0, pre-check=0', false);
+    header('Pragma: no-cache');
+    header('Expires: 0');
+    header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT');
     
     $action = $_POST['action'] ?? '';
     $current_user_id = $_SESSION['user_id'] ?? null;
@@ -81,20 +133,59 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 exit;
                 
             case 'create_user':
-                $user_data = [
-                    'username' => trim($_POST['username'] ?? ''),
-                    'email' => trim($_POST['email'] ?? ''),
-                    'password' => $_POST['password'] ?? '',
-                    'name' => trim($_POST['name'] ?? ''),
-                    'role' => $_POST['role'] ?? 'hr_admin',
-                    'status' => $_POST['status'] ?? 'active',
-                    'department' => trim($_POST['department'] ?? ''),
-                    'phone' => trim($_POST['phone'] ?? ''),
-                    'employee_id' => !empty($_POST['employee_id']) ? (int)$_POST['employee_id'] : null
-                ];
-                $result = create_user($user_data, $current_user_id);
-                echo json_encode($result);
-                exit;
+                try {
+                    // Validate that this is an AJAX request
+                    if (!isset($_SERVER['HTTP_X_REQUESTED_WITH']) || strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) !== 'xmlhttprequest') {
+                        // Still allow it, but log it
+                        error_log('Create user request without X-Requested-With header');
+                    }
+                    
+                    $user_data = [
+                        'username' => trim($_POST['username'] ?? ''),
+                        'email' => trim($_POST['email'] ?? ''),
+                        'password' => $_POST['password'] ?? '',
+                        'name' => trim($_POST['name'] ?? ''),
+                        'role' => $_POST['role'] ?? 'hr_admin',
+                        'status' => $_POST['status'] ?? 'active',
+                        'department' => trim($_POST['department'] ?? ''),
+                        'phone' => trim($_POST['phone'] ?? ''),
+                        'employee_id' => !empty($_POST['employee_id']) ? (int)$_POST['employee_id'] : null
+                    ];
+                    
+                    // Validate required fields before processing
+                    if (empty($user_data['username']) || empty($user_data['email']) || empty($user_data['password']) || empty($user_data['name'])) {
+                        echo json_encode(['success' => false, 'message' => 'All required fields must be filled']);
+                        exit;
+                    }
+                    
+                    // Log the attempt
+                    error_log('Create user attempt: ' . json_encode($user_data));
+                    
+                    $result = create_user($user_data, $current_user_id);
+                    
+                    // Log the result
+                    error_log('Create user result: ' . json_encode($result));
+                    
+                    // Ensure result is always an array
+                    if (!is_array($result)) {
+                        $result = ['success' => false, 'message' => 'Unexpected response from create_user function'];
+                    }
+                    
+                    // Session will be automatically saved when script ends
+                    // No need to explicitly close it here
+                    echo json_encode($result, JSON_UNESCAPED_UNICODE);
+                    exit;
+                } catch (Exception $e) {
+                    error_log('Create user exception: ' . $e->getMessage());
+                    error_log('Create user exception trace: ' . $e->getTraceAsString());
+                    echo json_encode(['success' => false, 'message' => 'An error occurred: ' . $e->getMessage()], JSON_UNESCAPED_UNICODE);
+                    exit;
+                } catch (Error $e) {
+                    error_log('Create user fatal error: ' . $e->getMessage());
+                    error_log('Create user fatal error trace: ' . $e->getTraceAsString());
+                    echo json_encode(['success' => false, 'message' => 'A fatal error occurred: ' . $e->getMessage()], JSON_UNESCAPED_UNICODE);
+                    exit;
+                }
         }
     }
     
@@ -215,6 +306,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     
     // Default: invalid action
     echo json_encode(['success' => false, 'message' => 'Invalid action']);
+    exit;
+}
+
+// Redirect to dashboard if no page parameter is set (only for GET requests)
+if (!isset($_GET['page']) && $_SERVER['REQUEST_METHOD'] === 'GET') {
+    header('Location: ?page=dashboard');
     exit;
 }
 

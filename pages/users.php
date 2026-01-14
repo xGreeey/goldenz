@@ -8,54 +8,8 @@ if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'super_admin') 
     exit;
 }
 
-// Handle AJAX requests
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
-    // Set JSON header
-    header('Content-Type: application/json');
-    
-    // Enable error reporting for debugging (remove in production)
-    error_reporting(E_ALL);
-    ini_set('display_errors', 0);
-    ini_set('log_errors', 1);
-    
-    $action = $_POST['action'] ?? '';
-    $user_id = (int)($_POST['user_id'] ?? 0);
-    $current_user_id = $_SESSION['user_id'] ?? null;
-    
-    switch ($action) {
-        case 'update_role':
-            $new_role = $_POST['role'] ?? '';
-            $result = update_user_role($user_id, $new_role, $current_user_id);
-            echo json_encode($result);
-            exit;
-            
-        case 'update_status':
-            $new_status = $_POST['status'] ?? '';
-            $result = update_user_status($user_id, $new_status, $current_user_id);
-            echo json_encode($result);
-            exit;
-            
-        case 'create_user':
-            $user_data = [
-                'username' => trim($_POST['username'] ?? ''),
-                'email' => trim($_POST['email'] ?? ''),
-                'password' => $_POST['password'] ?? '',
-                'name' => trim($_POST['name'] ?? ''),
-                'role' => $_POST['role'] ?? 'hr_admin',
-                'status' => $_POST['status'] ?? 'active',
-                'department' => trim($_POST['department'] ?? ''),
-                'phone' => trim($_POST['phone'] ?? ''),
-                'employee_id' => !empty($_POST['employee_id']) ? (int)$_POST['employee_id'] : null
-            ];
-            $result = create_user($user_data, $current_user_id);
-            echo json_encode($result);
-            exit;
-            
-        default:
-            echo json_encode(['success' => false, 'message' => 'Invalid action']);
-            exit;
-    }
-}
+// NOTE: POST/AJAX requests are handled by super-admin/index.php before this file is included
+// This file should only handle GET requests for displaying the page
 
 // Handle GET request for user details
 if (isset($_GET['action']) && $_GET['action'] === 'get_details' && isset($_GET['user_id'])) {
@@ -429,7 +383,7 @@ $role_config = config('roles.roles', []);
                 <h5 class="modal-title" id="createUserModalLabel">Create New User</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form id="createUserForm">
+            <form id="createUserForm" novalidate>
                 <div class="modal-body">
                     <div id="createUserAlert"></div>
                     
@@ -749,509 +703,286 @@ body:has(#roleChangeModal.show) .modal-backdrop,
 </style>
 
 <script>
-// Re-enable right-click on this page
-// Override the global contextmenu prevention from footer.php
-(function() {
-    // Add listener in capture phase to intercept and allow right-click
-    document.addEventListener('contextmenu', function(e) {
-        // Stop any preventDefault calls from other listeners
-        e.stopImmediatePropagation();
-        // Allow the default context menu
-        return true;
-    }, true);
-    
-    // Also add after page loads to ensure it works
-    window.addEventListener('load', function() {
-        document.addEventListener('contextmenu', function(e) {
-            e.stopImmediatePropagation();
-            return true;
-        }, true);
-    });
-})();
+// Remove the old initialization code and replace with this:
 
-document.addEventListener('DOMContentLoaded', function() {
-    // Main page functionality
-    // Handle role changes
-    let pendingRoleChange = null; // Store pending role change data
+// === GLOBAL STATE ===
+window.usersPageState = window.usersPageState || {
+    initialized: false,
+    pendingRoleChange: null
+};
+
+// === MAIN INITIALIZATION FUNCTION ===
+function initializeUsersPage() {
+    console.log('🎯 Initializing users page');
     
-    document.querySelectorAll('.user-role-select').forEach(select => {
-        select.addEventListener('change', function() {
-            const userId = this.dataset.userId;
-            const username = this.dataset.username || 'User';
-            const userName = this.dataset.userName || username;
-            const newRole = this.value;
-            const newRoleText = this.options[this.selectedIndex].text;
-            const originalValue = this.getAttribute('data-original-value') || this.value;
-            
-            if (!this.hasAttribute('data-original-value')) {
-                this.setAttribute('data-original-value', originalValue);
-            }
-            
-            this.classList.add('changed');
-            
-            // Store pending change data
-            pendingRoleChange = {
-                userId: userId,
-                username: username,
-                userName: userName,
-                newRole: newRole,
-                newRoleText: newRoleText,
-                selectElement: this,
-                originalValue: originalValue
-            };
-            
-            // Show confirmation modal
-            showRoleChangeModal(userName, newRoleText);
-        });
-    });
+    // Check if we're on the users page
+    const urlParams = new URLSearchParams(window.location.search);
+    const isUsersPage = urlParams.get('page') === 'users';
     
-    // Function to show role change confirmation modal
-    function showRoleChangeModal(userName, newRoleText) {
-        const modalElement = document.getElementById('roleChangeModal');
-        const modal = new bootstrap.Modal(modalElement, {
-            backdrop: false,
-            keyboard: true
-        });
-        const messageEl = document.getElementById('roleChangeMessage');
-        
-        if (messageEl && pendingRoleChange) {
-            messageEl.innerHTML = `Are you sure you want to change <strong>${userName}</strong>'s role to <strong>"${newRoleText}"</strong>?`;
-        }
-        
-        modal.show();
-        
-        // Remove any backdrop that might have been created
-        setTimeout(() => {
-            const backdrops = document.querySelectorAll('.modal-backdrop');
-            backdrops.forEach(backdrop => {
-                if (backdrop && backdrop.parentNode) {
-                    backdrop.remove();
-                }
-            });
-        }, 10);
+    if (!isUsersPage) {
+        console.log('Not on users page, skipping');
+        return;
     }
     
-    // Handle confirmation button click
-    const confirmRoleChangeBtn = document.getElementById('confirmRoleChangeBtn');
-    if (confirmRoleChangeBtn) {
-        confirmRoleChangeBtn.addEventListener('click', function() {
-            if (pendingRoleChange) {
-                const { userId, newRole, selectElement } = pendingRoleChange;
-                
-                // Close modal
-                const modal = bootstrap.Modal.getInstance(document.getElementById('roleChangeModal'));
-                if (modal) {
-                    modal.hide();
-                }
-                
-                // Proceed with role update
-                updateUserRole(userId, newRole, selectElement);
-                
-                // Clear pending change
-                pendingRoleChange = null;
-            }
-        });
+    // Check if Bootstrap is loaded
+    if (typeof bootstrap === 'undefined') {
+        console.log('Bootstrap not ready, retrying in 100ms');
+        setTimeout(initializeUsersPage, 100);
+        return;
     }
     
-    // Handle modal cancel - revert selection
-    const roleChangeModal = document.getElementById('roleChangeModal');
-    if (roleChangeModal) {
-        // Remove backdrop when modal is shown
-        roleChangeModal.addEventListener('shown.bs.modal', function() {
-            const backdrops = document.querySelectorAll('.modal-backdrop');
-            backdrops.forEach(backdrop => {
-                if (backdrop && backdrop.parentNode) {
-                    backdrop.remove();
-                }
-            });
-        });
-        
-        roleChangeModal.addEventListener('hidden.bs.modal', function() {
-            if (pendingRoleChange) {
-                // Revert selection if modal was closed without confirming
-                pendingRoleChange.selectElement.value = pendingRoleChange.originalValue;
-                pendingRoleChange.selectElement.classList.remove('changed');
-                pendingRoleChange = null;
-            }
-        });
-    }
-    
-    // Handle status changes
-    document.querySelectorAll('.user-status-select').forEach(select => {
-        select.addEventListener('change', function() {
-            const userId = this.dataset.userId;
-            const newStatus = this.value;
-            const statusText = this.options[this.selectedIndex].text;
-            
-            if (!this.hasAttribute('data-original-value')) {
-                this.setAttribute('data-original-value', this.value);
-            }
-            
-            this.classList.add('changed');
-            
-            // Show confirmation
-            if (confirm(`Change user status to "${statusText}"?`)) {
-                updateUserStatus(userId, newStatus, this);
-            } else {
-                // Revert selection
-                this.value = this.getAttribute('data-original-value');
-                this.classList.remove('changed');
-            }
-        });
-    });
-    
-    // View user details
-    document.querySelectorAll('.view-user-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const userId = this.dataset.userId;
-            viewUserDetails(userId);
-        });
-    });
-    
-    function updateUserRole(userId, newRole, selectElement) {
-        const formData = new FormData();
-        formData.append('action', 'update_role');
-        formData.append('user_id', userId);
-        formData.append('role', newRole);
-        
-        fetch('', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                selectElement.classList.remove('changed');
-                selectElement.setAttribute('data-original-value', newRole);
-                showNotification('Role updated successfully', 'success');
-            } else {
-                // Revert on error
-                selectElement.value = selectElement.getAttribute('data-original-value');
-                selectElement.classList.remove('changed');
-                showNotification(data.message || 'Failed to update role', 'error');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            selectElement.value = selectElement.getAttribute('data-original-value');
-            selectElement.classList.remove('changed');
-            showNotification('An error occurred', 'error');
-        });
-    }
-    
-    function updateUserStatus(userId, newStatus, selectElement) {
-        const formData = new FormData();
-        formData.append('action', 'update_status');
-        formData.append('user_id', userId);
-        formData.append('status', newStatus);
-        
-        fetch('', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                selectElement.classList.remove('changed');
-                selectElement.setAttribute('data-original-value', newStatus);
-                showNotification('Status updated successfully', 'success');
-            } else {
-                // Revert on error
-                selectElement.value = selectElement.getAttribute('data-original-value');
-                selectElement.classList.remove('changed');
-                showNotification(data.message || 'Failed to update status', 'error');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            selectElement.value = selectElement.getAttribute('data-original-value');
-            selectElement.classList.remove('changed');
-            showNotification('An error occurred', 'error');
-        });
-    }
-    
-    function viewUserDetails(userId) {
-        const modal = new bootstrap.Modal(document.getElementById('userDetailsModal'));
-        const content = document.getElementById('userDetailsContent');
-        
-        content.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>';
-        modal.show();
-        
-        // Fetch user details (you can implement this via AJAX if needed)
-        // For now, just show basic info
-        fetch(`?page=users&action=get_details&user_id=${userId}`)
-            .then(response => response.text())
-            .then(html => {
-                content.innerHTML = html;
-            })
-            .catch(error => {
-                content.innerHTML = '<div class="alert alert-danger">Error loading user details</div>';
-            });
-    }
-    
-    function showNotification(message, type) {
-        // Create notification element
-        const notification = document.createElement('div');
-        notification.className = `alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show position-fixed`;
-        notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
-        notification.innerHTML = `
-            ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        `;
-        
-        document.body.appendChild(notification);
-        
-        // Auto remove after 3 seconds
-        setTimeout(() => {
-            notification.remove();
-        }, 3000);
-    }
-    
-    // Create User Modal Handlers
+    // Check if required elements exist
     const createUserModal = document.getElementById('createUserModal');
     const createUserForm = document.getElementById('createUserForm');
     
-    // Modal behavior
-    if (createUserModal) {
-        // Reset form when modal is closed
-        createUserModal.addEventListener('hidden.bs.modal', function() {
-            if (createUserForm) {
-                createUserForm.reset();
-                // Remove all invalid classes
-                const invalidFields = createUserForm.querySelectorAll('.is-invalid');
-                invalidFields.forEach(field => {
-                    field.classList.remove('is-invalid');
-                });
-            }
-            const alertDiv = document.getElementById('createUserAlert');
-            if (alertDiv) {
-                alertDiv.innerHTML = '';
-            }
-            const submitBtn = document.getElementById('createUserSubmitBtn');
-            if (submitBtn) {
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = '<i class="fas fa-user-plus me-2"></i>Create User';
-            }
+    if (!createUserModal || !createUserForm) {
+        console.log('Required elements not found, retrying...', {
+            modal: !!createUserModal,
+            form: !!createUserForm
         });
-        
-        // Focus first input when modal opens
-        createUserModal.addEventListener('shown.bs.modal', function() {
-            // Ensure modal is on top (above header z-index 1100)
-            createUserModal.style.zIndex = '1200';
-            createUserModal.style.display = 'block';
-            
-            // Ensure modal dialog receives clicks
-            const modalDialog = createUserModal.querySelector('.modal-dialog');
-            if (modalDialog) {
-                modalDialog.style.pointerEvents = 'auto';
-                modalDialog.style.position = 'relative';
-                modalDialog.style.zIndex = '1201';
-            }
-            
-            // Ensure modal content is clickable
-            const modalContent = createUserModal.querySelector('.modal-content');
-            if (modalContent) {
-                modalContent.style.pointerEvents = 'auto';
-            }
-            
-            // Make sure all inputs are clickable
-            const inputs = createUserModal.querySelectorAll('input, select, textarea, button, label, a');
-            inputs.forEach(input => {
-                input.style.pointerEvents = 'auto';
-            });
-            
-            const usernameInput = document.getElementById('create_username');
-            if (usernameInput) {
-                setTimeout(() => {
-                    usernameInput.focus();
-                }, 150);
-            }
-        });
+        setTimeout(initializeUsersPage, 100);
+        return;
     }
     
-    // Additional fix: Clean up on page load if modal was left open
-    window.addEventListener('load', function() {
-        const backdrops = document.querySelectorAll('.modal-backdrop');
-        if (backdrops.length > 1) {
-            backdrops.forEach((backdrop, index) => {
-                if (index > 0) {
-                    backdrop.remove();
-                }
-            });
-        }
-    });
+    // Skip if already initialized
+    if (window.usersPageState.initialized) {
+        console.log('✅ Already initialized');
+        return;
+    }
     
-    // Form submission handler
-    if (createUserForm) {
+    console.log('🚀 Starting initialization...');
+    window.usersPageState.initialized = true;
+    
+    // Initialize Bootstrap Modal - destroy old instance first
+    let modalInstance = bootstrap.Modal.getInstance(createUserModal);
+    if (modalInstance) {
+        modalInstance.dispose();
+    }
+    new bootstrap.Modal(createUserModal, {
+        backdrop: true,
+        keyboard: true,
+        focus: true
+    });
+    console.log('✅ Modal initialized');
+    
+    // Attach form submit handler ONLY ONCE
+    if (!createUserForm.hasAttribute('data-submit-handler')) {
+        createUserForm.setAttribute('data-submit-handler', 'attached');
+        
         createUserForm.addEventListener('submit', function(e) {
             e.preventDefault();
             e.stopPropagation();
+            
+            console.log('🚀 Form submitted');
             
             const alertDiv = document.getElementById('createUserAlert');
             const submitBtn = document.getElementById('createUserSubmitBtn');
             
             // Clear previous alerts
-            if (alertDiv) {
-                alertDiv.innerHTML = '';
-            }
+            if (alertDiv) alertDiv.innerHTML = '';
             
-            // Custom validation for required fields (marked with *)
-            const requiredFields = [
-                { id: 'create_username', name: 'Username' },
-                { id: 'create_email', name: 'Email' },
-                { id: 'create_password', name: 'Password' },
-                { id: 'create_name', name: 'Full Name' },
-                { id: 'create_role', name: 'Role' },
-                { id: 'create_department', name: 'Department' },
-                { id: 'create_phone', name: 'Phone' }
-            ];
+            // Validate required fields
+            const requiredInputs = this.querySelectorAll('[required]');
+            let isValid = true;
             
-            const missingFields = [];
-            const emptyFields = [];
-            
-            requiredFields.forEach(field => {
-                const input = document.getElementById(field.id);
-                if (input) {
-                    const value = input.value.trim();
-                    if (!value) {
-                        missingFields.push(field.name);
-                        emptyFields.push(input);
-                        // Add visual indicator
-                        input.classList.add('is-invalid');
-                    } else {
-                        input.classList.remove('is-invalid');
-                    }
+            requiredInputs.forEach(input => {
+                if (!input.value.trim()) {
+                    input.classList.add('is-invalid');
+                    isValid = false;
+                } else {
+                    input.classList.remove('is-invalid');
                 }
             });
             
-            // Check password length if password is provided
+            if (!isValid) {
+                if (alertDiv) {
+                    alertDiv.innerHTML = '<div class="alert alert-danger"><i class="fas fa-exclamation-circle me-2"></i>Please fill all required fields</div>';
+                }
+                return;
+            }
+            
+            // Check password length
             const password = document.getElementById('create_password').value;
             if (password && password.length < 8) {
                 if (alertDiv) {
                     alertDiv.innerHTML = '<div class="alert alert-danger"><i class="fas fa-exclamation-circle me-2"></i>Password must be at least 8 characters long</div>';
-                    document.getElementById('create_password').classList.add('is-invalid');
                 }
                 return;
             }
             
-            // Show error message if any required fields are missing
-            if (missingFields.length > 0) {
-                const fieldList = missingFields.join(', ');
-                const message = missingFields.length === 1 
-                    ? `Please fill up the required field: ${fieldList}`
-                    : `Please fill up all required fields marked with *: ${fieldList}`;
-                
-                if (alertDiv) {
-                    alertDiv.innerHTML = '<div class="alert alert-danger"><i class="fas fa-exclamation-circle me-2"></i>' + message + '</div>';
-                    alertDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                }
-                
-                // Focus on first empty field
-                if (emptyFields.length > 0) {
-                    emptyFields[0].focus();
-                }
-                
-                return;
-            }
-            
-            // Disable submit button
+            // Disable button
             if (submitBtn) {
                 submitBtn.disabled = true;
                 submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Creating...';
             }
             
-            // Prepare form data
-            const formData = new FormData(createUserForm);
+            // Prepare data
+            const formData = new FormData(this);
             formData.append('action', 'create_user');
             
-            // Submit via AJAX - ensure page parameter is included
-            let formAction = window.location.pathname;
-            const urlParams = new URLSearchParams(window.location.search);
-            if (!urlParams.has('page')) {
-                urlParams.set('page', 'users');
-            }
-            formAction += '?' + urlParams.toString();
+            // Use current pathname + page=users
+            const submitURL = window.location.pathname + '?page=users&_t=' + Date.now();
             
-            fetch(formAction, {
+            console.log('📤 Submitting to:', submitURL);
+            console.log('📦 Form data:', Object.fromEntries(formData));
+            
+            // Submit
+            fetch(submitURL, {
                 method: 'POST',
                 body: formData,
+                credentials: 'same-origin',
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest'
                 }
             })
             .then(response => {
+                console.log('📥 Response status:', response.status);
+                
                 if (!response.ok) {
-                    return response.text().then(text => {
-                        throw new Error('Server error: ' + response.status);
-                    });
+                    throw new Error('HTTP ' + response.status);
                 }
+                
                 const contentType = response.headers.get('content-type');
                 if (!contentType || !contentType.includes('application/json')) {
                     return response.text().then(text => {
+                        console.error('Non-JSON response:', text.substring(0, 200));
                         throw new Error('Server returned non-JSON response');
                     });
                 }
+                
                 return response.json();
             })
             .then(data => {
+                console.log('✅ Response:', data);
+                
                 if (submitBtn) {
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = '<i class="fas fa-user-plus me-2"></i>Create User';
                 }
                 
                 if (data && data.success) {
-                    // Show success message
                     if (alertDiv) {
-                        alertDiv.innerHTML = '<div class="alert alert-success"><i class="fas fa-check-circle me-2"></i>' + (data.message || 'User created successfully') + '</div>';
+                        alertDiv.innerHTML = '<div class="alert alert-success"><i class="fas fa-check-circle me-2"></i>' + 
+                            (data.message || 'User created successfully') + '</div>';
                     }
                     
-                    // Close modal and reload page after short delay
                     setTimeout(() => {
                         const modal = bootstrap.Modal.getInstance(createUserModal);
-                        if (modal) {
-                            modal.hide();
-                        }
-                        // Reload page to show new user
-                        window.location.reload();
+                        if (modal) modal.hide();
+                        window.location.href = window.location.pathname + '?page=users';
                     }, 1500);
                 } else {
-                    // Show error message
-                    const errorMsg = (data && data.message) ? data.message : 'Failed to create user. Please check all fields and try again.';
                     if (alertDiv) {
-                        alertDiv.innerHTML = '<div class="alert alert-danger"><i class="fas fa-exclamation-circle me-2"></i>' + errorMsg + '</div>';
-                        alertDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                        alertDiv.innerHTML = '<div class="alert alert-danger"><i class="fas fa-exclamation-circle me-2"></i>' + 
+                            (data.message || 'Failed to create user') + '</div>';
                     }
                 }
             })
             .catch(error => {
-                console.error('Create User Error:', error);
+                console.error('❌ Error:', error);
+                
                 if (submitBtn) {
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = '<i class="fas fa-user-plus me-2"></i>Create User';
                 }
+                
                 if (alertDiv) {
-                    alertDiv.innerHTML = '<div class="alert alert-danger"><i class="fas fa-exclamation-triangle me-2"></i>An error occurred while creating the user. Please try again.</div>';
-                    alertDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    alertDiv.innerHTML = '<div class="alert alert-danger"><i class="fas fa-exclamation-triangle me-2"></i>Error: ' + 
+                        error.message + '</div>';
                 }
             });
         });
         
-        // Real-time validation feedback - remove error state when user starts typing
-        const requiredFieldIds = ['create_username', 'create_email', 'create_password', 'create_name', 'create_role', 'create_department', 'create_phone'];
-        requiredFieldIds.forEach(fieldId => {
-            const field = document.getElementById(fieldId);
-            if (field) {
-                // Remove invalid class on input/change
-                field.addEventListener('input', function() {
-                    this.classList.remove('is-invalid');
-                });
-                field.addEventListener('change', function() {
-                    if (this.value.trim()) {
-                        this.classList.remove('is-invalid');
-                    }
-                });
+        console.log('✅ Form handler attached');
+    }
+    
+    // Modal event handlers
+    if (!createUserModal.hasAttribute('data-modal-events')) {
+        createUserModal.setAttribute('data-modal-events', 'attached');
+        
+        createUserModal.addEventListener('hidden.bs.modal', function() {
+            if (createUserForm) {
+                createUserForm.reset();
+                createUserForm.querySelectorAll('.is-invalid').forEach(f => f.classList.remove('is-invalid'));
             }
+            const alertDiv = document.getElementById('createUserAlert');
+            if (alertDiv) alertDiv.innerHTML = '';
         });
+        
+        createUserModal.addEventListener('shown.bs.modal', function() {
+            const usernameInput = document.getElementById('create_username');
+            if (usernameInput) setTimeout(() => usernameInput.focus(), 100);
+        });
+        
+        console.log('✅ Modal events attached');
+    }
+    
+    console.log('✅ Users page fully initialized');
+}
+
+// === INITIALIZATION TRIGGERS ===
+// Initialize state object if it doesn't exist
+if (!window.usersPageState) {
+    window.usersPageState = { initialized: false };
+}
+
+function tryInit() {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('page') !== 'users') {
+        console.log('ℹ️ Not on users page, skipping initialization');
+        return;
+    }
+    
+    if (typeof bootstrap === 'undefined') {
+        console.log('⏳ Bootstrap not ready, retrying...');
+        setTimeout(tryInit, 100);
+        return;
+    }
+    
+    const modal = document.getElementById('createUserModal');
+    if (!modal) {
+        console.log('⏳ Modal element not found, retrying...');
+        setTimeout(tryInit, 100);
+        return;
+    }
+    
+    console.log('🎯 Initializing Users page...');
+    initializeUsersPage();
+}
+
+// Multiple initialization points
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', tryInit);
+} else {
+    tryInit();
+}
+
+// CRITICAL: Listen for AJAX page loads (pageContentLoaded event)
+document.addEventListener('pageContentLoaded', function(e) {
+    console.log('📄 pageContentLoaded event received:', e.detail);
+    const page = e.detail?.page || new URLSearchParams(window.location.search).get('page');
+    if (page === 'users') {
+        console.log('🔄 Resetting initialization flag for users page');
+        window.usersPageState.initialized = false;
+        setTimeout(tryInit, 100);
     }
 });
+
+// Also listen for the old event name (backwards compatibility)
+document.addEventListener('pageLoaded', function(e) {
+    console.log('📄 pageLoaded event received:', e.detail);
+    const page = e.detail?.page || new URLSearchParams(window.location.search).get('page');
+    if (page === 'users') {
+        console.log('🔄 Resetting initialization flag for users page');
+        window.usersPageState.initialized = false;
+        setTimeout(tryInit, 100);
+    }
+});
+
+// Fallback for full page loads
+window.addEventListener('load', function() {
+    setTimeout(tryInit, 200);
+});
+
+console.log('📜 Users page script loaded');
 </script>

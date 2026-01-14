@@ -107,36 +107,60 @@ if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'super_admin') 
                                 <div class="row g-3">
                                     <div class="col-md-12">
                                         <label for="current_password" class="form-label">Current Password <span class="text-danger">*</span></label>
-                                        <input type="password" 
-                                               class="form-control" 
-                                               id="current_password" 
-                                               name="current_password" 
-                                               required
-                                               autocomplete="current-password"
-                                               placeholder="Enter your current password">
+                                        <div class="password-input-wrapper position-relative">
+                                            <input type="password" 
+                                                   class="form-control" 
+                                                   id="current_password" 
+                                                   name="current_password" 
+                                                   required
+                                                   autocomplete="current-password"
+                                                   placeholder="Enter your current password">
+                                            <button type="button" 
+                                                    class="btn btn-link password-toggle" 
+                                                    data-target="current_password"
+                                                    aria-label="Show password">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </div>
                                     </div>
                                     <div class="col-md-6">
                                         <label for="new_password" class="form-label">New Password <span class="text-danger">*</span></label>
-                                        <input type="password" 
-                                               class="form-control" 
-                                               id="new_password" 
-                                               name="new_password" 
-                                               required
-                                               minlength="8"
-                                               autocomplete="new-password"
-                                               placeholder="Minimum 8 characters">
+                                        <div class="password-input-wrapper position-relative">
+                                            <input type="password" 
+                                                   class="form-control" 
+                                                   id="new_password" 
+                                                   name="new_password" 
+                                                   required
+                                                   minlength="8"
+                                                   autocomplete="new-password"
+                                                   placeholder="Minimum 8 characters">
+                                            <button type="button" 
+                                                    class="btn btn-link password-toggle" 
+                                                    data-target="new_password"
+                                                    aria-label="Show password">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </div>
                                         <small class="text-muted">Password must be at least 8 characters long</small>
                                     </div>
                                     <div class="col-md-6">
                                         <label for="confirm_password" class="form-label">Confirm New Password <span class="text-danger">*</span></label>
-                                        <input type="password" 
-                                               class="form-control" 
-                                               id="confirm_password" 
-                                               name="confirm_password" 
-                                               required
-                                               minlength="8"
-                                               autocomplete="new-password"
-                                               placeholder="Re-enter new password">
+                                        <div class="password-input-wrapper position-relative">
+                                            <input type="password" 
+                                                   class="form-control" 
+                                                   id="confirm_password" 
+                                                   name="confirm_password" 
+                                                   required
+                                                   minlength="8"
+                                                   autocomplete="new-password"
+                                                   placeholder="Re-enter new password">
+                                            <button type="button" 
+                                                    class="btn btn-link password-toggle" 
+                                                    data-target="confirm_password"
+                                                    aria-label="Show password">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </div>
                                     </div>
                                     <div class="col-12">
                                         <button type="submit" class="btn btn-primary-modern" id="changePasswordBtn">
@@ -565,10 +589,71 @@ if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'super_admin') 
 .settings-nav .list-group-item.active i {
     color: #e0f2fe;
 }
+
+/* Password Toggle Styles */
+.password-input-wrapper {
+    position: relative;
+}
+
+.password-input-wrapper .form-control {
+    padding-right: 45px;
+}
+
+.password-toggle {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    border: none;
+    background: transparent;
+    padding: 0.375rem 0.5rem;
+    color: #64748b;
+    cursor: pointer;
+    z-index: 10;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.password-toggle:hover {
+    color: #1fb2d5;
+    background: transparent;
+}
+
+.password-toggle:focus {
+    outline: none;
+    box-shadow: none;
+}
+
+.password-toggle i {
+    font-size: 1rem;
+}
 </style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Password Toggle Functionality
+    document.querySelectorAll('.password-toggle').forEach(toggle => {
+        toggle.addEventListener('click', function() {
+            const targetId = this.getAttribute('data-target');
+            const passwordInput = document.getElementById(targetId);
+            const icon = this.querySelector('i');
+            
+            if (passwordInput) {
+                if (passwordInput.type === 'password') {
+                    passwordInput.type = 'text';
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash');
+                    this.setAttribute('aria-label', 'Hide password');
+                } else {
+                    passwordInput.type = 'password';
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
+                    this.setAttribute('aria-label', 'Show password');
+                }
+            }
+        });
+    });
+    
     const changePasswordForm = document.getElementById('changePasswordForm');
     const changePasswordBtn = document.getElementById('changePasswordBtn');
     const alertDiv = document.getElementById('changePasswordAlert');
