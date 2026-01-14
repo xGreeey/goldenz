@@ -46,7 +46,16 @@
                 toggle.addEventListener('keydown', (e) => this.handleToggleKeydown(e));
             });
             
-            // Navigation links
+            // Navigation links - use event delegation for dynamic content
+            // This ensures links added after page load (via AJAX) also work
+            document.addEventListener('click', (e) => {
+                const link = e.target.closest('.nav-link');
+                if (link) {
+                    this.handleNavClick(e);
+                }
+            });
+            
+            // Also bind directly to existing links for immediate response
             document.querySelectorAll('.nav-link').forEach(link => {
                 link.addEventListener('click', (e) => this.handleNavClick(e));
             });
@@ -255,11 +264,53 @@
          */
         handleNavClick(event) {
             const link = event.currentTarget;
+            const href = link ? link.getAttribute('href') : null;
+
+            console.log('🔗 Sidebar nav link clicked:', href);
 
             // Optimistically set active state based on clicked link,
             // using the shared helper so only ONE link is active.
             if (link && link.classList.contains('nav-link')) {
                 this.setActiveLink(link);
+            }
+
+            // IMPORTANT (SPA/AJAX navigation):
+            // When navigating via sidebar, we want to load pages via the AJAX
+            // transition system so inline page scripts (e.g. users.php) get executed.
+            // If a link is marked data-no-transition, allow normal navigation.
+            if (href && !link.hasAttribute('data-no-transition')) {
+                // Check if pageTransitionManager is available
+                if (!window.pageTransitionManager) {
+                    console.warn('⚠️ pageTransitionManager not available yet, waiting...');
+                    // Wait a bit and try again
+                    setTimeout(() => {
+                        if (window.pageTransitionManager && typeof window.pageTransitionManager.transitionToPage === 'function') {
+                            event.preventDefault();
+                            console.log('✅ pageTransitionManager now available, transitioning...');
+                            window.pageTransitionManager.transitionToPage(href);
+                        } else {
+                            console.error('❌ pageTransitionManager still not available, using normal navigation');
+                            // Fallback to normal navigation
+                            window.location.href = href;
+                        }
+                    }, 100);
+                    return;
+                }
+                
+                if (typeof window.pageTransitionManager.transitionToPage === 'function') {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    console.log('✅ Using AJAX transition for:', href);
+                    window.pageTransitionManager.transitionToPage(href);
+                } else {
+                    console.warn('⚠️ transitionToPage method not found, using normal navigation');
+                    // Fallback to normal navigation
+                    window.location.href = href;
+                }
+            } else if (href && link.hasAttribute('data-no-transition')) {
+                console.log('ℹ️ Link has data-no-transition, using normal navigation');
+            } else {
+                console.warn('⚠️ No href found or invalid link');
             }
             
             // Close sidebar on mobile after navigation

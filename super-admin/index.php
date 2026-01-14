@@ -53,18 +53,64 @@ if ($user_role !== 'super_admin') {
     exit;
 }
 
+/**
+ * One-time auto-refresh after login/session start
+ *
+ * Some pages are loaded dynamically and certain JS bindings may require a fresh
+ * request right after login. To avoid manual Ctrl+R, we do a single redirect
+ * per session with a cache-busting query param.
+ */
+if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+    $alreadyRefreshed = !empty($_SESSION['super_admin_autorefresh_done']);
+    $hasRefreshParam = isset($_GET['_r']);
+
+    if (!$alreadyRefreshed && !$hasRefreshParam) {
+        $_SESSION['super_admin_autorefresh_done'] = true;
+
+        // Rebuild current URL + query string, add cache-buster
+        $query = $_GET;
+        $query['_r'] = time();
+        $location = strtok($_SERVER['REQUEST_URI'], '?') . '?' . http_build_query($query);
+
+        header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+        header('Pragma: no-cache');
+        header('Expires: 0');
+        header('Location: ' . $location);
+        exit;
+    }
+}
+
 // Handle AJAX requests BEFORE redirect (to avoid HTML output)
 // This must come first to handle POST requests properly
 $page = $_GET['page'] ?? 'dashboard';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
-    // Prevent any output before JSON response
-    ob_clean();
+    // Ensure session is started and active (bootstrap/app.php should have started it, but double-check)
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+    // Regenerate session ID periodically for security (but not on every request to avoid issues)
+    // Only regenerate if session is older than 5 minutes
+    if (!isset($_SESSION['last_regeneration']) || (time() - $_SESSION['last_regeneration']) > 300) {
+        session_regenerate_id(true);
+        $_SESSION['last_regeneration'] = time();
+    }
     
-    // Set JSON header immediately
+    // Prevent any output before JSON response
+    // Clean output buffer if it exists, otherwise start one
+    if (ob_get_level() > 0) {
+        ob_clean();
+    } else {
+        ob_start();
+    }
+    
+    // Set comprehensive cache control headers to prevent browser caching
     header('Content-Type: application/json; charset=utf-8');
-    header('Cache-Control: no-cache, must-revalidate');
-    header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
+    header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+    header('Cache-Control: post-check=0, pre-check=0', false);
+    header('Pragma: no-cache');
+    header('Expires: 0');
+    header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT');
     
     $action = $_POST['action'] ?? '';
     $current_user_id = $_SESSION['user_id'] ?? null;
@@ -125,17 +171,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                         $result = ['success' => false, 'message' => 'Unexpected response from create_user function'];
                     }
                     
+                    // Session will be automatically saved when script ends
+                    // No need to explicitly close it here
                     echo json_encode($result, JSON_UNESCAPED_UNICODE);
+                    exit;
                 } catch (Exception $e) {
                     error_log('Create user exception: ' . $e->getMessage());
                     error_log('Create user exception trace: ' . $e->getTraceAsString());
                     echo json_encode(['success' => false, 'message' => 'An error occurred: ' . $e->getMessage()], JSON_UNESCAPED_UNICODE);
+                    exit;
                 } catch (Error $e) {
                     error_log('Create user fatal error: ' . $e->getMessage());
                     error_log('Create user fatal error trace: ' . $e->getTraceAsString());
                     echo json_encode(['success' => false, 'message' => 'A fatal error occurred: ' . $e->getMessage()], JSON_UNESCAPED_UNICODE);
+                    exit;
                 }
-                exit;
         }
     }
     
