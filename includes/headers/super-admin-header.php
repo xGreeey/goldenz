@@ -168,7 +168,8 @@ $activeSection = getActiveSection($page);
                         aria-expanded="<?php echo ($activeSection === 'hire') ? 'true' : 'false'; ?>" 
                         aria-controls="hire-submenu"
                         tabindex="0"
-                        data-target="hire-submenu">
+                        data-target="hire-submenu"
+                        onclick="event.preventDefault(); if(window.sidebarNav){window.sidebarNav.toggleSection(event);} else {const submenu=document.getElementById('hire-submenu'); const arrow=this.querySelector('.nav-arrow'); if(submenu.classList.contains('expanded')){submenu.classList.remove('expanded');arrow.classList.remove('rotated');this.setAttribute('aria-expanded','false');}else{submenu.classList.add('expanded');arrow.classList.add('rotated');this.setAttribute('aria-expanded','true');}}">
                     <i class="fas fa-briefcase" aria-hidden="true"></i>
                     <span>Hire</span>
                     <i class="fas fa-chevron-down nav-arrow <?php echo ($activeSection === 'hire') ? 'rotated' : ''; ?>" aria-hidden="true"></i>
