@@ -75,7 +75,7 @@ $activeSection = getActiveSection($page);
     
     <!-- Security Headers -->
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
-    <meta http-equiv="X-Frame-Options" content="DENY">
+    <!-- Note: X-Frame-Options should be set via HTTP header, not meta tag -->
     <meta http-equiv="X-XSS-Protection" content="1; mode=block">
 </head>
 <body>
