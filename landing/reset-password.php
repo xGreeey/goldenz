@@ -8,6 +8,9 @@
 
 ob_start();
 
+// Load environment variables FIRST (before any other code)
+require_once __DIR__ . '/../bootstrap/env.php';
+
 // Enable error reporting
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
@@ -129,52 +132,53 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['reset_password']) && 
         try {
             $pdo = get_db_connection();
             
-            // Get user again to ensure we have the latest data
+            // Get user to ensure we have the latest data
             $sql = "SELECT id, username, email FROM users WHERE email = ? AND status = 'active' LIMIT 1";
             $stmt = $pdo->prepare($sql);
             $stmt->execute([$email]);
             $user = $stmt->fetch(PDO::FETCH_ASSOC);
             
-            if ($user) {
-                // Hash new password
+            if ($user && isset($user['id'])) {
+                $user_id = (int)$user['id'];
+                
+                // Hash new password using bcrypt
                 $new_password_hash = password_hash($new_password, PASSWORD_DEFAULT);
                 
-                // Check if password_reset_token column exists
-                $check_column = $pdo->query("SHOW COLUMNS FROM users LIKE 'password_reset_token'");
-                $has_reset_columns = $check_column->rowCount() > 0;
+                // Update password in database
+                $update_sql = "UPDATE users 
+                              SET password_hash = ?, 
+                                  password_changed_at = NOW(), 
+                                  password_reset_token = NULL,
+                                  password_reset_expires_at = NULL,
+                                  failed_login_attempts = 0,
+                                  locked_until = NULL
+                              WHERE id = ?";
                 
-                // Update password and clear reset token
-                if ($has_reset_columns) {
-                    $update_sql = "UPDATE users 
-                                  SET password_hash = ?, 
-                                      password_changed_at = NOW(), 
-                                      password_reset_token = NULL,
-                                      password_reset_expires_at = NULL,
-                                      failed_login_attempts = 0,
-                                      locked_until = NULL
-                                  WHERE id = ?";
-                } else {
-                    $update_sql = "UPDATE users 
-                                  SET password_hash = ?, 
-                                      password_changed_at = NOW(), 
-                                      remember_token = NULL,
-                                      failed_login_attempts = 0,
-                                      locked_until = NULL
-                                  WHERE id = ?";
-                }
                 $update_stmt = $pdo->prepare($update_sql);
-                $update_result = $update_stmt->execute([$new_password_hash, $user['id']]);
+                $update_stmt->bindValue(1, $new_password_hash, PDO::PARAM_STR);
+                $update_stmt->bindValue(2, $user_id, PDO::PARAM_INT);
+                $update_result = $update_stmt->execute();
                 
-                if ($update_result) {
-                    // Log security event
-                    if (function_exists('log_security_event')) {
-                        log_security_event('Password Reset Completed', "User: {$user['username']} ({$user['email']}) - IP: " . ($_SERVER['REMOTE_ADDR'] ?? 'Unknown'));
-                    }
+                if ($update_result && $update_stmt->rowCount() > 0) {
+                    // Verify the password was updated correctly
+                    $verify_sql = "SELECT password_hash FROM users WHERE id = ? LIMIT 1";
+                    $verify_stmt = $pdo->prepare($verify_sql);
+                    $verify_stmt->execute([$user_id]);
+                    $updated_user = $verify_stmt->fetch(PDO::FETCH_ASSOC);
                     
-                    $success = true;
-                    $token_valid = false; // Invalidate token after use
+                    if ($updated_user && password_verify($new_password, $updated_user['password_hash'])) {
+                        // Log security event
+                        if (function_exists('log_security_event')) {
+                            log_security_event('Password Reset Completed', "User: {$user['username']} ({$user['email']}) - IP: " . ($_SERVER['REMOTE_ADDR'] ?? 'Unknown'));
+                        }
+                        
+                        $success = true;
+                        $token_valid = false; // Invalidate token after use
+                    } else {
+                        $error = 'Password was updated but verification failed. Please contact support.';
+                    }
                 } else {
-                    $error = 'Failed to update password. Please try again.';
+                    $error = 'Failed to update password in database. Please try again.';
                 }
             } else {
                 $error = 'User not found. Please request a new password reset.';
@@ -249,11 +253,6 @@ ob_end_flush();
             color: #374151;
         }
     </style>
-    
-    <!-- Security Headers -->
-    <meta http-equiv="X-Content-Type-Options" content="nosniff">
-    <meta http-equiv="X-Frame-Options" content="DENY">
-    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
 </head>
 <body>
     <div class="login-split-container">

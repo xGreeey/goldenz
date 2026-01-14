@@ -8,6 +8,9 @@
 
 ob_start();
 
+// Load environment variables FIRST (before any other code)
+require_once __DIR__ . '/../bootstrap/env.php';
+
 // Enable error reporting
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
@@ -97,32 +100,68 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['forgot_password'])) {
                     . dirname($_SERVER['PHP_SELF']) 
                     . '/reset-password.php?token=' . urlencode($reset_token) . '&email=' . urlencode($email);
                 
-                // Send email using PHPMailer
+                // Send email using PHPMailer (SMTP only)
                 $mail = new PHPMailer(true);
                 
                 try {
-                    // Server settings
-                    $mail->isSMTP();
-                    $mail->Host = $_ENV['SMTP_HOST'] ?? 'localhost';
-                    $mail->SMTPAuth = true;
-                    $mail->Username = $_ENV['SMTP_USERNAME'] ?? '';
-                    $mail->Password = $_ENV['SMTP_PASSWORD'] ?? '';
-                    $mail->SMTPSecure = $_ENV['SMTP_ENCRYPTION'] ?? PHPMailer::ENCRYPTION_STARTTLS;
-                    $mail->Port = $_ENV['SMTP_PORT'] ?? 587;
-                    $mail->CharSet = 'UTF-8';
+                    // Validate required SMTP environment variables
+                    $smtp_host = $_ENV['SMTP_HOST'] ?? null;
+                    $smtp_username = $_ENV['SMTP_USERNAME'] ?? null;
+                    $smtp_password = $_ENV['SMTP_PASSWORD'] ?? null;
+                    $smtp_port = $_ENV['SMTP_PORT'] ?? '587';
+                    $smtp_encryption_raw = $_ENV['SMTP_ENCRYPTION'] ?? 'tls';
+                    $mail_from_address = $_ENV['MAIL_FROM_ADDRESS'] ?? null;
+                    $mail_from_name = $_ENV['MAIL_FROM_NAME'] ?? 'Golden Z-5 HR System';
                     
-                    // If SMTP credentials are not set, use mail() function as fallback
-                    if (empty($_ENV['SMTP_HOST']) || empty($_ENV['SMTP_USERNAME'])) {
-                        $mail->isMail();
+                    if (empty($smtp_host) || empty($smtp_username) || empty($smtp_password) || empty($mail_from_address)) {
+                        throw new Exception('SMTP configuration is incomplete. Please set SMTP_HOST, SMTP_USERNAME, SMTP_PASSWORD, and MAIL_FROM_ADDRESS environment variables in your .env file.');
                     }
                     
-                    // Recipients
-                    $mail->setFrom($_ENV['MAIL_FROM_ADDRESS'] ?? 'aldrininocencio212527@gmail.com', $_ENV['MAIL_FROM_NAME'] ?? 'Golden Z-5 HR System');
-                    $mail->addAddress($email, $user['name']);
+                    // Map encryption string to PHPMailer constant
+                    $smtp_encryption = PHPMailer::ENCRYPTION_STARTTLS; // Default
+                    if (strtolower($smtp_encryption_raw) === 'ssl') {
+                        $smtp_encryption = PHPMailer::ENCRYPTION_SMTPS;
+                    } elseif (strtolower($smtp_encryption_raw) === 'tls' || strtolower($smtp_encryption_raw) === 'starttls') {
+                        $smtp_encryption = PHPMailer::ENCRYPTION_STARTTLS;
+                    }
                     
-                    // Content
+                    // SMTP Server Configuration (Gmail-compatible)
+                    $mail->isSMTP();
+                    $mail->Host = $smtp_host;
+                    $mail->SMTPAuth = true;
+                    $mail->Username = $smtp_username;
+                    $mail->Password = $smtp_password;
+                    $mail->SMTPSecure = $smtp_encryption;
+                    $mail->Port = (int)$smtp_port;
+                    $mail->CharSet = 'UTF-8';
+                    
+                    // SMTP Debug Options (commented out - enable for troubleshooting)
+                    // $mail->SMTPDebug = SMTP::DEBUG_SERVER; // Enable verbose debug output
+                    // $mail->SMTPDebug = SMTP::DEBUG_CLIENT; // Enable client debug output
+                    // $mail->SMTPDebug = SMTP::DEBUG_CONNECTION; // Enable connection debug output
+                    // $mail->SMTPDebug = SMTP::DEBUG_LOWLEVEL; // Enable low-level debug output
+                    
+                    // Additional SMTP Options for Gmail/localhost compatibility
+                    $mail->SMTPOptions = array(
+                        'ssl' => array(
+                            'verify_peer' => false,
+                            'verify_peer_name' => false,
+                            'allow_self_signed' => true
+                        )
+                    );
+                    
+                    // Recipients
+                    $mail->setFrom($mail_from_address, $mail_from_name);
+                    $mail->addAddress($email, htmlspecialchars($user['name'], ENT_QUOTES, 'UTF-8'));
+                    
+                    // Email Content
                     $mail->isHTML(true);
                     $mail->Subject = 'Password Reset Request - Golden Z-5 HR System';
+                    
+                    // Sanitize user data for HTML email body
+                    $user_name_safe = htmlspecialchars($user['name'], ENT_QUOTES, 'UTF-8');
+                    $reset_url_safe = htmlspecialchars($reset_url, ENT_QUOTES, 'UTF-8');
+                    
                     $mail->Body = '
                         <!DOCTYPE html>
                         <html>
@@ -146,13 +185,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['forgot_password'])) {
                                 </div>
                                 <div class="content">
                                     <h2>Password Reset Request</h2>
-                                    <p>Hello ' . htmlspecialchars($user['name']) . ',</p>
+                                    <p>Hello ' . $user_name_safe . ',</p>
                                     <p>We received a request to reset your password for your account. Click the button below to reset your password:</p>
                                     <p style="text-align: center;">
-                                        <a href="' . htmlspecialchars($reset_url) . '" class="button">Reset Password</a>
+                                        <a href="' . $reset_url_safe . '" class="button">Reset Password</a>
                                     </p>
                                     <p>Or copy and paste this link into your browser:</p>
-                                    <p style="word-break: break-all; color: #2563eb;">' . htmlspecialchars($reset_url) . '</p>
+                                    <p style="word-break: break-all; color: #2563eb;">' . $reset_url_safe . '</p>
                                     <div class="warning">
                                         <strong>⚠️ Security Notice:</strong> This link will expire in 1 hour. If you did not request this password reset, please ignore this email and your password will remain unchanged.
                                     </div>
@@ -166,9 +205,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['forgot_password'])) {
                         </body>
                         </html>
                     ';
-                    $mail->AltBody = "Hello {$user['name']},\n\nWe received a request to reset your password. Please click the following link to reset your password:\n\n{$reset_url}\n\nThis link will expire in 1 hour. If you did not request this password reset, please ignore this email.\n\nGolden Z-5 HR System";
                     
-                    $mail->send();
+                    // Plain text alternative body (sanitized)
+                    $mail->AltBody = "Hello {$user_name_safe},\n\nWe received a request to reset your password. Please click the following link to reset your password:\n\n{$reset_url_safe}\n\nThis link will expire in 1 hour. If you did not request this password reset, please ignore this email.\n\nGolden Z-5 HR System";
+                    
+                    // Send email and throw exception on failure
+                    if (!$mail->send()) {
+                        throw new Exception('Failed to send email: ' . $mail->ErrorInfo);
+                    }
                     
                     // Log security event
                     if (function_exists('log_security_event')) {
@@ -179,8 +223,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['forgot_password'])) {
                     $email_sent = true;
                     
                 } catch (Exception $e) {
-                    error_log('Email sending failed: ' . $mail->ErrorInfo);
-                    $error = 'Failed to send password reset email. Please try again later or contact your administrator.';
+                    error_log('MAIL ERROR: ' . $e->getMessage());
+                    echo 'Mailer Error: ' . $e->getMessage(); // TEMPORARY
                 }
             } else {
                 // Don't reveal if email exists or not (security best practice)
@@ -209,11 +253,6 @@ ob_end_flush();
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="assets/landing.css" rel="stylesheet">
     <link href="../assets/css/font-override.css" rel="stylesheet">
-    
-    <!-- Security Headers -->
-    <meta http-equiv="X-Content-Type-Options" content="nosniff">
-    <meta http-equiv="X-Frame-Options" content="DENY">
-    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
 </head>
 <body>
     <div class="login-split-container">

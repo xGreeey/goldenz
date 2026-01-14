@@ -25,11 +25,31 @@ class Config
         if (file_exists($envFile)) {
             $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
             foreach ($lines as $line) {
-                if (strpos(trim($line), '#') === 0) {
+                $line = trim($line);
+                
+                // Skip comments and empty lines
+                if (empty($line) || strpos($line, '#') === 0) {
                     continue;
                 }
-                list($name, $value) = explode('=', $line, 2);
-                $_ENV[trim($name)] = trim($value);
+                
+                // Parse KEY=VALUE format
+                if (strpos($line, '=') !== false) {
+                    $parts = explode('=', $line, 2);
+                    if (count($parts) === 2) {
+                        $name = trim($parts[0]);
+                        $value = trim($parts[1]);
+                        
+                        // Remove quotes if present
+                        if ((substr($value, 0, 1) === '"' && substr($value, -1) === '"') ||
+                            (substr($value, 0, 1) === "'" && substr($value, -1) === "'")) {
+                            $value = substr($value, 1, -1);
+                        }
+                        
+                        if (!empty($name)) {
+                            $_ENV[$name] = $value;
+                        }
+                    }
+                }
             }
         }
 
