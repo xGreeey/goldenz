@@ -255,7 +255,7 @@ $category_labels = [
         <div class="col-lg-4">
             <div class="card card-modern">
                 <div class="card-body-modern">
-                    <h6 class="mb-3"><i class="fas fa-info-circle me-2"></i>Ticket Information</h6>
+                    <h6 class="mb-3"><i class="fas fa-circle-info me-2"></i>Ticket Information</h6>
                     
                     <div class="info-item mb-3">
                         <small class="text-muted d-block">Ticket Number</small>

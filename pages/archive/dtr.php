@@ -722,7 +722,7 @@ class RealTimeDTR {
                 <i class="fas fa-coffee me-1"></i>Break Start
             </button>`);
             buttons.push(`<button class="btn btn-danger btn-sm" onclick="dtr.timeOut(${employee.id})">
-                <i class="fas fa-sign-out-alt me-1"></i>Time Out
+                <i class="fas fa-right-from-bracket me-1"></i>Time Out
             </button>`);
         }
         

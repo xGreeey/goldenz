@@ -94,7 +94,7 @@ $total_views = array_sum(array_column($help_articles, 'views'));
                 </div>
             </div>
             <div class="card-icon">
-                <i class="fas fa-check-circle"></i>
+                <i class="fas fa-circle-check"></i>
             </div>
         </div>
         

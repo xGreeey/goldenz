@@ -733,7 +733,7 @@ class ComprehensiveFunctionalityManager {
         
         if (status === 'out_of_duty' && !employee.time_in) {
             buttons.push(`<button class="btn btn-success btn-sm dtr-action-btn" data-action="time-in" data-employee-id="${employee.id}">
-                <i class="fas fa-sign-in-alt me-1"></i>Time In
+                <i class="fas fa-right-to-bracket me-1"></i>Time In
             </button>`);
         }
         
@@ -742,7 +742,7 @@ class ComprehensiveFunctionalityManager {
                 <i class="fas fa-coffee me-1"></i>Break Start
             </button>`);
             buttons.push(`<button class="btn btn-danger btn-sm dtr-action-btn" data-action="time-out" data-employee-id="${employee.id}">
-                <i class="fas fa-sign-out-alt me-1"></i>Time Out
+                <i class="fas fa-right-from-bracket me-1"></i>Time Out
             </button>`);
         }
         
@@ -948,7 +948,7 @@ class ComprehensiveFunctionalityManager {
         const notification = document.createElement('div');
         notification.className = `notification ${type}`;
         notification.innerHTML = `
-            <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
+            <i class="fas ${type === 'success' ? 'fa-circle-check' : 'fa-circle-exclamation'}"></i>
             <span>${message}</span>
         `;
         
