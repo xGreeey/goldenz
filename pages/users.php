@@ -925,15 +925,13 @@ function initializeUsersPage() {
                     throw new Error('HTTP ' + response.status);
                 }
                 
-                const contentType = response.headers.get('content-type');
-                if (!contentType || !contentType.includes('application/json')) {
+                // Try to parse JSON directly; if it fails, log the raw text for debugging
+                return response.json().catch(() => {
                     return response.text().then(text => {
-                        console.error('Non-JSON response:', text.substring(0, 200));
-                        throw new Error('Server returned non-JSON response');
+                        console.error('Unexpected response (not valid JSON):', text.substring(0, 300));
+                        throw new Error('Server returned an unexpected response while creating user');
                     });
-                }
-                
-                return response.json();
+                });
             })
             .then(data => {
                 console.log('✅ Response:', data);
@@ -1300,14 +1298,13 @@ function updateUserRole(userId, newRole, selectElement) {
         if (!response.ok) {
             throw new Error('HTTP ' + response.status);
         }
-        const contentType = response.headers.get('content-type');
-        if (!contentType || !contentType.includes('application/json')) {
+
+        return response.json().catch(() => {
             return response.text().then(text => {
-                console.error('Non-JSON response:', text.substring(0, 200));
-                throw new Error('Server returned non-JSON response');
+                console.error('Unexpected response (not valid JSON) for role update:', text.substring(0, 300));
+                throw new Error('Server returned an unexpected response while updating role');
             });
-        }
-        return response.json();
+        });
     })
     .then(data => {
         console.log('✅ Role update response:', data);
@@ -1353,14 +1350,13 @@ function updateUserStatus(userId, newStatus, selectElement) {
         if (!response.ok) {
             throw new Error('HTTP ' + response.status);
         }
-        const contentType = response.headers.get('content-type');
-        if (!contentType || !contentType.includes('application/json')) {
+
+        return response.json().catch(() => {
             return response.text().then(text => {
-                console.error('Non-JSON response:', text.substring(0, 200));
-                throw new Error('Server returned non-JSON response');
+                console.error('Unexpected response (not valid JSON) for status update:', text.substring(0, 300));
+                throw new Error('Server returned an unexpected response while updating status');
             });
-        }
-        return response.json();
+        });
     })
     .then(data => {
         console.log('✅ Status update response:', data);
@@ -1438,14 +1434,13 @@ function deleteUser(userId, userName, buttonEl) {
     })
     .then(response => {
         if (!response.ok) throw new Error('HTTP ' + response.status);
-        const contentType = response.headers.get('content-type');
-        if (!contentType || !contentType.includes('application/json')) {
+
+        return response.json().catch(() => {
             return response.text().then(text => {
-                console.error('Non-JSON response:', text.substring(0, 200));
-                throw new Error('Server returned non-JSON response');
+                console.error('Unexpected response (not valid JSON) while deleting user:', text.substring(0, 300));
+                throw new Error('Server returned an unexpected response while deleting user');
             });
-        }
-        return response.json();
+        });
     })
     .then(data => {
         if (data && data.success) {
