@@ -840,12 +840,13 @@ function initializeUsersPage() {
     if (modalInstance) {
         modalInstance.dispose();
     }
+    // Initialize Create User modal WITHOUT backdrop so the rest of the page stays clickable
     new bootstrap.Modal(createUserModal, {
-        backdrop: true,
+        backdrop: false,
         keyboard: true,
         focus: true
     });
-    console.log('✅ Modal initialized');
+    console.log('✅ Create User modal initialized with backdrop disabled');
     
     // Attach form submit handler ONLY ONCE
     if (!createUserForm.hasAttribute('data-submit-handler')) {
