@@ -94,7 +94,7 @@ $pending = count(array_filter($integrations, function($i) { return $i['status'] 
                 </div>
             </div>
             <div class="card-icon">
-                <i class="fas fa-check-circle"></i>
+                <i class="fas fa-circle-check"></i>
             </div>
         </div>
         
@@ -107,7 +107,7 @@ $pending = count(array_filter($integrations, function($i) { return $i['status'] 
                 </div>
             </div>
             <div class="card-icon">
-                <i class="fas fa-times-circle"></i>
+                <i class="fas fa-circle-xmark"></i>
             </div>
         </div>
         

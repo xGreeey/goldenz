@@ -103,7 +103,8 @@ if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'super_admin') 
 
                             <div id="changePasswordAlert"></div>
                             
-                            <form id="changePasswordForm">
+                            <form id="changePasswordForm" method="post" action="?page=settings">
+                                <input type="hidden" name="action" value="change_password">
                                 <div class="row g-3">
                                     <div class="col-md-12">
                                         <label for="current_password" class="form-label">Current Password <span class="text-danger">*</span></label>
@@ -708,13 +709,9 @@ document.addEventListener('DOMContentLoaded', function() {
             formData.append('new_password', newPassword);
             formData.append('confirm_password', confirmPassword);
             
-            // Submit via AJAX
-            let formAction = window.location.pathname;
-            const urlParams = new URLSearchParams(window.location.search);
-            if (!urlParams.has('page')) {
-                urlParams.set('page', 'settings');
-            }
-            formAction += '?' + urlParams.toString();
+            // Submit via AJAX directly to the settings endpoint for the current portal
+            // Always force page=settings to avoid stray query params (_r, etc.) breaking routing
+            let formAction = window.location.pathname + '?page=settings';
             
             fetch(formAction, {
                 method: 'POST',

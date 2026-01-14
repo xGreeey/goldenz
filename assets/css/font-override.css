@@ -119,10 +119,45 @@ i[class*="fa-"], .fas, .far, .fal, .fab {
     speak: none;
 }
 
+/* Font Awesome renders many icons via ::before; our global *::before font override can break them */
+i[class*="fa-"]::before,
+i[class*="fa-"]::after,
+.fas::before, .fas::after,
+.far::before, .far::after,
+.fal::before, .fal::after,
+.fab::before, .fab::after,
+.fa-solid::before, .fa-solid::after,
+.fa-regular::before, .fa-regular::after,
+.fa-brands::before, .fa-brands::after {
+    font-family: 'Font Awesome 6 Free', 'Font Awesome 5 Free', 'Font Awesome 6 Brands', 'Font Awesome 5 Brands' !important;
+    font-style: normal !important;
+}
+
 /* Prevent emoji rendering issues - force emoji font stack for all text content */
 body, p, span, div, a, li, td, th, label, input, textarea, select, button, h1, h2, h3, h4, h5, h6 {
     font-variant-emoji: emoji !important;
     text-rendering: optimizeLegibility !important;
     -webkit-font-smoothing: antialiased !important;
     -moz-osx-font-smoothing: grayscale !important;
+}
+
+/* --- Sidebar visual overrides (ensure dropdowns are clearly visible) --- */
+.sidebar .nav-submenu {
+    background: #ffffff !important;          /* solid white dropdown panel */
+    border-radius: 10px !important;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.45) !important;
+}
+
+.sidebar .nav-submenu .nav-link {
+    color: #0f172a !important;               /* dark text on white */
+}
+
+.sidebar .nav-submenu .nav-link:hover {
+    background: #f1f5f9 !important;
+    color: #0f172a !important;
+}
+
+.sidebar .nav-submenu .nav-link.active {
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.15) 0%, rgba(59, 130, 246, 0.12) 100%) !important;
+    color: #0f172a !important;
 }

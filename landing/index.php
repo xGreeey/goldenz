@@ -800,22 +800,31 @@ ob_end_flush();
             loginForm.addEventListener('submit', function(e) {
                 console.log('Form submit event triggered');
                 
-                const username = document.getElementById('username').value.trim();
-                const password = document.getElementById('password').value;
+                const usernameEl = document.getElementById('username');
+                const passwordEl = document.getElementById('password');
+                const username = usernameEl ? usernameEl.value.trim() : '';
+                const password = passwordEl ? passwordEl.value : '';
                 
                 console.log('Username:', username ? 'provided' : 'empty');
                 console.log('Password:', password ? 'provided' : 'empty');
                 
-                // Only prevent if fields are empty
+                // Always handle submit so we can run the transition
+                e.preventDefault();
+                
+                // Basic validation
                 if (!username || !password) {
-                    e.preventDefault();
                     alert('Please enter both username and password');
+                    if (!username && usernameEl) {
+                        usernameEl.focus();
+                    } else if (passwordEl) {
+                        passwordEl.focus();
+                    }
                     return false;
                 }
                 
                 // Show loading state
                 const submitBtn = document.getElementById('submitBtn');
-                const btnText = submitBtn.querySelector('.btn-text');
+                const btnText = submitBtn ? submitBtn.querySelector('.btn-text') : null;
                 const spinner = document.getElementById('submitSpinner');
                 
                 if (submitBtn) {
@@ -823,9 +832,30 @@ ob_end_flush();
                     if (btnText) btnText.textContent = 'Signing in...';
                     if (spinner) spinner.classList.remove('d-none');
                 }
+
+                // Trigger login transition: center card + portal animation
+                document.body.classList.add('login-transition-active');
+
+                // Add fullscreen circular loader overlay (no white box)
+                let spinnerOverlay = document.querySelector('.login-spinner-overlay');
+                if (!spinnerOverlay) {
+                    spinnerOverlay = document.createElement('div');
+                    spinnerOverlay.className = 'login-spinner-overlay';
+                    spinnerOverlay.innerHTML = '<div class="login-spinner"></div>';
+                    document.body.appendChild(spinnerOverlay);
+                }
+                // Ensure any previous portal overlay exists but has no solid background
+                let existingOverlay = document.querySelector('.login-transition-overlay');
+                if (!existingOverlay) {
+                    existingOverlay = document.createElement('div');
+                    existingOverlay.className = 'login-transition-overlay';
+                    document.body.appendChild(existingOverlay);
+                }
                 
-                console.log('Form will submit - allowing default behavior');
-                // DON'T prevent default - let form submit normally!
+                // Submit to server after animation so dashboard appears right after the effect
+                setTimeout(function() {
+                    loginForm.submit();
+                }, 1200); // allow the portal + loading animation to complete
             });
         } else {
             console.error('Login form not found!');
