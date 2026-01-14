@@ -2672,6 +2672,80 @@ if (!function_exists('update_user_status')) {
     }
 }
 
+// Delete user (Super Admin only)
+if (!function_exists('delete_user')) {
+    function delete_user($user_id, $deleted_by = null) {
+        try {
+            $pdo = get_db_connection();
+
+            $deleted_by = $deleted_by ?? ($_SESSION['user_id'] ?? null);
+
+            if (!$user_id) {
+                return ['success' => false, 'message' => 'Invalid user specified'];
+            }
+
+            // Prevent deleting own account
+            if ($deleted_by && (int)$user_id === (int)$deleted_by) {
+                return ['success' => false, 'message' => 'You cannot delete your own account'];
+            }
+
+            // Load target user
+            $stmt = $pdo->prepare("SELECT id, role, name, username FROM users WHERE id = ?");
+            $stmt->execute([$user_id]);
+            $target = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$target) {
+                return ['success' => false, 'message' => 'User not found'];
+            }
+
+            // Prevent deleting super_admin accounts (and especially last one)
+            if (($target['role'] ?? '') === 'super_admin') {
+                $countStmt = $pdo->query("SELECT COUNT(*) FROM users WHERE role = 'super_admin'");
+                $superAdminCount = (int)$countStmt->fetchColumn();
+                if ($superAdminCount <= 1) {
+                    return ['success' => false, 'message' => 'You cannot delete the last Super Admin account'];
+                }
+                return ['success' => false, 'message' => 'Super Admin accounts cannot be deleted'];
+            }
+
+            $pdo->beginTransaction();
+
+            // Avoid FK issues for created_by references (if constraints exist)
+            $nullCreatedBy = $pdo->prepare("UPDATE users SET created_by = NULL WHERE created_by = ?");
+            $nullCreatedBy->execute([$user_id]);
+
+            // Delete user
+            $del = $pdo->prepare("DELETE FROM users WHERE id = ?");
+            $del->execute([$user_id]);
+
+            if ($del->rowCount() < 1) {
+                $pdo->rollBack();
+                return ['success' => false, 'message' => 'Failed to delete user'];
+            }
+
+            if (function_exists('log_audit_event')) {
+                log_audit_event(
+                    'USER_DELETED',
+                    'users',
+                    $user_id,
+                    json_encode(['role' => $target['role'], 'name' => $target['name'], 'username' => $target['username']]),
+                    null,
+                    $deleted_by
+                );
+            }
+
+            $pdo->commit();
+            return ['success' => true, 'message' => 'User deleted successfully'];
+        } catch (Exception $e) {
+            if (isset($pdo) && $pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
+            error_log("Error in delete_user: " . $e->getMessage());
+            return ['success' => false, 'message' => 'Database error: ' . $e->getMessage()];
+        }
+    }
+}
+
 // Get user by ID
 if (!function_exists('get_user_by_id')) {
     function get_user_by_id($user_id) {

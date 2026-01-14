@@ -92,22 +92,6 @@ $activeSection = getActiveSection($page);
             </button>
         </div>
         
-        <!-- Search Bar -->
-        <div class="sidebar-search">
-            <div class="search-input">
-                <i class="fas fa-search"></i>
-                <input type="text" 
-                       placeholder="Search..." 
-                       id="sidebarSearch" 
-                       aria-label="Search menu items"
-                       autocomplete="off">
-                <button class="search-clear d-none" id="searchClear" aria-label="Clear search">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="search-results" id="searchResults" aria-live="polite" aria-atomic="true"></div>
-        </div>
-        
         <ul class="sidebar-menu" id="sidebarMenu">
             <li class="nav-item">
                 <a href="?page=dashboard" 
@@ -404,13 +388,16 @@ $activeSection = getActiveSection($page);
                         }
                         exit;
                     }
-                    include $pages_path . 'dtr.php';
+                    // DTR lives under pages/archive/
+                    include $pages_path . 'archive/dtr.php';
                     break;
                 case 'timeoff':
-                    include $pages_path . 'timeoff.php';
+                    // Time Off lives under pages/archive/
+                    include $pages_path . 'archive/timeoff.php';
                     break;
                 case 'checklist':
-                    include $pages_path . 'checklist.php';
+                    // Checklist lives under pages/archive/
+                    include $pages_path . 'archive/checklist.php';
                     break;
                 case 'hiring':
                     include $pages_path . 'hiring.php';
@@ -446,9 +433,10 @@ $activeSection = getActiveSection($page);
                     include $pages_path . 'users.php';
                     break;
                 case 'system_logs':
+                    include $pages_path . 'system_logs.php';
+                    break;
                 case 'audit_trail':
-                    // Super admin specific pages - create these later
-                    echo '<div class="container-fluid"><div class="alert alert-info">Page under construction: ' . htmlspecialchars($page) . '</div></div>';
+                    include $pages_path . 'audit_trail.php';
                     break;
                 default:
                     include $pages_path . 'dashboard.php';

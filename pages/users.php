@@ -302,11 +302,17 @@ $role_config = config('roles.roles', []);
                                         <?php endif; ?>
                                     </td>
                                     <td>
-                                        <div class="d-flex gap-2">
+                                        <div class="user-actions">
                                             <button class="btn btn-sm btn-outline-modern view-user-btn" 
                                                     data-user-id="<?php echo $user['id']; ?>"
                                                     title="View Details">
-                                                <i class="fas fa-eye"></i>
+                                                <i class="fa-solid fa-eye" aria-hidden="true" style="font-size: 0.95rem;"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-modern delete-user-btn"
+                                                    data-user-id="<?php echo $user['id']; ?>"
+                                                    data-user-name="<?php echo htmlspecialchars($user['name']); ?>"
+                                                    title="Delete User">
+                                                <i class="fa-solid fa-trash" aria-hidden="true" style="font-size: 0.95rem;"></i>
                                             </button>
                                         </div>
                                     </td>
@@ -582,6 +588,29 @@ $role_config = config('roles.roles', []);
 
 .avatar-placeholder {
     font-size: 1rem;
+}
+
+.user-actions {
+    display: inline-flex;
+    gap: 0.5rem;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+}
+
+.user-actions .btn {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+.user-actions .btn i {
+    margin: 0 !important;
+    display: inline-block;
 }
 
 .page-link {
@@ -1136,6 +1165,19 @@ function initializeUsersPage() {
             });
         }
     });
+
+    // Attach delete user handlers
+    document.querySelectorAll('.delete-user-btn').forEach(btn => {
+        if (!btn.hasAttribute('data-delete-handler-attached')) {
+            btn.setAttribute('data-delete-handler-attached', 'true');
+
+            btn.addEventListener('click', function() {
+                const userId = this.dataset.userId;
+                const userName = this.dataset.userName || 'this user';
+                deleteUser(userId, userName, this);
+            });
+        }
+    });
     
     console.log('✅ Role/Status/View handlers attached');
     console.log('✅ Users page fully initialized');
@@ -1366,6 +1408,60 @@ function viewUserDetails(userId) {
             console.error('❌ Error loading user details:', error);
             content.innerHTML = '<div class="alert alert-danger">Error loading user details</div>';
         });
+}
+
+function deleteUser(userId, userName, buttonEl) {
+    if (!userId) return;
+
+    const ok = confirm(`Delete ${userName}? This action cannot be undone.`);
+    if (!ok) return;
+
+    const formData = new FormData();
+    formData.append('action', 'delete_user');
+    formData.append('user_id', userId);
+
+    const submitURL = window.location.pathname + '?page=users';
+
+    // Optimistic UI: disable button while deleting
+    if (buttonEl) {
+        buttonEl.disabled = true;
+    }
+
+    fetch(submitURL, {
+        method: 'POST',
+        body: formData,
+        credentials: 'same-origin',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => {
+        if (!response.ok) throw new Error('HTTP ' + response.status);
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            return response.text().then(text => {
+                console.error('Non-JSON response:', text.substring(0, 200));
+                throw new Error('Server returned non-JSON response');
+            });
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data && data.success) {
+            // Remove the row
+            const row = buttonEl?.closest('tr');
+            if (row) row.remove();
+            showNotification(data.message || 'User deleted', 'success');
+        } else {
+            if (buttonEl) buttonEl.disabled = false;
+            showNotification(data.message || 'Failed to delete user', 'error');
+        }
+    })
+    .catch(err => {
+        console.error('❌ Delete user error:', err);
+        if (buttonEl) buttonEl.disabled = false;
+        showNotification('An error occurred while deleting the user', 'error');
+    });
 }
 
 function showNotification(message, type) {
