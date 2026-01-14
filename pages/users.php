@@ -377,7 +377,7 @@ $role_config = config('roles.roles', []);
 
 <!-- Create User Modal -->
 <div class="modal fade" id="createUserModal" tabindex="-1" aria-labelledby="createUserModalLabel" aria-hidden="true" data-bs-backdrop="false" data-bs-keyboard="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
         <div class="modal-content" style="position: relative; z-index: 1057;">
             <div class="modal-header">
                 <h5 class="modal-title" id="createUserModalLabel">Create New User</h5>
@@ -602,13 +602,31 @@ $role_config = config('roles.roles', []);
 }
 
 /* Fix modal z-index - Must be above header (1100) and sidebar (1000) */
+/* Create User Modal - Scroll-relative positioning */
 #createUserModal {
     z-index: 1200 !important;
 }
 
 #createUserModal .modal-dialog {
     z-index: 1201 !important;
-    position: relative;
+    position: absolute !important;
+    margin: 0 !important;
+    max-width: 800px;
+    width: calc(100% - 2rem);
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    display: flex;
+    flex-direction: column;
+    pointer-events: auto !important;
+    /* Top position will be set dynamically via JavaScript based on scroll */
+}
+
+/* Mobile responsive */
+@media (max-width: 576px) {
+    #createUserModal .modal-dialog {
+        width: calc(100% - 1rem) !important;
+        max-width: 100%;
+    }
 }
 
 #createUserModal .modal-content {
@@ -618,11 +636,17 @@ $role_config = config('roles.roles', []);
     background: rgba(255, 255, 255, 0.85) !important;
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
+    max-height: calc(100vh - 100px);
+    display: flex;
+    flex-direction: column;
+    border-radius: 8px;
 }
 
-/* Ensure modal dialog and content can receive clicks */
-#createUserModal .modal-dialog {
-    pointer-events: auto !important;
+/* Mobile modal content */
+@media (max-width: 576px) {
+    #createUserModal .modal-content {
+        max-height: calc(100vh - 40px);
+    }
 }
 
 body.modal-open .modal-backdrop {
@@ -662,14 +686,29 @@ body.modal-open #createUserModal {
     z-index: 1;
 }
 
-/* Role Change Confirmation Modal */
+/* Role Change Confirmation Modal - Scroll-relative positioning */
 #roleChangeModal {
     z-index: 1200 !important;
 }
 
 #roleChangeModal .modal-dialog {
     z-index: 1201 !important;
-    position: relative;
+    position: absolute !important;
+    margin: 0 !important;
+    max-width: 500px;
+    width: calc(100% - 2rem);
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    display: flex;
+    flex-direction: column;
+    /* Top position will be set dynamically via JavaScript based on scroll */
+}
+
+/* Mobile responsive */
+@media (max-width: 576px) {
+    #roleChangeModal .modal-dialog {
+        width: calc(100% - 1rem) !important;
+    }
 }
 
 #roleChangeModal .modal-content {
@@ -677,6 +716,17 @@ body.modal-open #createUserModal {
     position: relative;
     border: none;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    max-height: calc(100vh - 100px);
+    display: flex;
+    flex-direction: column;
+    border-radius: 8px;
+}
+
+/* Mobile modal content */
+@media (max-width: 576px) {
+    #roleChangeModal .modal-content {
+        max-height: calc(100vh - 40px);
+    }
 }
 
 body.modal-open #roleChangeModal {
@@ -685,11 +735,14 @@ body.modal-open #roleChangeModal {
 
 #roleChangeModal .modal-body {
     padding: 1.5rem;
+    overflow-y: auto;
+    flex: 1 1 auto;
 }
 
 #roleChangeModal .modal-footer {
     border-top: 1px solid #e2e8f0;
     padding: 1rem 1.5rem;
+    flex-shrink: 0;
 }
 
 /* Hide backdrop for role change modal */
@@ -900,6 +953,13 @@ function initializeUsersPage() {
     if (!createUserModal.hasAttribute('data-modal-events')) {
         createUserModal.setAttribute('data-modal-events', 'attached');
         
+        // Position modal before showing (for both data-bs-toggle and programmatic opening)
+        createUserModal.addEventListener('show.bs.modal', function() {
+            if (typeof positionModalRelativeToScroll === 'function') {
+                positionModalRelativeToScroll(createUserModal);
+            }
+        });
+        
         createUserModal.addEventListener('hidden.bs.modal', function() {
             if (createUserForm) {
                 createUserForm.reset();
@@ -907,9 +967,33 @@ function initializeUsersPage() {
             }
             const alertDiv = document.getElementById('createUserAlert');
             if (alertDiv) alertDiv.innerHTML = '';
+            
+            // Remove scroll listener when modal is hidden
+            if (createUserModal._scrollHandler) {
+                window.removeEventListener('scroll', createUserModal._scrollHandler);
+                delete createUserModal._scrollHandler;
+            }
         });
         
         createUserModal.addEventListener('shown.bs.modal', function() {
+            // Position modal relative to current scroll position after animation
+            if (typeof positionModalRelativeToScroll === 'function') {
+                positionModalRelativeToScroll(createUserModal);
+            }
+            
+            // Reposition on scroll while modal is open
+            const handleScroll = () => {
+                if (createUserModal.classList.contains('show')) {
+                    positionModalRelativeToScroll(createUserModal);
+                }
+            };
+            
+            // Add scroll listener
+            window.addEventListener('scroll', handleScroll, { passive: true });
+            
+            // Store handler for cleanup
+            createUserModal._scrollHandler = handleScroll;
+            
             const usernameInput = document.getElementById('create_username');
             if (usernameInput) setTimeout(() => usernameInput.focus(), 100);
         });
@@ -967,11 +1051,17 @@ function initializeUsersPage() {
             }
         });
         
+        // Ensure modal is positioned correctly when shown
+        roleChangeModal.addEventListener('shown.bs.modal', function() {
+            if (typeof positionModalRelativeToScroll === 'function') {
+                positionModalRelativeToScroll(roleChangeModal);
+            }
+        });
+        
         console.log('✅ Role change modal initialized');
     }
     
     // Attach role change handlers to all role selects (use event delegation for dynamic content)
-    // Remove old listeners by checking if already attached
     document.querySelectorAll('.user-role-select').forEach(select => {
         if (!select.hasAttribute('data-role-handler-attached')) {
             select.setAttribute('data-role-handler-attached', 'true');
@@ -1069,17 +1159,80 @@ function showRoleChangeModal(userName, newRoleText) {
         messageEl.innerHTML = `Are you sure you want to change <strong>${userName}</strong>'s role to <strong>"${newRoleText}"</strong>?`;
     }
     
+    // Position modal relative to current scroll position before showing
+    positionModalRelativeToScroll(modalElement);
+    
     modal.show();
     
-    // Remove any backdrop that might have been created
+    // Reposition after Bootstrap's show animation completes
     setTimeout(() => {
+        positionModalRelativeToScroll(modalElement);
+        
+        // Remove any backdrop that might have been created
         const backdrops = document.querySelectorAll('.modal-backdrop');
         backdrops.forEach(backdrop => {
             if (backdrop && backdrop.parentNode) {
                 backdrop.remove();
             }
         });
-    }, 10);
+    }, 100);
+    
+    // Reposition on scroll while modal is open
+    const handleScroll = () => {
+        if (modalElement.classList.contains('show')) {
+            positionModalRelativeToScroll(modalElement);
+        }
+    };
+    
+    // Add scroll listener
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    
+    // Store handler for cleanup
+    modalElement._scrollHandler = handleScroll;
+    
+    // Remove scroll listener when modal is hidden
+    modalElement.addEventListener('hidden.bs.modal', function removeScrollListener() {
+        if (modalElement._scrollHandler) {
+            window.removeEventListener('scroll', modalElement._scrollHandler);
+            delete modalElement._scrollHandler;
+        }
+        modalElement.removeEventListener('hidden.bs.modal', removeScrollListener);
+    }, { once: true });
+}
+
+/**
+ * Position modal relative to current scroll position
+ * Modal appears near the top of the visible viewport, positioned relative to document
+ */
+function positionModalRelativeToScroll(modalElement) {
+    const modalDialog = modalElement.querySelector('.modal-dialog');
+    if (!modalDialog) return;
+    
+    const viewportHeight = window.innerHeight;
+    const viewportWidth = window.innerWidth;
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    
+    // Calculate top offset from viewport top (50px on desktop, 20px on mobile)
+    const topOffset = viewportWidth <= 576 ? 20 : 50;
+    
+    // Calculate absolute position: scroll position + viewport offset
+    // This positions the modal relative to the document, appearing in the visible area
+    const absoluteTop = scrollTop + topOffset;
+    
+    // Set absolute position relative to document
+    modalDialog.style.position = 'absolute';
+    modalDialog.style.top = `${absoluteTop}px`;
+    modalDialog.style.left = '50%';
+    modalDialog.style.transform = 'translateX(-50%)';
+    modalDialog.style.maxHeight = `${viewportHeight - (topOffset * 2)}px`;
+    modalDialog.style.width = viewportWidth <= 576 ? 'calc(100% - 1rem)' : 'calc(100% - 2rem)';
+    modalDialog.style.maxWidth = '500px';
+    
+    // Ensure modal is visible and above other content
+    modalDialog.style.zIndex = '1201';
+    
+    // Force reflow to ensure styles are applied
+    modalDialog.offsetHeight;
 }
 
 function updateUserRole(userId, newRole, selectElement) {
@@ -1238,7 +1391,10 @@ function showNotification(message, type) {
 // === INITIALIZATION TRIGGERS ===
 // Initialize state object if it doesn't exist
 if (!window.usersPageState) {
-    window.usersPageState = { initialized: false };
+    window.usersPageState = { 
+        initialized: false,
+        pendingRoleChange: null
+    };
 }
 
 function tryInit() {
