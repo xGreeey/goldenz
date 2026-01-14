@@ -86,7 +86,7 @@ $activeSection = getActiveSection($page);
         <!-- Header -->
         <?php 
         // Pages that should not show the header
-        $pages_without_header = ['permissions', 'employees', 'dashboard', 'posts', 'post_assignments', 'alerts', 'add_employee', 'view_employee', 'tasks'];
+        $pages_without_header = ['permissions', 'employees', 'dashboard', 'posts', 'post_assignments', 'alerts', 'add_employee', 'view_employee', 'tasks', 'hr-help', 'help'];
         if (!in_array($page, $pages_without_header)): 
         ?>
         <header class="header">
@@ -151,4 +151,4 @@ $activeSection = getActiveSection($page);
     </div>
 
 
-    <?php include 'includes/footer.php'; ?>
+    <?php include __DIR__ . '/footer.php'; ?>

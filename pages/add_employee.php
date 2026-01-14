@@ -703,7 +703,7 @@ if (empty($posts)) {
     <!-- Success/Error Messages -->
     <?php if (isset($success) && $success): ?>
         <div class="alert alert-success">
-            <i class="fas fa-check-circle me-2"></i>
+            <i class="fas fa-circle-check me-2"></i>
             Employee created successfully!
         </div>
     <?php endif; ?>
@@ -715,13 +715,13 @@ if (empty($posts)) {
             <div class="modal-content" style="border: none; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
                 <div class="modal-header bg-success text-white" style="border-radius: 8px 8px 0 0; padding: 1rem 1.5rem;">
                     <h5 class="modal-title" id="successModalLabel" style="margin: 0; font-weight: 600;">
-                        <i class="fas fa-check-circle me-2"></i>Success!
+                        <i class="fas fa-circle-check me-2"></i>Success!
                     </h5>
                     <button type="button" class="btn-close btn-close-white" aria-label="Close" onclick="closeSuccessModal()" style="margin: 0;"></button>
                 </div>
                 <div class="modal-body" style="padding: 1.5rem;">
                     <div class="text-center mb-3">
-                        <i class="fas fa-check-circle text-success" style="font-size: 3rem;"></i>
+                        <i class="fas fa-circle-check text-success" style="font-size: 3rem;"></i>
                     </div>
                     <p class="mb-0 text-center" style="font-size: 1.1rem;"><?php echo htmlspecialchars($success_message); ?></p>
                     <?php if ($created_employee_id): ?>
@@ -793,7 +793,7 @@ if (empty($posts)) {
 
     <?php if (!empty($errors)): ?>
         <div class="alert alert-danger">
-            <i class="fas fa-exclamation-circle me-2"></i>
+            <i class="fas fa-circle-exclamation me-2"></i>
             <ul class="mb-0">
                 <?php foreach ($errors as $error): ?>
                     <li><?php echo htmlspecialchars($error); ?></li>
@@ -811,7 +811,7 @@ if (empty($posts)) {
         <form method="POST" id="addEmployeeForm" enctype="multipart/form-data" action="?page=add_employee" novalidate>
                 <!-- Employee Created By Info -->
                 <div class="alert alert-info mb-4">
-                    <i class="fas fa-info-circle me-2"></i>
+                    <i class="fas fa-circle-info me-2"></i>
                     <strong>Recorded By:</strong> <?php echo htmlspecialchars($current_user_name); ?> 
                     <?php if ($current_user_id): ?>
                         (User ID: <?php echo $current_user_id; ?>)
@@ -2242,7 +2242,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                     <div class="modal-body" style="padding: 1.5rem;">
                         <div class="text-center mb-3">
-                            <i class="fas fa-exclamation-circle text-danger" style="font-size: 3rem;"></i>
+                            <i class="fas fa-circle-exclamation text-danger" style="font-size: 3rem;"></i>
                         </div>
                         <p class="mb-3 text-center" style="font-size: 1.1rem; font-weight: 500;">Please fill in all required fields:</p>
                         <ul class="list-unstyled mb-0" style="text-align: left;">

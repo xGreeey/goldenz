@@ -10,12 +10,44 @@ if ($post_id) {
 // Get all posts for dropdown
 $all_posts = get_posts(['status' => 'Active']);
 
+// Build a lookup of currently assigned employees per post title
+$assigned_counts = [];
+try {
+    $count_stmt = execute_query(
+        "SELECT post, COUNT(*) AS cnt
+         FROM employees
+         WHERE status = 'Active' AND post IS NOT NULL AND post <> ''
+         GROUP BY post"
+    );
+    foreach ($count_stmt->fetchAll() as $row) {
+        $assigned_counts[$row['post']] = (int)$row['cnt'];
+    }
+} catch (Exception $e) {
+    // Fail silently; we'll fall back to 0
+    $assigned_counts = [];
+}
+
+// Add computed fields expected by the UI to each post
+foreach ($all_posts as &$p) {
+    $required = (int)($p['required_count'] ?? 0);
+    $current = (int)($assigned_counts[$p['post_title']] ?? 0);
+    $p['current_employees'] = $current;
+    $p['remaining_vacancies'] = max(0, $required - $current);
+}
+unset($p);
+
 // Get employees assigned to specific post
 $assigned_employees = [];
 if ($post_id) {
     $sql = "SELECT * FROM employees WHERE post = ? AND status = 'Active' ORDER BY first_name, surname";
     $stmt = execute_query($sql, [$selected_post['post_title']]);
     $assigned_employees = $stmt->fetchAll();
+
+    // Add computed fields to selected post for the info panel
+    $required = (int)($selected_post['required_count'] ?? 0);
+    $current = (int)count($assigned_employees);
+    $selected_post['current_employees'] = $current;
+    $selected_post['remaining_vacancies'] = max(0, $required - $current);
 }
 
 // Get all employees for assignment

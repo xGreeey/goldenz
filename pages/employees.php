@@ -84,7 +84,7 @@ function getLicenseExpirationIndicator($exp_date) {
     if ($days_until_exp < 0) {
         return ['class' => 'text-danger fw-bold', 'badge' => 'bg-danger', 'text' => 'Expired (' . abs($days_until_exp) . ' days ago)', 'icon' => 'fa-exclamation-triangle'];
     } elseif ($days_until_exp <= 30) {
-        return ['class' => 'text-danger fw-bold', 'badge' => 'bg-danger', 'text' => 'Expires in ' . $days_until_exp . ' days', 'icon' => 'fa-exclamation-circle'];
+        return ['class' => 'text-danger fw-bold', 'badge' => 'bg-danger', 'text' => 'Expires in ' . $days_until_exp . ' days', 'icon' => 'fa-circle-exclamation'];
     } elseif ($days_until_exp <= 90) {
         return ['class' => 'text-warning fw-bold', 'badge' => 'bg-warning text-dark', 'text' => 'Expires in ' . $days_until_exp . ' days', 'icon' => 'fa-clock'];
     } else {
@@ -282,7 +282,7 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
     <!-- Success Message -->
     <?php if (isset($_GET['success']) && $_GET['success'] == '1'): ?>
         <div class="alert alert-success-modern alert-dismissible fade show">
-            <i class="fas fa-check-circle me-2"></i>
+            <i class="fas fa-circle-check me-2"></i>
             Employee created successfully!
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
@@ -1954,7 +1954,7 @@ function displayEmployeeDetails(emp) {
             <!-- Audit Information -->
             <div class="row">
                 <div class="col-12">
-                    <h5 class="mb-3"><i class="fas fa-info-circle me-2 text-primary"></i>Record Information</h5>
+                    <h5 class="mb-3"><i class="fas fa-circle-info me-2 text-primary"></i>Record Information</h5>
                 </div>
                 <div class="col-md-4 mb-3">
                     <label class="text-muted small">Created By</label>
