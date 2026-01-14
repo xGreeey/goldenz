@@ -917,7 +917,322 @@ function initializeUsersPage() {
         console.log('✅ Modal events attached');
     }
     
+    // === ROLE CHANGE FUNCTIONALITY ===
+    // Initialize role change modal
+    const roleChangeModal = document.getElementById('roleChangeModal');
+    if (roleChangeModal && !roleChangeModal.hasAttribute('data-initialized')) {
+        roleChangeModal.setAttribute('data-initialized', 'true');
+        
+        // Initialize Bootstrap modal for role change
+        let roleModalInstance = bootstrap.Modal.getInstance(roleChangeModal);
+        if (roleModalInstance) {
+            roleModalInstance.dispose();
+        }
+        roleModalInstance = new bootstrap.Modal(roleChangeModal, {
+            backdrop: false,
+            keyboard: true
+        });
+        
+        // Handle confirmation button
+        const confirmRoleChangeBtn = document.getElementById('confirmRoleChangeBtn');
+        if (confirmRoleChangeBtn && !confirmRoleChangeBtn.hasAttribute('data-handler-attached')) {
+            confirmRoleChangeBtn.setAttribute('data-handler-attached', 'true');
+            confirmRoleChangeBtn.addEventListener('click', function() {
+                if (window.usersPageState.pendingRoleChange) {
+                    const { userId, newRole, selectElement } = window.usersPageState.pendingRoleChange;
+                    
+                    // Close modal
+                    const modal = bootstrap.Modal.getInstance(roleChangeModal);
+                    if (modal) {
+                        modal.hide();
+                    }
+                    
+                    // Proceed with role update
+                    updateUserRole(userId, newRole, selectElement);
+                    
+                    // Clear pending change
+                    window.usersPageState.pendingRoleChange = null;
+                }
+            });
+        }
+        
+        // Handle modal cancel - revert selection
+        roleChangeModal.addEventListener('hidden.bs.modal', function() {
+            if (window.usersPageState.pendingRoleChange) {
+                // Revert selection if modal was closed without confirming
+                window.usersPageState.pendingRoleChange.selectElement.value = 
+                    window.usersPageState.pendingRoleChange.originalValue;
+                window.usersPageState.pendingRoleChange.selectElement.classList.remove('changed');
+                window.usersPageState.pendingRoleChange = null;
+            }
+        });
+        
+        console.log('✅ Role change modal initialized');
+    }
+    
+    // Attach role change handlers to all role selects (use event delegation for dynamic content)
+    // Remove old listeners by checking if already attached
+    document.querySelectorAll('.user-role-select').forEach(select => {
+        if (!select.hasAttribute('data-role-handler-attached')) {
+            select.setAttribute('data-role-handler-attached', 'true');
+            
+            select.addEventListener('change', function() {
+                const userId = this.dataset.userId;
+                const username = this.dataset.username || 'User';
+                const userName = this.dataset.userName || username;
+                const newRole = this.value;
+                const newRoleText = this.options[this.selectedIndex].text;
+                const originalValue = this.getAttribute('data-original-value') || this.value;
+                
+                if (!this.hasAttribute('data-original-value')) {
+                    this.setAttribute('data-original-value', originalValue);
+                }
+                
+                this.classList.add('changed');
+                
+                // Store pending change data
+                window.usersPageState.pendingRoleChange = {
+                    userId: userId,
+                    username: username,
+                    userName: userName,
+                    newRole: newRole,
+                    newRoleText: newRoleText,
+                    selectElement: this,
+                    originalValue: originalValue
+                };
+                
+                // Show confirmation modal
+                showRoleChangeModal(userName, newRoleText);
+            });
+        }
+    });
+    
+    // Attach status change handlers
+    document.querySelectorAll('.user-status-select').forEach(select => {
+        if (!select.hasAttribute('data-status-handler-attached')) {
+            select.setAttribute('data-status-handler-attached', 'true');
+            
+            select.addEventListener('change', function() {
+                const userId = this.dataset.userId;
+                const newStatus = this.value;
+                const statusText = this.options[this.selectedIndex].text;
+                
+                if (!this.hasAttribute('data-original-value')) {
+                    this.setAttribute('data-original-value', this.value);
+                }
+                
+                this.classList.add('changed');
+                
+                // Show confirmation
+                if (confirm(`Change user status to "${statusText}"?`)) {
+                    updateUserStatus(userId, newStatus, this);
+                } else {
+                    // Revert selection
+                    this.value = this.getAttribute('data-original-value');
+                    this.classList.remove('changed');
+                }
+            });
+        }
+    });
+    
+    // Attach view user details handlers
+    document.querySelectorAll('.view-user-btn').forEach(btn => {
+        if (!btn.hasAttribute('data-view-handler-attached')) {
+            btn.setAttribute('data-view-handler-attached', 'true');
+            
+            btn.addEventListener('click', function() {
+                const userId = this.dataset.userId;
+                viewUserDetails(userId);
+            });
+        }
+    });
+    
+    console.log('✅ Role/Status/View handlers attached');
     console.log('✅ Users page fully initialized');
+}
+
+// === ROLE CHANGE HELPER FUNCTIONS ===
+function showRoleChangeModal(userName, newRoleText) {
+    const modalElement = document.getElementById('roleChangeModal');
+    if (!modalElement) {
+        console.error('Role change modal not found');
+        return;
+    }
+    
+    const modal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement, {
+        backdrop: false,
+        keyboard: true
+    });
+    
+    const messageEl = document.getElementById('roleChangeMessage');
+    if (messageEl && window.usersPageState.pendingRoleChange) {
+        messageEl.innerHTML = `Are you sure you want to change <strong>${userName}</strong>'s role to <strong>"${newRoleText}"</strong>?`;
+    }
+    
+    modal.show();
+    
+    // Remove any backdrop that might have been created
+    setTimeout(() => {
+        const backdrops = document.querySelectorAll('.modal-backdrop');
+        backdrops.forEach(backdrop => {
+            if (backdrop && backdrop.parentNode) {
+                backdrop.remove();
+            }
+        });
+    }, 10);
+}
+
+function updateUserRole(userId, newRole, selectElement) {
+    console.log('🔄 Updating user role:', { userId, newRole });
+    
+    const formData = new FormData();
+    formData.append('action', 'update_role');
+    formData.append('user_id', userId);
+    formData.append('role', newRole);
+    
+    const submitURL = window.location.pathname + '?page=users';
+    
+    fetch(submitURL, {
+        method: 'POST',
+        body: formData,
+        credentials: 'same-origin',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('HTTP ' + response.status);
+        }
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            return response.text().then(text => {
+                console.error('Non-JSON response:', text.substring(0, 200));
+                throw new Error('Server returned non-JSON response');
+            });
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('✅ Role update response:', data);
+        
+        if (data.success) {
+            selectElement.classList.remove('changed');
+            selectElement.setAttribute('data-original-value', newRole);
+            showNotification('Role updated successfully', 'success');
+        } else {
+            // Revert on error
+            selectElement.value = selectElement.getAttribute('data-original-value');
+            selectElement.classList.remove('changed');
+            showNotification(data.message || 'Failed to update role', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('❌ Role update error:', error);
+        selectElement.value = selectElement.getAttribute('data-original-value');
+        selectElement.classList.remove('changed');
+        showNotification('An error occurred while updating role', 'error');
+    });
+}
+
+function updateUserStatus(userId, newStatus, selectElement) {
+    console.log('🔄 Updating user status:', { userId, newStatus });
+    
+    const formData = new FormData();
+    formData.append('action', 'update_status');
+    formData.append('user_id', userId);
+    formData.append('status', newStatus);
+    
+    const submitURL = window.location.pathname + '?page=users';
+    
+    fetch(submitURL, {
+        method: 'POST',
+        body: formData,
+        credentials: 'same-origin',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('HTTP ' + response.status);
+        }
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            return response.text().then(text => {
+                console.error('Non-JSON response:', text.substring(0, 200));
+                throw new Error('Server returned non-JSON response');
+            });
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('✅ Status update response:', data);
+        
+        if (data.success) {
+            selectElement.classList.remove('changed');
+            selectElement.setAttribute('data-original-value', newStatus);
+            showNotification('Status updated successfully', 'success');
+        } else {
+            // Revert on error
+            selectElement.value = selectElement.getAttribute('data-original-value');
+            selectElement.classList.remove('changed');
+            showNotification(data.message || 'Failed to update status', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('❌ Status update error:', error);
+        selectElement.value = selectElement.getAttribute('data-original-value');
+        selectElement.classList.remove('changed');
+        showNotification('An error occurred while updating status', 'error');
+    });
+}
+
+function viewUserDetails(userId) {
+    console.log('👁️ Viewing user details:', userId);
+    
+    const modal = new bootstrap.Modal(document.getElementById('userDetailsModal'));
+    const content = document.getElementById('userDetailsContent');
+    
+    if (!content) {
+        console.error('User details content element not found');
+        return;
+    }
+    
+    content.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>';
+    modal.show();
+    
+    // Fetch user details
+    const url = window.location.pathname + '?page=users&action=get_details&user_id=' + userId;
+    fetch(url)
+        .then(response => response.text())
+        .then(html => {
+            content.innerHTML = html;
+        })
+        .catch(error => {
+            console.error('❌ Error loading user details:', error);
+            content.innerHTML = '<div class="alert alert-danger">Error loading user details</div>';
+        });
+}
+
+function showNotification(message, type) {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show position-fixed`;
+    notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    notification.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Auto remove after 3 seconds
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.remove();
+        }
+    }, 3000);
 }
 
 // === INITIALIZATION TRIGGERS ===
@@ -963,7 +1278,26 @@ document.addEventListener('pageContentLoaded', function(e) {
     const page = e.detail?.page || new URLSearchParams(window.location.search).get('page');
     if (page === 'users') {
         console.log('🔄 Resetting initialization flag for users page');
+        // Reset all initialization flags so handlers reattach
         window.usersPageState.initialized = false;
+        
+        // Remove data attributes from elements so they can be re-initialized
+        document.querySelectorAll('[data-role-handler-attached]').forEach(el => {
+            el.removeAttribute('data-role-handler-attached');
+        });
+        document.querySelectorAll('[data-status-handler-attached]').forEach(el => {
+            el.removeAttribute('data-status-handler-attached');
+        });
+        document.querySelectorAll('[data-view-handler-attached]').forEach(el => {
+            el.removeAttribute('data-view-handler-attached');
+        });
+        
+        // Reset role change modal
+        const roleChangeModal = document.getElementById('roleChangeModal');
+        if (roleChangeModal) {
+            roleChangeModal.removeAttribute('data-initialized');
+        }
+        
         setTimeout(tryInit, 100);
     }
 });
@@ -974,7 +1308,26 @@ document.addEventListener('pageLoaded', function(e) {
     const page = e.detail?.page || new URLSearchParams(window.location.search).get('page');
     if (page === 'users') {
         console.log('🔄 Resetting initialization flag for users page');
+        // Reset all initialization flags so handlers reattach
         window.usersPageState.initialized = false;
+        
+        // Remove data attributes from elements so they can be re-initialized
+        document.querySelectorAll('[data-role-handler-attached]').forEach(el => {
+            el.removeAttribute('data-role-handler-attached');
+        });
+        document.querySelectorAll('[data-status-handler-attached]').forEach(el => {
+            el.removeAttribute('data-status-handler-attached');
+        });
+        document.querySelectorAll('[data-view-handler-attached]').forEach(el => {
+            el.removeAttribute('data-view-handler-attached');
+        });
+        
+        // Reset role change modal
+        const roleChangeModal = document.getElementById('roleChangeModal');
+        if (roleChangeModal) {
+            roleChangeModal.removeAttribute('data-initialized');
+        }
+        
         setTimeout(tryInit, 100);
     }
 });
