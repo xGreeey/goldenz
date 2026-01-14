@@ -365,13 +365,6 @@ $activeSection = getActiveSection($page);
 
     <!-- Main Content -->
     <div class="main-content" id="mainContent">
-        <!-- Header -->
-        <header class="header">
-            <div class="d-flex align-items-center">
-                <h1 class="mb-0" id="pageTitle"><?php echo getPageTitle($page); ?></h1>
-            </div>
-        </header>
-
         <!-- Content -->
         <main class="content">
             <?php display_message(); ?>
