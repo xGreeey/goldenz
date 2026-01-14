@@ -93,11 +93,67 @@ if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'super_admin') 
             <div class="tab-content" id="settingsTabContent">
                 <!-- Account Security -->
                 <div class="tab-pane fade show active" id="account-security" role="tabpanel">
+                    <!-- Change Password Section -->
                     <div class="card card-modern mb-4">
                         <div class="card-body-modern">
                             <div class="card-header-modern mb-3">
-                                <h5 class="card-title-modern">Account Security</h5>
-                                <small class="card-subtitle">Manage password policy, 2FA, and active sessions.</small>
+                                <h5 class="card-title-modern">Change Password</h5>
+                                <small class="card-subtitle">Update your account password to keep it secure.</small>
+                            </div>
+
+                            <div id="changePasswordAlert"></div>
+                            
+                            <form id="changePasswordForm">
+                                <div class="row g-3">
+                                    <div class="col-md-12">
+                                        <label for="current_password" class="form-label">Current Password <span class="text-danger">*</span></label>
+                                        <input type="password" 
+                                               class="form-control" 
+                                               id="current_password" 
+                                               name="current_password" 
+                                               required
+                                               autocomplete="current-password"
+                                               placeholder="Enter your current password">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="new_password" class="form-label">New Password <span class="text-danger">*</span></label>
+                                        <input type="password" 
+                                               class="form-control" 
+                                               id="new_password" 
+                                               name="new_password" 
+                                               required
+                                               minlength="8"
+                                               autocomplete="new-password"
+                                               placeholder="Minimum 8 characters">
+                                        <small class="text-muted">Password must be at least 8 characters long</small>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="confirm_password" class="form-label">Confirm New Password <span class="text-danger">*</span></label>
+                                        <input type="password" 
+                                               class="form-control" 
+                                               id="confirm_password" 
+                                               name="confirm_password" 
+                                               required
+                                               minlength="8"
+                                               autocomplete="new-password"
+                                               placeholder="Re-enter new password">
+                                    </div>
+                                    <div class="col-12">
+                                        <button type="submit" class="btn btn-primary-modern" id="changePasswordBtn">
+                                            <i class="fas fa-key me-2"></i>Change Password
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Password Policy Section -->
+                    <div class="card card-modern mb-4">
+                        <div class="card-body-modern">
+                            <div class="card-header-modern mb-3">
+                                <h5 class="card-title-modern">Password Policy</h5>
+                                <small class="card-subtitle">System-wide password requirements and settings.</small>
                             </div>
 
                             <form>
@@ -510,4 +566,157 @@ if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'super_admin') 
     color: #e0f2fe;
 }
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const changePasswordForm = document.getElementById('changePasswordForm');
+    const changePasswordBtn = document.getElementById('changePasswordBtn');
+    const alertDiv = document.getElementById('changePasswordAlert');
+    
+    if (changePasswordForm) {
+        changePasswordForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Clear previous alerts
+            if (alertDiv) {
+                alertDiv.innerHTML = '';
+            }
+            
+            // Validate form
+            if (!changePasswordForm.checkValidity()) {
+                changePasswordForm.reportValidity();
+                return;
+            }
+            
+            // Get form values
+            const currentPassword = document.getElementById('current_password').value;
+            const newPassword = document.getElementById('new_password').value;
+            const confirmPassword = document.getElementById('confirm_password').value;
+            
+            // Validate password length
+            if (newPassword.length < 8) {
+                if (alertDiv) {
+                    alertDiv.innerHTML = '<div class="alert alert-danger"><i class="fas fa-exclamation-circle me-2"></i>Password must be at least 8 characters long</div>';
+                }
+                return;
+            }
+            
+            // Validate password match
+            if (newPassword !== confirmPassword) {
+                if (alertDiv) {
+                    alertDiv.innerHTML = '<div class="alert alert-danger"><i class="fas fa-exclamation-circle me-2"></i>New password and confirmation do not match</div>';
+                }
+                return;
+            }
+            
+            // Disable submit button
+            if (changePasswordBtn) {
+                changePasswordBtn.disabled = true;
+                changePasswordBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Changing Password...';
+            }
+            
+            // Prepare form data
+            const formData = new FormData();
+            formData.append('action', 'change_password');
+            formData.append('current_password', currentPassword);
+            formData.append('new_password', newPassword);
+            formData.append('confirm_password', confirmPassword);
+            
+            // Submit via AJAX
+            let formAction = window.location.pathname;
+            const urlParams = new URLSearchParams(window.location.search);
+            if (!urlParams.has('page')) {
+                urlParams.set('page', 'settings');
+            }
+            formAction += '?' + urlParams.toString();
+            
+            fetch(formAction, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => {
+                        throw new Error('Server error: ' + response.status);
+                    });
+                }
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    return response.text().then(text => {
+                        throw new Error('Server returned non-JSON response');
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (changePasswordBtn) {
+                    changePasswordBtn.disabled = false;
+                    changePasswordBtn.innerHTML = '<i class="fas fa-key me-2"></i>Change Password';
+                }
+                
+                if (data && data.success) {
+                    // Show success message
+                    if (alertDiv) {
+                        alertDiv.innerHTML = '<div class="alert alert-success"><i class="fas fa-check-circle me-2"></i>' + (data.message || 'Password changed successfully') + '</div>';
+                    }
+                    
+                    // Reset form
+                    changePasswordForm.reset();
+                    
+                    // Clear alert after 5 seconds
+                    setTimeout(() => {
+                        if (alertDiv) {
+                            alertDiv.innerHTML = '';
+                        }
+                    }, 5000);
+                } else {
+                    // Show error message
+                    const errorMsg = (data && data.message) ? data.message : 'Failed to change password. Please try again.';
+                    if (alertDiv) {
+                        alertDiv.innerHTML = '<div class="alert alert-danger"><i class="fas fa-exclamation-circle me-2"></i>' + errorMsg + '</div>';
+                        alertDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Change Password Error:', error);
+                if (changePasswordBtn) {
+                    changePasswordBtn.disabled = false;
+                    changePasswordBtn.innerHTML = '<i class="fas fa-key me-2"></i>Change Password';
+                }
+                if (alertDiv) {
+                    alertDiv.innerHTML = '<div class="alert alert-danger"><i class="fas fa-exclamation-triangle me-2"></i>An error occurred while changing the password. Please try again.</div>';
+                    alertDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+            });
+        });
+        
+        // Real-time password confirmation validation
+        const newPasswordInput = document.getElementById('new_password');
+        const confirmPasswordInput = document.getElementById('confirm_password');
+        
+        if (confirmPasswordInput && newPasswordInput) {
+            confirmPasswordInput.addEventListener('input', function() {
+                if (this.value && this.value !== newPasswordInput.value) {
+                    this.setCustomValidity('Passwords do not match');
+                } else {
+                    this.setCustomValidity('');
+                }
+            });
+            
+            newPasswordInput.addEventListener('input', function() {
+                if (confirmPasswordInput.value && this.value !== confirmPasswordInput.value) {
+                    confirmPasswordInput.setCustomValidity('Passwords do not match');
+                } else {
+                    confirmPasswordInput.setCustomValidity('');
+                }
+            });
+        }
+    }
+});
+</script>
 
