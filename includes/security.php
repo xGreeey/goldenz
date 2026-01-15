@@ -102,6 +102,71 @@ if (!function_exists('verify_password')) {
     }
 }
 
+/**
+ * Check if user's password has expired
+ * 
+ * @param int|null $user_id User ID (defaults to current session user)
+ * @return array Returns ['expired' => bool, 'days_until_expiry' => int|null, 'expiry_date' => string|null]
+ */
+if (!function_exists('check_password_expiry')) {
+    function check_password_expiry($user_id = null) {
+        if (!$user_id) {
+            $user_id = $_SESSION['user_id'] ?? null;
+        }
+        
+        if (!$user_id) {
+            return ['expired' => false, 'days_until_expiry' => null, 'expiry_date' => null];
+        }
+        
+        try {
+            if (!function_exists('get_user_by_id') || !function_exists('get_password_policy')) {
+                require_once __DIR__ . '/database.php';
+            }
+
+            $policy = get_password_policy();
+            $expiry_days = isset($policy['expiry_days']) ? (int)$policy['expiry_days'] : 90;
+
+            $user = get_user_by_id($user_id);
+            
+            if (!$user) {
+                return ['expired' => false, 'days_until_expiry' => null, 'expiry_date' => null];
+            }
+
+            // If expiry_days is 0, password never expires
+            if ($expiry_days === 0) {
+                return ['expired' => false, 'days_until_expiry' => null, 'expiry_date' => null];
+            }
+
+            // If password_changed_at is NULL, consider it expired for security
+            if (empty($user['password_changed_at'])) {
+                return ['expired' => true, 'days_until_expiry' => 0, 'expiry_date' => null];
+            }
+            
+            $password_changed = strtotime($user['password_changed_at']);
+            $expiry_timestamp = $password_changed + ($expiry_days * 24 * 60 * 60);
+            $current_timestamp = time();
+            
+            if ($expiry_timestamp < $current_timestamp) {
+                return [
+                    'expired' => true,
+                    'days_until_expiry' => 0,
+                    'expiry_date' => date('Y-m-d H:i:s', $expiry_timestamp)
+                ];
+            } else {
+                $days_until = ceil(($expiry_timestamp - $current_timestamp) / (24 * 60 * 60));
+                return [
+                    'expired' => false,
+                    'days_until_expiry' => $days_until,
+                    'expiry_date' => date('Y-m-d H:i:s', $expiry_timestamp)
+                ];
+            }
+        } catch (Exception $e) {
+            error_log("Error checking password expiry: " . $e->getMessage());
+            return ['expired' => false, 'days_until_expiry' => null, 'expiry_date' => null];
+        }
+    }
+}
+
 // Generate secure random string
 if (!function_exists('generate_secure_string')) {
     function generate_secure_string($length = 32) {
@@ -162,6 +227,108 @@ if (!function_exists('display_message')) {
             echo '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>';
             echo '</div>';
         }
+    }
+}
+
+/**
+ * TWO-FACTOR AUTHENTICATION (TOTP) HELPERS
+ * Simple Google Authenticator–compatible implementation
+ */
+
+if (!function_exists('generate_two_factor_secret')) {
+    /**
+     * Generate a random Base32 secret for TOTP (Google Authenticator compatible)
+     *
+     * @param int $length Number of Base32 characters (typical: 16)
+     * @return string
+     */
+    function generate_two_factor_secret($length = 16) {
+        $alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+        $secret = '';
+        $max = strlen($alphabet) - 1;
+        for ($i = 0; $i < $length; $i++) {
+            $secret .= $alphabet[random_int(0, $max)];
+        }
+        return $secret;
+    }
+}
+
+if (!function_exists('base32_decode_secret')) {
+    /**
+     * Decode a Base32-encoded TOTP secret
+     *
+     * @param string $secret
+     * @return string|false Binary string or false on failure
+     */
+    function base32_decode_secret($secret) {
+        if ($secret === '' || $secret === null) {
+            return false;
+        }
+
+        $alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+        $secret = strtoupper(preg_replace('/[^A-Z2-7]/', '', $secret));
+        $binaryString = '';
+        $buffer = 0;
+        $bitsLeft = 0;
+
+        $len = strlen($secret);
+        for ($i = 0; $i < $len; $i++) {
+            $val = strpos($alphabet, $secret[$i]);
+            if ($val === false) {
+                return false;
+            }
+            $buffer = ($buffer << 5) | $val;
+            $bitsLeft += 5;
+            if ($bitsLeft >= 8) {
+                $bitsLeft -= 8;
+                $binaryString .= chr(($buffer >> $bitsLeft) & 0xFF);
+            }
+        }
+
+        return $binaryString;
+    }
+}
+
+if (!function_exists('verify_totp_code')) {
+    /**
+     * Verify a 6‑digit TOTP code for a given secret
+     *
+     * @param string $secret Base32-encoded secret
+     * @param string $code   6-digit user input
+     * @param int $discrepancy Number of 30s windows to allow before/after (default ±1)
+     * @param int|null $timestamp Unix timestamp (defaults to time())
+     * @return bool
+     */
+    function verify_totp_code($secret, $code, $discrepancy = 1, $timestamp = null) {
+        $timestamp = $timestamp ?? time();
+        $code = trim($code);
+
+        if (!preg_match('/^\d{6}$/', $code)) {
+            return false;
+        }
+
+        $binarySecret = base32_decode_secret($secret);
+        if ($binarySecret === false) {
+            return false;
+        }
+
+        $timeSlice = (int)floor($timestamp / 30);
+
+        // Check current, previous, and next time window
+        for ($i = -$discrepancy; $i <= $discrepancy; $i++) {
+            $counter = pack('N*', 0) . pack('N*', $timeSlice + $i);
+            $hash = hash_hmac('sha1', $counter, $binarySecret, true);
+            $offset = ord(substr($hash, -1)) & 0x0F;
+            $truncatedHash = substr($hash, $offset, 4);
+            $value = unpack('N', $truncatedHash)[1] & 0x7FFFFFFF;
+            $generatedCode = str_pad($value % 1000000, 6, '0', STR_PAD_LEFT);
+
+            if (hash_equals($generatedCode, $code)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
 
