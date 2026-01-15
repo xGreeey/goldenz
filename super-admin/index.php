@@ -204,6 +204,64 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             redirect_with_message('?page=settings', 'Failed to update password policy', 'error');
         }
     }
+
+    // Start 2FA setup: generate a temporary secret and store in session (but do not enable yet)
+    if (!$isAjax && $page === 'settings' && $action === 'start_2fa_setup') {
+        if (!function_exists('generate_two_factor_secret')) {
+            require_once __DIR__ . '/../includes/security.php';
+        }
+        $_SESSION['pending_2fa_secret'] = generate_two_factor_secret(16);
+        redirect_with_message('?page=settings', 'Scan the QR code with Google Authenticator and enter the code to enable 2FA.', 'info');
+    }
+
+    // Confirm enabling 2FA for the current user
+    if (!$isAjax && $page === 'settings' && $action === 'confirm_enable_2fa') {
+        $user_id = $_SESSION['user_id'] ?? null;
+        $pendingSecret = $_SESSION['pending_2fa_secret'] ?? '';
+        $code = trim($_POST['two_factor_code'] ?? '');
+
+        if (!$user_id || $pendingSecret === '') {
+            redirect_with_message('?page=settings', '2FA setup session has expired. Please start again.', 'error');
+        }
+
+        if (!function_exists('verify_totp_code')) {
+            require_once __DIR__ . '/../includes/security.php';
+        }
+
+        if (!verify_totp_code($pendingSecret, $code)) {
+            redirect_with_message('?page=settings&setup_2fa=1', 'Invalid 2FA code. Please try again.', 'error');
+        }
+
+        try {
+            $pdo = get_db_connection();
+            $stmt = $pdo->prepare("UPDATE users SET two_factor_secret = ?, two_factor_enabled = 1, updated_at = NOW() WHERE id = ?");
+            $stmt->execute([$pendingSecret, $user_id]);
+            unset($_SESSION['pending_2fa_secret']);
+            redirect_with_message('?page=settings', 'Two-factor authentication has been enabled for your account.', 'success');
+        } catch (Exception $e) {
+            error_log('Enable 2FA error: ' . $e->getMessage());
+            redirect_with_message('?page=settings', 'Failed to enable two-factor authentication.', 'error');
+        }
+    }
+
+    // Disable 2FA for the current user
+    if (!$isAjax && $page === 'settings' && $action === 'disable_2fa') {
+        $user_id = $_SESSION['user_id'] ?? null;
+        if (!$user_id) {
+            redirect_with_message('?page=settings', 'User not authenticated.', 'error');
+        }
+
+        try {
+            $pdo = get_db_connection();
+            $stmt = $pdo->prepare("UPDATE users SET two_factor_secret = NULL, two_factor_enabled = 0, updated_at = NOW() WHERE id = ?");
+            $stmt->execute([$user_id]);
+            unset($_SESSION['pending_2fa_secret']);
+            redirect_with_message('?page=settings', 'Two-factor authentication has been disabled for your account.', 'success');
+        } catch (Exception $e) {
+            error_log('Disable 2FA error: ' . $e->getMessage());
+            redirect_with_message('?page=settings', 'Failed to disable two-factor authentication.', 'error');
+        }
+    }
     
     // Prevent any output before JSON response
     // Clean output buffer if it exists, otherwise start one
