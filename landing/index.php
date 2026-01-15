@@ -393,6 +393,8 @@ ob_end_flush();
     <link href="assets/landing.css" rel="stylesheet">
     <!-- font-override.css moved after landing.css to allow overrides -->
     <link href="../assets/css/font-override.css" rel="stylesheet">
+    <!-- Number rendering fix for Windows 10/11 -->
+    <link href="../assets/css/number-rendering-fix.css" rel="stylesheet">
     
     <!-- Override font-override.css for Font Awesome password toggle icon -->
     <style>
