@@ -146,7 +146,38 @@ if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'super_admin') 
                                                 <i class="fas fa-eye"></i>
                                             </button>
                                         </div>
-                                        <small class="text-muted">Password must be at least 8 characters long</small>
+                                        <!-- Password Strength Indicator -->
+                                        <div class="password-strength-container mt-2">
+                                            <div class="password-strength-bar">
+                                                <div class="password-strength-fill" id="passwordStrengthBar"></div>
+                                            </div>
+                                            <div class="password-strength-text mt-2" id="passwordStrengthText">
+                                                <small class="text-muted">Password strength: <span id="strengthLabel">None</span></small>
+                                            </div>
+                                            <div class="password-requirements mt-2" id="passwordRequirements">
+                                                <small class="d-block mb-1 fw-semibold text-muted">Requirements:</small>
+                                                <div class="requirement-item" data-requirement="length">
+                                                    <i class="fas fa-circle requirement-icon"></i>
+                                                    <span>Minimum 8 characters</span>
+                                                </div>
+                                                <div class="requirement-item" data-requirement="lowercase">
+                                                    <i class="fas fa-circle requirement-icon"></i>
+                                                    <span>Contains lowercase letter</span>
+                                                </div>
+                                                <div class="requirement-item" data-requirement="uppercase">
+                                                    <i class="fas fa-circle requirement-icon"></i>
+                                                    <span>Contains uppercase letter</span>
+                                                </div>
+                                                <div class="requirement-item" data-requirement="number">
+                                                    <i class="fas fa-circle requirement-icon"></i>
+                                                    <span>Contains number</span>
+                                                </div>
+                                                <div class="requirement-item" data-requirement="symbol">
+                                                    <i class="fas fa-circle requirement-icon"></i>
+                                                    <span>Contains symbol</span>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                     <div class="col-md-6">
                                         <label for="confirm_password" class="form-label">Confirm New Password <span class="text-danger">*</span></label>
@@ -165,6 +196,13 @@ if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'super_admin') 
                                                     aria-label="Show password">
                                                 <i class="fas fa-eye"></i>
                                             </button>
+                                        </div>
+                                        <!-- Password Match Indicator -->
+                                        <div class="password-match-indicator mt-2" id="passwordMatchIndicator" style="display: none;">
+                                            <div class="match-status">
+                                                <i class="match-icon"></i>
+                                                <span class="match-text"></span>
+                                            </div>
                                         </div>
                                     </div>
                                     <div class="col-12">
@@ -656,36 +694,255 @@ if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'super_admin') 
 }
 
 .password-input-wrapper .form-control {
-    padding-right: 45px;
+    padding-right: 50px;
 }
 
 .password-toggle {
     position: absolute;
-    right: 10px;
+    right: 12px;
     top: 50%;
     transform: translateY(-50%);
-    border: none;
-    background: transparent;
-    padding: 0.375rem 0.5rem;
-    color: #64748b;
+    border: none !important;
+    background: transparent !important;
+    padding: 0.5rem 0.625rem !important;
+    color: #475569 !important;
     cursor: pointer;
     z-index: 10;
-    text-decoration: none;
-    transition: color 0.2s ease;
+    text-decoration: none !important;
+    transition: all 0.2s ease;
+    border-radius: 6px;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    min-height: 36px;
+    box-shadow: none !important;
+    outline: none !important;
 }
 
 .password-toggle:hover {
-    color: #1fb2d5;
-    background: transparent;
+    color: #1e3a8a !important;
+    background: transparent !important;
+    transform: translateY(-50%) scale(1.1);
+    box-shadow: none !important;
 }
 
-.password-toggle:focus {
-    outline: none;
-    box-shadow: none;
+.password-toggle:active {
+    transform: translateY(-50%) scale(0.95);
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+.password-toggle:focus,
+.password-toggle:active,
+.password-toggle:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    border: none !important;
 }
 
 .password-toggle i {
-    font-size: 1rem;
+    font-size: 1.125rem !important;
+    color: #475569 !important;
+    transition: all 0.2s ease;
+    display: block !important;
+    line-height: 1 !important;
+}
+
+.password-toggle:hover i {
+    color: #1e3a8a !important;
+}
+
+.password-toggle.btn-link {
+    color: #475569 !important;
+    text-decoration: none !important;
+}
+
+.password-toggle.btn-link:hover {
+    color: #1e3a8a !important;
+    text-decoration: none !important;
+}
+
+/* Make Change Password button highly visible */
+.super-admin-settings #changePasswordBtn,
+.super-admin-settings .btn-primary-modern {
+    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1e293b 100%) !important;
+    color: #ffffff !important;
+    border: none !important;
+    padding: 0.75rem 1.5rem !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    font-size: 0.9375rem !important;
+    transition: all 0.2s ease !important;
+    box-shadow: 0 4px 12px rgba(30, 58, 138, 0.35) !important;
+    cursor: pointer !important;
+    min-height: 44px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.super-admin-settings #changePasswordBtn:hover,
+.super-admin-settings .btn-primary-modern:hover {
+    background: linear-gradient(135deg, #1e40af 0%, #1e293b 50%, #1e3a8a 100%) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 20px rgba(30, 58, 138, 0.45) !important;
+}
+
+.super-admin-settings #changePasswordBtn:active,
+.super-admin-settings .btn-primary-modern:active {
+    transform: translateY(0) !important;
+    box-shadow: 0 2px 8px rgba(30, 58, 138, 0.3) !important;
+}
+
+.super-admin-settings #changePasswordBtn:focus,
+.super-admin-settings .btn-primary-modern:focus,
+.super-admin-settings #changePasswordBtn:focus-visible,
+.super-admin-settings .btn-primary-modern:focus-visible {
+    outline: none !important;
+    box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.2), 0 4px 12px rgba(30, 58, 138, 0.35) !important;
+}
+
+/* Password Strength Indicator */
+.password-strength-container {
+    margin-top: 0.75rem;
+}
+
+.password-strength-bar {
+    width: 100%;
+    height: 8px;
+    background: #e2e8f0;
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.password-strength-fill {
+    height: 100%;
+    width: 0%;
+    background: #ef4444;
+    border-radius: 4px;
+    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s ease;
+    position: relative;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+    display: block;
+}
+
+.password-strength-fill.weak {
+    width: 33.33%;
+    background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%);
+    box-shadow: 0 0 12px rgba(239, 68, 68, 0.4);
+}
+
+.password-strength-fill.normal {
+    width: 66.66%;
+    background: linear-gradient(90deg, #f59e0b 0%, #f97316 100%);
+    box-shadow: 0 0 12px rgba(245, 158, 11, 0.4);
+}
+
+.password-strength-fill.strong {
+    width: 100%;
+    background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+    box-shadow: 0 0 12px rgba(16, 185, 129, 0.4);
+}
+
+.password-strength-text {
+    font-size: 0.8125rem;
+}
+
+#strengthLabel {
+    font-weight: 600;
+}
+
+.password-requirements {
+    margin-top: 0.75rem;
+    padding: 0.75rem;
+    background: #f8fafc;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+}
+
+.requirement-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.375rem;
+    font-size: 0.8125rem;
+    color: #64748b;
+    transition: all 0.2s ease;
+}
+
+.requirement-item:last-child {
+    margin-bottom: 0;
+}
+
+.requirement-icon {
+    font-size: 0.5rem;
+    color: #cbd5e1;
+    transition: all 0.2s ease;
+}
+
+.requirement-item.met .requirement-icon {
+    color: #10b981;
+}
+
+.requirement-item.met {
+    color: #059669;
+}
+
+.requirement-item.met .requirement-icon::before {
+    content: "\f00c";
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900;
+    font-size: 0.75rem;
+}
+
+/* Password Match Indicator */
+.password-match-indicator {
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.8125rem;
+    transition: all 0.3s ease;
+}
+
+.password-match-indicator.match {
+    background: #d1fae5;
+    border: 1px solid #10b981;
+    color: #059669;
+}
+
+.password-match-indicator.mismatch {
+    background: #fee2e2;
+    border: 1px solid #ef4444;
+    color: #dc2626;
+}
+
+.match-status {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.match-icon {
+    font-size: 0.875rem;
+    font-weight: 900;
+    font-family: "Font Awesome 5 Free";
+}
+
+.password-match-indicator.match .match-icon::before {
+    content: "\f00c";
+    color: #10b981;
+}
+
+.password-match-indicator.mismatch .match-icon::before {
+    content: "\f00d";
+    color: #ef4444;
+}
+
+.match-text {
+    font-weight: 500;
 }
 </style>
 
@@ -714,6 +971,169 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
+    // Password Strength Checker
+    const newPasswordInput = document.getElementById('new_password');
+    const strengthBar = document.getElementById('passwordStrengthBar');
+    const strengthLabel = document.getElementById('strengthLabel');
+    const requirementItems = document.querySelectorAll('.requirement-item');
+    
+    if (newPasswordInput && strengthBar && strengthLabel) {
+        function checkPasswordStrength(password) {
+            const requirements = {
+                length: password.length >= 8,
+                lowercase: /[a-z]/.test(password),
+                uppercase: /[A-Z]/.test(password),
+                number: /[0-9]/.test(password),
+                symbol: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)
+            };
+            
+            // Update requirement items
+            requirementItems.forEach(item => {
+                const requirement = item.getAttribute('data-requirement');
+                if (requirements[requirement]) {
+                    item.classList.add('met');
+                } else {
+                    item.classList.remove('met');
+                }
+            });
+            
+            // Count met requirements
+            const metCount = Object.values(requirements).filter(Boolean).length;
+            const totalRequirements = Object.keys(requirements).length;
+            
+            // Calculate strength - simplified to 3 levels
+            let strength = 'None';
+            let strengthClass = '';
+            
+            if (password.length === 0) {
+                strength = 'None';
+                strengthClass = '';
+            } else if (metCount < 3 || password.length < 8) {
+                strength = 'Weak';
+                strengthClass = 'weak';
+            } else if (metCount < 5) {
+                strength = 'Normal';
+                strengthClass = 'normal';
+            } else {
+                strength = 'Strong';
+                strengthClass = 'strong';
+            }
+            
+            // Update strength bar
+            strengthBar.className = 'password-strength-fill ' + strengthClass;
+            strengthLabel.textContent = strength;
+            
+            // Update strength label color
+            const strengthText = document.getElementById('passwordStrengthText');
+            if (strengthText) {
+                const labelColor = strengthClass === 'strong' ? '#10b981' :
+                                  strengthClass === 'normal' ? '#f59e0b' :
+                                  strengthClass === 'weak' ? '#ef4444' : '#64748b';
+                strengthText.querySelector('small').style.color = labelColor;
+                strengthLabel.style.color = labelColor;
+            }
+            
+            return {
+                strength: strength,
+                metCount: metCount,
+                totalRequirements: totalRequirements,
+                allMet: metCount === totalRequirements && password.length >= 8
+            };
+        }
+        
+        // Add event listener for real-time checking
+        newPasswordInput.addEventListener('input', function() {
+            const password = this.value;
+            checkPasswordStrength(password);
+        });
+        
+        // Also check on keyup for better responsiveness
+        newPasswordInput.addEventListener('keyup', function() {
+            const password = this.value;
+            checkPasswordStrength(password);
+        });
+        
+        // Also check on paste
+        newPasswordInput.addEventListener('paste', function() {
+            setTimeout(() => {
+                const password = this.value;
+                checkPasswordStrength(password);
+            }, 10);
+        });
+        
+        // Check on focus to ensure it's active
+        newPasswordInput.addEventListener('focus', function() {
+            const password = this.value;
+            checkPasswordStrength(password);
+        });
+        
+        // Initialize on page load
+        checkPasswordStrength(newPasswordInput.value || '');
+    }
+    
+    // Password Match Checker
+    const confirmPasswordInput = document.getElementById('confirm_password');
+    const matchIndicator = document.getElementById('passwordMatchIndicator');
+    const matchIcon = matchIndicator ? matchIndicator.querySelector('.match-icon') : null;
+    const matchText = matchIndicator ? matchIndicator.querySelector('.match-text') : null;
+    
+    function checkPasswordMatch() {
+        const newPassword = newPasswordInput ? newPasswordInput.value : '';
+        const confirmPassword = confirmPasswordInput ? confirmPasswordInput.value : '';
+        
+        if (!matchIndicator || !matchIcon || !matchText) return;
+        
+        // Only show indicator if confirm password field has content
+        if (confirmPassword.length === 0) {
+            matchIndicator.style.display = 'none';
+            return;
+        }
+        
+        matchIndicator.style.display = 'block';
+        
+        if (newPassword === confirmPassword && newPassword.length > 0) {
+            // Passwords match
+            matchIndicator.className = 'password-match-indicator match mt-2';
+            matchText.textContent = 'Passwords match';
+            
+            // Clear any custom validity
+            if (confirmPasswordInput) {
+                confirmPasswordInput.setCustomValidity('');
+            }
+        } else {
+            // Passwords don't match
+            matchIndicator.className = 'password-match-indicator mismatch mt-2';
+            matchText.textContent = 'Passwords do not match';
+            
+            // Set custom validity
+            if (confirmPasswordInput) {
+                confirmPasswordInput.setCustomValidity('Passwords do not match');
+            }
+        }
+    }
+    
+    // Add event listeners for real-time checking
+    if (newPasswordInput && confirmPasswordInput) {
+        // Check when new password changes
+        newPasswordInput.addEventListener('input', checkPasswordMatch);
+        newPasswordInput.addEventListener('keyup', checkPasswordMatch);
+        
+        // Check when confirm password changes
+        confirmPasswordInput.addEventListener('input', checkPasswordMatch);
+        confirmPasswordInput.addEventListener('keyup', checkPasswordMatch);
+        
+        // Check on paste
+        confirmPasswordInput.addEventListener('paste', function() {
+            setTimeout(checkPasswordMatch, 10);
+        });
+        
+        // Check on focus
+        confirmPasswordInput.addEventListener('focus', checkPasswordMatch);
+        
+        // Initialize on page load
+        checkPasswordMatch();
+    }
+    
     const changePasswordForm = document.getElementById('changePasswordForm');
     const changePasswordBtn = document.getElementById('changePasswordBtn');
     const alertDiv = document.getElementById('changePasswordAlert');
@@ -739,10 +1159,25 @@ document.addEventListener('DOMContentLoaded', function() {
             const newPassword = document.getElementById('new_password').value;
             const confirmPassword = document.getElementById('confirm_password').value;
             
-            // Validate password length
-            if (newPassword.length < 8) {
+            // Validate password requirements
+            const passwordRequirements = {
+                length: newPassword.length >= 8,
+                lowercase: /[a-z]/.test(newPassword),
+                uppercase: /[A-Z]/.test(newPassword),
+                number: /[0-9]/.test(newPassword),
+                symbol: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(newPassword)
+            };
+            
+            const missingRequirements = [];
+            if (!passwordRequirements.length) missingRequirements.push('Minimum 8 characters');
+            if (!passwordRequirements.lowercase) missingRequirements.push('Lowercase letter');
+            if (!passwordRequirements.uppercase) missingRequirements.push('Uppercase letter');
+            if (!passwordRequirements.number) missingRequirements.push('Number');
+            if (!passwordRequirements.symbol) missingRequirements.push('Symbol');
+            
+            if (missingRequirements.length > 0) {
                 if (alertDiv) {
-                    alertDiv.innerHTML = '<div class="alert alert-danger"><i class="fas fa-exclamation-circle me-2"></i>Password must be at least 8 characters long</div>';
+                    alertDiv.innerHTML = '<div class="alert alert-danger"><i class="fas fa-exclamation-circle me-2"></i>Password must contain: ' + missingRequirements.join(', ') + '</div>';
                 }
                 return;
             }
