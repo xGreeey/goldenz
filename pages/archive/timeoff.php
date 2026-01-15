@@ -645,8 +645,14 @@ $next_year = $display_month == 12 ? $display_year + 1 : $display_year;
     margin-bottom: var(--spacing-lg);
     padding: var(--spacing-md);
     background: white;
-    border: 1px solid var(--interface-border);
-    border-radius: 0;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.04);
+    transition: all 0.3s ease;
+}
+
+.calendar-controls:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08), 0 8px 24px rgba(0, 0, 0, 0.06);
 }
 
 .calendar-navigation {
@@ -694,9 +700,10 @@ $next_year = $display_month == 12 ? $display_year + 1 : $display_year;
 
 .calendar-grid {
     background: white;
-    border: 1px solid var(--interface-border);
-    border-radius: 0;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
     overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.04);
 }
 
 .calendar-header {
@@ -976,6 +983,111 @@ $next_year = $display_month == 12 ? $display_year + 1 : $display_year;
     .reason-text {
         max-width: 150px;
     }
+}
+
+/* Card styling to match HR admin dashboard */
+.card-modern,
+.card {
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.04);
+    background: #ffffff;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    outline: none !important;
+}
+
+.card-modern:hover,
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08), 0 8px 24px rgba(0, 0, 0, 0.06);
+    border: 1px solid #e2e8f0 !important;
+    outline: none !important;
+}
+
+.card-modern:focus,
+.card:focus,
+.card-modern:focus-visible,
+.card:focus-visible {
+    outline: none !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.04);
+    border: 1px solid #e2e8f0 !important;
+}
+
+/* Summary cards with enhanced shadows */
+.summary-card {
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.04);
+    transition: all 0.3s ease;
+    outline: none !important;
+}
+
+.summary-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08), 0 8px 24px rgba(0, 0, 0, 0.06);
+    border: 1px solid #e2e8f0 !important;
+    outline: none !important;
+}
+
+.summary-card:focus,
+.summary-card:focus-visible {
+    outline: none !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.04);
+    border: 1px solid #e2e8f0 !important;
+}
+
+.card-body-modern,
+.card-body {
+    padding: 1.5rem;
+}
+
+.card-header-modern {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.card-title-modern {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0 0 0.25rem 0;
+}
+
+/* Summary cards container */
+.summary-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-xl);
+}
+
+/* Table container with shadows */
+.table-container {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: var(--spacing-lg);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.04);
+    transition: all 0.3s ease;
+}
+
+.table-container:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08), 0 8px 24px rgba(0, 0, 0, 0.06);
+}
+
+/* Table controls with shadows */
+.table-controls {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.04);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 </style>
 
