@@ -83,7 +83,7 @@ $activeSection = getActiveSection($page);
     <meta http-equiv="X-Frame-Options" content="DENY">
     <meta http-equiv="X-XSS-Protection" content="1; mode=block">
 </head>
-<body>
+<body class="portal-hr-admin">
     <!-- Sidebar -->
     <nav class="sidebar" id="sidebar" role="navigation" aria-label="Main navigation">
         <div class="sidebar-header">
