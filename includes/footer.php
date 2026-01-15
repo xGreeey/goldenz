@@ -487,5 +487,13 @@
         }
     }
     </script>
+    
+    <!-- Password Expiry Modal - Global check for all users -->
+    <?php 
+    // Only include if user is logged in
+    if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true) {
+        include __DIR__ . '/password-expiry-modal.php';
+    }
+    ?>
 </body>
 </html>

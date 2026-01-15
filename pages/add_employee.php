@@ -806,15 +806,15 @@ if (empty($posts)) {
     </script>
     <?php endif; ?>
 
-    <?php if (!empty($errors)): ?>
-        <div class="alert alert-danger">
-            <i class="fas fa-circle-exclamation me-2"></i>
-            <ul class="mb-0">
-                <?php foreach ($errors as $error): ?>
-                    <li><?php echo htmlspecialchars($error); ?></li>
-                <?php endforeach; ?>
-            </ul>
+    <?php if (($_SESSION['user_role'] ?? '') === 'hr_admin'): ?>
+    <div class="container-fluid hrdash mb-3">
+        <div class="hrdash-welcome">
+            <div class="hrdash-welcome__left">
+                <h2 class="hrdash-welcome__title">Add New Employee</h2>
+                <p class="hrdash-welcome__subtitle">Create and file a new employee record in the Golden Z-5 HR system.</p>
+            </div>
         </div>
+    </div>
     <?php endif; ?>
 
     <!-- Add Employee Form -->
@@ -1868,7 +1868,8 @@ if (empty($posts)) {
             </form>
         </div>
     </div>
-</div>
+        </div>
+    </div>
 
 <!-- Google Maps API - Optional, only loads if API key is configured -->
 <!-- <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places"></script> -->
