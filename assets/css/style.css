@@ -658,17 +658,9 @@ html::-webkit-scrollbar-button {
 }
 
 .sidebar .nav-link.active::after {
-    content: '';
-    position: absolute;
-    right: 0.75rem;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 6px;
-    height: 6px;
-    background: #fbbf24 !important;
-    border-radius: 50%;
-    box-shadow: 0 0 8px rgba(251, 191, 36, 0.2);
-    z-index: 1;
+    /* Remove the yellow active indicator dot */
+    content: none !important;
+    display: none !important;
 }
 
 .sidebar .nav-link i {
@@ -823,10 +815,9 @@ html::-webkit-scrollbar-button {
 }
 
 .sidebar .nav-submenu .nav-link.active::after {
-    width: 5px;
-    height: 5px;
-    right: 0.625rem;
-    background: #fbbf24 !important;
+    /* Remove the yellow active indicator dot (submenu) */
+    content: none !important;
+    display: none !important;
 }
 
 .nav-submenu .nav-link i {
