@@ -210,6 +210,41 @@ function h($v) { return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8'); }
 .log-line.is-error{color:#fecaca;background:rgba(239,68,68,.08);}
 .log-line.is-warn{color:#fde68a;background:rgba(245,158,11,.08);}
 .log-line.is-info{color:#bae6fd;background:rgba(14,165,233,.08);}
+/* Card styling to match HR admin dashboard */
+.super-admin-dashboard .card-modern,
+.super-admin-dashboard .card {
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+    background: #ffffff;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.super-admin-dashboard .card-modern:hover,
+.super-admin-dashboard .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.1);
+}
+
+.super-admin-dashboard .card-body-modern,
+.super-admin-dashboard .card-body {
+    padding: 1.5rem;
+}
+
+.super-admin-dashboard .card-header-modern {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.super-admin-dashboard .card-title-modern {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0 0 0.25rem 0;
+}
+
 </style>
 
 <script>

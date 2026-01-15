@@ -1297,15 +1297,16 @@ document.addEventListener('DOMContentLoaded', function() {
     display: flex;
     align-items: center;
     padding: var(--spacing-xl);
-    border-radius: 0px;
-    border: 1px solid var(--interface-border);
+    border-radius: 14px;
+    border: 1px solid #e2e8f0;
     background: var(--white);
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.04);
 }
 
 .status-card:hover {
-    box-shadow: var(--shadow-sm);
-    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08), 0 8px 24px rgba(0, 0, 0, 0.06);
+    transform: translateY(-2px);
 }
 
 .status-card.on-duty {
@@ -1379,8 +1380,14 @@ document.addEventListener('DOMContentLoaded', function() {
     margin-bottom: var(--spacing-2xl);
     padding: var(--spacing-lg);
     background: var(--white);
-    border: 1px solid var(--interface-border);
-    border-radius: 0px;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.04);
+    transition: all 0.3s ease;
+}
+
+.date-selector:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08), 0 8px 24px rgba(0, 0, 0, 0.06);
 }
 
 .date-controls {
@@ -1403,9 +1410,10 @@ document.addEventListener('DOMContentLoaded', function() {
     display: flex;
     gap: var(--spacing-sm);
     background: var(--white);
-    border: 1px solid var(--interface-border);
-    border-radius: 0px;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
     padding: var(--spacing-xs);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.04);
 }
 
 .view-btn {
@@ -1436,11 +1444,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
 .calendar-container {
     background: var(--white);
-    border: 1px solid var(--interface-border);
-    border-radius: 0px;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
     overflow-x: auto;
     overflow-y: auto;
     max-height: 80vh;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.04);
 }
 
 .calendar-grid {
@@ -1609,16 +1618,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
 .employee-card {
     background: var(--white);
-    border: 1px solid var(--interface-border);
-    border-radius: 0px;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
     padding: var(--spacing-xl);
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
     position: relative;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.04);
 }
 
 .employee-card:hover {
-    box-shadow: var(--shadow-sm);
-    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08), 0 8px 24px rgba(0, 0, 0, 0.06);
+    transform: translateY(-2px);
 }
 
 .employee-card.on_duty {
@@ -1900,9 +1910,15 @@ document.addEventListener('DOMContentLoaded', function() {
 /* Requested Tab Styles */
 .requested-container {
     background: var(--white);
-    border: 1px solid var(--interface-border);
-    border-radius: 0px;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
     padding: var(--spacing-xl);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.04);
+    transition: all 0.3s ease;
+}
+
+.requested-container:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08), 0 8px 24px rgba(0, 0, 0, 0.06);
 }
 
 .requested-header {
@@ -1989,9 +2005,15 @@ document.addEventListener('DOMContentLoaded', function() {
 /* Balances Tab Styles */
 .balances-container {
     background: var(--white);
-    border: 1px solid var(--interface-border);
-    border-radius: 0px;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
     padding: var(--spacing-xl);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.04);
+    transition: all 0.3s ease;
+}
+
+.balances-container:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08), 0 8px 24px rgba(0, 0, 0, 0.06);
 }
 
 .balances-header {
@@ -2386,5 +2408,40 @@ document.addEventListener('DOMContentLoaded', function() {
     .calendar-grid.day-view {
         grid-template-columns: 60px 1fr;
     }
+}
+
+/* Card styling to match HR admin dashboard */
+.card-modern,
+.card {
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+    background: #ffffff;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card-modern:hover,
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.1);
+}
+
+.card-body-modern,
+.card-body {
+    padding: 1.5rem;
+}
+
+.card-header-modern {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.card-title-modern {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0 0 0.25rem 0;
 }
 </style>

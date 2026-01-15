@@ -980,18 +980,20 @@ body.portal-hr-admin .alerts-modern {
     margin-bottom: 1.5rem;
 }
 
-.stat-card-modern {
+.stat-card-modern,
+.alerts-card-modern {
     background: #ffffff;
-    border: none;
-    border-radius: 12px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.04);
-    transition: all 0.2s ease;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
     overflow: hidden;
 }
 
-.stat-card-modern:hover {
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08), 0 8px 16px rgba(0, 0, 0, 0.06);
+.stat-card-modern:hover,
+.alerts-card-modern:hover {
     transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.1);
 }
 
 .card-body-modern {
