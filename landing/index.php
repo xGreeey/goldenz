@@ -219,14 +219,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
  */
 // Handle login
 $error = '';
-$success_message = '';
 $debug_info = [];
 $show_password_change_modal = isset($_SESSION['require_password_change']) && $_SESSION['require_password_change'];
-
-// Check for password reset success message
-if (isset($_GET['password_reset']) && $_GET['password_reset'] === 'success') {
-    $success_message = 'Your password has been successfully reset! You can now login with your new password.';
-}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
     $debug_info[] = "POST request received";
@@ -248,7 +242,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
             
             // Direct database query (simpler, more reliable)
             $sql = "SELECT id, username, password_hash, name, role, status, employee_id, department, 
-                           failed_login_attempts, locked_until, password_changed_at
+                           failed_login_attempts, locked_until, password_changed_at,
+                           two_factor_enabled, two_factor_secret
                     FROM users 
                     WHERE username = ? AND status = 'active'
                     LIMIT 1";
@@ -298,6 +293,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
                             $error = 'This account role is not permitted to sign in.';
                             $debug_info[] = "Role not allowed: " . $user['role'];
                         } else {
+                            // Determine if this user must pass 2FA before accessing the dashboard
+                            $requires_2fa = in_array($user['role'], ['super_admin', 'admin'], true)
+                                && !empty($user['two_factor_enabled'])
+                                && !empty($user['two_factor_secret']);
+
+                            if ($requires_2fa) {
+                                // Store minimal user context for the 2FA step
+                                $_SESSION['pending_2fa_user_id'] = $user['id'];
+                                $_SESSION['pending_2fa_username'] = $user['username'];
+                                $_SESSION['pending_2fa_name'] = $user['name'];
+                                $_SESSION['pending_2fa_role'] = $user['role'];
+                                $_SESSION['pending_2fa_employee_id'] = $user['employee_id'] ?? null;
+                                $_SESSION['pending_2fa_department'] = $user['department'] ?? null;
+
+                                $debug_info[] = "2FA required - redirecting to 2FA verification page";
+                                header('Location: 2fa.php');
+                                exit;
+                            }
+
+                            // No 2FA required – complete login immediately
                             // Update last login and reset failed attempts
                             $update_sql = "UPDATE users SET last_login = NOW(), last_login_ip = ?, 
                                           failed_login_attempts = 0, locked_until = NULL 
@@ -578,14 +593,6 @@ ob_end_flush();
                         <p class="auth-subtitle">Enter your credentials to access your account</p>
                     </div>
 
-                <?php if ($success_message): ?>
-                    <div class="alert alert-success alert-dismissible fade show" role="alert">
-                        <i class="fas fa-check-circle me-2"></i>
-                        <?php echo htmlspecialchars($success_message); ?>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>
-                    </div>
-                <?php endif; ?>
-                
                 <?php if ($error): ?>
                     <div class="alert alert-danger alert-dismissible fade show" role="alert">
                         <i class="fas fa-exclamation-circle me-2"></i>
