@@ -1178,6 +1178,73 @@ if (!empty($two_factor_secret)) {
     color: #ef4444;
 }
 
+/* Dark theme support for Super Admin Settings */
+html[data-theme="dark"] .super-admin-settings {
+    background: var(--interface-bg) !important;
+}
+
+html[data-theme="dark"] .super-admin-settings .card-modern {
+    background: #1a1d23 !important;
+    border-color: var(--interface-border) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .super-admin-settings .card-body-modern {
+    background: #1a1d23 !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .super-admin-settings .card-header-modern {
+    border-bottom-color: var(--interface-border) !important;
+}
+
+html[data-theme="dark"] .super-admin-settings .card-title-modern {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .super-admin-settings .card-subtitle {
+    color: var(--interface-text-muted) !important;
+}
+
+html[data-theme="dark"] .super-admin-settings .settings-nav .list-group-item {
+    color: var(--interface-text-muted) !important;
+}
+
+html[data-theme="dark"] .super-admin-settings .settings-nav .list-group-item:hover {
+    background: #1e293b !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .super-admin-settings .settings-nav .list-group-item i {
+    color: var(--interface-text-muted) !important;
+}
+
+html[data-theme="dark"] .super-admin-settings .password-toggle {
+    color: var(--interface-text-light) !important;
+}
+
+html[data-theme="dark"] .super-admin-settings .password-toggle i {
+    color: var(--interface-text-light) !important;
+}
+
+html[data-theme="dark"] .super-admin-settings .password-strength-bar {
+    background: #1e293b !important;
+}
+
+html[data-theme="dark"] .super-admin-settings .password-requirements {
+    background: #0f1114 !important;
+    border-color: var(--interface-border) !important;
+}
+
+html[data-theme="dark"] .super-admin-settings .requirement-item {
+    color: var(--interface-text-light) !important;
+}
+
+html[data-theme="dark"] .super-admin-settings .password-match-indicator {
+    background: #0f1114 !important;
+    border-color: var(--interface-border) !important;
+}
+
 .match-text {
     font-weight: 500;
 }
