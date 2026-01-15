@@ -144,31 +144,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['reset_password']) && 
                 // Hash new password using bcrypt
                 $new_password_hash = password_hash($new_password, PASSWORD_DEFAULT);
                 
-                // Check if password_reset_token column exists
-                $check_column = $pdo->query("SHOW COLUMNS FROM users LIKE 'password_reset_token'");
-                $has_reset_columns = $check_column->rowCount() > 0;
-                
-                // Build UPDATE query based on available columns
-                if ($has_reset_columns) {
-                    // Use dedicated password reset fields
-                    $update_sql = "UPDATE users 
-                                  SET password_hash = ?, 
-                                      password_changed_at = NOW(), 
-                                      password_reset_token = NULL,
-                                      password_reset_expires_at = NULL,
-                                      failed_login_attempts = 0,
-                                      locked_until = NULL
-                                  WHERE id = ?";
-                } else {
-                    // Fallback: Clear remember_token if it was used for reset
-                    $update_sql = "UPDATE users 
-                                  SET password_hash = ?, 
-                                      password_changed_at = NOW(), 
-                                      remember_token = NULL,
-                                      failed_login_attempts = 0,
-                                      locked_until = NULL
-                                  WHERE id = ?";
-                }
+                // Update password in database
+                $update_sql = "UPDATE users 
+                              SET password_hash = ?, 
+                                  password_changed_at = NOW(), 
+                                  password_reset_token = NULL,
+                                  password_reset_expires_at = NULL,
+                                  failed_login_attempts = 0,
+                                  locked_until = NULL
+                              WHERE id = ?";
                 
                 $update_stmt = $pdo->prepare($update_sql);
                 $update_stmt->bindValue(1, $new_password_hash, PDO::PARAM_STR);
@@ -188,9 +172,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['reset_password']) && 
                             log_security_event('Password Reset Completed', "User: {$user['username']} ({$user['email']}) - IP: " . ($_SERVER['REMOTE_ADDR'] ?? 'Unknown'));
                         }
                         
-                        // Redirect to login page with success message
-                        header('Location: index.php?password_reset=success');
-                        exit;
+                        $success = true;
+                        $token_valid = false; // Invalidate token after use
                     } else {
                         $error = 'Password was updated but verification failed. Please contact support.';
                     }
@@ -200,13 +183,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['reset_password']) && 
             } else {
                 $error = 'User not found. Please request a new password reset.';
             }
-        } catch (PDOException $e) {
-            error_log('Password reset PDO error: ' . $e->getMessage() . ' | SQL State: ' . $e->getCode());
-            error_log('Password reset error trace: ' . $e->getTraceAsString());
-            $error = 'An error occurred while resetting your password. Please try again.';
         } catch (Exception $e) {
             error_log('Password reset error: ' . $e->getMessage());
-            error_log('Password reset error trace: ' . $e->getTraceAsString());
             $error = 'An error occurred while resetting your password. Please try again.';
         }
     }
@@ -378,6 +356,12 @@ ob_end_flush();
                             </a>
                         </div>
                     <?php endif; ?>
+
+                    <div class="text-center mt-4">
+                        <a href="index.php" class="text-decoration-none" style="color: #2563eb; font-size: 0.875rem; font-weight: 500;">
+                            <i class="fas fa-arrow-left me-1"></i> Back to Login
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
