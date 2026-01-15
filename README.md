@@ -29,3 +29,9 @@ The Super Admin dashboard provides:
 
 - XAMPP (PHP 7.4+, MySQL 5.7+)
 - Web browser
+
+## License
+
+This software is proprietary and licensed under a closed-source End User License Agreement (EULA).
+Usage is restricted to Golden Z-5 Security and Intelligence for internal organizational operations only, as detailed in the `LICENSE` file.
+Redistribution, public hosting, resale, or external sharing of the software or its source code is not permitted without prior written consent from the Licensors.
