@@ -86,6 +86,8 @@ $menu = [
     </ul>
 
     <!-- Bottom Navigation Section -->
+    <!-- HR-Admin: moved to header as icon actions -->
+    <?php if (($_SESSION['user_role'] ?? '') !== 'hr_admin'): ?>
     <ul class="sidebar-menu sidebar-bottom" role="menubar">
         <li class="nav-item">
             <a href="?page=tasks"
@@ -121,6 +123,7 @@ $menu = [
             </a>
         </li>
     </ul>
+    <?php endif; ?>
 </nav>
 
 <!-- Mobile Overlay -->

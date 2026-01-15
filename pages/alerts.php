@@ -119,7 +119,7 @@ try {
 }
 ?>
 
-<div class="alerts-modern">
+<div class="container-fluid alerts-modern">
     <!-- Page Header -->
     <div class="page-header-modern">
         <div class="page-title-modern">
@@ -866,17 +866,20 @@ function loadMoreAuditLogs() {
 <style>
 /* Modern Alerts Page Styling */
 .alerts-modern {
-    padding: 1rem 2.5rem 2rem 2.5rem;
+    /* Use portal-wide spacing system (font-override.css) instead of page-local padding */
+    padding: 0;
     max-width: 100%;
     overflow-x: hidden;
-    background: #f8fafc;
     min-height: 100vh;
+    background: #ffffff; /* default for non HR-Admin portals */
 }
 
-/* Hide the main header with black background */
-.main-content .header {
-    display: none !important;
+/* HR-Admin: use light separated background */
+body.portal-hr-admin .alerts-modern {
+    background: #f8fafc;
 }
+
+/* Header removal handled globally for HR-Admin (includes/header.php) */
 
 /* Page Header */
 .page-header-modern {

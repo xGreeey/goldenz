@@ -247,3 +247,423 @@ i[class*="fa-"]::after,
     background: linear-gradient(135deg, rgba(251, 191, 36, 0.15) 0%, rgba(59, 130, 246, 0.12) 100%) !important;
     color: #0f172a !important;
 }
+
+/* ============================================
+   HR-ADMIN: CONSISTENT SPACING SYSTEM (ALL PAGES)
+   Scoped only to the HR-Admin portal.
+   ============================================ */
+
+body.portal-hr-admin {
+    /* Page padding (outer whitespace). Keep smaller so grey background doesn't waste space. */
+    --hr-page-px: 1.25rem;
+    --hr-page-py: 1.5rem;
+
+    /* Default grid spacing between sections/cards */
+    --hr-gutter: 2rem;
+}
+
+/* Remove base .content padding; control spacing via page containers */
+body.portal-hr-admin .content {
+    padding: 0 !important;
+}
+
+/* Standardize top-level page container spacing across HR-Admin views */
+body.portal-hr-admin .content > .container,
+body.portal-hr-admin .content > .container-fluid {
+    padding: var(--hr-page-py) var(--hr-page-px) !important;
+}
+
+/* HR Admin: compact header is shown, reserve just enough space for it */
+body.portal-hr-admin .main-content {
+    padding: 56px 0 0 0 !important; /* hr-admin header height */
+}
+
+/* Consistent spacing between items in any Bootstrap row inside HR-Admin content */
+body.portal-hr-admin .content .row {
+    --bs-gutter-x: var(--hr-gutter);
+    --bs-gutter-y: var(--hr-gutter);
+}
+
+/* Respect explicit Bootstrap spacing utilities: keep g-2/g-3/g-4 slightly larger than default */
+body.portal-hr-admin .content .row.g-2 {
+    --bs-gutter-x: 1.5rem;
+    --bs-gutter-y: 1.5rem;
+}
+body.portal-hr-admin .content .row.g-3 {
+    --bs-gutter-x: 2rem;
+    --bs-gutter-y: 2rem;
+}
+body.portal-hr-admin .content .row.g-4 {
+    --bs-gutter-x: 2.25rem;
+    --bs-gutter-y: 2.25rem;
+}
+
+/* Mobile: reduce outer padding while keeping healthy gutters */
+@media (max-width: 768px) {
+    body.portal-hr-admin {
+        --hr-page-px: 1.25rem;
+        --hr-page-py: 1.75rem;
+        --hr-gutter: 1.25rem;
+    }
+}
+
+/* ============================================
+   HR-ADMIN: HEADER ICON ACTIONS (Tasks / Help / Logout)
+   ============================================ */
+
+body.portal-hr-admin .header.header-hr-admin-actions {
+    height: 56px !important;
+    padding: 0 1.25rem !important;
+    background: rgba(255, 255, 255, 0.92) !important;
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(15, 23, 42, 0.08) !important;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06) !important;
+}
+
+body.portal-hr-admin .header.header-hr-admin-actions #pageTitle {
+    color: #0f172a !important;
+    font-size: 1.15rem !important;
+    font-weight: 700 !important;
+}
+
+body.portal-hr-admin .header.header-hr-admin-actions .header-actions {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+body.portal-hr-admin .header.header-hr-admin-actions .header-icon-link {
+    width: 40px;
+    height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    text-decoration: none;
+    color: #334155 !important;
+    border: 1px solid rgba(15, 23, 42, 0.10);
+    background: #ffffff;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+body.portal-hr-admin .header.header-hr-admin-actions .header-icon-link:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.12);
+    background: var(--gl-gray-50);
+}
+
+body.portal-hr-admin .header.header-hr-admin-actions .header-icon-link.active {
+    background: var(--gl-blue-50);
+    border-color: rgba(31, 117, 203, 0.25);
+    color: var(--gl-blue-700) !important;
+}
+
+body.portal-hr-admin .header.header-hr-admin-actions .header-icon-link.danger {
+    background: var(--gl-red-50);
+    border-color: rgba(221, 43, 14, 0.22);
+    color: var(--gl-red-700) !important;
+}
+
+/* ============================================
+   HR-ADMIN: GITLAB-INSPIRED SEMANTIC COLOR SYSTEM
+   Reference: https://about.gitlab.com/blog/polishing-gitlabs-ui-a-new-color-system/
+   Goal: consistent meaning + contrast-first text colors.
+
+   Convention:
+   - 50  = light background (use dark text)
+   - 500 = default (often needs white text)
+   - 700 = darker (white text)
+   ============================================ */
+
+body.portal-hr-admin {
+    /* Neutral */
+    --gl-gray-50:  #f8fafc;
+    --gl-gray-100: #f1f5f9;
+    --gl-gray-200: #e2e8f0;
+    --gl-gray-700: #334155;
+
+    /* Blue (info / primary) */
+    --gl-blue-50:  #eaf5ff;
+    --gl-blue-500: #1f75cb;
+    --gl-blue-700: #0b4f8a;
+
+    /* Green (success) */
+    --gl-green-50:  #e9f7ef;
+    --gl-green-500: #1aaa55;
+    --gl-green-700: #0f6b2f;
+
+    /* Orange (warning) */
+    --gl-orange-50:  #fff4e5;
+    --gl-orange-500: #ff9800;
+    --gl-orange-700: #b45309;
+
+    /* Red (danger) */
+    --gl-red-50:  #fdecea;
+    --gl-red-500: #dd2b0e;
+    --gl-red-700: #8a1f11;
+
+    /* Text tokens */
+    --gl-text-dark: #0f172a;
+    --gl-text-invert: #ffffff;
+}
+
+/* ---- Alerts (Bootstrap) ---- */
+body.portal-hr-admin .alert {
+    border-radius: 12px;
+}
+
+body.portal-hr-admin .alert-success {
+    background: var(--gl-green-50) !important;
+    border-color: rgba(26, 170, 85, 0.25) !important;
+    color: var(--gl-green-700) !important;
+}
+
+body.portal-hr-admin .alert-warning {
+    background: var(--gl-orange-50) !important;
+    border-color: rgba(255, 152, 0, 0.30) !important;
+    color: var(--gl-orange-700) !important;
+}
+
+body.portal-hr-admin .alert-danger {
+    background: var(--gl-red-50) !important;
+    border-color: rgba(221, 43, 14, 0.25) !important;
+    color: var(--gl-red-700) !important;
+}
+
+body.portal-hr-admin .alert-info {
+    background: var(--gl-blue-50) !important;
+    border-color: rgba(31, 117, 203, 0.25) !important;
+    color: var(--gl-blue-700) !important;
+}
+
+/* ---- Dashboard-style "modern" badges ---- */
+body.portal-hr-admin .badge-success-modern {
+    background: var(--gl-green-50) !important;
+    color: var(--gl-green-700) !important;
+    border: 1px solid rgba(26, 170, 85, 0.18) !important;
+}
+
+body.portal-hr-admin .badge-warning-modern {
+    background: var(--gl-orange-50) !important;
+    color: var(--gl-orange-700) !important;
+    border: 1px solid rgba(255, 152, 0, 0.22) !important;
+}
+
+body.portal-hr-admin .badge-danger-modern {
+    background: var(--gl-red-50) !important;
+    color: var(--gl-red-700) !important;
+    border: 1px solid rgba(221, 43, 14, 0.18) !important;
+}
+
+body.portal-hr-admin .badge-primary-modern {
+    background: var(--gl-blue-50) !important;
+    color: var(--gl-blue-700) !important;
+    border: 1px solid rgba(31, 117, 203, 0.18) !important;
+}
+
+body.portal-hr-admin .badge-live {
+    background: var(--gl-green-50) !important;
+    color: var(--gl-green-700) !important;
+    border: 1px solid rgba(26, 170, 85, 0.18) !important;
+}
+
+/* ---- Alert Status badges (alerts page) ---- */
+body.portal-hr-admin .alert-badge.active {
+    background: var(--gl-red-500) !important;
+    color: var(--gl-text-invert) !important; /* dark bg -> white text */
+}
+
+body.portal-hr-admin .alert-badge.acknowledged {
+    background: var(--gl-blue-500) !important;
+    color: var(--gl-text-invert) !important;
+}
+
+body.portal-hr-admin .alert-badge.resolved {
+    background: var(--gl-green-500) !important;
+    color: var(--gl-text-invert) !important;
+}
+
+body.portal-hr-admin .alert-badge.dismissed {
+    background: var(--gl-gray-200) !important;
+    color: var(--gl-text-dark) !important; /* light bg -> dark text */
+}
+
+/* ---- Priority badges ---- */
+body.portal-hr-admin .priority-badge.urgent,
+body.portal-hr-admin .priority-badge.priority-urgent {
+    background: var(--gl-red-500) !important;
+    color: var(--gl-text-invert) !important;
+}
+
+body.portal-hr-admin .priority-badge.high,
+body.portal-hr-admin .priority-badge.priority-high {
+    background: var(--gl-orange-500) !important;
+    color: var(--gl-text-invert) !important;
+}
+
+body.portal-hr-admin .priority-badge.medium,
+body.portal-hr-admin .priority-badge.priority-medium {
+    background: var(--gl-orange-50) !important;
+    color: var(--gl-orange-700) !important;
+    border: 1px solid rgba(255, 152, 0, 0.22) !important;
+}
+
+body.portal-hr-admin .priority-badge.low,
+body.portal-hr-admin .priority-badge.priority-low {
+    background: var(--gl-blue-50) !important;
+    color: var(--gl-blue-700) !important;
+    border: 1px solid rgba(31, 117, 203, 0.18) !important;
+}
+
+/* ============================================
+   HR-ADMIN: CONNECTED HEADER (sidebar + topbar)
+   - Left segment matches sidebar background
+   - Profile dropdown + notifications
+   - Dashboard-only quick actions (Add/View)
+   ============================================ */
+
+body.portal-hr-admin .sidebar {
+    top: 56px !important;
+    height: calc(100vh - 56px) !important;
+}
+
+body.portal-hr-admin .hr-admin-topbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 56px;
+    z-index: 1200;
+    display: flex;
+    align-items: stretch;
+}
+
+body.portal-hr-admin .hr-admin-topbar__left {
+    width: var(--sidebar-width);
+    background: var(--sidebar-bg);
+    border-right: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+body.portal-hr-admin .hr-admin-topbar__main {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0 1.25rem;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+}
+
+body.portal-hr-admin .hr-admin-topbar__title #pageTitle {
+    margin: 0;
+    color: #0f172a !important;
+    font-size: 1.15rem !important;
+    font-weight: 750 !important;
+    letter-spacing: -0.02em;
+}
+
+body.portal-hr-admin .hr-admin-topbar__actions {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+body.portal-hr-admin .hr-admin-action-btn {
+    border-radius: 10px !important;
+    padding: 0.45rem 0.75rem !important;
+}
+
+body.portal-hr-admin .hr-admin-icon-link {
+    width: 40px;
+    height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    text-decoration: none;
+    color: #334155 !important;
+    border: 1px solid rgba(15, 23, 42, 0.10);
+    background: #ffffff;
+    position: relative;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+body.portal-hr-admin .hr-admin-icon-link:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.12);
+    background: var(--gl-gray-50);
+}
+
+body.portal-hr-admin .hr-admin-icon-link.active {
+    background: var(--gl-blue-50);
+    border-color: rgba(31, 117, 203, 0.25);
+    color: var(--gl-blue-700) !important;
+}
+
+body.portal-hr-admin .hr-admin-badge {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 6px;
+    border-radius: 999px;
+    background: var(--gl-red-500);
+    color: var(--gl-text-invert);
+    font-size: 11px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #ffffff;
+    line-height: 1;
+}
+
+body.portal-hr-admin .hr-admin-profile-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.35rem 0.6rem;
+    border-radius: 12px;
+    border: 1px solid rgba(15, 23, 42, 0.10);
+    background: #ffffff;
+    color: #0f172a;
+}
+
+body.portal-hr-admin .hr-admin-profile-btn:hover {
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.12);
+    transform: translateY(-1px);
+}
+
+body.portal-hr-admin .hr-admin-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    background: var(--gl-blue-50);
+    color: var(--gl-blue-700);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 12px;
+    border: 1px solid rgba(31, 117, 203, 0.18);
+}
+
+body.portal-hr-admin .hr-admin-profile-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #334155;
+}
+
+@media (max-width: 768px) {
+    body.portal-hr-admin .hr-admin-topbar__main {
+        padding: 0 0.75rem;
+    }
+    body.portal-hr-admin .hr-admin-topbar__left {
+        width: 72px; /* collapse left bar on small screens */
+    }
+}
