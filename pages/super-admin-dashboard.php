@@ -708,12 +708,42 @@ html[data-theme="dark"] .super-admin-dashboard .quick-stat-value {
     color: var(--interface-text) !important;
 }
 
+html[data-theme="dark"] .super-admin-dashboard .table thead {
+    background: #1e293b !important;
+}
+
+html[data-theme="dark"] .super-admin-dashboard .table thead.table-light {
+    background: #1e293b !important;
+}
+
 html[data-theme="dark"] .super-admin-dashboard .table th {
+    background: #1e293b !important;
     color: var(--interface-text-muted) !important;
+    border-color: var(--interface-border) !important;
+}
+
+html[data-theme="dark"] .super-admin-dashboard .table tbody tr {
+    background: #1a1d23 !important;
+    border-color: var(--interface-border) !important;
+}
+
+html[data-theme="dark"] .super-admin-dashboard .table tbody tr:hover {
+    background: #1e293b !important;
 }
 
 html[data-theme="dark"] .super-admin-dashboard .table td {
+    background: transparent !important;
     color: var(--interface-text-light) !important;
+    border-color: var(--interface-border) !important;
+}
+
+html[data-theme="dark"] .super-admin-dashboard .btn-link-modern {
+    color: var(--interface-text-light) !important;
+}
+
+html[data-theme="dark"] .super-admin-dashboard .btn-link-modern:hover {
+    color: var(--interface-text) !important;
+    background: #1e293b !important;
 }
 
 @media (max-width: 768px) {
