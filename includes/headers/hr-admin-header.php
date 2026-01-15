@@ -76,15 +76,56 @@ $activeSection = getActiveSection($page);
     <!-- number-rendering-fix.css merged into font-override.css -->
     <style>
     /* Override icon paths with absolute URLs for SVG icons */
-    .hr-icon-plus { background-image: url('<?php echo asset_url('icons/plus-icon.svg'); ?>') !important; }
-    .hr-icon-edit { background-image: url('<?php echo asset_url('icons/edit-icon.svg'); ?>') !important; }
-    .hr-icon-view, .hr-icon-eye { background-image: url('<?php echo asset_url('icons/view-icon_eye-icon.svg'); ?>') !important; }
-    .hr-icon-check { background-image: url('<?php echo asset_url('icons/check-icon.svg'); ?>') !important; }
-    .hr-icon-double-check { background-image: url('<?php echo asset_url('icons/double-check-icon.svg'); ?>') !important; }
-    .hr-icon-dismiss, .hr-icon-remove, .hr-icon-times { background-image: url('<?php echo asset_url('icons/dismiss-icon_remove-icon.svg'); ?>') !important; }
-    .hr-icon-minus { background-image: url('<?php echo asset_url('icons/minus-icon.svg'); ?>') !important; }
-    .hr-icon-notification, .hr-icon-bell { background-image: url('<?php echo asset_url('icons/notif-icon.svg'); ?>') !important; }
-    .hr-icon-message { background-image: url('<?php echo asset_url('icons/message-icon.svg'); ?>') !important; }
+    <?php 
+    $iconUrl = function($icon) { return asset_url('icons/' . $icon . '.svg'); };
+    ?>
+    .hr-icon-plus { 
+        background-image: url('<?php echo $iconUrl('plus-icon'); ?>') !important;
+    }
+    .hr-icon-edit { 
+        background-image: url('<?php echo $iconUrl('edit-icon'); ?>') !important;
+    }
+    .hr-icon-view, .hr-icon-eye { 
+        background-image: url('<?php echo $iconUrl('view-icon_eye-icon'); ?>') !important;
+    }
+    .hr-icon-check { 
+        background-image: url('<?php echo $iconUrl('check-icon'); ?>') !important;
+    }
+    .hr-icon-double-check { 
+        background-image: url('<?php echo $iconUrl('double-check-icon'); ?>') !important;
+    }
+    .hr-icon-dismiss, .hr-icon-remove, .hr-icon-times { 
+        background-image: url('<?php echo $iconUrl('dismiss-icon_remove-icon'); ?>') !important;
+    }
+    .hr-icon-minus { 
+        background-image: url('<?php echo $iconUrl('minus-icon'); ?>') !important;
+    }
+    .hr-icon-notification, .hr-icon-bell { 
+        background-image: url('<?php echo $iconUrl('notif-icon'); ?>') !important;
+    }
+    .hr-icon-message { 
+        background-image: url('<?php echo $iconUrl('message-icon'); ?>') !important;
+    }
+    
+    /* Apply filters to colorize icons for action buttons */
+    .btn-action-modern.btn-info-modern .hr-icon {
+        filter: brightness(0) saturate(100%) invert(27%) sepia(96%) saturate(2595%) hue-rotate(212deg) brightness(95%) contrast(91%) !important;
+    }
+    .btn-action-modern.btn-success-modern .hr-icon {
+        filter: brightness(0) saturate(100%) invert(45%) sepia(93%) saturate(1352%) hue-rotate(88deg) brightness(98%) contrast(86%) !important;
+    }
+    .btn-action-modern.btn-secondary-modern .hr-icon {
+        filter: brightness(0) saturate(100%) invert(48%) sepia(8%) saturate(750%) hue-rotate(177deg) brightness(94%) contrast(88%) !important;
+    }
+    .btn-action-modern.btn-primary-modern .hr-icon {
+        filter: brightness(0) invert(1) !important;
+    }
+    
+    /* Ensure icons are displayed and visible */
+    .hr-icon {
+        display: inline-block !important;
+        visibility: visible !important;
+    }
     </style>
     
     <!-- Enhanced Fonts -->

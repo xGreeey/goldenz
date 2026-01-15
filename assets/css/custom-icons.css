@@ -53,7 +53,7 @@
     margin-left: 0.5rem;
 }
 
-/* Specific icon mappings - Using SVG files */
+/* Specific icon mappings - Using SVG files as background-image */
 .hr-icon-plus {
     background-image: url('../icons/plus-icon.svg');
 }
@@ -112,8 +112,8 @@
 
 /* Table action button icons */
 .btn-action-modern .hr-icon {
-    width: 14px;
-    height: 14px;
+    width: 16px;
+    height: 16px;
 }
 
 /* Ensure icons align properly in buttons */
@@ -121,6 +121,32 @@
 .btn-action-modern .hr-icon {
     vertical-align: middle;
     margin-top: -2px;
+}
+
+/* Make icons visible on colored button backgrounds using filters */
+/* First, make everything black, then colorize */
+/* Info button (blue) - make icon blue */
+.btn-action-modern.btn-info-modern .hr-icon {
+    filter: brightness(0) saturate(100%) invert(27%) sepia(96%) saturate(2595%) hue-rotate(212deg) brightness(95%) contrast(91%);
+    opacity: 1 !important;
+}
+
+/* Success button (green) - make icon green */
+.btn-action-modern.btn-success-modern .hr-icon {
+    filter: brightness(0) saturate(100%) invert(45%) sepia(93%) saturate(1352%) hue-rotate(88deg) brightness(98%) contrast(86%);
+    opacity: 1 !important;
+}
+
+/* Secondary button (gray) - make icon gray */
+.btn-action-modern.btn-secondary-modern .hr-icon {
+    filter: brightness(0) saturate(100%) invert(48%) sepia(8%) saturate(750%) hue-rotate(177deg) brightness(94%) contrast(88%);
+    opacity: 1 !important;
+}
+
+/* Primary button (blue gradient) - make icon white */
+.btn-action-modern.btn-primary-modern .hr-icon {
+    filter: brightness(0) invert(1);
+    opacity: 1 !important;
 }
 
 /* Dashboard welcome icon buttons */

@@ -68,6 +68,21 @@ $all_employees = get_employees();
         </div>
     </div>
 
+    <!-- Breadcrumb -->
+    <nav class="hr-breadcrumb" aria-label="Breadcrumb">
+        <ol class="hr-breadcrumb__list">
+            <li class="hr-breadcrumb__item">
+                <a href="?page=dashboard" class="hr-breadcrumb__link">Dashboard</a>
+            </li>
+            <li class="hr-breadcrumb__item">
+                <a href="?page=posts" class="hr-breadcrumb__link">Posts &amp; Locations</a>
+            </li>
+            <li class="hr-breadcrumb__item hr-breadcrumb__current" aria-current="page">
+                Post Assignments
+            </li>
+        </ol>
+    </nav>
+
     <!-- Post Selection -->
     <div class="row g-4">
         <div class="col-12">
@@ -373,27 +388,16 @@ body.portal-hr-admin .post-assignments-modern {
 
 /* Cards */
 .card-modern {
-    border: 1px solid #e2e8f0;
-    border-radius: 14px;
+    border: none;
+    border-radius: 16px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.04);
     background: #ffffff;
     overflow: hidden;
     transition: all 0.3s ease;
-    outline: none !important;
 }
 
 .card-modern:hover {
-    transform: translateY(-2px);
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08), 0 8px 24px rgba(0, 0, 0, 0.06);
-    border: 1px solid #e2e8f0 !important;
-    outline: none !important;
-}
-
-.card-modern:focus,
-.card-modern:focus-visible {
-    outline: none !important;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.04);
-    border: 1px solid #e2e8f0 !important;
 }
 
 .card-header-modern {
