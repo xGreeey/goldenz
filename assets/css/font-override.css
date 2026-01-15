@@ -569,55 +569,267 @@ body.portal-hr-admin .hrdash-welcome__actions {
 }
 
 /* ============================================
-   HR-ADMIN: CONSISTENT TABLE STYLING
+   HR-ADMIN: MODERN TABLE STYLING (All Tables)
+   Matches modern design with circular checkboxes, clean spacing, pill badges
    ============================================ */
 
-body.portal-hr-admin .table {
+/* Base table styling */
+body.portal-hr-admin .table,
+body.portal-hr-admin .employees-table,
+body.portal-hr-admin .hrdash-table,
+body.portal-hr-admin .posts-table {
     background: #ffffff;
     border-collapse: separate;
     border-spacing: 0;
     width: 100%;
     margin-bottom: 0;
+    border-radius: 0;
 }
 
-body.portal-hr-admin .table thead {
-    background: #f8fafc;
-    border-bottom: 2px solid #e2e8f0;
+/* Table container - clean white background */
+body.portal-hr-admin .table-container,
+body.portal-hr-admin .table-responsive {
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
-body.portal-hr-admin .table thead th {
-    padding: 0.625rem 0.75rem;
-    font-weight: 700;
+/* Table header - light gray background */
+body.portal-hr-admin .table thead,
+body.portal-hr-admin .employees-table thead,
+body.portal-hr-admin .hrdash-table thead,
+body.portal-hr-admin .posts-table thead {
+    background: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+/* Table header cells - modern styling (compact) */
+body.portal-hr-admin .table thead th,
+body.portal-hr-admin .employees-table thead th,
+body.portal-hr-admin .hrdash-table thead th,
+body.portal-hr-admin .posts-table thead th {
+    padding: 0.5rem 0.75rem;
+    font-weight: 600;
     font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: #475569;
-    border-bottom: 2px solid #e2e8f0;
+    text-transform: none;
+    letter-spacing: 0;
+    color: #374151;
+    border-bottom: 1px solid #e5e7eb;
     vertical-align: middle;
     white-space: nowrap;
+    background: #f9fafb;
+    position: relative;
 }
 
-body.portal-hr-admin .table tbody td {
-    padding: 0.625rem 0.75rem;
-    border-bottom: 1px solid #f1f5f9;
-    color: #0f172a;
-    vertical-align: middle;
-    font-size: 0.875rem;
+/* Sortable header styling (compact) */
+body.portal-hr-admin .table thead th.sortable,
+body.portal-hr-admin .employees-table thead th.sortable,
+body.portal-hr-admin .hrdash-table thead th.sortable,
+body.portal-hr-admin .posts-table thead th.sortable {
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.2s ease;
+    padding-right: 2rem;
 }
 
-body.portal-hr-admin .table tbody tr:hover {
-    background: #f8fafc;
+body.portal-hr-admin .table thead th.sortable:hover,
+body.portal-hr-admin .employees-table thead th.sortable:hover,
+body.portal-hr-admin .hrdash-table thead th.sortable:hover,
+body.portal-hr-admin .posts-table thead th.sortable:hover {
+    background: #f3f4f6;
+    color: #1f2937;
 }
 
-body.portal-hr-admin .table tbody tr:last-child td {
+/* Sort icon in headers (compact) */
+body.portal-hr-admin .table thead th.sortable i,
+body.portal-hr-admin .employees-table thead th.sortable i,
+body.portal-hr-admin .hrdash-table thead th.sortable i,
+body.portal-hr-admin .posts-table thead th.sortable i {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.6875rem;
+    color: #9ca3af;
+    pointer-events: none;
+}
+
+body.portal-hr-admin .table thead th.sortable:hover i,
+body.portal-hr-admin .employees-table thead th.sortable:hover i,
+body.portal-hr-admin .hrdash-table thead th.sortable:hover i,
+body.portal-hr-admin .posts-table thead th.sortable:hover i {
+    color: #6b7280;
+}
+
+/* Table body rows */
+body.portal-hr-admin .table tbody tr,
+body.portal-hr-admin .employees-table tbody tr,
+body.portal-hr-admin .hrdash-table tbody tr,
+body.portal-hr-admin .posts-table tbody tr {
+    border-bottom: 1px solid #f3f4f6;
+    transition: background-color 0.15s ease;
+}
+
+body.portal-hr-admin .table tbody tr:last-child,
+body.portal-hr-admin .employees-table tbody tr:last-child,
+body.portal-hr-admin .hrdash-table tbody tr:last-child,
+body.portal-hr-admin .posts-table tbody tr:last-child {
     border-bottom: none;
 }
 
-body.portal-hr-admin .table-responsive {
-    border-radius: 14px;
-    overflow-x: hidden;
-    overflow-y: visible;
-    border: 1px solid #e2e8f0;
+body.portal-hr-admin .table tbody tr:hover,
+body.portal-hr-admin .employees-table tbody tr:hover,
+body.portal-hr-admin .hrdash-table tbody tr:hover,
+body.portal-hr-admin .posts-table tbody tr:hover {
+    background: #f9fafb;
+}
+
+/* Table body cells (compact) */
+body.portal-hr-admin .table tbody td,
+body.portal-hr-admin .employees-table tbody td,
+body.portal-hr-admin .hrdash-table tbody td,
+body.portal-hr-admin .posts-table tbody td {
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid #f3f4f6;
+    color: #111827;
+    vertical-align: middle;
+    font-size: 0.8125rem;
+    line-height: 1.4;
+}
+
+/* Circular checkboxes - modern design (compact) */
+body.portal-hr-admin .table input[type="checkbox"],
+body.portal-hr-admin .employees-table input[type="checkbox"],
+body.portal-hr-admin .hrdash-table input[type="checkbox"],
+body.portal-hr-admin .posts-table input[type="checkbox"],
+body.portal-hr-admin .form-check-input {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid #d1d5db;
+    background: #ffffff;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    position: relative;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+body.portal-hr-admin .table input[type="checkbox"]:hover,
+body.portal-hr-admin .employees-table input[type="checkbox"]:hover,
+body.portal-hr-admin .hrdash-table input[type="checkbox"]:hover,
+body.portal-hr-admin .posts-table input[type="checkbox"]:hover,
+body.portal-hr-admin .form-check-input:hover {
+    border-color: #9333ea;
+    background: #faf5ff;
+}
+
+body.portal-hr-admin .table input[type="checkbox"]:checked,
+body.portal-hr-admin .employees-table input[type="checkbox"]:checked,
+body.portal-hr-admin .hrdash-table input[type="checkbox"]:checked,
+body.portal-hr-admin .posts-table input[type="checkbox"]:checked,
+body.portal-hr-admin .form-check-input:checked {
+    background: linear-gradient(135deg, #9333ea 0%, #7c3aed 100%);
+    border-color: #9333ea;
+}
+
+body.portal-hr-admin .table input[type="checkbox"]:checked::after,
+body.portal-hr-admin .employees-table input[type="checkbox"]:checked::after,
+body.portal-hr-admin .hrdash-table input[type="checkbox"]:checked::after,
+body.portal-hr-admin .posts-table input[type="checkbox"]:checked::after,
+body.portal-hr-admin .form-check-input:checked::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 5px;
+    height: 8px;
+    border: solid white;
+    border-width: 0 1.5px 1.5px 0;
+    transform: translate(-50%, -60%) rotate(45deg);
+}
+
+/* Checkbox column styling (compact) */
+body.portal-hr-admin .table thead th:first-child,
+body.portal-hr-admin .employees-table thead th:first-child,
+body.portal-hr-admin .hrdash-table thead th:first-child,
+body.portal-hr-admin .posts-table thead th:first-child {
+    width: 40px;
+    padding: 0.5rem;
+    text-align: center;
+}
+
+body.portal-hr-admin .table tbody td:first-child,
+body.portal-hr-admin .employees-table tbody td:first-child,
+body.portal-hr-admin .hrdash-table tbody td:first-child,
+body.portal-hr-admin .posts-table tbody td:first-child {
+    width: 40px;
+    padding: 0.5rem;
+    text-align: center;
+}
+
+/* Pill-shaped status badges (compact) */
+body.portal-hr-admin .table .badge,
+body.portal-hr-admin .employees-table .badge,
+body.portal-hr-admin .hrdash-table .badge,
+body.portal-hr-admin .posts-table .badge,
+body.portal-hr-admin .status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    line-height: 1;
+    border: none;
+}
+
+/* Status badge colors - modern pill design */
+body.portal-hr-admin .status-badge.active,
+body.portal-hr-admin .badge.bg-success,
+body.portal-hr-admin .badge-success {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+body.portal-hr-admin .status-badge.inactive,
+body.portal-hr-admin .badge.bg-secondary {
+    background: #f3f4f6;
+    color: #4b5563;
+}
+
+body.portal-hr-admin .status-badge.terminated,
+body.portal-hr-admin .badge.bg-danger,
+body.portal-hr-admin .badge-danger {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+body.portal-hr-admin .badge.bg-warning,
+body.portal-hr-admin .badge-warning {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+body.portal-hr-admin .badge.bg-info {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+/* Duplicate removed - using modern styling from above */
+
+/* Remove double container styling when table-responsive is inside a card */
+body.portal-hr-admin .hrdash-card .table-responsive,
+body.portal-hr-admin .card .table-responsive {
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
 }
 
 /* Ensure tables fit within viewport */
@@ -625,31 +837,42 @@ body.portal-hr-admin .table {
     table-layout: auto;
     width: 100%;
     max-width: 100%;
+    min-width: 600px; /* Minimum width for readability */
 }
 
-/* Compact table styling for HR-Admin */
+/* Modern table styling - compact spacing */
 body.portal-hr-admin .employees-table thead th,
-body.portal-hr-admin .table thead th {
-    padding: 0.625rem 0.75rem !important;
+body.portal-hr-admin .table thead th,
+body.portal-hr-admin .hrdash-table thead th {
+    padding: 0.5rem 0.75rem !important;
     font-size: 0.75rem !important;
+    font-weight: 600 !important;
+    text-transform: none !important;
+    letter-spacing: 0 !important;
 }
 
 body.portal-hr-admin .employees-table tbody td,
-body.portal-hr-admin .table tbody td {
-    padding: 0.625rem 0.75rem !important;
-    font-size: 0.875rem !important;
+body.portal-hr-admin .table tbody td,
+body.portal-hr-admin .hrdash-table tbody td {
+    padding: 0.5rem 0.75rem !important;
+    font-size: 0.8125rem !important;
 }
 
 /* Ensure table content fits within viewport */
 body.portal-hr-admin .table-container {
-    overflow-x: hidden;
+    overflow-x: auto;
     overflow-y: visible;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+    max-width: 100%;
+    position: relative;
 }
 
 body.portal-hr-admin .employees-table {
     table-layout: auto;
     width: 100%;
     max-width: 100%;
+    min-width: 800px; /* Minimum width for employee table readability */
 }
 
 body.portal-hr-admin .employees-table th,
@@ -666,26 +889,62 @@ body.portal-hr-admin .employees-table .employment-details {
     word-wrap: break-word;
 }
 
-/* Reduce spacing in employee info cells */
-body.portal-hr-admin .employees-table .employee-info {
-    gap: 0.5rem !important;
+/* Combined employee info format: TYPE | #NUM | NAME on first line, POST on second, Employment Status on third */
+body.portal-hr-admin .employees-table .employee-info-combined {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
 }
 
-body.portal-hr-admin .employees-table .employee-avatar {
-    width: 32px !important;
-    height: 32px !important;
+body.portal-hr-admin .employees-table .employee-info-line {
+    font-size: 0.8125rem !important;
+    line-height: 1.3 !important;
+    color: #1e293b !important;
+    margin-bottom: 0;
+}
+
+body.portal-hr-admin .employees-table .employee-post {
     font-size: 0.75rem !important;
-}
-
-body.portal-hr-admin .employees-table .employee-name {
-    font-size: 0.875rem !important;
-    margin-bottom: 0.125rem !important;
-}
-
-body.portal-hr-admin .employees-table .employee-email,
-body.portal-hr-admin .employees-table .employee-number {
-    font-size: 0.75rem !important;
+    line-height: 1.2 !important;
+    color: #64748b !important;
     margin-top: 0.125rem !important;
+}
+
+body.portal-hr-admin .employees-table .employee-status-badge {
+    margin-top: 0.125rem !important;
+}
+
+/* Adjust employee info column width for new format (compact) */
+body.portal-hr-admin .employees-table th:nth-child(2),
+body.portal-hr-admin .employees-table td:nth-child(2) {
+    width: 200px !important;
+    min-width: 200px !important;
+    max-width: 260px !important;
+    padding: 0.5rem 0.75rem !important;
+}
+
+/* License and RLM info styling */
+body.portal-hr-admin .employees-table .license-rlm-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+body.portal-hr-admin .employees-table .license-rlm-info > div {
+    margin-bottom: 0.75rem;
+}
+
+body.portal-hr-admin .employees-table .license-rlm-info > div:last-child {
+    margin-bottom: 0;
+}
+
+/* Adjust license and RLM column width */
+body.portal-hr-admin .employees-table th:nth-child(3),
+body.portal-hr-admin .employees-table td:nth-child(3) {
+    width: 200px !important;
+    min-width: 200px !important;
+    max-width: 250px !important;
+    padding: 0.625rem 0.75rem !important;
 }
 
 /* Compact license and employment details */
@@ -1452,9 +1711,13 @@ body.portal-hr-admin .row.g-4 + .row.g-4 {
 
 /* Standardize section spacing */
 body.portal-hr-admin .row.g-4 + .card,
-body.portal-hr-admin .row.g-4 + .table-container,
 body.portal-hr-admin .row.g-4 + .table-responsive {
     margin-top: 0 !important;
+}
+
+/* Add spacing between employee stats and table (at least 0.5 inch / 0.75rem) */
+body.portal-hr-admin .hrdash .row.g-4 + .table-container {
+    margin-top: 1rem !important; /* 0.5 inch = approximately 0.75rem to 1rem (16px) */
 }
 
 /* Ensure consistent spacing between major sections */
@@ -1490,4 +1753,335 @@ body.portal-hr-admin .row.g-3 {
 
 body.portal-hr-admin .row.g-3.mb-4 {
     margin-bottom: 0 !important;
+}
+
+/* ============================================
+   HR-ADMIN: RESPONSIVE TABLE ADAPTATIONS
+   ============================================ */
+
+/* Mobile Portrait (320px - 575px) */
+@media (max-width: 575.98px) {
+    body.portal-hr-admin .table-responsive,
+    body.portal-hr-admin .table-container {
+        border-radius: 8px;
+        margin-left: calc(-1 * var(--hr-page-px));
+        margin-right: calc(-1 * var(--hr-page-px));
+        width: calc(100% + (2 * var(--hr-page-px)));
+        padding: 0;
+    }
+    
+    body.portal-hr-admin .table,
+    body.portal-hr-admin .hrdash-table {
+        min-width: 600px;
+        font-size: 0.8125rem;
+    }
+    
+    body.portal-hr-admin .table thead th,
+    body.portal-hr-admin .hrdash-table thead th {
+        padding: 0.5rem 0.625rem;
+        font-size: 0.6875rem;
+    }
+    
+    body.portal-hr-admin .table tbody td,
+    body.portal-hr-admin .hrdash-table tbody td {
+        padding: 0.5rem 0.625rem;
+        font-size: 0.8125rem;
+    }
+    
+    body.portal-hr-admin .employees-table {
+        min-width: 700px;
+    }
+    
+    body.portal-hr-admin .posts-table {
+        min-width: 800px;
+    }
+}
+
+/* Mobile Landscape / Small Tablet (576px - 767px) */
+@media (min-width: 576px) and (max-width: 767.98px) {
+    body.portal-hr-admin .table,
+    body.portal-hr-admin .hrdash-table {
+        min-width: 650px;
+    }
+    
+    body.portal-hr-admin .employees-table {
+        min-width: 750px;
+    }
+    
+    body.portal-hr-admin .posts-table {
+        min-width: 850px;
+    }
+    
+    body.portal-hr-admin .table thead th,
+    body.portal-hr-admin .hrdash-table thead th {
+        padding: 0.5625rem 0.6875rem;
+        font-size: 0.71875rem;
+    }
+    
+    body.portal-hr-admin .table tbody td,
+    body.portal-hr-admin .hrdash-table tbody td {
+        padding: 0.5625rem 0.6875rem;
+        font-size: 0.84375rem;
+    }
+}
+
+/* Tablet Portrait (768px - 991px) */
+@media (min-width: 768px) and (max-width: 991.98px) {
+    body.portal-hr-admin .table,
+    body.portal-hr-admin .hrdash-table {
+        min-width: 700px;
+    }
+    
+    body.portal-hr-admin .employees-table {
+        min-width: 800px;
+    }
+    
+    body.portal-hr-admin .posts-table {
+        min-width: 900px;
+    }
+}
+
+/* Tablet Landscape / Small Desktop (992px - 1199px) */
+@media (min-width: 992px) and (max-width: 1199.98px) {
+    body.portal-hr-admin .table,
+    body.portal-hr-admin .hrdash-table {
+        min-width: 750px;
+    }
+    
+    body.portal-hr-admin .employees-table {
+        min-width: 850px;
+    }
+    
+    body.portal-hr-admin .posts-table {
+        min-width: 950px;
+    }
+}
+
+/* Desktop (1200px+) */
+@media (min-width: 1200px) {
+    body.portal-hr-admin .table,
+    body.portal-hr-admin .hrdash-table {
+        min-width: auto;
+    }
+    
+    body.portal-hr-admin .employees-table {
+        min-width: auto;
+    }
+    
+    body.portal-hr-admin .posts-table {
+        min-width: auto;
+    }
+}
+
+/* Orientation-specific adjustments */
+@media (orientation: portrait) and (max-width: 991.98px) {
+    body.portal-hr-admin .table-responsive,
+    body.portal-hr-admin .table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    body.portal-hr-admin .table thead th,
+    body.portal-hr-admin .hrdash-table thead th {
+        white-space: nowrap;
+    }
+    
+    body.portal-hr-admin .table tbody td,
+    body.portal-hr-admin .hrdash-table tbody td {
+        white-space: normal;
+        word-wrap: break-word;
+    }
+}
+
+@media (orientation: landscape) and (max-width: 991.98px) {
+    body.portal-hr-admin .table,
+    body.portal-hr-admin .hrdash-table {
+        min-width: 100%;
+    }
+    
+    body.portal-hr-admin .table-responsive,
+    body.portal-hr-admin .table-container {
+        overflow-x: auto;
+    }
+}
+
+/* Ensure table scroll indicators are visible */
+body.portal-hr-admin .table-responsive::-webkit-scrollbar,
+body.portal-hr-admin .table-container::-webkit-scrollbar {
+    height: 8px;
+    width: 8px;
+}
+
+body.portal-hr-admin .table-responsive::-webkit-scrollbar-track,
+body.portal-hr-admin .table-container::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 4px;
+}
+
+body.portal-hr-admin .table-responsive::-webkit-scrollbar-thumb,
+body.portal-hr-admin .table-container::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+
+body.portal-hr-admin .table-responsive::-webkit-scrollbar-thumb:hover,
+body.portal-hr-admin .table-container::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Touch-friendly table interactions on mobile */
+@media (max-width: 991.98px) {
+    body.portal-hr-admin .table tbody tr,
+    body.portal-hr-admin .hrdash-table tbody tr {
+        -webkit-tap-highlight-color: rgba(31, 178, 213, 0.1);
+    }
+    
+    body.portal-hr-admin .table tbody td,
+    body.portal-hr-admin .hrdash-table tbody td {
+        touch-action: manipulation;
+    }
+}
+
+/* Ensure hrdash-table is responsive */
+body.portal-hr-admin .hrdash-table {
+    width: 100%;
+    max-width: 100%;
+    table-layout: auto;
+    min-width: 600px;
+}
+
+/* ============================================
+   HR-ADMIN: NOTIFICATION & MESSAGE DROPDOWNS
+   ============================================ */
+
+/* Icon button styles */
+body.portal-hr-admin .hrdash-welcome__icon-btn {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: transparent;
+    color: #64748b;
+    border-radius: 10px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    padding: 0;
+    text-decoration: none;
+}
+
+body.portal-hr-admin .hrdash-welcome__icon-btn.dropdown-toggle::after {
+    display: none; /* Hide Bootstrap dropdown arrow for icon buttons */
+}
+
+body.portal-hr-admin .hrdash-welcome__icon-btn:hover {
+    background: #f1f5f9;
+    color: #1e293b;
+}
+
+body.portal-hr-admin .hrdash-welcome__icon-btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(31, 178, 213, 0.1);
+}
+
+body.portal-hr-admin .hrdash-welcome__icon-btn i {
+    font-size: 1.125rem;
+}
+
+/* Badge on icon buttons */
+body.portal-hr-admin .hrdash-welcome__badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    background: #ef4444;
+    color: #ffffff;
+    font-size: 0.625rem;
+    font-weight: 700;
+    padding: 0.125rem 0.375rem;
+    border-radius: 10px;
+    min-width: 18px;
+    text-align: center;
+    line-height: 1.2;
+    box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
+}
+
+/* Notification dropdown menu */
+body.portal-hr-admin .hrdash-notification-dropdown {
+    min-width: 320px;
+    max-width: 400px;
+    max-height: 500px;
+    overflow-y: auto;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
+    padding: 0.5rem 0;
+    margin-top: 0.5rem;
+}
+
+body.portal-hr-admin .hrdash-notification-dropdown .dropdown-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: #0f172a;
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+    margin: 0;
+}
+
+body.portal-hr-admin .hrdash-notification-dropdown .dropdown-header a {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #1e40af;
+}
+
+body.portal-hr-admin .hrdash-notification-dropdown .dropdown-header a:hover {
+    color: #1e3a8a;
+    text-decoration: underline;
+}
+
+body.portal-hr-admin .hrdash-notification-dropdown .dropdown-item {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #f1f5f9;
+    transition: background 0.15s ease;
+}
+
+body.portal-hr-admin .hrdash-notification-dropdown .dropdown-item:last-child {
+    border-bottom: none;
+}
+
+body.portal-hr-admin .hrdash-notification-dropdown .dropdown-item:hover {
+    background: #f8fafc;
+}
+
+body.portal-hr-admin .hrdash-notification-item {
+    text-decoration: none;
+    color: inherit;
+}
+
+body.portal-hr-admin .hrdash-notification-item:hover {
+    text-decoration: none;
+}
+
+body.portal-hr-admin .hrdash-notification-item .fw-semibold {
+    font-weight: 600;
+    color: #0f172a;
+    margin-bottom: 0.25rem;
+}
+
+body.portal-hr-admin .hrdash-notification-item .text-muted {
+    color: #64748b;
+    font-size: 0.8125rem;
+}
+
+/* Time display */
+body.portal-hr-admin .hrdash-welcome__time {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: #64748b;
+    margin-right: 0.25rem;
 }

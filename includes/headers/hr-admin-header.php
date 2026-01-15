@@ -72,7 +72,20 @@ $activeSection = getActiveSection($page);
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400,0,0&family=Google+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&family=Open+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="<?php echo asset_url('css/style.css'); ?>" rel="stylesheet">
     <link href="<?php echo asset_url('css/font-override.css'); ?>" rel="stylesheet">
+    <link href="<?php echo asset_url('css/custom-icons.css'); ?>" rel="stylesheet">
     <!-- number-rendering-fix.css merged into font-override.css -->
+    <style>
+    /* Override icon paths with absolute URLs for SVG icons */
+    .hr-icon-plus { background-image: url('<?php echo asset_url('icons/plus-icon.svg'); ?>') !important; }
+    .hr-icon-edit { background-image: url('<?php echo asset_url('icons/edit-icon.svg'); ?>') !important; }
+    .hr-icon-view, .hr-icon-eye { background-image: url('<?php echo asset_url('icons/view-icon_eye-icon.svg'); ?>') !important; }
+    .hr-icon-check { background-image: url('<?php echo asset_url('icons/check-icon.svg'); ?>') !important; }
+    .hr-icon-double-check { background-image: url('<?php echo asset_url('icons/double-check-icon.svg'); ?>') !important; }
+    .hr-icon-dismiss, .hr-icon-remove, .hr-icon-times { background-image: url('<?php echo asset_url('icons/dismiss-icon_remove-icon.svg'); ?>') !important; }
+    .hr-icon-minus { background-image: url('<?php echo asset_url('icons/minus-icon.svg'); ?>') !important; }
+    .hr-icon-notification, .hr-icon-bell { background-image: url('<?php echo asset_url('icons/notif-icon.svg'); ?>') !important; }
+    .hr-icon-message { background-image: url('<?php echo asset_url('icons/message-icon.svg'); ?>') !important; }
+    </style>
     
     <!-- Enhanced Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
