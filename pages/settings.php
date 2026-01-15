@@ -1207,12 +1207,22 @@ html[data-theme="dark"] .super-admin-settings .card-subtitle {
 }
 
 html[data-theme="dark"] .super-admin-settings .settings-nav .list-group-item {
+    background: #1a1d23 !important;
     color: var(--interface-text-muted) !important;
 }
 
 html[data-theme="dark"] .super-admin-settings .settings-nav .list-group-item:hover {
     background: #1e293b !important;
     color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .super-admin-settings .settings-nav .list-group-item.active {
+    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1e293b 100%) !important;
+    color: #fff !important;
+}
+
+html[data-theme="dark"] .super-admin-settings .settings-nav .list-group-item.active i {
+    color: #ffffff !important;
 }
 
 html[data-theme="dark"] .super-admin-settings .settings-nav .list-group-item i {
