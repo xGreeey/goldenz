@@ -178,6 +178,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             redirect_with_message('?page=settings', 'An error occurred while changing password', 'error');
         }
     }
+
+    // Handle password policy update (non-AJAX, from settings page)
+    if (!$isAjax && $page === 'settings' && $action === 'update_password_policy') {
+        $min_length = isset($_POST['password_min_length']) ? (int)$_POST['password_min_length'] : 8;
+        $expiry_days = isset($_POST['password_expiry_days']) ? (int)$_POST['password_expiry_days'] : 90;
+        $require_special = isset($_POST['password_require_special']) && $_POST['password_require_special'] === '1';
+
+        // Basic validation
+        if ($min_length < 4) {
+            redirect_with_message('?page=settings', 'Minimum length must be at least 4 characters', 'error');
+        }
+        if ($expiry_days < 0) {
+            redirect_with_message('?page=settings', 'Password expiry days cannot be negative', 'error');
+        }
+
+        if (!function_exists('update_password_policy')) {
+            require_once __DIR__ . '/../includes/database.php';
+        }
+
+        $result = update_password_policy($min_length, $require_special, $expiry_days);
+        if ($result) {
+            redirect_with_message('?page=settings', 'Password policy updated successfully', 'success');
+        } else {
+            redirect_with_message('?page=settings', 'Failed to update password policy', 'error');
+        }
+    }
     
     // Prevent any output before JSON response
     // Clean output buffer if it exists, otherwise start one

@@ -2768,6 +2768,93 @@ if (!function_exists('get_user_by_id')) {
     }
 }
 
+// Password policy helpers
+if (!function_exists('get_password_policy')) {
+    /**
+     * Get global password policy.
+     * Returns array with keys:
+     * - min_length (int)
+     * - require_special (bool)
+     * - expiry_days (int)
+     */
+    function get_password_policy() {
+        $defaults = [
+            'min_length'      => 8,
+            'require_special' => true,
+            'expiry_days'     => 90,
+        ];
+
+        try {
+            $pdo = get_db_connection();
+
+            // Create table if it does not exist (simple key/value store)
+            $pdo->exec("CREATE TABLE IF NOT EXISTS security_settings (
+                `key` VARCHAR(100) NOT NULL PRIMARY KEY,
+                `value` VARCHAR(255) NULL,
+                `updated_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+            $stmt = $pdo->query("SELECT `key`, `value` FROM security_settings");
+            $rows = $stmt ? $stmt->fetchAll(PDO::FETCH_KEY_PAIR) : [];
+
+            $policy = $defaults;
+
+            if (isset($rows['password_min_length']) && is_numeric($rows['password_min_length'])) {
+                $policy['min_length'] = max(4, (int)$rows['password_min_length']);
+            }
+
+            if (isset($rows['password_require_special'])) {
+                $policy['require_special'] = $rows['password_require_special'] === '1';
+            }
+
+            if (isset($rows['password_expiry_days']) && is_numeric($rows['password_expiry_days'])) {
+                $policy['expiry_days'] = max(0, (int)$rows['password_expiry_days']);
+            }
+
+            return $policy;
+        } catch (Exception $e) {
+            error_log("Error in get_password_policy: " . $e->getMessage());
+            return $defaults;
+        }
+    }
+}
+
+if (!function_exists('update_password_policy')) {
+    /**
+     * Update global password policy.
+     */
+    function update_password_policy($min_length, $require_special, $expiry_days) {
+        try {
+            $pdo = get_db_connection();
+
+            // Ensure table exists
+            $pdo->exec("CREATE TABLE IF NOT EXISTS security_settings (
+                `key` VARCHAR(100) NOT NULL PRIMARY KEY,
+                `value` VARCHAR(255) NULL,
+                `updated_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+            $settings = [
+                'password_min_length'      => (string)max(4, (int)$min_length),
+                'password_require_special' => $require_special ? '1' : '0',
+                'password_expiry_days'     => (string)max(0, (int)$expiry_days),
+            ];
+
+            $stmt = $pdo->prepare("INSERT INTO security_settings (`key`, `value`) VALUES (:key, :value)
+                                   ON DUPLICATE KEY UPDATE `value` = VALUES(`value`)");
+
+            foreach ($settings as $key => $value) {
+                $stmt->execute([':key' => $key, ':value' => $value]);
+            }
+
+            return true;
+        } catch (Exception $e) {
+            error_log("Error in update_password_policy: " . $e->getMessage());
+            return false;
+        }
+    }
+}
+
 // Create new user
 if (!function_exists('create_user')) {
     function create_user($user_data, $created_by = null) {
