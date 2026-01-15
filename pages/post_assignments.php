@@ -54,12 +54,12 @@ if ($post_id) {
 $all_employees = get_employees();
 ?>
 
-<div class="container-fluid post-assignments-modern">
+<div class="container-fluid hrdash">
     <!-- Page Header -->
-    <div class="page-header-modern mb-5">
+    <div class="page-header-modern">
         <div class="page-title-modern">
             <h1 class="page-title-main">Post Assignments</h1>
-            <p class="page-subtitle">Manage employee assignments to specific posts and locations</p>
+            <p class="page-subtitle-modern">Manage employee assignments to specific posts and locations</p>
         </div>
         <div class="page-actions-modern">
             <a href="?page=posts" class="btn btn-outline-modern">
@@ -69,7 +69,9 @@ $all_employees = get_employees();
     </div>
 
     <!-- Post Selection -->
-    <div class="card card-modern mb-4">
+    <div class="row g-4">
+        <div class="col-12">
+    <div class="card card-modern">
         <div class="card-header-modern">
             <h5 class="card-title-modern">Select Post to Manage</h5>
         </div>
@@ -103,7 +105,9 @@ $all_employees = get_employees();
 
     <?php if ($selected_post): ?>
         <!-- Post Information -->
-        <div class="card card-modern mb-4">
+        <div class="row g-4">
+            <div class="col-12">
+        <div class="card card-modern">
             <div class="card-header-modern">
                 <h5 class="card-title-modern">Post Information</h5>
             </div>
@@ -146,6 +150,8 @@ $all_employees = get_employees();
                     </div>
                 </div>
             </div>
+        </div>
+        </div>
         </div>
 
         <!-- Assignment Management -->
@@ -255,12 +261,16 @@ $all_employees = get_employees();
         </div>
     <?php else: ?>
         <!-- No Post Selected -->
+        <div class="row g-4">
+            <div class="col-12">
         <div class="card card-modern">
             <div class="card-body-modern text-center py-5">
                 <i class="fas fa-map-marker-alt fa-3x text-muted mb-4"></i>
                 <h4 class="empty-state-title">Select a Post</h4>
                 <p class="empty-state-text">Choose a post from the dropdown above to view and manage employee assignments.</p>
             </div>
+        </div>
+        </div>
         </div>
     <?php endif; ?>
 </div>

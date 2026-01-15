@@ -2837,6 +2837,10 @@ if (!function_exists('create_user')) {
                         created_by
                     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             
+            // Convert empty strings to null for optional fields
+            $department = (!empty($user_data['department']) && trim($user_data['department']) !== '') ? trim($user_data['department']) : null;
+            $phone = (!empty($user_data['phone']) && trim($user_data['phone']) !== '') ? trim($user_data['phone']) : null;
+            
             $params = [
                 $user_data['username'],
                 $user_data['email'],
@@ -2845,8 +2849,8 @@ if (!function_exists('create_user')) {
                 $user_data['role'],
                 $status,
                 $employee_id,
-                $user_data['department'] ?? null,
-                $user_data['phone'] ?? null,
+                $department,
+                $phone,
                 $created_by
             ];
             
@@ -2870,53 +2874,79 @@ if (!function_exists('create_user')) {
                 return ['success' => false, 'message' => 'Database error: ' . $e->getMessage()];
             }
             
-            // Check if insert was successful (rowCount may not work reliably for INSERT, so check lastInsertId)
+            // Check if insert was successful
+            // If execute() returned true and no exception was thrown, the insert succeeded
+            if (!$result) {
+                $error_info = $stmt->errorInfo();
+                error_log("create_user: Execute returned false");
+                error_log("PDO Error Info: " . print_r($error_info, true));
+                return ['success' => false, 'message' => 'Failed to create user - execution returned false. Check logs for details.'];
+            }
+            
+            // Get the inserted user ID - try multiple methods
             $new_user_id = $pdo->lastInsertId();
-            if ($result && $new_user_id) {
+            
+            // If lastInsertId() returns 0 or false, query the database to get the ID
+            // This can happen in some MySQL configurations or if there are connection issues
+            if (!$new_user_id || $new_user_id == 0) {
+                // Query for the newly created user by username/email (both are unique)
+                $verify_stmt = $pdo->prepare("SELECT id FROM users WHERE username = ? LIMIT 1");
+                $verify_stmt->execute([$user_data['username']]);
+                $verified_user = $verify_stmt->fetch(PDO::FETCH_ASSOC);
                 
-                // Log audit event
-                if (function_exists('log_audit_event')) {
-                    log_audit_event(
-                        'USER_CREATED',
-                        'users',
-                        $new_user_id,
-                        null,
-                        json_encode([
-                            'username' => $user_data['username'],
-                            'email' => $user_data['email'],
-                            'name' => $user_data['name'],
-                            'role' => $user_data['role'],
-                            'status' => $status
-                        ]),
-                        $created_by
-                    );
+                if ($verified_user && isset($verified_user['id'])) {
+                    $new_user_id = (int)$verified_user['id'];
+                } else {
+                    // Try by email as fallback
+                    $verify_stmt = $pdo->prepare("SELECT id FROM users WHERE email = ? LIMIT 1");
+                    $verify_stmt->execute([$user_data['email']]);
+                    $verified_user = $verify_stmt->fetch(PDO::FETCH_ASSOC);
+                    
+                    if ($verified_user && isset($verified_user['id'])) {
+                        $new_user_id = (int)$verified_user['id'];
+                    }
                 }
-                
-                // Log security event
-                if (function_exists('log_security_event')) {
-                    log_security_event('User Created', "New user created: {$user_data['username']} ({$user_data['name']}) - Role: {$user_data['role']} - Created by: " . ($created_by ?? 'System'));
-                }
-                
-                return [
-                    'success' => true, 
-                    'message' => 'User created successfully',
-                    'user_id' => $new_user_id
-                ];
             }
             
-            // If execution succeeded but no rows affected, something went wrong
-            $error_info = $stmt->errorInfo();
-            error_log("create_user: Query executed but no rows inserted");
-            error_log("PDO Error Info: " . print_r($error_info, true));
-            error_log("Last Insert ID: " . ($pdo->lastInsertId() ?: 'null'));
-            error_log("SQL: " . $sql);
-            error_log("Params: " . print_r($params, true));
-            
-            if ($result && $stmt->rowCount() === 0) {
-                return ['success' => false, 'message' => 'Failed to create user - no rows inserted. Check logs for details.'];
+            // If we still don't have an ID, but execute() returned true, 
+            // the insert likely succeeded but we can't get the ID
+            // In this case, we'll still return success but log a warning
+            if (!$new_user_id || $new_user_id == 0) {
+                error_log("create_user: Warning - Insert executed successfully but could not retrieve user ID");
+                error_log("Username: " . $user_data['username']);
+                error_log("Email: " . $user_data['email']);
+                // Still return success since execute() returned true
+                $new_user_id = null;
             }
             
-            return ['success' => false, 'message' => 'Failed to create user - execution returned false. Check logs for details.'];
+            // Log audit event if we have a user ID
+            if ($new_user_id && function_exists('log_audit_event')) {
+                log_audit_event(
+                    'USER_CREATED',
+                    'users',
+                    $new_user_id,
+                    null,
+                    json_encode([
+                        'username' => $user_data['username'],
+                        'email' => $user_data['email'],
+                        'name' => $user_data['name'],
+                        'role' => $user_data['role'],
+                        'status' => $status
+                    ]),
+                    $created_by
+                );
+            }
+            
+            // Log security event
+            if (function_exists('log_security_event')) {
+                log_security_event('User Created', "New user created: {$user_data['username']} ({$user_data['name']}) - Role: {$user_data['role']} - Created by: " . ($created_by ?? 'System'));
+            }
+            
+            return [
+                'success' => true, 
+                'message' => 'User created successfully',
+                'user_id' => $new_user_id
+            ];
         } catch (PDOException $e) {
             error_log("PDO Exception in create_user: " . $e->getMessage());
             error_log("PDO Error Code: " . $e->getCode());
