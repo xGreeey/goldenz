@@ -77,6 +77,26 @@ $expStmt = $pdo->prepare("SELECT id, first_name, surname, post, license_no, lice
 $expStmt->execute();
 $expiring = $expStmt->fetchAll(PDO::FETCH_ASSOC);
 
+// Expired licenses list (past) - only active employees with valid dates
+$expired_licenses = [];
+try {
+    $expiredStmt = $pdo->prepare("SELECT id, first_name, surname, post, license_no, license_exp_date
+                                  FROM employees
+                                  WHERE status = 'Active'
+                                        AND license_no IS NOT NULL
+                                        AND license_no != ''
+                                        AND license_exp_date IS NOT NULL
+                                        AND license_exp_date != ''
+                                        AND license_exp_date != '0000-00-00'
+                                        AND license_exp_date < CURDATE()
+                                  ORDER BY license_exp_date DESC
+                                  LIMIT 8");
+    $expiredStmt->execute();
+    $expired_licenses = $expiredStmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (Exception $e) {
+    $expired_licenses = [];
+}
+
 // Expired/expiring counts are already in $stats
 
 // Time-based greeting
@@ -199,6 +219,389 @@ $all_employees = get_employees();
 $display_employees = array_slice($all_employees, 0, 10); // Show first 10 employees
 ?>
 
+<?php if (($_SESSION['user_role'] ?? '') === 'hr_admin'): ?>
+<div class="container-fluid hrdash">
+    <div class="hrdash-welcome">
+        <div>
+            <h2 class="hrdash-welcome__title">Welcome, <?php echo htmlspecialchars($_SESSION['name'] ?? 'HR Administrator'); ?></h2>
+            <p class="hrdash-welcome__subtitle"><?php echo $greeting; ?>! Ready to manage your HR tasks today?</p>
+        </div>
+    </div>
+
+    <!-- Stat bar -->
+    <div class="row g-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="card hrdash-stat">
+                <div class="hrdash-stat__top">
+                    <div class="hrdash-stat__label">Total Employees</div>
+                    <div class="hrdash-stat__icon"><i class="fas fa-users"></i></div>
+                </div>
+                <div class="hrdash-stat__value"><?php echo number_format($stats['total_employees'] ?? 0); ?></div>
+                <div class="hrdash-stat__meta">Active headcount</div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card hrdash-stat">
+                <div class="hrdash-stat__top">
+                    <div class="hrdash-stat__label">Active</div>
+                    <div class="hrdash-stat__icon"><i class="fas fa-user-check"></i></div>
+                </div>
+                <div class="hrdash-stat__value"><?php echo number_format($stats['active_employees'] ?? 0); ?></div>
+                <div class="hrdash-stat__meta">
+                    <?php echo ($stats['total_employees'] ?? 0) > 0 ? round(($stats['active_employees'] / max(1, $stats['total_employees'])) * 100) : 0; ?>% of total
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card hrdash-stat">
+                <div class="hrdash-stat__top">
+                    <div class="hrdash-stat__label">Expiring Licenses</div>
+                    <div class="hrdash-stat__icon"><i class="fas fa-clock"></i></div>
+                </div>
+                <div class="hrdash-stat__value"><?php echo number_format($stats['expiring_licenses'] ?? 0); ?></div>
+                <div class="hrdash-stat__meta">Next 30–90 days</div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card hrdash-stat">
+                <div class="hrdash-stat__top">
+                    <div class="hrdash-stat__label">Expired Licenses</div>
+                    <div class="hrdash-stat__icon"><i class="fas fa-triangle-exclamation"></i></div>
+                </div>
+                <div class="hrdash-stat__value"><?php echo number_format($stats['expired_licenses'] ?? 0); ?></div>
+                <div class="hrdash-stat__meta">Immediate follow-up</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mt-1">
+        <!-- License table (moved to main left position) -->
+        <div class="col-xl-8">
+            <div class="card hrdash-card">
+                <div class="hrdash-card__header hrdash-card__header--split">
+                    <div>
+                        <h5 class="hrdash-card__title">License Watchlist</h5>
+                        <div class="hrdash-card__subtitle">Expiring and expired licenses</div>
+                    </div>
+                    <div class="hrdash-segment" role="tablist" aria-label="License list">
+                        <button class="hrdash-segment__btn active" type="button" data-target="expiring">Expiring</button>
+                        <button class="hrdash-segment__btn" type="button" data-target="expired">Expired</button>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table hrdash-table mb-0">
+                        <thead>
+                            <tr>
+                                <th>Employee</th>
+                                <th>Post</th>
+                                <th>License #</th>
+                                <th>Expiry</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody data-pane="expiring">
+                            <?php if (empty($expiring)): ?>
+                                <tr><td colspan="5" class="text-center py-4 text-muted">No expiring licenses found.</td></tr>
+                            <?php else: ?>
+                                <?php foreach ($expiring as $e): ?>
+                                    <?php $ind = getLicenseExpirationIndicator($e['license_exp_date'] ?? ''); ?>
+                                    <tr>
+                                        <td>
+                                            <a href="?page=view_employee&id=<?php echo (int)($e['id'] ?? 0); ?>" class="text-decoration-none fw-semibold">
+                                                <?php echo htmlspecialchars(($e['surname'] ?? '') . ', ' . ($e['first_name'] ?? '')); ?>
+                                            </a>
+                                        </td>
+                                        <td class="text-muted"><?php echo htmlspecialchars($e['post'] ?? 'Unassigned'); ?></td>
+                                        <td><code class="license-code"><?php echo htmlspecialchars($e['license_no'] ?? ''); ?></code></td>
+                                        <td><?php echo htmlspecialchars(date('M d, Y', strtotime($e['license_exp_date']))); ?></td>
+                                        <td><span class="<?php echo htmlspecialchars($ind['class'] ?? ''); ?>"><?php echo htmlspecialchars($ind['text'] ?? ''); ?></span></td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </tbody>
+                        <tbody data-pane="expired" style="display:none;">
+                            <?php if (empty($expired_licenses)): ?>
+                                <tr><td colspan="5" class="text-center py-4 text-muted">No expired licenses found.</td></tr>
+                            <?php else: ?>
+                                <?php foreach ($expired_licenses as $e): ?>
+                                    <?php $ind = getLicenseExpirationIndicator($e['license_exp_date'] ?? ''); ?>
+                                    <tr>
+                                        <td>
+                                            <a href="?page=view_employee&id=<?php echo (int)($e['id'] ?? 0); ?>" class="text-decoration-none fw-semibold">
+                                                <?php echo htmlspecialchars(($e['surname'] ?? '') . ', ' . ($e['first_name'] ?? '')); ?>
+                                            </a>
+                                        </td>
+                                        <td class="text-muted"><?php echo htmlspecialchars($e['post'] ?? 'Unassigned'); ?></td>
+                                        <td><code class="license-code"><?php echo htmlspecialchars($e['license_no'] ?? ''); ?></code></td>
+                                        <td><?php echo htmlspecialchars(date('M d, Y', strtotime($e['license_exp_date']))); ?></td>
+                                        <td><span class="<?php echo htmlspecialchars($ind['class'] ?? ''); ?>"><?php echo htmlspecialchars($ind['text'] ?? ''); ?></span></td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Today's schedule -->
+        <div class="col-xl-4">
+            <div class="card hrdash-card hrdash-schedule">
+                <div class="hrdash-card__header">
+                    <div>
+                        <h5 class="hrdash-card__title">Today’s Schedule</h5>
+                        <div class="hrdash-card__subtitle"><?php echo date('M d, Y'); ?></div>
+                    </div>
+                </div>
+                <div class="hrdash-schedule__body">
+                    <div class="hrdash-schedule__empty">
+                        <i class="fas fa-calendar-day"></i>
+                        <div>No schedule connected yet.</div>
+                        <small class="text-muted">Hook this to your calendar/events when ready.</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Shortcuts (directly below the two cards above) -->
+        <div class="col-12">
+            <div class="card hrdash-card hrdash-shortcuts">
+                <div class="hrdash-card__header">
+                    <div>
+                        <h5 class="hrdash-card__title">Shortcuts</h5>
+                        <div class="hrdash-card__subtitle">Quick actions</div>
+                    </div>
+                </div>
+                <div class="hrdash-shortcuts__body">
+                    <a class="hrdash-shortcut" href="?page=add_employee"><i class="fas fa-user-plus"></i><span>Add Employee</span></a>
+                    <a class="hrdash-shortcut" href="?page=add_alert"><i class="fas fa-bell"></i><span>Add Alert</span></a>
+                    <a class="hrdash-shortcut" href="?page=posts"><i class="fas fa-briefcase"></i><span>Posts</span></a>
+                    <a class="hrdash-shortcut" href="?page=post_assignments"><i class="fas fa-diagram-project"></i><span>Assignments</span></a>
+                    <a class="hrdash-shortcut" href="?page=employees"><i class="fas fa-users"></i><span>Employees</span></a>
+                    <a class="hrdash-shortcut" href="?page=alerts"><i class="fas fa-bell"></i><span>Alerts</span></a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* HR-Admin dashboard inspired layout (scoped by container class) */
+.hrdash {
+    background: #f8fafc;
+    min-height: 100vh;
+}
+.hrdash-welcome {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+.hrdash-welcome__title {
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    margin: 0 0 0.25rem 0;
+    color: #0f172a;
+}
+.hrdash-welcome__subtitle {
+    margin: 0;
+    color: #64748b;
+}
+.hrdash-stat {
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+    padding: 1.25rem 1.25rem 1.1rem 1.25rem;
+}
+.hrdash-stat__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+.hrdash-stat__label {
+    font-size: 0.8125rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #64748b;
+    font-weight: 600;
+}
+.hrdash-stat__icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    background: #eef2ff;
+    color: #1f75cb;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(31,117,203,0.15);
+}
+.hrdash-stat__value {
+    font-size: 2.2rem;
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    color: #0f172a;
+}
+.hrdash-stat__meta {
+    margin-top: 0.35rem;
+    color: #64748b;
+    font-size: 0.9rem;
+}
+.hrdash-card {
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+    overflow: hidden;
+}
+.hrdash-card__header {
+    padding: 1rem 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    border-bottom: 1px solid #e2e8f0;
+    background: #ffffff;
+}
+.hrdash-card__header--split {
+    align-items: flex-end;
+}
+.hrdash-card__title {
+    margin: 0;
+    font-weight: 800;
+    color: #0f172a;
+}
+.hrdash-card__subtitle {
+    font-size: 0.875rem;
+    color: #64748b;
+}
+.hrdash-table {
+    background: #ffffff;
+}
+.hrdash-table tbody tr:hover {
+    background: #f8fafc;
+}
+.hrdash-schedule__body {
+    padding: 1.25rem;
+    background: #ffffff;
+    min-height: 320px;
+}
+.hrdash-schedule__empty {
+    height: 100%;
+    border: 1px dashed #cbd5e1;
+    border-radius: 14px;
+    display: grid;
+    place-content: center;
+    gap: 0.35rem;
+    text-align: center;
+    color: #64748b;
+    background: #f8fafc;
+}
+.hrdash-schedule__empty i {
+    font-size: 1.25rem;
+    color: #1f75cb;
+}
+.hrdash-segment {
+    display: inline-flex;
+    border: 1px solid #e2e8f0;
+    border-radius: 999px;
+    overflow: hidden;
+    background: #ffffff;
+}
+.hrdash-segment__btn {
+    border: 0;
+    background: transparent;
+    padding: 0.35rem 0.75rem;
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: #475569;
+}
+.hrdash-segment__btn.active {
+    background: #eaf5ff;
+    color: #0b4f8a;
+}
+.hrdash-table thead th {
+    background: #f8fafc;
+    color: #64748b;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    border-bottom: 1px solid #e2e8f0;
+}
+.hrdash-shortcuts__body {
+    padding: 1rem 1.25rem 1.25rem;
+    background: #ffffff;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem;
+}
+.hrdash-shortcut {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.75rem 0.85rem;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+    color: #0f172a;
+    text-decoration: none;
+    font-weight: 700;
+}
+.hrdash-shortcut i {
+    width: 28px;
+    height: 28px;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #ffffff;
+    border: 1px solid rgba(15,23,42,0.08);
+    color: #1f75cb;
+}
+.hrdash-shortcut:hover {
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.10);
+    transform: translateY(-1px);
+}
+@media (max-width: 992px) {
+    .hrdash-schedule__body {
+        min-height: 220px;
+    }
+    .hrdash-shortcuts__body {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 576px) {
+    .hrdash-shortcuts__body {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+<script>
+// HR dashboard: license watchlist toggle
+document.addEventListener('DOMContentLoaded', () => {
+    const seg = document.querySelector('.hrdash-segment');
+    if (!seg) return;
+    const buttons = seg.querySelectorAll('.hrdash-segment__btn');
+    const panes = document.querySelectorAll('tbody[data-pane]');
+    buttons.forEach((btn) => {
+        btn.addEventListener('click', () => {
+            buttons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const target = btn.getAttribute('data-target');
+            panes.forEach(p => {
+                p.style.display = (p.getAttribute('data-pane') === target) ? '' : 'none';
+            });
+        });
+    });
+});
+</script>
+
+<?php else: ?>
 <div class="container-fluid dashboard-modern">
     <!-- Page Header -->
     <div class="page-header-modern mb-5">
@@ -474,16 +877,17 @@ $display_employees = array_slice($all_employees, 0, 10); // Show first 10 employ
 
 /* Dashboard Container */
 .dashboard-modern {
-    padding: 2rem 2.5rem;
+    /* Use portal-wide spacing system (font-override.css) instead of page-local padding */
+    padding: 0;
     max-width: 100%;
     overflow-x: hidden;
-    /* Default: keep background neutral for other portals */
-    background: transparent;
+    /* Default for non HR-Admin portals */
+    background: #ffffff;
     min-height: 100vh;
 }
 
-/* HR Admin only: apply the separated light background */
-.portal-hr-admin .dashboard-modern {
+/* HR Admin only: keep the light separated background */
+body.portal-hr-admin .dashboard-modern {
     background: #f8fafc;
 }
 
@@ -717,11 +1121,16 @@ $display_employees = array_slice($all_employees, 0, 10); // Show first 10 employ
 
 /* Mini Cards */
 .mini-card-modern {
-    background: #f8fafc;
+    /* Default for non HR-Admin portals */
+    background: #ffffff;
     border: 1px solid #e2e8f0;
     border-radius: 12px;
     padding: 1.25rem;
     transition: all 0.2s ease;
+}
+
+body.portal-hr-admin .mini-card-modern {
+    background: #f8fafc;
 }
 
 .mini-card-modern:hover {
@@ -839,14 +1248,24 @@ $display_employees = array_slice($all_employees, 0, 10); // Show first 10 employ
     justify-content: space-between;
     align-items: center;
     padding: 0.875rem 1rem;
-    background: #f8fafc;
+    /* Default for non HR-Admin portals */
+    background: #ffffff;
     border-radius: 8px;
     transition: all 0.2s ease;
 }
 
+body.portal-hr-admin .post-item-modern {
+    background: #f8fafc;
+}
+
 .post-item-modern:hover {
-    background: #f1f5f9;
+    /* Default for non HR-Admin portals */
+    background: #ffffff;
     transform: translateX(2px);
+}
+
+body.portal-hr-admin .post-item-modern:hover {
+    background: #f1f5f9;
 }
 
 .post-name {
@@ -896,7 +1315,8 @@ $display_employees = array_slice($all_employees, 0, 10); // Show first 10 employ
     text-transform: uppercase;
     letter-spacing: 0.05em;
     padding: 1rem;
-    background-color: #f8fafc;
+    /* Default for non HR-Admin portals */
+    background-color: #ffffff;
     color: #64748b;
     position: sticky;
     top: 0;
@@ -904,6 +1324,10 @@ $display_employees = array_slice($all_employees, 0, 10); // Show first 10 employ
     text-align: center;
     vertical-align: middle;
     white-space: nowrap;
+}
+
+body.portal-hr-admin .table thead th {
+    background-color: #f8fafc;
 }
 
 /* Ensure headers align with their corresponding data columns */
@@ -931,6 +1355,11 @@ $display_employees = array_slice($all_employees, 0, 10); // Show first 10 employ
 }
 
 .table tbody tr:hover {
+    /* Default for non HR-Admin portals */
+    background-color: #ffffff;
+}
+
+body.portal-hr-admin .table tbody tr:hover {
     background-color: #f8fafc;
 }
 
@@ -1225,7 +1654,7 @@ $display_employees = array_slice($all_employees, 0, 10); // Show first 10 employ
 /* Responsive */
 @media (max-width: 768px) {
     .dashboard-modern {
-        padding: 1.5rem 1rem;
+        padding: 0;
     }
     
     .page-header-modern {
@@ -1268,3 +1697,5 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 </script>
+
+<?php endif; ?>
