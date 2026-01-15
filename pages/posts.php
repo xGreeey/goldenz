@@ -15,12 +15,12 @@ $filters = [
 $posts = get_posts($filters);
 ?>
 
-<div class="container-fluid posts-modern">
+<div class="container-fluid hrdash">
     <!-- Page Header -->
-    <div class="page-header-modern mb-5">
+    <div class="page-header-modern">
         <div class="page-title-modern">
             <h1 class="page-title-main">Posts & Locations</h1>
-            <p class="page-subtitle">Manage job positions, assignments, and locations</p>
+            <p class="page-subtitle-modern">Manage job positions, assignments, and locations</p>
         </div>
         <div class="page-actions-modern">
             <a href="?page=add_post" class="btn btn-primary-modern">
@@ -30,66 +30,76 @@ $posts = get_posts($filters);
     </div>
 
     <!-- Statistics Cards -->
-    <div class="summary-cards-modern mb-5">
-        <div class="card stat-card-modern h-100">
-            <div class="card-body-modern">
-                <div class="stat-header">
-                    <span class="stat-label">Total Posts</span>
-                    <i class="fas fa-briefcase stat-icon"></i>
+    <div class="row g-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="card hrdash-stat hrdash-stat--primary">
+                <div class="hrdash-stat__header">
+                    <div class="hrdash-stat__label">Total Posts</div>
                 </div>
-                <div class="stat-content">
-                    <h3 class="stat-number"><?php echo $post_stats['total_posts']; ?></h3>
-                    <span class="badge badge-primary-modern"><?php echo $post_stats['active_posts']; ?> active</span>
+                <div class="hrdash-stat__content">
+                    <div class="hrdash-stat__value"><?php echo number_format($post_stats['total_posts']); ?></div>
+                    <div class="hrdash-stat__trend hrdash-stat__trend--positive">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>5%</span>
+                    </div>
                 </div>
-                <small class="stat-footer">All posts tracked</small>
+                <div class="hrdash-stat__meta">All posts tracked in the system.</div>
             </div>
         </div>
 
-        <div class="card stat-card-modern h-100">
-            <div class="card-body-modern">
-                <div class="stat-header">
-                    <span class="stat-label">Required Positions</span>
-                    <i class="fas fa-users stat-icon"></i>
+        <div class="col-xl-3 col-md-6">
+            <div class="card hrdash-stat">
+                <div class="hrdash-stat__header">
+                    <div class="hrdash-stat__label">Required Positions</div>
                 </div>
-                <div class="stat-content">
-                    <h3 class="stat-number"><?php echo $post_stats['total_required']; ?></h3>
-                    <span class="badge badge-success-modern"><?php echo $post_stats['total_filled']; ?> filled</span>
+                <div class="hrdash-stat__content">
+                    <div class="hrdash-stat__value"><?php echo number_format($post_stats['total_required']); ?></div>
+                    <div class="hrdash-stat__trend hrdash-stat__trend--positive">
+                        <i class="fas fa-arrow-up"></i>
+                        <span><?php echo $post_stats['total_filled']; ?> filled</span>
+                    </div>
                 </div>
-                <small class="stat-footer">Staffing requirements</small>
+                <div class="hrdash-stat__meta">Total staffing requirements across all posts.</div>
             </div>
         </div>
 
-        <div class="card stat-card-modern h-100">
-            <div class="card-body-modern">
-                <div class="stat-header">
-                    <span class="stat-label">Vacant Positions</span>
-                    <i class="fas fa-exclamation-triangle stat-icon text-warning"></i>
+        <div class="col-xl-3 col-md-6">
+            <div class="card hrdash-stat">
+                <div class="hrdash-stat__header">
+                    <div class="hrdash-stat__label">Vacant Positions</div>
                 </div>
-                <div class="stat-content">
-                    <h3 class="stat-number text-warning"><?php echo $post_stats['total_vacant']; ?></h3>
-                    <span class="badge badge-warning-modern">Need filling</span>
+                <div class="hrdash-stat__content">
+                    <div class="hrdash-stat__value"><?php echo number_format($post_stats['total_vacant']); ?></div>
+                    <div class="hrdash-stat__trend hrdash-stat__trend--negative">
+                        <i class="fas fa-arrow-down"></i>
+                        <span>2%</span>
+                    </div>
                 </div>
-                <small class="stat-footer">Open roles</small>
+                <div class="hrdash-stat__meta">Open positions that need to be filled.</div>
             </div>
         </div>
 
-        <div class="card stat-card-modern h-100">
-            <div class="card-body-modern">
-                <div class="stat-header">
-                    <span class="stat-label">Urgent Posts</span>
-                    <i class="fas fa-flag stat-icon text-danger"></i>
+        <div class="col-xl-3 col-md-6">
+            <div class="card hrdash-stat">
+                <div class="hrdash-stat__header">
+                    <div class="hrdash-stat__label">Urgent Posts</div>
                 </div>
-                <div class="stat-content">
-                    <h3 class="stat-number text-danger"><?php echo $post_stats['urgent_posts']; ?></h3>
-                    <span class="badge badge-danger-modern">High priority</span>
+                <div class="hrdash-stat__content">
+                    <div class="hrdash-stat__value"><?php echo number_format($post_stats['urgent_posts']); ?></div>
+                    <div class="hrdash-stat__trend hrdash-stat__trend--negative">
+                        <i class="fas fa-arrow-down"></i>
+                        <span>3%</span>
+                    </div>
                 </div>
-                <small class="stat-footer">Escalated needs</small>
+                <div class="hrdash-stat__meta">High priority posts requiring immediate attention.</div>
             </div>
         </div>
     </div>
 
     <!-- Filters and Search -->
-    <div class="filters-modern mb-4">
+    <div class="row g-4">
+        <div class="col-12">
+    <div class="filters-modern">
         <div class="search-control-modern">
             <div class="search-input-modern">
                 <i class="fas fa-search search-icon"></i>
@@ -146,8 +156,7 @@ $posts = get_posts($filters);
     </div>
 
     <!-- Main Content Row -->
-    <div class="row">
-        <!-- Posts Table Column -->
+    <div class="row g-4">
         <div class="col-12">
             <div class="table-container">
                 <table class="posts-table" id="postsTable">
@@ -575,19 +584,23 @@ body.portal-hr-admin .posts-modern {
     background: #ffffff;
     border-radius: 16px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.04);
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: visible;
     margin-bottom: 2rem;
+    width: 100%;
+    max-width: 100%;
 }
 
 /* Posts Table Styling */
 .posts-table {
     width: 100%;
+    max-width: 100%;
     margin: 0;
     border-collapse: separate;
     border-spacing: 0;
     background: #ffffff;
     font-size: 0.9375rem;
-    min-width: 1000px;
+    table-layout: auto;
 }
 
 .posts-table thead {
@@ -597,26 +610,27 @@ body.portal-hr-admin .posts-modern {
 .posts-table th {
     background: #f8fafc;
     border-bottom: 2px solid #e2e8f0;
-    padding: 1rem 1.25rem;
+    padding: 0.625rem 0.75rem;
     font-weight: 600;
     color: #64748b;
     text-align: left;
     font-size: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    white-space: nowrap;
+    white-space: normal;
+    word-wrap: break-word;
 }
 
 .posts-table th:first-child {
     width: 50px;
     text-align: center;
-    padding: 1rem 0.75rem;
+    padding: 0.625rem 0.75rem;
 }
 
 .posts-table th:last-child {
     width: 120px;
     text-align: center;
-    padding: 1rem 0.75rem;
+    padding: 0.625rem 0.75rem;
 }
 
 .posts-table tbody tr {
@@ -635,19 +649,23 @@ body.portal-hr-admin .posts-modern {
 }
 
 .posts-table td {
-    padding: 1rem 1.25rem;
+    padding: 0.625rem 0.75rem;
     border-bottom: 1px solid #f1f5f9;
     vertical-align: middle;
     color: #475569;
+    font-size: 0.875rem;
+    white-space: normal;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 .posts-table td:first-child {
-    padding: 1rem 0.75rem;
+    padding: 0.625rem 0.75rem;
     text-align: center;
 }
 
 .posts-table td:last-child {
-    padding: 1rem 0.75rem;
+    padding: 0.625rem 0.75rem;
     text-align: center;
 }
 
