@@ -806,17 +806,6 @@ if (empty($posts)) {
     </script>
     <?php endif; ?>
 
-    <?php if (($_SESSION['user_role'] ?? '') === 'hr_admin'): ?>
-    <div class="container-fluid hrdash mb-3">
-        <div class="hrdash-welcome">
-            <div class="hrdash-welcome__left">
-                <h2 class="hrdash-welcome__title">Add New Employee</h2>
-                <p class="hrdash-welcome__subtitle">Create and file a new employee record in the Golden Z-5 HR system.</p>
-            </div>
-        </div>
-    </div>
-    <?php endif; ?>
-
     <!-- Add Employee Form -->
     <div class="card card-modern">
         <div class="card-header card-header-modern">
@@ -1467,7 +1456,7 @@ if (empty($posts)) {
                 </div>
 
                 <!-- Government Examination Section -->
-                <div class="row g-3 mb-4">
+                <div class="row g-3 mb-4 gov-exam-section">
                     <div class="col-12">
                         <h4 class="form-section-title">Government Examination</h4>
                     </div>
@@ -1541,7 +1530,7 @@ if (empty($posts)) {
                 </div>
 
                 <!-- Contact Information Section -->
-                <div class="row g-3 mb-4">
+                <div class="row g-3 mb-4 contact-info-section">
                     <div class="col-12">
                         <h4 class="form-section-title">Contact Information</h4>
                     </div>
@@ -1711,7 +1700,7 @@ if (empty($posts)) {
                 </div>
 
                 <!-- License Information Section -->
-                <div class="row g-3 mb-4">
+                <div class="row g-3 mb-4 license-section">
                     <div class="col-12">
                         <h4 class="form-section-title">License Information</h4>
                     </div>
@@ -1757,7 +1746,7 @@ if (empty($posts)) {
                 </div>
 
                 <!-- Government IDs Section -->
-                <div class="row g-3 mb-4">
+                <div class="row g-3 mb-4 gov-ids-section">
                     <div class="col-12">
                         <h4 class="form-section-title">Government Identification Numbers</h4>
                     </div>
@@ -1827,12 +1816,12 @@ if (empty($posts)) {
                     </div>
                 </div>
 
-                <div class="alert alert-info mt-3">
+                <div class="alert alert-info add-employee-note">
                     Category 5 (Exit requirements), Category 6 (Clearances), and Category 7 (Cash bond) will be recorded later inside each employee profile. You can update these after the employee is created.
                 </div>
 
                 <!-- HR Final Remarks -->
-                <div class="row g-3 mb-4">
+                <div class="row g-3 mb-4 hr-remarks-section">
                     <div class="col-12">
                         <h4 class="form-section-title">HR Final Remarks</h4>
                     </div>
