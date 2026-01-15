@@ -1,5 +1,5 @@
 <?php
-// Super Admin Settings – UI scaffold only (no persistence yet)
+// Super Admin Settings – UI scaffold only (password policy now editable)
 $page_title = 'Settings - Super Admin - Golden Z-5 HR System';
 $page = 'settings';
 
@@ -8,6 +8,15 @@ if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'super_admin') 
     header('Location: ../landing/index.php');
     exit;
 }
+
+// Load password policy (global for all users)
+if (!function_exists('get_password_policy')) {
+    require_once __DIR__ . '/../includes/database.php';
+}
+$password_policy = get_password_policy();
+$password_min_length = (int)($password_policy['min_length'] ?? 8);
+$password_require_special = !empty($password_policy['require_special']);
+$password_expiry_days = (int)($password_policy['expiry_days'] ?? 90);
 ?>
 
 <div class="container-fluid super-admin-settings">
@@ -223,28 +232,53 @@ if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'super_admin') 
                                 <small class="card-subtitle">System-wide password requirements and settings.</small>
                             </div>
 
-                            <form>
+                            <form method="post" action="?page=settings" id="passwordPolicyForm">
+                                <input type="hidden" name="action" value="update_password_policy">
                                 <h6 class="mb-3">Password Policy</h6>
                                 <div class="row g-3 mb-4">
                                     <div class="col-md-4">
                                         <label class="form-label">Minimum Length</label>
-                                        <input type="number" class="form-control" min="8" value="8" disabled>
+                                        <input type="number"
+                                               class="form-control"
+                                               name="password_min_length"
+                                               min="4"
+                                               value="<?php echo htmlspecialchars($password_min_length); ?>">
                                     </div>
                                     <div class="col-md-4">
                                         <label class="form-label">Require Special Characters</label>
                                         <div class="form-check form-switch">
-                                            <input class="form-check-input" type="checkbox" checked disabled>
+                                            <input class="form-check-input"
+                                                   type="checkbox"
+                                                   name="password_require_special"
+                                                   value="1"
+                                                   <?php echo $password_require_special ? 'checked' : ''; ?>>
                                             <label class="form-check-label">Enabled</label>
                                         </div>
                                     </div>
                                     <div class="col-md-4">
                                         <label class="form-label">Password Expiry (days)</label>
-                                        <input type="number" class="form-control" min="0" value="90" disabled>
+                                        <input type="number"
+                                               class="form-control"
+                                               name="password_expiry_days"
+                                               min="0"
+                                               value="<?php echo htmlspecialchars($password_expiry_days); ?>">
                                         <small class="text-muted">0 = never expires</small>
+                                        <div class="mt-2 p-2 bg-info bg-opacity-10 border border-info border-opacity-25 rounded">
+                                            <small class="text-info">
+                                                <i class="fas fa-info-circle me-1"></i>
+                                                <strong>How it works:</strong> Passwords expire after <?php echo $password_expiry_days; ?> days. When expired, users are automatically prompted to change their password before accessing the system. This prevents unauthorized access from compromised passwords.
+                                            </small>
+                                        </div>
                                     </div>
                                 </div>
 
-                                <h6 class="mb-3">Two-Factor Authentication (2FA)</h6>
+                                <div class="d-flex justify-content-end mt-4">
+                                    <button type="submit" class="btn btn-primary-modern" id="updatePasswordPolicyBtn">
+                                        <i class="fas fa-save me-2"></i>Save Password Policy
+                                    </button>
+                                </div>
+
+                                <h6 class="mb-3 mt-4">Two-Factor Authentication (2FA)</h6>
                                 <div class="mb-3">
                                     <div class="form-check form-switch">
                                         <input class="form-check-input" type="checkbox" id="require2FA" disabled>
@@ -598,6 +632,66 @@ if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'super_admin') 
     </div>
 </div>
 
+<!-- Password Policy Confirmation Modal -->
+<div class="modal fade" id="passwordPolicyConfirmModal" tabindex="-1" role="dialog" aria-labelledby="passwordPolicyConfirmModalLabel" aria-hidden="true" data-bs-backdrop="false">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content" style="border: none; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
+            <div class="modal-header" style="background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1e293b 100%); color: #ffffff; border-radius: 12px 12px 0 0; padding: 1.5rem;">
+                <h5 class="modal-title" id="passwordPolicyConfirmModalLabel" style="margin: 0; font-weight: 600;">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Confirm Password Policy Changes
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" style="padding: 2rem;">
+                <p class="mb-3" style="font-size: 1rem; color: #475569;">
+                    You are about to update the password policy settings. This will affect <strong>all users</strong> in the system.
+                </p>
+                <div class="alert alert-warning mb-0" style="border-left: 4px solid #f59e0b;">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Important:</strong> Changes to password expiry will immediately affect users whose passwords are due to expire based on the new policy.
+                </div>
+            </div>
+            <div class="modal-footer" style="border-top: 1px solid #dee2e6; padding: 1rem 1.5rem;">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Cancel
+                </button>
+                <button type="button" class="btn btn-primary-modern" id="confirmPasswordPolicyBtn">
+                    <i class="fas fa-check me-2"></i>Confirm & Save
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Password Expiry Modal - Forces password change when expired -->
+<?php if ($password_expired): ?>
+<div class="modal fade show" id="passwordExpiryModal" tabindex="-1" role="dialog" aria-labelledby="passwordExpiryModalLabel" aria-hidden="false" data-bs-backdrop="static" data-bs-keyboard="false" style="display: block !important; background-color: rgba(0,0,0,0.7); position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9999;">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content" style="border: none; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
+            <div class="modal-header bg-danger text-white" style="border-radius: 12px 12px 0 0; padding: 1.5rem;">
+                <h5 class="modal-title" id="passwordExpiryModalLabel" style="margin: 0; font-weight: 600;">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Password Expired - Action Required
+                </h5>
+            </div>
+            <div class="modal-body" style="padding: 2rem;">
+                <div class="alert alert-warning mb-4">
+                    <h6 class="alert-heading"><i class="fas fa-shield-alt me-2"></i>Security Alert</h6>
+                    <p class="mb-0">Your password has expired for security reasons. You must change your password immediately to continue using the system.</p>
+                </div>
+                <p class="text-muted mb-4">
+                    <strong>Why is this required?</strong><br>
+                    Passwords expire after <?php echo $password_expiry_days; ?> days to protect your account from unauthorized access. This is a security best practice to prevent potential breaches.
+                </p>
+                <p class="mb-0"><strong>Please change your password below to continue.</strong></p>
+            </div>
+            <div class="modal-footer" style="border-top: 1px solid #dee2e6; padding: 1rem 1.5rem;">
+                <small class="text-muted me-auto">You cannot dismiss this dialog until your password is changed.</small>
+            </div>
+        </div>
+    </div>
+</div>
+<?php endif; ?>
+
 <style>
 .super-admin-settings {
     padding: 2rem 2.5rem;
@@ -944,6 +1038,24 @@ if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'super_admin') 
 .match-text {
     font-weight: 500;
 }
+/* Remove backdrop for password policy confirmation modal */
+#passwordPolicyConfirmModal.show ~ .modal-backdrop,
+.modal-backdrop.show:has(~ #passwordPolicyConfirmModal.show),
+body:has(#passwordPolicyConfirmModal.show) .modal-backdrop {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+}
+
+/* Ensure modal is clickable and properly positioned */
+#passwordPolicyConfirmModal {
+    pointer-events: auto !important;
+}
+
+#passwordPolicyConfirmModal .modal-dialog {
+    pointer-events: auto !important;
+    z-index: 1055 !important;
+}
 </style>
 
 <script>
@@ -1240,8 +1352,36 @@ document.addEventListener('DOMContentLoaded', function() {
                         alertDiv.innerHTML = '<div class="alert alert-success"><i class="fas fa-check-circle me-2"></i>' + (data.message || 'Password changed successfully') + '</div>';
                     }
                     
+                    // Close password expiry modal if it exists
+                    const expiryModal = document.getElementById('passwordExpiryModal');
+                    if (expiryModal) {
+                        const modalInstance = bootstrap.Modal.getInstance(expiryModal);
+                        if (modalInstance) {
+                            modalInstance.hide();
+                        }
+                        expiryModal.style.display = 'none';
+                        expiryModal.remove();
+                    }
+                    
                     // Reset form
                     changePasswordForm.reset();
+                    
+                    // Reset password strength indicator
+                    const strengthBar = document.getElementById('passwordStrengthBar');
+                    const strengthLabel = document.getElementById('strengthLabel');
+                    if (strengthBar) {
+                        strengthBar.className = 'password-strength-fill';
+                        strengthBar.style.width = '0%';
+                    }
+                    if (strengthLabel) {
+                        strengthLabel.textContent = 'None';
+                    }
+                    
+                    // Hide password match indicator
+                    const matchIndicator = document.getElementById('passwordMatchIndicator');
+                    if (matchIndicator) {
+                        matchIndicator.style.display = 'none';
+                    }
                     
                     // Clear alert after 5 seconds
                     setTimeout(() => {
@@ -1292,6 +1432,101 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
         }
+    }
+    
+    // Prevent password expiry modal from being closed
+    const passwordExpiryModal = document.getElementById('passwordExpiryModal');
+    if (passwordExpiryModal) {
+        // Prevent backdrop click from closing modal
+        passwordExpiryModal.addEventListener('click', function(e) {
+            if (e.target === passwordExpiryModal) {
+                e.stopPropagation();
+            }
+        });
+        
+        // Prevent ESC key from closing modal
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && passwordExpiryModal.style.display === 'block') {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+        });
+        
+        // Initialize Bootstrap modal with static backdrop and no keyboard
+        if (typeof bootstrap !== 'undefined') {
+            const modalInstance = new bootstrap.Modal(passwordExpiryModal, {
+                backdrop: 'static',
+                keyboard: false
+            });
+            modalInstance.show();
+        }
+    }
+
+    // Password Policy Confirmation Modal
+    const passwordPolicyForm = document.getElementById('passwordPolicyForm');
+    const updatePasswordPolicyBtn = document.getElementById('updatePasswordPolicyBtn');
+    const passwordPolicyConfirmModal = document.getElementById('passwordPolicyConfirmModal');
+    const confirmPasswordPolicyBtn = document.getElementById('confirmPasswordPolicyBtn');
+
+    // Guard flag so we don't intercept the programmatic submit after confirmation
+    let passwordPolicyConfirmed = false;
+
+    if (passwordPolicyForm && updatePasswordPolicyBtn && passwordPolicyConfirmModal && confirmPasswordPolicyBtn) {
+        // Intercept form submission once, to show confirmation modal
+        passwordPolicyForm.addEventListener('submit', function(e) {
+            if (!passwordPolicyConfirmed) {
+                // First submit → just show confirmation modal and stop actual submit
+                e.preventDefault();
+
+                if (typeof bootstrap !== 'undefined') {
+                    const modalInstance = new bootstrap.Modal(passwordPolicyConfirmModal, {
+                        backdrop: false,
+                        keyboard: true
+                    });
+                    modalInstance.show();
+                    
+                    // Remove any backdrop elements that might have been created
+                    setTimeout(function() {
+                        const backdrops = document.querySelectorAll('.modal-backdrop');
+                        backdrops.forEach(function(backdrop) {
+                            if (backdrop.parentNode) {
+                                backdrop.remove();
+                            }
+                        });
+                        // Also remove backdrop class from body
+                        document.body.classList.remove('modal-open');
+                        document.body.style.overflow = '';
+                        document.body.style.paddingRight = '';
+                    }, 10);
+                } else {
+                    // Fallback if Bootstrap is not available
+                    passwordPolicyConfirmModal.style.display = 'block';
+                    passwordPolicyConfirmModal.classList.add('show');
+                }
+            } else {
+                // Allow the confirmed submit to go through, then reset the flag
+                passwordPolicyConfirmed = false;
+            }
+        });
+
+        // Handle confirmation button click
+        confirmPasswordPolicyBtn.addEventListener('click', function() {
+            // Hide modal
+            if (typeof bootstrap !== 'undefined') {
+                const modalInstance = bootstrap.Modal.getInstance(passwordPolicyConfirmModal);
+                if (modalInstance) {
+                    modalInstance.hide();
+                }
+            } else {
+                passwordPolicyConfirmModal.style.display = 'none';
+                passwordPolicyConfirmModal.classList.remove('show');
+            }
+
+            // Mark as confirmed and submit the form (will bypass the intercept branch)
+            passwordPolicyConfirmed = true;
+            passwordPolicyForm.submit();
+        });
     }
 });
 </script>
