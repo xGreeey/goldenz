@@ -477,8 +477,14 @@ $display_employees = array_slice($all_employees, 0, 10); // Show first 10 employ
     padding: 2rem 2.5rem;
     max-width: 100%;
     overflow-x: hidden;
-    background: #f8fafc;
+    /* Default: keep background neutral for other portals */
+    background: transparent;
     min-height: 100vh;
+}
+
+/* HR Admin only: apply the separated light background */
+.portal-hr-admin .dashboard-modern {
+    background: #f8fafc;
 }
 
 /* Page Header */
