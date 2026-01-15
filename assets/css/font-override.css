@@ -30,6 +30,7 @@
 }
 
 /* Number rendering fix - ensure numeric values use numeric-friendly fonts */
+/* This is a global fallback - number-rendering-fix.css has more specific rules */
 .stat-number,
 .card-number,
 .quick-stat-value,
@@ -48,6 +49,7 @@
     font-feature-settings: 'tnum' !important;
     -webkit-font-feature-settings: 'tnum' !important;
     -moz-font-feature-settings: 'tnum' !important;
+    -ms-font-feature-settings: 'tnum' !important;
     text-rendering: optimizeLegibility !important;
     -webkit-font-smoothing: antialiased !important;
     -moz-osx-font-smoothing: grayscale !important;
@@ -158,8 +160,14 @@ i[class*="fa-"]::after,
 }
 
 /* Prevent emoji rendering issues - force emoji font stack for all text content */
+/* Also ensure tabular numbers for all text elements */
 body, p, span, div, a, li, td, th, label, input, textarea, select, button, h1, h2, h3, h4, h5, h6 {
     font-variant-emoji: emoji !important;
+    font-variant-numeric: tabular-nums !important;
+    font-feature-settings: 'tnum' !important;
+    -webkit-font-feature-settings: 'tnum' !important;
+    -moz-font-feature-settings: 'tnum' !important;
+    -ms-font-feature-settings: 'tnum' !important;
     text-rendering: optimizeLegibility !important;
     -webkit-font-smoothing: antialiased !important;
     -moz-osx-font-smoothing: grayscale !important;
