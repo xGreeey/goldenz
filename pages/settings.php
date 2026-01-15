@@ -9,14 +9,49 @@ if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'super_admin') 
     exit;
 }
 
-// Load password policy (global for all users)
-if (!function_exists('get_password_policy')) {
+// Load password policy (global for all users) and current user 2FA status
+if (!function_exists('get_password_policy') || !function_exists('get_user_by_id') || !function_exists('check_password_expiry')) {
     require_once __DIR__ . '/../includes/database.php';
+    require_once __DIR__ . '/../includes/security.php';
 }
 $password_policy = get_password_policy();
 $password_min_length = (int)($password_policy['min_length'] ?? 8);
 $password_require_special = !empty($password_policy['require_special']);
 $password_expiry_days = (int)($password_policy['expiry_days'] ?? 90);
+
+// Check if current user's password has expired
+$password_expired = false;
+$current_user_id = $_SESSION['user_id'] ?? null;
+if ($current_user_id) {
+    $expiry_check = check_password_expiry($current_user_id);
+    $password_expired = !empty($expiry_check['expired']);
+}
+
+// Current user 2FA state (for super admin)
+$two_factor_enabled = false;
+$two_factor_secret = null;
+$two_factor_pending = false;
+$two_factor_otpauth = null;
+
+if ($current_user_id) {
+    $current_user = get_user_by_id($current_user_id);
+    if ($current_user) {
+        $two_factor_enabled = !empty($current_user['two_factor_enabled']);
+        $two_factor_secret = $current_user['two_factor_secret'] ?? null;
+    }
+}
+
+// If there is a pending secret in session, prefer that for setup flow
+if (!empty($_SESSION['pending_2fa_secret'])) {
+    $two_factor_pending = true;
+    $two_factor_secret = $_SESSION['pending_2fa_secret'];
+}
+
+if (!empty($two_factor_secret)) {
+    $label = rawurlencode('Golden Z-5:' . ($_SESSION['username'] ?? 'superadmin'));
+    $issuer = rawurlencode('Golden Z-5 HR');
+    $two_factor_otpauth = "otpauth://totp/{$label}?secret={$two_factor_secret}&issuer={$issuer}";
+}
 ?>
 
 <div class="container-fluid super-admin-settings">
@@ -221,6 +256,109 @@ $password_expiry_days = (int)($password_policy['expiry_days'] ?? 90);
                                     </div>
                                 </div>
                             </form>
+                        </div>
+                    </div>
+
+                    <!-- Two-Factor Authentication (2FA) for current account -->
+                    <div class="card card-modern mb-4">
+                        <div class="card-body-modern">
+                            <div class="card-header-modern mb-3 d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="card-title-modern mb-0">Two-Factor Authentication (2FA)</h5>
+                                    <small class="card-subtitle">Add an extra layer of security to your Super Admin account using Google Authenticator.</small>
+                                </div>
+                                <div>
+                                    <?php if ($two_factor_enabled): ?>
+                                        <span class="badge bg-success-subtle text-success fw-semibold px-3 py-2 rounded-pill">
+                                            <i class="fas fa-shield-alt me-1"></i> Enabled
+                                        </span>
+                                    <?php elseif ($two_factor_pending): ?>
+                                        <span class="badge bg-warning-subtle text-warning fw-semibold px-3 py-2 rounded-pill">
+                                            <i class="fas fa-hourglass-half me-1"></i> Setup in progress
+                                        </span>
+                                    <?php else: ?>
+                                        <span class="badge bg-secondary-subtle text-secondary fw-semibold px-3 py-2 rounded-pill">
+                                            <i class="fas fa-shield-alt me-1"></i> Not enabled
+                                        </span>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+
+                            <?php if ($two_factor_enabled): ?>
+                                <p class="text-muted mb-3">
+                                    Two-factor authentication is currently <strong>enabled</strong> on your account. You will be required to enter a 6‑digit code from Google Authenticator after your password (once the login flow is wired to use 2FA).
+                                </p>
+                                <form method="post" action="?page=settings" class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                    <input type="hidden" name="action" value="disable_2fa">
+                                    <div class="text-muted small">
+                                        Lost access to your authenticator app? Disable 2FA here, then re-enable it with a new device.
+                                    </div>
+                                    <button type="submit" class="btn btn-outline-danger">
+                                        <i class="fas fa-times-circle me-2"></i>Disable 2FA
+                                    </button>
+                                </form>
+                            <?php elseif ($two_factor_pending && $two_factor_otpauth): ?>
+                                <div class="row align-items-center">
+                                    <div class="col-md-5 text-center mb-3 mb-md-0">
+                                        <div class="p-3 rounded-3 bg-light border">
+                                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&amp;data=<?php echo urlencode($two_factor_otpauth); ?>" 
+                                                 alt="Scan this QR code with Google Authenticator" 
+                                                 class="img-fluid mb-2">
+                                            <div class="small text-muted">
+                                                Scan this QR code in the <strong>Google Authenticator</strong> app.
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-7">
+                                        <form method="post" action="?page=settings">
+                                            <input type="hidden" name="action" value="confirm_enable_2fa">
+                                            <div class="mb-3">
+                                                <label class="form-label">Secret key (for backup)</label>
+                                                <input type="text" class="form-control" value="<?php echo htmlspecialchars($two_factor_secret); ?>" readonly>
+                                                <small class="text-muted">Keep this secret safe. You can use it to restore 2FA on a new device.</small>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="two_factor_code" class="form-label">6‑digit code from Google Authenticator</label>
+                                                <input type="text" 
+                                                       id="two_factor_code" 
+                                                       name="two_factor_code" 
+                                                       class="form-control" 
+                                                       inputmode="numeric"
+                                                       autocomplete="one-time-code"
+                                                       pattern="[0-9]{6}" 
+                                                       maxlength="6" 
+                                                       required 
+                                                       placeholder="Enter the 6-digit code"
+                                                       oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,6);">
+                                                <small class="text-muted">Enter the current 6‑digit code shown for this account in your authenticator app.</small>
+                                            </div>
+                                            <div class="d-flex justify-content-end gap-2">
+                                                <a href="?page=settings" class="btn btn-outline-secondary">
+                                                    Cancel
+                                                </a>
+                                                <button type="submit" class="btn btn-primary-modern">
+                                                    <i class="fas fa-check me-2"></i>Verify &amp; Enable 2FA
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            <?php else: ?>
+                                <p class="text-muted mb-3">
+                                    Protect your Super Admin account with a one‑time code from the <strong>Google Authenticator</strong> app in addition to your password.
+                                </p>
+                                <ul class="text-muted small mb-3">
+                                    <li>We will generate a unique secret and QR code for your account.</li>
+                                    <li>You scan the QR code using Google Authenticator and confirm the 6‑digit code.</li>
+                                    <li>Once confirmed, 2FA will be enabled for your Super Admin login.</li>
+                                </ul>
+                                <form method="post" action="?page=settings" class="d-flex justify-content-end">
+                                    <input type="hidden" name="action" value="start_2fa_setup">
+                                    <button type="submit" class="btn btn-primary-modern">
+                                        <i class="fas fa-shield-alt me-2"></i>Set up 2FA for this account
+                                    </button>
+                                </form>
+                            <?php endif; ?>
                         </div>
                     </div>
 
@@ -602,10 +740,10 @@ $password_expiry_days = (int)($password_policy['expiry_days'] ?? 90);
                             <form class="row g-3">
                                 <div class="col-md-4">
                                     <label class="form-label">Theme</label>
-                                    <select class="form-select" disabled>
-                                        <option selected>Light</option>
-                                        <option>Dark</option>
-                                        <option>Auto</option>
+                                    <select class="form-select theme-select" id="settingsThemeSelect">
+                                        <option value="light" selected>Light</option>
+                                        <option value="dark">Dark</option>
+                                        <option value="auto">Auto (System)</option>
                                     </select>
                                 </div>
                                 <div class="col-md-4">
@@ -622,6 +760,11 @@ $password_expiry_days = (int)($password_policy['expiry_days'] ?? 90);
                                         <option>Posts & Locations</option>
                                         <option>Users</option>
                                     </select>
+                                </div>
+                                <div class="col-12 d-flex justify-content-end mt-2">
+                                    <button type="button" class="btn btn-primary-modern save-ui-preferences-btn">
+                                        <i class="fas fa-check me-2"></i>Confirm UI Preferences
+                                    </button>
                                 </div>
                             </form>
                         </div>

@@ -146,6 +146,77 @@
     --spacing-6xl: 5rem;      /* 80px */
 }
 
+/* DARK THEME SUPPORT */
+html[data-theme="dark"] {
+    --interface-bg: #0f1114;
+    --interface-text: #e2e8f0;
+    --interface-text-light: #cbd5e1;
+    --interface-text-muted: #94a3b8;
+    --interface-border: #1e293b;
+    --interface-border-light: #334155;
+    --interface-hover: #1e293b;
+    --interface-subtle: #1a1d23;
+}
+
+html[data-theme="dark"] body {
+    background-color: var(--interface-bg) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .card,
+html[data-theme="dark"] .card-modern {
+    background-color: #1a1d23 !important;
+    border-color: var(--interface-border) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .card-body,
+html[data-theme="dark"] .card-body-modern {
+    background-color: #1a1d23 !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .form-control,
+html[data-theme="dark"] .form-select {
+    background-color: #0f1114 !important;
+    border-color: var(--interface-border) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .form-control:focus,
+html[data-theme="dark"] .form-select:focus {
+    background-color: #0f1114 !important;
+    border-color: var(--primary-color) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .bg-light {
+    background-color: #1a1d23 !important;
+}
+
+html[data-theme="dark"] .text-muted {
+    color: var(--interface-text-muted) !important;
+}
+
+html[data-theme="dark"] .table {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .table-light {
+    background-color: #1a1d23 !important;
+}
+
+html[data-theme="dark"] .main-content {
+    background-color: var(--interface-bg) !important;
+}
+
+html[data-theme="dark"] .page-header-modern,
+html[data-theme="dark"] .card-header-modern {
+    background-color: #1a1d23 !important;
+    border-color: var(--interface-border) !important;
+    color: var(--interface-text) !important;
+}
+
 /* Global Styles - Accessible Font System for Poor Eyesight */
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap');
 
@@ -615,6 +686,12 @@ html::-webkit-scrollbar-button {
     letter-spacing: 0.01em;
     line-height: 1.5;
     background: transparent !important;
+    z-index: 1;
+}
+
+.sidebar .nav-link > * {
+    position: relative;
+    z-index: 2;
 }
 
 .sidebar .nav-link::before {
@@ -624,9 +701,24 @@ html::-webkit-scrollbar-button {
 .sidebar .nav-link:hover {
     background: rgba(255, 255, 255, 0.06) !important;
     color: #ffffff !important;
-    border: 1px solid #fbbf24 !important; /* Gold border around entire element */
+    border: 1px solid transparent !important;
+    position: relative !important;
     transform: none;
     padding-left: 1rem !important;
+}
+
+.sidebar .nav-link:hover::after {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: 999px;
+    padding: 1px;
+    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1e293b 100%);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    z-index: 0;
 }
 
 .sidebar .nav-link.active {
@@ -785,14 +877,36 @@ html::-webkit-scrollbar-button {
     min-height: 40px;
     border: 1px solid transparent !important;
     border-radius: 999px;
+    position: relative;
+    z-index: 1;
+}
+
+.sidebar .nav-submenu .nav-link > * {
+    position: relative;
+    z-index: 2;
 }
 
 .sidebar .nav-submenu .nav-link:hover {
     background: #f1f5f9 !important;
     color: #0f172a !important;
-    border: 1px solid #fbbf24 !important; /* Gold border around entire element */
+    border: 1px solid transparent !important;
+    position: relative !important;
     transform: none;
     padding-left: 2.5rem !important;
+}
+
+.sidebar .nav-submenu .nav-link:hover::after {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: 999px;
+    padding: 1px;
+    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1e293b 100%);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    z-index: 0;
 }
 
 .sidebar .nav-submenu .nav-link.active {

@@ -686,19 +686,34 @@ if (empty($posts)) {
 }
 ?>
 
-<div class="add-employee-container">
-    <!-- Page Header (avoid repeating the global \"Add New Employee\" title) -->
-    <div class="page-header">
-        <div class="page-title">
-            <h1>Employee Details</h1>
-            <p class="page-subtitle">Create a new employee record in the system</p>
+<div class="container-fluid hrdash add-employee-container add-employee-modern">
+    <!-- Page Header -->
+    <div class="page-header-modern">
+        <div class="page-title-modern">
+            <h1 class="page-title-main">Add New Employee</h1>
+            <p class="page-subtitle-modern">Create a new employee record in the system</p>
         </div>
-        <div class="page-actions">
-            <a href="?page=employees" class="btn btn-outline-secondary">
+        <div class="page-actions-modern">
+            <a href="?page=employees" class="btn btn-outline-modern">
                 <i class="fas fa-arrow-left me-2"></i>Back to Employees
             </a>
         </div>
     </div>
+
+    <!-- Breadcrumb -->
+    <nav class="hr-breadcrumb" aria-label="Breadcrumb">
+        <ol class="hr-breadcrumb__list">
+            <li class="hr-breadcrumb__item">
+                <a href="?page=dashboard" class="hr-breadcrumb__link">Dashboard</a>
+            </li>
+            <li class="hr-breadcrumb__item">
+                <a href="?page=employees" class="hr-breadcrumb__link">Employees</a>
+            </li>
+            <li class="hr-breadcrumb__item hr-breadcrumb__current" aria-current="page">
+                Add Employee
+            </li>
+        </ol>
+    </nav>
 
     <!-- Success/Error Messages -->
     <?php if (isset($success) && $success): ?>
@@ -729,10 +744,10 @@ if (empty($posts)) {
                     <?php endif; ?>
                 </div>
                 <div class="modal-footer" style="border-top: 1px solid #dee2e6; padding: 1rem 1.5rem; border-radius: 0 0 8px 8px;">
-                    <button type="button" class="btn btn-secondary" onclick="closeSuccessModal()">
+                    <button type="button" class="btn btn-outline-modern" onclick="closeSuccessModal()">
                         <i class="fas fa-times me-2"></i>Close
                     </button>
-                    <a href="?page=employees" class="btn btn-primary">
+                    <a href="?page=employees" class="btn btn-primary-modern">
                         <i class="fas fa-list me-2"></i>View All Employees
                     </a>
                 </div>
@@ -802,47 +817,16 @@ if (empty($posts)) {
     </div>
     <?php endif; ?>
 
-    <!-- Add Employee Document Layout -->
-    <div class="add-employee-document-page">
-        <div class="add-employee-document-shell">
-            <?php if (!empty($errors)): ?>
-                <div class="alert alert-danger mb-4">
-                    <i class="fas fa-circle-exclamation me-2"></i>
-                    <ul class="mb-0">
-                        <?php foreach ($errors as $error): ?>
-                            <li><?php echo htmlspecialchars($error); ?></li>
-                        <?php endforeach; ?>
-                    </ul>
-                </div>
-            <?php endif; ?>
-
-            <div class="add-employee-document-header">
-                <div class="add-employee-document-title">
-                    <h1 class="add-employee-title">New Employee Record</h1>
-                    <p class="add-employee-subtitle">Complete this HR personnel sheet to add a new employee to the Golden Z-5 system.</p>
-                </div>
-                <div class="add-employee-document-meta">
-                    <div class="add-employee-meta-item">
-                        <span class="add-employee-meta-label">Form</span>
-                        <span class="add-employee-meta-value">HR-EMP-001</span>
-                    </div>
-                    <div class="add-employee-meta-item">
-                        <span class="add-employee-meta-label">Date</span>
-                        <span class="add-employee-meta-value"><?php echo date('M d, Y'); ?></span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Add Employee Form -->
-            <div class="card add-employee-document-card">
-                <div class="card-header add-employee-card-header">
-                    <h3 class="mb-0">Employee Information Sheet</h3>
-                </div>
-                <div class="card-body add-employee-card-body">
-                <form method="POST" id="addEmployeeForm" enctype="multipart/form-data" action="?page=add_employee" novalidate>
+    <!-- Add Employee Form -->
+    <div class="card card-modern">
+        <div class="card-header card-header-modern">
+            <h3 class="card-title-modern">Employee Information</h3>
+        </div>
+        <div class="card-body card-body-modern">
+        <form method="POST" id="addEmployeeForm" enctype="multipart/form-data" action="?page=add_employee" novalidate>
                 <!-- Employee Created By Info -->
-                <div class="alert alert-info mb-4">
-                    <i class="fas fa-circle-info me-2"></i>
+                <div class="alert alert-info">
+                    <span class="hr-icon hr-icon-message me-2"></span>
                     <strong>Recorded By:</strong> <?php echo htmlspecialchars($current_user_name); ?> 
                     <?php if ($current_user_id): ?>
                         (User ID: <?php echo $current_user_id; ?>)
@@ -854,51 +838,59 @@ if (empty($posts)) {
                     <div class="col-12">
                         <h4 class="form-section-title">Basic Information</h4>
                     </div>
-                    <div class="col-md-4">
-                        <div class="form-group">
-                            <label for="employee_no" class="form-label">Employee Number <span class="text-danger">*</span></label>
-                            <input 
-                                type="text" 
-                                class="form-control numeric-only" 
-                                id="employee_no" 
-                                name="employee_no" 
-                                inputmode="numeric" 
-                                pattern="\\d{1,5}"
-                                maxlength="5"
-                                placeholder="Up to 5 digits" 
-                                value="<?php echo htmlspecialchars($_POST['employee_no'] ?? ''); ?>" 
-                                required
-                            >
-                            <small class="form-text text-muted" style="visibility: hidden;">Placeholder</small>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="form-group">
-                            <label for="employee_type" class="form-label">Employee Type <span class="text-danger">*</span></label>
-                            <select class="form-select" id="employee_type" name="employee_type" required>
-                                <option value="">Select Employee Type</option>
-                                <option value="SG" <?php echo (($_POST['employee_type'] ?? '') === 'SG') ? 'selected' : ''; ?>>Security Guard (SG)</option>
-                                <option value="LG" <?php echo (($_POST['employee_type'] ?? '') === 'LG') ? 'selected' : ''; ?>>Lady Guard (LG)</option>
-                                <option value="SO" <?php echo (($_POST['employee_type'] ?? '') === 'SO') ? 'selected' : ''; ?>>Security Officer (SO)</option>
-                            </select>
-                            <small class="form-text text-muted" style="visibility: hidden;">Placeholder</small>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="form-group">
-                            <label for="status" class="form-label">Status <span class="text-danger">*</span></label>
-                            <select class="form-select" id="status" name="status" required>
-                                <option value="">Select Status</option>
-                                <option value="Active" <?php echo (($_POST['status'] ?? '') === 'Active') ? 'selected' : ''; ?>>Active</option>
-                                <option value="Inactive" <?php echo (($_POST['status'] ?? '') === 'Inactive') ? 'selected' : ''; ?>>Inactive</option>
-                                <option value="Terminated" <?php echo (($_POST['status'] ?? '') === 'Terminated') ? 'selected' : ''; ?>>Terminated</option>
-                                <option value="Suspended" <?php echo (($_POST['status'] ?? '') === 'Suspended') ? 'selected' : ''; ?>>Suspended</option>
-                            </select>
-                            <small class="form-text text-muted" style="visibility: hidden;">Placeholder</small>
-                        </div>
 
-                        <!-- Photo Upload Section (stacked to avoid shrinking Status select) -->
-                        <div class="employee-photo-container mt-2">
+                    <!-- Left side: Employee No, Type, Status -->
+                    <div class="col-md-8">
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <div class="form-group">
+                                    <label for="employee_no" class="form-label">Employee Number <span class="text-danger">*</span></label>
+                                    <input
+                                        type="text"
+                                        class="form-control numeric-only"
+                                        id="employee_no"
+                                        name="employee_no"
+                                        inputmode="numeric"
+                                        pattern="\\d{1,5}"
+                                        maxlength="5"
+                                        placeholder="Up to 5 digits"
+                                        value="<?php echo htmlspecialchars($_POST['employee_no'] ?? ''); ?>"
+                                        required
+                                    >
+                                    <small class="form-text text-muted" style="visibility: hidden;">Placeholder</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="employee_type" class="form-label">Employee Type <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="employee_type" name="employee_type" required>
+                                        <option value="">Select Employee Type</option>
+                                        <option value="SG" <?php echo (($_POST['employee_type'] ?? '') === 'SG') ? 'selected' : ''; ?>>Security Guard (SG)</option>
+                                        <option value="LG" <?php echo (($_POST['employee_type'] ?? '') === 'LG') ? 'selected' : ''; ?>>Lady Guard (LG)</option>
+                                        <option value="SO" <?php echo (($_POST['employee_type'] ?? '') === 'SO') ? 'selected' : ''; ?>>Security Officer (SO)</option>
+                                    </select>
+                                    <small class="form-text text-muted" style="visibility: hidden;">Placeholder</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="status" class="form-label">Status <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="status" name="status" required>
+                                        <option value="">Select Status</option>
+                                        <option value="Active" <?php echo (($_POST['status'] ?? '') === 'Active') ? 'selected' : ''; ?>>Active</option>
+                                        <option value="Inactive" <?php echo (($_POST['status'] ?? '') === 'Inactive') ? 'selected' : ''; ?>>Inactive</option>
+                                        <option value="Terminated" <?php echo (($_POST['status'] ?? '') === 'Terminated') ? 'selected' : ''; ?>>Terminated</option>
+                                        <option value="Suspended" <?php echo (($_POST['status'] ?? '') === 'Suspended') ? 'selected' : ''; ?>>Suspended</option>
+                                    </select>
+                                    <small class="form-text text-muted" style="visibility: hidden;">Placeholder</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right side: 2x2 Photo -->
+                    <div class="col-md-4">
+                        <div class="employee-photo-container h-100 d-flex flex-column justify-content-start">
                             <label class="form-label d-block">2x2 Photo</label>
                             <div class="employee-photo-wrapper mb-2">
                                 <div class="employee-photo-placeholder" id="photo_preview">
@@ -1530,7 +1522,7 @@ if (empty($posts)) {
                                                    placeholder="e.g., 85.00" maxlength="20" inputmode="decimal">
                                         </td>
                                         <td class="text-end">
-                                            <button type="button" class="btn btn-outline-secondary btn-sm exam-remove" aria-label="Remove exam record">
+                                            <button type="button" class="btn btn-outline-modern btn-sm exam-remove" aria-label="Remove exam record">
                                                 <i class="fas fa-trash"></i>
                                             </button>
                                         </td>
@@ -1867,10 +1859,10 @@ if (empty($posts)) {
                 <!-- Form Actions -->
                 <div class="text-muted small text-end mb-3" style="padding-left: 0; padding-right: 0;">Submission will be attributed to: <?php echo htmlspecialchars($current_user_name); ?><?php echo $current_user_id ? " (User ID: {$current_user_id})" : ''; ?></div>
                 <div class="form-actions d-flex justify-content-end">
-                    <a href="?page=employees" class="btn btn-outline-secondary me-2">
+                    <a href="?page=employees" class="btn btn-outline-modern me-2">
                         <i class="fas fa-times me-2"></i>Cancel
                     </a>
-                    <button type="submit" class="btn btn-primary">
+                    <button type="submit" class="btn btn-primary-modern">
                         <i class="fas fa-save me-2"></i>Create Employee</button>
                 </div>
             </form>
@@ -2282,7 +2274,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         </ul>
                     </div>
                     <div class="modal-footer" style="border-top: 1px solid #dee2e6; padding: 1rem 1.5rem; border-radius: 0 0 8px 8px;">
-                        <button type="button" class="btn btn-primary" onclick="closeValidationModal()">
+                        <button type="button" class="btn btn-primary-modern" onclick="closeValidationModal()">
                             <i class="fas fa-check me-2"></i>OK, I'll fix it
                         </button>
                     </div>

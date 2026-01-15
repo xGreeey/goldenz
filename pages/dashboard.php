@@ -1920,7 +1920,7 @@ $display_employees = array_slice($all_employees, 0, 10); // Show first 10 employ
                                 <h6 class="mb-3"><i class="fas fa-palette me-2"></i>Appearance</h6>
                                 <div class="mb-3">
                                     <label for="themeSelect" class="form-label">Theme</label>
-                                    <select class="form-select" id="themeSelect">
+                                    <select class="form-select theme-select" id="themeSelect">
                                         <option value="light" selected>Light</option>
                                         <option value="dark">Dark</option>
                                         <option value="auto">Auto (System)</option>
