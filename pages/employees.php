@@ -259,7 +259,7 @@ $inactive_employees = $employee_stats['inactive_employees'];
 $onboarding_employees = $employee_stats['onboarding_employees'];
 ?>
 
-<div class="employees-modern">
+<div class="container-fluid employees-modern">
     <!-- Page Header -->
     <div class="page-header-modern">
         <div class="page-title-modern">
@@ -614,11 +614,17 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
 <style>
 /* Modern Employees Page Styling */
 .employees-modern {
-    padding: 1rem 2.5rem 2rem 2.5rem;
+    /* Use portal-wide spacing system (font-override.css) instead of page-local padding */
+    padding: 0;
     max-width: 100%;
     overflow-x: hidden;
-    background: #f8fafc;
     min-height: 100vh;
+    background: #ffffff; /* default for non HR-Admin portals */
+}
+
+/* HR-Admin: use light separated background */
+body.portal-hr-admin .employees-modern {
+    background: #f8fafc;
 }
 
 /* Page Header */

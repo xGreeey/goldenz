@@ -277,11 +277,17 @@ $all_employees = get_employees();
 
 /* Container */
 .post-assignments-modern {
-    padding: 2rem 2.5rem;
+    /* Use portal-wide spacing system (font-override.css) instead of page-local padding */
+    padding: 0;
     max-width: 100%;
     overflow-x: hidden;
-    background: #f8fafc;
     min-height: 100vh;
+    background: #ffffff; /* default for non HR-Admin portals */
+}
+
+/* HR-Admin: use light separated background */
+body.portal-hr-admin .post-assignments-modern {
+    background: #f8fafc;
 }
 
 /* Page Header */
