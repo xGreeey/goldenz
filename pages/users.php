@@ -533,7 +533,7 @@ $role_config = config('roles.roles', []);
 
 <!-- Role Change Confirmation Modal -->
 <div class="modal fade" id="roleChangeModal" tabindex="-1" aria-labelledby="roleChangeModalLabel" aria-hidden="true" data-bs-backdrop="false">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="roleChangeModalLabel">
@@ -900,28 +900,51 @@ body.modal-open .content {
     z-index: 1;
 }
 
-/* Role Change Confirmation Modal - Scroll-relative positioning */
-#roleChangeModal {
-    z-index: 1200 !important;
+/* Role Change Confirmation Modal - Fixed viewport-centered positioning */
+/* Modal container - ensure it covers viewport when shown */
+#roleChangeModal:not(.show) {
+    display: none !important;
+    pointer-events: none !important;
 }
 
-#roleChangeModal .modal-dialog {
-    z-index: 1201 !important;
-    position: absolute !important;
+#roleChangeModal.show {
+    z-index: 1200 !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
     margin: 0 !important;
-    max-width: 500px;
-    width: calc(100% - 2rem);
+    padding: 0 !important;
+    overflow: hidden !important;
+    display: block !important;
+}
+
+/* Modal dialog - fixed to viewport center */
+#roleChangeModal.show .modal-dialog,
+#roleChangeModal.showing .modal-dialog {
+    z-index: 1201 !important;
+    position: fixed !important;
+    margin: 0 !important;
+    max-width: 500px !important;
+    width: calc(100% - 2rem) !important;
+    max-height: calc(100vh - 2rem) !important;
+    top: 50% !important;
     left: 50% !important;
-    transform: translateX(-50%) !important;
-    display: flex;
-    flex-direction: column;
-    /* Top position will be set dynamically via JavaScript based on scroll */
+    transform: translate(-50%, -50%) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    /* Fixed positioning keeps it centered in viewport, not document */
 }
 
 /* Mobile responsive */
 @media (max-width: 576px) {
-    #roleChangeModal .modal-dialog {
+    #roleChangeModal.show .modal-dialog,
+    #roleChangeModal.showing .modal-dialog {
         width: calc(100% - 1rem) !important;
+        max-width: calc(100% - 1rem) !important;
     }
 }
 
@@ -1027,16 +1050,12 @@ function initializeUsersPage() {
     }
   
     // Initialize Create User modal WITHOUT backdrop so the rest of the page stays clickable
-    new bootstrap.Modal(createUserModal, {
+    modalInstance = new bootstrap.Modal(createUserModal, {
         backdrop: false,
-        main
         keyboard: true,
         focus: true
     });
     console.log('✅ Create User modal initialized with backdrop disabled');
-    
-    // Store modal instance for later use
-    createUserModal._modalInstance = modalInstance;
     
     // Store modal instance for later use
     createUserModal._modalInstance = modalInstance;
@@ -1355,10 +1374,25 @@ function initializeUsersPage() {
         });
         
         // Ensure modal is positioned correctly when shown
-        roleChangeModal.addEventListener('shown.bs.modal', function() {
+        roleChangeModal.addEventListener('show.bs.modal', function() {
+            // Position before animation starts
             if (typeof positionModalRelativeToScroll === 'function') {
                 positionModalRelativeToScroll(roleChangeModal);
             }
+        });
+        
+        roleChangeModal.addEventListener('shown.bs.modal', function() {
+            // Position after animation completes
+            if (typeof positionModalRelativeToScroll === 'function') {
+                positionModalRelativeToScroll(roleChangeModal);
+            }
+            
+            // Also position after a short delay to ensure it's correct
+            setTimeout(() => {
+                if (roleChangeModal.classList.contains('show') && typeof positionModalRelativeToScroll === 'function') {
+                    positionModalRelativeToScroll(roleChangeModal);
+                }
+            }, 100);
         });
         
         console.log('✅ Role change modal initialized');
@@ -1475,27 +1509,35 @@ function showRoleChangeModal(userName, newRoleText) {
         messageEl.innerHTML = `Are you sure you want to change <strong>${userName}</strong>'s role to <strong>"${newRoleText}"</strong>?`;
     }
     
-    // Position modal relative to current scroll position before showing
+    // Position modal before showing (will use fixed positioning for viewport centering)
     positionModalRelativeToScroll(modalElement);
     
     modal.show();
     
-    // Reposition after Bootstrap's show animation completes
+    // Reposition multiple times to ensure fixed positioning is maintained
+    // Bootstrap's animation might temporarily override positioning
+    const repositionIntervals = [0, 50, 100, 150, 300];
+    repositionIntervals.forEach(delay => {
+        setTimeout(() => {
+            if (modalElement.classList.contains('show') || modalElement.classList.contains('showing')) {
+                positionModalRelativeToScroll(modalElement);
+            }
+        }, delay);
+    });
+    
+    // Remove any backdrop that might have been created
     setTimeout(() => {
-        positionModalRelativeToScroll(modalElement);
-        
-        // Remove any backdrop that might have been created
         const backdrops = document.querySelectorAll('.modal-backdrop');
         backdrops.forEach(backdrop => {
             if (backdrop && backdrop.parentNode) {
                 backdrop.remove();
             }
         });
-    }, 100);
+    }, 150);
     
-    // Reposition on scroll while modal is open
+    // Reposition on scroll while modal is open (though fixed positioning shouldn't need this)
     const handleScroll = () => {
-        if (modalElement.classList.contains('show')) {
+        if (modalElement.classList.contains('show') || modalElement.classList.contains('showing')) {
             positionModalRelativeToScroll(modalElement);
         }
     };
@@ -1517,56 +1559,60 @@ function showRoleChangeModal(userName, newRoleText) {
 }
 
 /**
- * Position modal relative to current scroll position - Flexible responsive positioning
- * Modal adapts to viewport size and scroll position
+ * Position modal - Fixed viewport-centered positioning
+ * Modal stays centered in viewport regardless of scroll position
+ * This function enforces fixed positioning to override Bootstrap defaults
  */
 function positionModalRelativeToScroll(modalElement) {
+    // Only position if modal is shown
+    if (!modalElement.classList.contains('show') && !modalElement.classList.contains('showing')) {
+        return;
+    }
+    
     const modalDialog = modalElement.querySelector('.modal-dialog');
     if (!modalDialog) return;
     
     const viewportHeight = window.innerHeight;
     const viewportWidth = window.innerWidth;
-    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    const minMargin = 20;
+    const availableHeight = viewportHeight - (minMargin * 2);
     
-    // Responsive top offset based on viewport size
-    let topOffset;
-    if (viewportWidth <= 575) {
-        topOffset = 0.5; // 0.5rem on mobile
-    } else if (viewportWidth <= 767) {
-        topOffset = 1; // 1rem on small tablets
-    } else if (viewportWidth <= 991) {
-        topOffset = 1.25; // 1.25rem on tablets
-    } else if (viewportWidth <= 1199) {
-        topOffset = 1.5; // 1.5rem on small desktops
-    } else if (viewportWidth <= 1399) {
-        topOffset = 1.75; // 1.75rem on medium desktops
-    } else {
-        topOffset = 2; // 2rem on large desktops
-    }
+    // Enforce fixed positioning on modal container
+    modalElement.style.setProperty('position', 'fixed', 'important');
+    modalElement.style.setProperty('top', '0', 'important');
+    modalElement.style.setProperty('left', '0', 'important');
+    modalElement.style.setProperty('right', '0', 'important');
+    modalElement.style.setProperty('bottom', '0', 'important');
+    modalElement.style.setProperty('width', '100vw', 'important');
+    modalElement.style.setProperty('height', '100vh', 'important');
+    modalElement.style.setProperty('margin', '0', 'important');
+    modalElement.style.setProperty('padding', '0', 'important');
+    modalElement.style.setProperty('overflow', 'hidden', 'important');
+    modalElement.style.setProperty('display', 'block', 'important');
     
-    // Convert rem to pixels (assuming 16px base)
-    const topOffsetPx = topOffset * 16;
-    
-    // Use Bootstrap's default centering for better responsiveness
-    // Only adjust if viewport is very small
-    if (viewportWidth <= 575) {
-        modalDialog.style.marginTop = `${topOffsetPx}px`;
-        modalDialog.style.marginBottom = `${topOffsetPx}px`;
-    } else {
-        // Reset to default Bootstrap centering for larger screens
-        modalDialog.style.marginTop = '';
-        modalDialog.style.marginBottom = '';
-    }
+    // Enforce fixed positioning with viewport centering on dialog
+    // Fixed positioning is relative to viewport, not document
+    modalDialog.style.setProperty('position', 'fixed', 'important');
+    modalDialog.style.setProperty('top', '50%', 'important');
+    modalDialog.style.setProperty('left', '50%', 'important');
+    modalDialog.style.setProperty('transform', 'translate(-50%, -50%)', 'important');
+    modalDialog.style.setProperty('margin', '0', 'important');
+    modalDialog.style.setProperty('max-height', `${availableHeight}px`, 'important');
+    modalDialog.style.setProperty('overflow', 'visible', 'important');
+    modalDialog.style.setProperty('width', 'auto', 'important');
     
     // Ensure modal content height adapts to viewport
     const modalContent = modalElement.querySelector('.modal-content');
     if (modalContent) {
-        const maxHeight = viewportHeight - (topOffsetPx * 2);
-        modalContent.style.maxHeight = `${maxHeight}px`;
+        const headerFooterHeight = 120; // Approximate height of header + footer
+        const maxContentHeight = availableHeight - headerFooterHeight;
+        modalContent.style.setProperty('max-height', `${Math.max(150, maxContentHeight)}px`, 'important');
+        modalContent.style.setProperty('overflow-y', 'auto', 'important');
     }
     
     // Force reflow to ensure styles are applied
-    modalDialog.offsetHeight;
+    void modalDialog.offsetHeight;
+    void modalElement.offsetHeight;
 }
 
 function updateUserRole(userId, newRole, selectElement) {

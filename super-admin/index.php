@@ -235,8 +235,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                         'name' => trim($_POST['name'] ?? ''),
                         'role' => $_POST['role'] ?? 'hr_admin',
                         'status' => $_POST['status'] ?? 'active',
-                        'department' => trim($_POST['department'] ?? ''),
-                        'phone' => trim($_POST['phone'] ?? ''),
+                        'department' => !empty(trim($_POST['department'] ?? '')) ? trim($_POST['department']) : null,
+                        'phone' => !empty(trim($_POST['phone'] ?? '')) ? trim($_POST['phone']) : null,
                         'employee_id' => !empty($_POST['employee_id']) ? (int)$_POST['employee_id'] : null
                     ];
                     
