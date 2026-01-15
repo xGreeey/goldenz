@@ -381,6 +381,11 @@ ob_end_flush();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Golden Z-5 HR Management System</title>
     
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="../public/logo.svg">
+    <link rel="icon" type="image/x-icon" href="../public/favicon.ico">
+    <link rel="apple-touch-icon" href="../public/logo.svg">
+    
     <!-- CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer">
@@ -388,6 +393,8 @@ ob_end_flush();
     <link href="assets/landing.css" rel="stylesheet">
     <!-- font-override.css moved after landing.css to allow overrides -->
     <link href="../assets/css/font-override.css" rel="stylesheet">
+    <!-- Number rendering fix for Windows 10/11 -->
+    <!-- number-rendering-fix.css merged into font-override.css -->
     
     <!-- Override font-override.css for Font Awesome password toggle icon -->
     <style>

@@ -66,12 +66,18 @@ $activeSection = getActiveSection($page);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo getPageTitle($page); ?> - Super Admin - Golden Z-5 HR System</title>
     
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="<?php echo public_url('logo.svg'); ?>">
+    <link rel="icon" type="image/x-icon" href="<?php echo public_url('favicon.ico'); ?>">
+    <link rel="apple-touch-icon" href="<?php echo public_url('logo.svg'); ?>">
+    
     <!-- CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400,0,0&family=Google+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&family=Open+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="<?php echo asset_url('css/style.css'); ?>" rel="stylesheet">
     <link href="<?php echo asset_url('css/font-override.css'); ?>" rel="stylesheet">
+    <!-- number-rendering-fix.css merged into font-override.css -->
     
     <!-- Security Headers -->
     <meta http-equiv="X-Content-Type-Options" content="nosniff">

@@ -3,12 +3,68 @@
  * High-Security Client-Side Application
  */
 
+/**
+ * Fix "boxed digits" rendering (often keycap/emoji digit sequences).
+ * Some environments can end up with numeric text containing U+FE0F (VS16) and/or U+20E3 (enclosing keycap),
+ * which renders as blue boxed digits in Chrome/Edge/Firefox.
+ *
+ * This normalizes those sequences back to plain ASCII digits across the UI.
+ */
+function normalizeNumericText(root = document) {
+    const selectors = [
+        '.stat-number',
+        '.card-number',
+        '.quick-stat-value',
+        '.rate-number',
+        '.progress-value',
+        '.badge',
+        '.badge-success-modern',
+        '.badge-primary-modern',
+        '.badge-warning-modern',
+        '.badge-danger-modern',
+        '.badge-live',
+        'table td',
+        'table th',
+        'code',
+        '[data-numeric]',
+        '[aria-valuenow]'
+    ].join(',');
+
+    const nodes = root.querySelectorAll(selectors);
+    if (!nodes || nodes.length === 0) return;
+
+    nodes.forEach((el) => {
+        // Only touch leaf-ish nodes so we don't blow away icons/markup.
+        if (!el) return;
+        const hasElementChildren = Array.from(el.childNodes).some((n) => n.nodeType === Node.ELEMENT_NODE);
+        if (hasElementChildren && !el.matches('.stat-number, .card-number, .progress-value, .badge, code')) {
+            return;
+        }
+
+        const text = el.textContent;
+        if (!text) return;
+
+        // Replace keycap sequences: "3\uFE0F\u20E3" or "3\u20E3" -> "3"
+        const normalized = text
+            .replace(/([0-9])\uFE0F?\u20E3/g, '$1')
+            .replace(/\uFE0F/g, '')
+            .replace(/\u20E3/g, '');
+
+        if (normalized !== text) {
+            el.textContent = normalized;
+        }
+    });
+}
+
 // Disable animations on page load to prevent hover effects on refresh
 document.documentElement.classList.add('no-animations');
 
 // Security features
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🔒 Golden Z-5 HR System loaded with high security');
+
+    // Normalize numeric text on initial load (fix boxed digits)
+    normalizeNumericText(document);
     
     // Initialize tooltips
     var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
@@ -24,6 +80,11 @@ document.addEventListener('DOMContentLoaded', function() {
             keyboard: true
         });
     });
+});
+
+// Also re-run after AJAX-style page transitions (page-transitions.js dispatches `pageLoaded`)
+document.addEventListener('pageLoaded', function() {
+    normalizeNumericText(document);
 });
 
 // Re-enable animations after page is fully loaded

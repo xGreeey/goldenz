@@ -477,8 +477,14 @@ $display_employees = array_slice($all_employees, 0, 10); // Show first 10 employ
     padding: 2rem 2.5rem;
     max-width: 100%;
     overflow-x: hidden;
-    background: #f8fafc;
+    /* Default: keep background neutral for other portals */
+    background: transparent;
     min-height: 100vh;
+}
+
+/* HR Admin only: apply the separated light background */
+.portal-hr-admin .dashboard-modern {
+    background: #f8fafc;
 }
 
 /* Page Header */
@@ -621,6 +627,15 @@ $display_employees = array_slice($all_employees, 0, 10); // Show first 10 employ
     margin: 0;
     line-height: 1;
     letter-spacing: -0.02em;
+    /* Number rendering fix - ensures digits display correctly on Windows 10/11 */
+    font-family: 'Segoe UI', Arial, Helvetica, sans-serif !important;
+    font-variant-numeric: tabular-nums !important;
+    font-feature-settings: 'tnum' !important;
+    -webkit-font-feature-settings: 'tnum' !important;
+    -moz-font-feature-settings: 'tnum' !important;
+    text-rendering: optimizeLegibility !important;
+    -webkit-font-smoothing: antialiased !important;
+    -moz-osx-font-smoothing: grayscale !important;
 }
 
 .stat-footer {
