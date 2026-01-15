@@ -29,6 +29,18 @@ $posts = get_posts($filters);
         </div>
     </div>
 
+    <!-- Breadcrumb -->
+    <nav class="hr-breadcrumb" aria-label="Breadcrumb">
+        <ol class="hr-breadcrumb__list">
+            <li class="hr-breadcrumb__item">
+                <a href="?page=dashboard" class="hr-breadcrumb__link">Dashboard</a>
+            </li>
+            <li class="hr-breadcrumb__item hr-breadcrumb__current" aria-current="page">
+                Posts &amp; Locations
+            </li>
+        </ol>
+    </nav>
+
     <!-- Statistics Cards -->
     <div class="row g-4">
         <div class="col-xl-3 col-md-6">

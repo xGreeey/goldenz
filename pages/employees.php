@@ -282,6 +282,18 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
         </div>
     </div>
 
+    <!-- Breadcrumb -->
+    <nav class="hr-breadcrumb" aria-label="Breadcrumb">
+        <ol class="hr-breadcrumb__list">
+            <li class="hr-breadcrumb__item">
+                <a href="?page=dashboard" class="hr-breadcrumb__link">Dashboard</a>
+            </li>
+            <li class="hr-breadcrumb__item hr-breadcrumb__current" aria-current="page">
+                Employees
+            </li>
+        </ol>
+    </nav>
+
     <!-- Employee List (single view) -->
     <div class="tab-content">
         <div class="tab-pane active" id="employee-list">
