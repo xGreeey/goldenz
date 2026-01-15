@@ -201,9 +201,9 @@ function isTaskOverdue($due_date, $status) {
 }
 ?>
 
-<div class="container-fluid py-4">
+<div class="container-fluid hrdash">
     <!-- Page Header -->
-    <div class="page-header mb-4">
+    <div class="page-header-modern">
         <div class="page-title">
             <div class="d-flex align-items-center gap-2">
                 <h1 class="mb-0">Task</h1>
@@ -223,13 +223,18 @@ function isTaskOverdue($due_date, $status) {
     </div>
 
     <!-- Info Alert -->
-    <div class="alert alert-info mb-4">
+    <div class="row g-4">
+        <div class="col-12">
+    <div class="alert alert-info">
         <i class="fas fa-circle-info me-2"></i>
         <strong>Auto-Generated Tasks:</strong> Tasks are automatically created when employee records require updates (missing required fields, expired licenses, etc.). Click on the location page link to go directly to the employee record.
     </div>
 
+    </div>
+    </div>
+
     <!-- Task Statistics -->
-    <div class="row g-3 mb-4">
+    <div class="row g-4">
         <div class="col-md-3 col-sm-6">
             <div class="card stat-card h-100 border-0 shadow-sm">
                 <div class="card-body">
@@ -297,7 +302,7 @@ function isTaskOverdue($due_date, $status) {
     </div>
 
     <!-- Detailed Stats Row -->
-    <div class="row g-3 mb-4">
+    <div class="row g-4">
         <div class="col-md-2 col-sm-4 col-6">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body text-center p-3">
@@ -356,7 +361,9 @@ function isTaskOverdue($due_date, $status) {
     </div>
 
     <!-- Filters -->
-    <div class="card mb-4">
+    <div class="row g-4">
+        <div class="col-12">
+    <div class="card">
         <div class="card-body">
             <div class="row g-3">
                 <div class="col-md-3">
@@ -413,10 +420,10 @@ function isTaskOverdue($due_date, $status) {
                             <th style="width: 120px;">Task Number</th>
                             <th style="width: 150px;">Category</th>
                             <th style="width: 200px;">Task Title</th>
-                            <th style="width: 300px; min-width: 250px;">Description</th>
-                            <th style="width: 180px;">Due Date / Priority</th>
-                            <th style="width: 150px;">Location Page</th>
-                            <th style="width: 250px; min-width: 200px;">Notes</th>
+                            <th>Description</th>
+                            <th>Due Date / Priority</th>
+                            <th>Location Page</th>
+                            <th>Notes</th>
                             <th style="width: 100px;">Status</th>
                             <th style="width: 150px;">Assigned By</th>
                         </tr>
@@ -741,9 +748,34 @@ document.getElementById('selectAllTasks')?.addEventListener('change', function()
 </script>
 
 <style>
+/* Table responsive - no horizontal scroll */
+.table-responsive {
+    overflow-x: hidden;
+    overflow-y: visible;
+    width: 100%;
+    max-width: 100%;
+}
+
+/* Table styling */
+.table {
+    width: 100%;
+    max-width: 100%;
+    table-layout: auto;
+}
+
+.table thead th {
+    white-space: normal;
+    word-wrap: break-word;
+    padding: 0.625rem 0.75rem;
+    font-size: 0.75rem;
+}
+
 /* Ensure description and notes columns display full text */
 .table tbody td {
     vertical-align: top;
+    white-space: normal;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 .table tbody td:nth-child(6), /* Description column */
@@ -763,7 +795,8 @@ document.getElementById('selectAllTasks')?.addEventListener('change', function()
 
 /* Ensure table cells have proper padding for wrapped text */
 .table tbody td {
-    padding: 0.75rem;
+    padding: 0.625rem 0.75rem;
+    font-size: 0.875rem;
 }
 
 /* Task Statistics Cards Styling */

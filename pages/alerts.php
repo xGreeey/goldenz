@@ -119,7 +119,7 @@ try {
 }
 ?>
 
-<div class="container-fluid alerts-modern">
+<div class="container-fluid hrdash">
     <!-- Page Header -->
     <div class="page-header-modern">
         <div class="page-title-modern">
@@ -134,60 +134,68 @@ try {
     </div>
 
     <!-- Alert Statistics -->
-    <div class="summary-cards-modern mb-4">
-        <div class="card stat-card-modern h-100">
-            <div class="card-body-modern">
-                <div class="stat-header">
-                    <span class="stat-label">Total Active</span>
-                    <i class="fas fa-bell stat-icon"></i>
+    <div class="row g-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="card hrdash-stat hrdash-stat--primary">
+                <div class="hrdash-stat__header">
+                    <div class="hrdash-stat__label">Total Active</div>
                 </div>
-                <div class="stat-content">
-                    <h3 class="stat-number text-primary"><?php echo htmlspecialchars($stats['total_active'] ?? 0); ?></h3>
-                    <span class="badge badge-primary-modern">Live</span>
+                <div class="hrdash-stat__content">
+                    <div class="hrdash-stat__value"><?php echo number_format($stats['total_active'] ?? 0); ?></div>
+                    <div class="hrdash-stat__trend hrdash-stat__trend--positive">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>5%</span>
+                    </div>
                 </div>
-                <small class="stat-footer">Open alerts</small>
+                <div class="hrdash-stat__meta">Open alerts currently active in the system.</div>
             </div>
         </div>
         
-        <div class="card stat-card-modern h-100">
-            <div class="card-body-modern">
-                <div class="stat-header">
-                    <span class="stat-label">Urgent</span>
-                    <i class="fas fa-exclamation-triangle stat-icon text-danger"></i>
+        <div class="col-xl-3 col-md-6">
+            <div class="card hrdash-stat">
+                <div class="hrdash-stat__header">
+                    <div class="hrdash-stat__label">Urgent</div>
                 </div>
-                <div class="stat-content">
-                    <h3 class="stat-number text-danger"><?php echo htmlspecialchars($stats['urgent'] ?? 0); ?></h3>
-                    <span class="badge badge-danger-modern">Action</span>
+                <div class="hrdash-stat__content">
+                    <div class="hrdash-stat__value"><?php echo number_format($stats['urgent'] ?? 0); ?></div>
+                    <div class="hrdash-stat__trend hrdash-stat__trend--negative">
+                        <i class="fas fa-arrow-down"></i>
+                        <span>2%</span>
+                    </div>
                 </div>
-                <small class="stat-footer">Requires attention</small>
+                <div class="hrdash-stat__meta">Alerts that require immediate attention.</div>
             </div>
         </div>
         
-        <div class="card stat-card-modern h-100">
-            <div class="card-body-modern">
-                <div class="stat-header">
-                    <span class="stat-label">High Priority</span>
-                    <i class="fas fa-exclamation-circle stat-icon text-warning"></i>
+        <div class="col-xl-3 col-md-6">
+            <div class="card hrdash-stat">
+                <div class="hrdash-stat__header">
+                    <div class="hrdash-stat__label">High Priority</div>
                 </div>
-                <div class="stat-content">
-                    <h3 class="stat-number text-warning"><?php echo htmlspecialchars($stats['high'] ?? 0); ?></h3>
-                    <span class="badge badge-warning-modern">Monitor</span>
+                <div class="hrdash-stat__content">
+                    <div class="hrdash-stat__value"><?php echo number_format($stats['high'] ?? 0); ?></div>
+                    <div class="hrdash-stat__trend hrdash-stat__trend--positive">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>4%</span>
+                    </div>
                 </div>
-                <small class="stat-footer">Escalated</small>
+                <div class="hrdash-stat__meta">High priority alerts that need monitoring.</div>
             </div>
         </div>
         
-        <div class="card stat-card-modern h-100">
-            <div class="card-body-modern">
-                <div class="stat-header">
-                    <span class="stat-label">Overdue</span>
-                    <i class="fas fa-clock stat-icon text-danger"></i>
+        <div class="col-xl-3 col-md-6">
+            <div class="card hrdash-stat">
+                <div class="hrdash-stat__header">
+                    <div class="hrdash-stat__label">Overdue</div>
                 </div>
-                <div class="stat-content">
-                    <h3 class="stat-number text-danger"><?php echo htmlspecialchars($stats['overdue'] ?? 0); ?></h3>
-                    <span class="badge badge-danger-modern">Urgent</span>
+                <div class="hrdash-stat__content">
+                    <div class="hrdash-stat__value"><?php echo number_format($stats['overdue'] ?? 0); ?></div>
+                    <div class="hrdash-stat__trend hrdash-stat__trend--negative">
+                        <i class="fas fa-arrow-down"></i>
+                        <span>3%</span>
+                    </div>
                 </div>
-                <small class="stat-footer">Past due</small>
+                <div class="hrdash-stat__meta">Alerts that are past their due date.</div>
             </div>
         </div>
     </div>
@@ -209,9 +217,9 @@ try {
         </div>
             <div class="card-body">
                 <!-- Filter Section -->
-                <div class="filter-section mb-4">
-                    <div class="row">
-                        <div class="col-md-3 mb-3">
+                <div class="filter-section">
+                    <div class="row g-4">
+                        <div class="col-md-3">
                             <label for="statusFilter" class="form-label">Status</label>
                             <select class="form-select" id="statusFilter" onchange="filterAlerts()">
                                 <option value="active" <?php echo $status === 'active' ? 'selected' : ''; ?>>Active</option>
@@ -386,7 +394,9 @@ try {
         </div>
 
     <!-- Audit Trail Section -->
-    <div class="card alerts-card-modern mt-4">
+    <div class="row g-4">
+        <div class="col-12">
+    <div class="card alerts-card-modern">
         <div class="card-header-modern">
             <div class="d-flex justify-content-between align-items-center">
                 <h5 class="mb-0 card-title-modern"><i class="fas fa-history me-2"></i>Audit Trail</h5>
@@ -402,9 +412,9 @@ try {
         </div>
             <div class="card-body">
                 <!-- Audit Trail Filters -->
-                <div class="filter-section mb-4">
-                    <div class="row">
-                        <div class="col-md-3 mb-3">
+                <div class="filter-section">
+                    <div class="row g-4">
+                        <div class="col-md-3">
                             <label for="auditActionFilter" class="form-label">Action</label>
                             <select class="form-select form-select-sm" id="auditActionFilter" onchange="filterAuditTrail()">
                                 <option value="" <?php echo $audit_action === '' ? 'selected' : ''; ?>>All Actions</option>
@@ -415,7 +425,7 @@ try {
                                 <option value="Employee" <?php echo $audit_action === 'Employee' ? 'selected' : ''; ?>>Employee Actions</option>
                             </select>
                         </div>
-                        <div class="col-md-3 mb-3">
+                        <div class="col-md-3">
                             <label for="auditTableFilter" class="form-label">Table</label>
                             <select class="form-select form-select-sm" id="auditTableFilter" onchange="filterAuditTrail()">
                                 <option value="" <?php echo $audit_table === '' ? 'selected' : ''; ?>>All Tables</option>
@@ -425,15 +435,15 @@ try {
                                 <option value="users" <?php echo $audit_table === 'users' ? 'selected' : ''; ?>>Users</option>
                             </select>
                         </div>
-                        <div class="col-md-2 mb-3">
+                        <div class="col-md-2">
                             <label for="auditDateFrom" class="form-label">Date From</label>
                             <input type="date" class="form-control form-control-sm" id="auditDateFrom" value="<?php echo htmlspecialchars($audit_date_from); ?>" onchange="filterAuditTrail()">
                         </div>
-                        <div class="col-md-2 mb-3">
+                        <div class="col-md-2">
                             <label for="auditDateTo" class="form-label">Date To</label>
                             <input type="date" class="form-control form-control-sm" id="auditDateTo" value="<?php echo htmlspecialchars($audit_date_to); ?>" onchange="filterAuditTrail()">
                         </div>
-                        <div class="col-md-2 mb-3">
+                        <div class="col-md-2">
                             <label class="form-label">&nbsp;</label>
                             <button class="btn btn-outline-secondary btn-sm w-100" onclick="clearAuditFilters()">
                                 <i class="fas fa-times me-1"></i>Clear
@@ -1116,8 +1126,11 @@ body.portal-hr-admin .alerts-modern {
 /* Alerts Table Styling */
 .table-responsive {
     border-radius: 8px;
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: visible;
     background: #ffffff;
+    width: 100%;
+    max-width: 100%;
 }
 
 .table thead th {
@@ -1127,8 +1140,9 @@ body.portal-hr-admin .alerts-modern {
     font-size: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    padding: 1rem 1.25rem;
-    white-space: nowrap;
+    padding: 0.625rem 0.75rem;
+    white-space: normal;
+    word-wrap: break-word;
     color: #64748b;
 }
 
@@ -1143,10 +1157,13 @@ body.portal-hr-admin .alerts-modern {
 }
 
 .table tbody td {
-    padding: 1rem 1.25rem;
+    padding: 0.625rem 0.75rem;
     vertical-align: middle;
     color: #475569;
     font-size: 0.875rem;
+    white-space: normal;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 /* Empty State Styling */

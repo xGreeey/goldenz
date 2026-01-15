@@ -259,7 +259,7 @@ $inactive_employees = $employee_stats['inactive_employees'];
 $onboarding_employees = $employee_stats['onboarding_employees'];
 ?>
 
-<div class="container-fluid employees-modern">
+<div class="container-fluid hrdash">
     <!-- Page Header -->
     <div class="page-header-modern">
         <div class="page-title-modern">
@@ -289,48 +289,52 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
     <?php endif; ?>
 
     <!-- Summary Cards -->
-    <div class="summary-cards-modern">
-        <div class="card stat-card-modern h-100">
-            <div class="card-body-modern">
-                <div class="stat-header">
-                    <span class="stat-label">Total employees</span>
-                    <i class="fas fa-users stat-icon"></i>
+    <div class="row g-4">
+        <div class="col-xl-4 col-md-6">
+            <div class="card hrdash-stat hrdash-stat--primary">
+                <div class="hrdash-stat__header">
+                    <div class="hrdash-stat__label">Total Employees</div>
                 </div>
-                <div class="stat-content">
-                    <h3 class="stat-number"><?php echo number_format($total_all_employees); ?></h3>
-                    <span class="badge badge-success-modern">+<?php echo max(1, ($active_employees ?? 0) > 0 ? 1 : 0); ?>%</span>
+                <div class="hrdash-stat__content">
+                    <div class="hrdash-stat__value"><?php echo number_format($total_all_employees); ?></div>
+                    <div class="hrdash-stat__trend hrdash-stat__trend--positive">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>5%</span>
+                    </div>
                 </div>
-                <small class="stat-footer">vs last period</small>
+                <div class="hrdash-stat__meta">The total number of employees in the system.</div>
             </div>
         </div>
 
-        <div class="card stat-card-modern h-100">
-            <div class="card-body-modern">
-                <div class="stat-header">
-                    <span class="stat-label">Active</span>
-                    <i class="fas fa-user-check stat-icon"></i>
+        <div class="col-xl-4 col-md-6">
+            <div class="card hrdash-stat">
+                <div class="hrdash-stat__header">
+                    <div class="hrdash-stat__label">Active</div>
                 </div>
-                <div class="stat-content">
-                    <h3 class="stat-number"><?php echo number_format($active_employees); ?></h3>
-                    <span class="badge badge-primary-modern">
-                        <?php echo ($total_all_employees ?? 0) > 0 ? round(($active_employees / max(1, $total_all_employees)) * 100) : 0; ?>%
-                    </span>
+                <div class="hrdash-stat__content">
+                    <div class="hrdash-stat__value"><?php echo number_format($active_employees); ?></div>
+                    <div class="hrdash-stat__trend hrdash-stat__trend--positive">
+                        <i class="fas fa-arrow-up"></i>
+                        <span><?php echo ($total_all_employees ?? 0) > 0 ? round(($active_employees / max(1, $total_all_employees)) * 100) : 0; ?>%</span>
+                    </div>
                 </div>
-                <small class="stat-footer">Currently on roster</small>
+                <div class="hrdash-stat__meta">Employees currently active and on roster.</div>
             </div>
         </div>
 
-        <div class="card stat-card-modern h-100">
-            <div class="card-body-modern">
-                <div class="stat-header">
-                    <span class="stat-label">Inactive</span>
-                    <i class="fas fa-user-times stat-icon text-warning"></i>
+        <div class="col-xl-4 col-md-6">
+            <div class="card hrdash-stat">
+                <div class="hrdash-stat__header">
+                    <div class="hrdash-stat__label">Inactive</div>
                 </div>
-                <div class="stat-content">
-                    <h3 class="stat-number text-warning"><?php echo number_format($inactive_employees); ?></h3>
-                    <span class="badge badge-warning-modern">Monitor</span>
+                <div class="hrdash-stat__content">
+                    <div class="hrdash-stat__value"><?php echo number_format($inactive_employees); ?></div>
+                    <div class="hrdash-stat__trend hrdash-stat__trend--negative">
+                        <i class="fas fa-arrow-down"></i>
+                        <span>2%</span>
+                    </div>
                 </div>
-                <small class="stat-footer">Off roster</small>
+                <div class="hrdash-stat__meta">Employees currently inactive or off roster.</div>
             </div>
         </div>
     </div>
@@ -407,7 +411,7 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
                                             <div class="employee-email text-muted small">
                                                 <?php echo getEmployeeTypeLabel($employee['employee_type'] ?? ''); ?>
                                             </div>
-                                            <div class="employee-number text-muted" style="font-size: 0.75rem; margin-top: 0.25rem;">
+                                            <div class="employee-number text-muted" style="font-size: 0.6875rem; margin-top: 0.125rem;">
                                                 #<?php echo htmlspecialchars($employee['employee_no'] ?? $employee['id']); ?>
                                             </div>
                                         </div>
@@ -415,51 +419,51 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
                                 </td>
                                 <!-- Post -->
                                 <td>
-                                    <span class="badge bg-light text-dark"><?php echo htmlspecialchars($employee['post'] ?? 'Unassigned'); ?></span>
+                                    <span class="badge bg-light text-dark" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;"><?php echo htmlspecialchars($employee['post'] ?? 'Unassigned'); ?></span>
                                 </td>
                                 <!-- License & Expiry -->
                                 <td>
                                     <div class="license-info">
                                         <?php if (!empty($employee['license_no'])): ?>
-                                            <div class="mb-2">
-                                                <small class="text-muted d-block mb-1">License:</small>
-                                                <strong><?php echo htmlspecialchars($employee['license_no']); ?></strong>
+                                            <div class="mb-1">
+                                                <small class="text-muted d-block mb-0" style="font-size: 0.6875rem;">License:</small>
+                                                <strong style="font-size: 0.8125rem;"><?php echo htmlspecialchars($employee['license_no']); ?></strong>
                                                 <?php if ($license_formatted): ?>
-                                                    <div class="mt-1">
-                                                        <div class="<?php echo $license_indicator['class']; ?>">
+                                                    <div class="mt-0" style="margin-top: 0.125rem;">
+                                                        <div class="<?php echo $license_indicator['class']; ?>" style="font-size: 0.75rem;">
                                                             <?php if (!empty($license_indicator['icon'])): ?>
-                                                                <i class="fas <?php echo $license_indicator['icon']; ?> me-1"></i>
+                                                                <i class="fas <?php echo $license_indicator['icon']; ?> me-1" style="font-size: 0.625rem;"></i>
                                                             <?php endif; ?>
                                                             <?php echo htmlspecialchars($license_formatted['status_text']); ?>
                                                         </div>
-                                                        <div class="<?php echo ($license_formatted['days'] < 0 || $license_formatted['days'] <= 30) ? 'text-danger' : ''; ?>">
+                                                        <div class="<?php echo ($license_formatted['days'] < 0 || $license_formatted['days'] <= 30) ? 'text-danger' : ''; ?>" style="font-size: 0.75rem;">
                                                             <?php echo htmlspecialchars($license_formatted['text']); ?>
                                                         </div>
                                                     </div>
                                                 <?php else: ?>
-                                                    <div class="text-muted small mt-1">No expiration date</div>
+                                                    <div class="text-muted small mt-1" style="font-size: 0.75rem;">No expiration date</div>
                                                 <?php endif; ?>
                                             </div>
                                         <?php else: ?>
-                                            <div class="mb-2">
-                                                <small class="text-muted d-block mb-1">License:</small>
-                                                <span class="text-danger fw-bold">
-                                                    <i class="fas fa-exclamation-triangle me-1"></i>No License
-                                                    <span class="badge bg-danger ms-1">URGENT</span>
+                                            <div class="mb-1">
+                                                <small class="text-muted d-block mb-0" style="font-size: 0.6875rem;">License:</small>
+                                                <span class="text-danger fw-bold" style="font-size: 0.8125rem;">
+                                                    <i class="fas fa-exclamation-triangle me-1" style="font-size: 0.75rem;"></i>No License
+                                                    <span class="badge bg-danger ms-1" style="font-size: 0.6875rem; padding: 0.125rem 0.375rem;">URGENT</span>
                                                 </span>
                                             </div>
                                         <?php endif; ?>
                                         <?php if ($rlm_formatted && !empty($employee['rlm_exp'])): ?>
-                                            <div>
-                                                <small class="text-muted d-block mb-1">RLM:</small>
+                                            <div class="mt-1">
+                                                <small class="text-muted d-block mb-0" style="font-size: 0.6875rem;">RLM:</small>
                                                 <div>
-                                                    <div class="<?php echo $rlm_indicator['class']; ?>">
+                                                    <div class="<?php echo $rlm_indicator['class']; ?>" style="font-size: 0.75rem;">
                                                         <?php if (!empty($rlm_indicator['icon'])): ?>
-                                                            <i class="fas <?php echo $rlm_indicator['icon']; ?> me-1"></i>
+                                                            <i class="fas <?php echo $rlm_indicator['icon']; ?> me-1" style="font-size: 0.625rem;"></i>
                                                         <?php endif; ?>
                                                         <?php echo htmlspecialchars($rlm_formatted['status_text']); ?>
                                                     </div>
-                                                    <div class="<?php echo ($rlm_formatted['days'] < 0 || $rlm_formatted['days'] <= 30) ? 'text-danger' : ''; ?>">
+                                                    <div class="<?php echo ($rlm_formatted['days'] < 0 || $rlm_formatted['days'] <= 30) ? 'text-danger' : ''; ?>" style="font-size: 0.75rem;">
                                                         <?php echo htmlspecialchars($rlm_formatted['text']); ?>
                                                     </div>
                                                 </div>
@@ -470,25 +474,25 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
                                 <!-- Employment Details -->
                                 <td>
                                     <div class="employment-details">
-                                        <div class="mb-1">
-                                            <small class="text-muted d-block">Hired:</small>
-                                            <span><?php echo !empty($employee['date_hired']) ? date('M d, Y', strtotime($employee['date_hired'])) : 'N/A'; ?></span>
+                                        <div class="mb-0" style="margin-bottom: 0.375rem;">
+                                            <small class="text-muted d-block" style="font-size: 0.6875rem; margin-bottom: 0.125rem;">Hired:</small>
+                                            <span style="font-size: 0.8125rem;"><?php echo !empty($employee['date_hired']) ? date('M d, Y', strtotime($employee['date_hired'])) : 'N/A'; ?></span>
                                         </div>
-                                        <div class="mb-1">
-                                            <small class="text-muted d-block">Status:</small>
-                                            <span class="badge <?php echo strtolower($employment_status) === 'probationary' ? 'bg-warning text-dark' : 'bg-success'; ?>">
+                                        <div class="mb-0" style="margin-bottom: 0.375rem;">
+                                            <small class="text-muted d-block" style="font-size: 0.6875rem; margin-bottom: 0.125rem;">Status:</small>
+                                            <span class="badge <?php echo strtolower($employment_status) === 'probationary' ? 'bg-warning text-dark' : 'bg-success'; ?>" style="font-size: 0.6875rem; padding: 0.25rem 0.5rem;">
                                                 <?php echo htmlspecialchars($employment_status); ?>
                                             </span>
                                         </div>
                                         <div>
-                                            <small class="text-muted d-block">Shift:</small>
-                                            <span class="text-muted">N/A</span>
+                                            <small class="text-muted d-block" style="font-size: 0.6875rem; margin-bottom: 0.125rem;">Shift:</small>
+                                            <span class="text-muted" style="font-size: 0.8125rem;">N/A</span>
                                         </div>
                                     </div>
                                 </td>
                                 <!-- Status -->
                                 <td>
-                                    <span class="status-badge <?php echo strtolower($employee['status'] ?? ''); ?>">
+                                    <span class="status-badge <?php echo strtolower($employee['status'] ?? ''); ?>" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;">
                                         <i class="fas"></i>
                                         <?php echo htmlspecialchars($employee['status'] ?? 'N/A'); ?>
                                     </span>
@@ -823,16 +827,20 @@ body.portal-hr-admin .employees-modern {
     background: #ffffff;
     border-radius: 16px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.04);
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: visible;
     margin-bottom: 1.5rem;
     margin-top: 0;
     width: 100%;
+    max-width: 100%;
     box-sizing: border-box;
 }
 
 /* Employees Table */
 .employees-table {
     width: 100%;
+    max-width: 100%;
+    table-layout: auto;
     border-collapse: separate;
     border-spacing: 0;
 }
@@ -842,14 +850,15 @@ body.portal-hr-admin .employees-modern {
 }
 
 .employees-table thead th {
-    padding: 1rem 1.25rem;
+    padding: 0.625rem 0.75rem;
     font-size: 0.75rem;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
     color: #64748b;
     border-bottom: 2px solid #e2e8f0;
-    white-space: nowrap;
+    white-space: normal;
+    word-wrap: break-word;
 }
 
 .employees-table thead th.sortable {
@@ -872,22 +881,25 @@ body.portal-hr-admin .employees-modern {
 }
 
 .employees-table tbody td {
-    padding: 1rem 1.25rem;
+    padding: 0.625rem 0.75rem;
     vertical-align: middle;
     color: #475569;
     font-size: 0.875rem;
+    white-space: normal;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 /* Employee Info */
 .employees-table .employee-info {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.5rem;
 }
 
 .employees-table .employee-avatar {
-    width: 40px;
-    height: 40px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
     background: linear-gradient(135deg, #1fb2d5 0%, #0ea5e9 100%);
     color: #ffffff;
@@ -895,7 +907,7 @@ body.portal-hr-admin .employees-modern {
     align-items: center;
     justify-content: center;
     font-weight: 600;
-    font-size: 0.875rem;
+    font-size: 0.75rem;
     flex-shrink: 0;
     box-shadow: 0 2px 8px rgba(31, 178, 213, 0.2);
 }
@@ -908,14 +920,14 @@ body.portal-hr-admin .employees-modern {
 .employees-table .employee-name {
     font-weight: 600;
     color: #1e293b;
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.125rem;
     line-height: 1.3;
-    font-size: 0.9375rem;
+    font-size: 0.875rem;
 }
 
 .employees-table .employee-email {
     color: #64748b;
-    font-size: 0.8125rem;
+    font-size: 0.75rem;
     line-height: 1.3;
     margin-top: 0.125rem;
 }
@@ -932,11 +944,11 @@ body.portal-hr-admin .employees-modern {
 
 .license-info {
     min-width: 180px;
-    line-height: 1.6;
+    line-height: 1.4;
 }
 
 .license-info > div {
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.375rem;
 }
 
 .license-info > div:last-child {
@@ -944,29 +956,29 @@ body.portal-hr-admin .employees-modern {
 }
 
 .license-info small {
-    font-size: 0.7rem;
+    font-size: 0.6875rem;
     font-weight: 500;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     display: block;
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.125rem;
     color: #6c757d;
 }
 
 .license-info strong {
-    font-size: 0.875rem;
+    font-size: 0.8125rem;
     font-weight: 600;
     display: block;
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.125rem;
 }
 
 .employment-details {
     min-width: 150px;
-    line-height: 1.6;
+    line-height: 1.4;
 }
 
 .employment-details > div {
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.375rem;
 }
 
 .employment-details > div:last-child {
@@ -974,23 +986,23 @@ body.portal-hr-admin .employees-modern {
 }
 
 .employment-details small {
-    font-size: 0.7rem;
+    font-size: 0.6875rem;
     font-weight: 500;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     display: block;
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.125rem;
     color: #6c757d;
 }
 
 .employment-details span:not(.badge) {
-    font-size: 0.875rem;
+    font-size: 0.8125rem;
     display: block;
 }
 
 /* Employee info spacing in table */
 .employees-table .employee-info {
-    gap: 0.75rem;
+    gap: 0.5rem;
 }
 
 .employees-table .employee-avatar {
@@ -998,7 +1010,7 @@ body.portal-hr-admin .employees-modern {
 }
 
 .employees-table .employee-name {
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.125rem;
     line-height: 1.3;
 }
 
@@ -1151,7 +1163,7 @@ body.portal-hr-admin .employees-modern {
     }
     
     .table-container {
-        overflow-x: auto;
+        overflow-x: hidden;
     }
 }
 </style>

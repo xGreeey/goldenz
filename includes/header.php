@@ -103,108 +103,13 @@ if ($userRole === 'hr_admin') {
         // Pages that should not show the header
         $pages_without_header = ['permissions', 'employees', 'dashboard', 'posts', 'post_assignments', 'alerts', 'add_employee', 'view_employee', 'tasks', 'hr-help', 'help'];
 
-        // HR Admin: show a connected top header with profile dropdown + dashboard quick actions
+        // HR Admin: no header (moved to dashboard welcome section)
         if (($userRole ?? '') === 'hr_admin'): 
         ?>
+        <!-- HR Admin header removed - welcome section in dashboard instead -->
         <?php
-            $displayName = trim((string)($_SESSION['name'] ?? ($_SESSION['username'] ?? 'HR Admin')));
-            $initials = 'HA';
-            if ($displayName) {
-                $parts = preg_split('/\s+/', $displayName);
-                $first = $parts[0][0] ?? 'H';
-                $last = (count($parts) > 1) ? ($parts[count($parts) - 1][0] ?? 'A') : ($parts[0][1] ?? 'A');
-                $initials = strtoupper($first . $last);
-            }
-
-            // Optional counts for badges (safe fallbacks)
-            $pendingTasks = 0;
-            if (function_exists('get_pending_task_count')) {
-                $pendingTasks = (int) get_pending_task_count();
-            }
+        elseif (($userRole ?? '') !== 'hr_admin' && !in_array($page, $pages_without_header)): 
         ?>
-
-        <header class="hr-admin-topbar" aria-label="HR Admin header">
-            <div class="hr-admin-topbar__left" aria-hidden="true"></div>
-
-            <div class="hr-admin-topbar__main">
-                <div class="hr-admin-topbar__title">
-                    <h1 class="mb-0" id="pageTitle"><?php echo getPageTitle($page); ?></h1>
-                </div>
-
-                <div class="hr-admin-topbar__actions" role="navigation" aria-label="Header actions">
-                    <?php if ($page === 'dashboard'): ?>
-                        <div class="dropdown">
-                            <button class="btn btn-outline-modern btn-sm hr-admin-action-btn dropdown-toggle"
-                                    type="button"
-                                    data-bs-toggle="dropdown"
-                                    aria-expanded="false">
-                                <i class="fas fa-plus me-2"></i>Add
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-end">
-                                <li><a class="dropdown-item" href="?page=add_employee"><i class="fas fa-user-plus me-2"></i>Add Employee</a></li>
-                                <li><a class="dropdown-item" href="?page=add_alert"><i class="fas fa-bell me-2"></i>Add Alert</a></li>
-                                <li><a class="dropdown-item" href="?page=add_post"><i class="fas fa-briefcase me-2"></i>Add Post</a></li>
-                            </ul>
-                        </div>
-
-                        <div class="dropdown">
-                            <button class="btn btn-outline-modern btn-sm hr-admin-action-btn dropdown-toggle"
-                                    type="button"
-                                    data-bs-toggle="dropdown"
-                                    aria-expanded="false">
-                                <i class="fas fa-eye me-2"></i>View
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-end">
-                                <li><a class="dropdown-item" href="?page=employees"><i class="fas fa-users me-2"></i>Employees</a></li>
-                                <li><a class="dropdown-item" href="?page=alerts"><i class="fas fa-bell me-2"></i>Alerts</a></li>
-                                <li><a class="dropdown-item" href="?page=posts"><i class="fas fa-briefcase me-2"></i>Posts</a></li>
-                                <li><a class="dropdown-item" href="?page=post_assignments"><i class="fas fa-diagram-project me-2"></i>Assignments</a></li>
-                            </ul>
-                        </div>
-                    <?php endif; ?>
-
-                    <a class="hr-admin-icon-link <?php echo ($page === 'alerts') ? 'active' : ''; ?>"
-                       href="?page=alerts"
-                       title="Notifications"
-                       aria-label="Notifications">
-                        <i class="fas fa-bell" aria-hidden="true"></i>
-                    </a>
-
-                    <a class="hr-admin-icon-link <?php echo ($page === 'tasks') ? 'active' : ''; ?>"
-                       href="?page=tasks"
-                       title="Tasks"
-                       aria-label="Tasks">
-                        <i class="fas fa-tasks" aria-hidden="true"></i>
-                        <?php if ($pendingTasks > 0): ?>
-                            <span class="hr-admin-badge" aria-label="<?php echo $pendingTasks; ?> pending tasks"><?php echo $pendingTasks > 99 ? '99+' : $pendingTasks; ?></span>
-                        <?php endif; ?>
-                    </a>
-
-                    <div class="dropdown">
-                        <button class="hr-admin-profile-btn dropdown-toggle"
-                                type="button"
-                                data-bs-toggle="dropdown"
-                                aria-expanded="false"
-                                aria-label="Profile menu">
-                            <span class="hr-admin-avatar" aria-hidden="true"><?php echo htmlspecialchars($initials); ?></span>
-                            <span class="hr-admin-profile-name d-none d-md-inline"><?php echo htmlspecialchars($displayName); ?></span>
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="?page=settings"><i class="fas fa-user me-2"></i>Profile</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li>
-                                <a class="dropdown-item text-danger"
-                                   href="<?php echo base_url(); ?>/index.php?logout=1"
-                                   data-no-transition="true">
-                                    <i class="fas fa-right-from-bracket me-2"></i>Logout
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </header>
-        <?php elseif (!in_array($page, $pages_without_header)): ?>
         <header class="header">
             <div class="d-flex align-items-center">
                 <h1 class="mb-0" id="pageTitle"><?php echo getPageTitle($page); ?></h1>
