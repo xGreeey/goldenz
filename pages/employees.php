@@ -282,6 +282,18 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
         </div>
     </div>
 
+    <!-- Breadcrumb -->
+    <nav class="hr-breadcrumb" aria-label="Breadcrumb">
+        <ol class="hr-breadcrumb__list">
+            <li class="hr-breadcrumb__item">
+                <a href="?page=dashboard" class="hr-breadcrumb__link">Dashboard</a>
+            </li>
+            <li class="hr-breadcrumb__item hr-breadcrumb__current" aria-current="page">
+                Employees
+            </li>
+        </ol>
+    </nav>
+
     <!-- Employee List (single view) -->
     <div class="tab-content">
         <div class="tab-pane active" id="employee-list">
@@ -431,43 +443,50 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
                                         </div>
                                     </div>
                                 </td>
-                                <!-- License and RLM -->
+                                <!-- License and RLM (styled similar to Employee Info column) -->
                                 <td>
-                                    <div class="license-rlm-info">
-                                        <!-- LICENSE NO -->
-                                        <div>
-                                            <small class="text-muted d-block mb-1" style="font-size: 0.6875rem; font-weight: 600;">LICENSE NO</small>
+                                    <div class="employee-info-combined license-rlm-info">
+                                        <!-- Top line: License number or No License -->
+                                        <div class="employee-info-line fw-semibold">
                                             <?php if (!empty($employee['license_no'])): ?>
-                                                <strong style="font-size: 0.8125rem; color: #1e293b;"><?php echo htmlspecialchars($employee['license_no']); ?></strong>
+                                                <span style="font-size: 0.6875rem; font-weight: 600; color: #64748b; text-transform: uppercase; margin-right: 0.25rem;">
+                                                    License No
+                                                </span>
+                                                <span style="font-size: 0.8125rem; color: #1e293b;">
+                                                    <?php echo htmlspecialchars($employee['license_no']); ?>
+                                                </span>
                                             <?php else: ?>
                                                 <span class="text-danger" style="font-size: 0.8125rem;">
                                                     No License
                                                 </span>
                                             <?php endif; ?>
                                         </div>
-                                        
-                                        <!-- LICENSE EXPIRATION DATE -->
-                                        <div style="margin-top: 0.5rem;">
-                                            <small class="text-muted d-block mb-1" style="font-size: 0.6875rem; font-weight: 600;">EXPIRATION DATE</small>
+
+                                        <!-- Second line: License expiration -->
+                                        <div class="employee-post text-muted" style="font-size: 0.8125rem; margin-top: 0.125rem;">
+                                            <span style="font-size: 0.6875rem; font-weight: 600; text-transform: uppercase; color: #9ca3af; margin-right: 0.25rem;">
+                                                Expiration
+                                            </span>
                                             <?php if ($license_formatted): ?>
-                                                <div class="<?php echo ($license_formatted['days'] < 0 || $license_formatted['days'] <= 30) ? 'text-danger' : ''; ?>" style="font-size: 0.8125rem;">
+                                                <span class="<?php echo ($license_formatted['days'] < 0 || $license_formatted['days'] <= 30) ? 'text-danger' : ''; ?>">
                                                     <?php echo htmlspecialchars($license_formatted['text']); ?>
-                                                </div>
+                                                </span>
                                             <?php else: ?>
-                                                <span class="text-muted" style="font-size: 0.8125rem;">N/A</span>
+                                                <span class="text-muted">N/A</span>
                                             <?php endif; ?>
                                         </div>
-                                        
-                                        <!-- RLM - Only show if RLM exists -->
+
+                                        <!-- Third line: RLM info, only if present -->
                                         <?php if (!empty($employee['rlm_exp'])): ?>
-                                            <div style="margin-top: 0.5rem;">
-                                                <small class="text-muted d-block mb-1" style="font-size: 0.6875rem; font-weight: 600;">RLM</small>
+                                            <div class="employee-status-badge" style="margin-top: 0.125rem;">
                                                 <?php if ($rlm_formatted): ?>
-                                                    <div class="<?php echo ($rlm_formatted['days'] < 0 || $rlm_formatted['days'] <= 30) ? 'text-danger' : ''; ?>" style="font-size: 0.8125rem;">
-                                                        <?php echo htmlspecialchars($rlm_formatted['text']); ?>
-                                                    </div>
+                                                    <span class="badge <?php echo ($rlm_formatted['days'] < 0 || $rlm_formatted['days'] <= 30) ? 'bg-danger' : 'bg-info'; ?>" style="font-size: 0.6875rem; padding: 0.25rem 0.5rem;">
+                                                        RLM <?php echo htmlspecialchars($rlm_formatted['text']); ?>
+                                                    </span>
                                                 <?php else: ?>
-                                                    <span style="font-size: 0.8125rem; color: #1e293b;">Yes</span>
+                                                    <span class="badge bg-info" style="font-size: 0.6875rem; padding: 0.25rem 0.5rem;">
+                                                        RLM Present
+                                                    </span>
                                                 <?php endif; ?>
                                             </div>
                                         <?php endif; ?>

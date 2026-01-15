@@ -806,17 +806,6 @@ if (empty($posts)) {
     </script>
     <?php endif; ?>
 
-    <?php if (($_SESSION['user_role'] ?? '') === 'hr_admin'): ?>
-    <div class="container-fluid hrdash mb-3">
-        <div class="hrdash-welcome">
-            <div class="hrdash-welcome__left">
-                <h2 class="hrdash-welcome__title">Add New Employee</h2>
-                <p class="hrdash-welcome__subtitle">Create and file a new employee record in the Golden Z-5 HR system.</p>
-            </div>
-        </div>
-    </div>
-    <?php endif; ?>
-
     <!-- Add Employee Form -->
     <div class="card card-modern">
         <div class="card-header card-header-modern">
@@ -843,50 +832,50 @@ if (empty($posts)) {
                     <div class="col-md-8">
                         <div class="row g-3">
                             <div class="col-12">
-                                <div class="form-group">
-                                    <label for="employee_no" class="form-label">Employee Number <span class="text-danger">*</span></label>
-                                    <input
-                                        type="text"
-                                        class="form-control numeric-only"
-                                        id="employee_no"
-                                        name="employee_no"
-                                        inputmode="numeric"
-                                        pattern="\\d{1,5}"
-                                        maxlength="5"
-                                        placeholder="Up to 5 digits"
-                                        value="<?php echo htmlspecialchars($_POST['employee_no'] ?? ''); ?>"
-                                        required
-                                    >
-                                    <small class="form-text text-muted" style="visibility: hidden;">Placeholder</small>
-                                </div>
-                            </div>
+                        <div class="form-group">
+                            <label for="employee_no" class="form-label">Employee Number <span class="text-danger">*</span></label>
+                            <input 
+                                type="text" 
+                                class="form-control numeric-only" 
+                                id="employee_no" 
+                                name="employee_no" 
+                                inputmode="numeric" 
+                                pattern="\\d{1,5}"
+                                maxlength="5"
+                                placeholder="Up to 5 digits" 
+                                value="<?php echo htmlspecialchars($_POST['employee_no'] ?? ''); ?>" 
+                                required
+                            >
+                            <small class="form-text text-muted" style="visibility: hidden;">Placeholder</small>
+                        </div>
+                    </div>
                             <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="employee_type" class="form-label">Employee Type <span class="text-danger">*</span></label>
-                                    <select class="form-select" id="employee_type" name="employee_type" required>
-                                        <option value="">Select Employee Type</option>
-                                        <option value="SG" <?php echo (($_POST['employee_type'] ?? '') === 'SG') ? 'selected' : ''; ?>>Security Guard (SG)</option>
-                                        <option value="LG" <?php echo (($_POST['employee_type'] ?? '') === 'LG') ? 'selected' : ''; ?>>Lady Guard (LG)</option>
-                                        <option value="SO" <?php echo (($_POST['employee_type'] ?? '') === 'SO') ? 'selected' : ''; ?>>Security Officer (SO)</option>
-                                    </select>
-                                    <small class="form-text text-muted" style="visibility: hidden;">Placeholder</small>
-                                </div>
-                            </div>
+                        <div class="form-group">
+                            <label for="employee_type" class="form-label">Employee Type <span class="text-danger">*</span></label>
+                            <select class="form-select" id="employee_type" name="employee_type" required>
+                                <option value="">Select Employee Type</option>
+                                <option value="SG" <?php echo (($_POST['employee_type'] ?? '') === 'SG') ? 'selected' : ''; ?>>Security Guard (SG)</option>
+                                <option value="LG" <?php echo (($_POST['employee_type'] ?? '') === 'LG') ? 'selected' : ''; ?>>Lady Guard (LG)</option>
+                                <option value="SO" <?php echo (($_POST['employee_type'] ?? '') === 'SO') ? 'selected' : ''; ?>>Security Officer (SO)</option>
+                            </select>
+                            <small class="form-text text-muted" style="visibility: hidden;">Placeholder</small>
+                        </div>
+                    </div>
                             <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="status" class="form-label">Status <span class="text-danger">*</span></label>
-                                    <select class="form-select" id="status" name="status" required>
-                                        <option value="">Select Status</option>
-                                        <option value="Active" <?php echo (($_POST['status'] ?? '') === 'Active') ? 'selected' : ''; ?>>Active</option>
-                                        <option value="Inactive" <?php echo (($_POST['status'] ?? '') === 'Inactive') ? 'selected' : ''; ?>>Inactive</option>
-                                        <option value="Terminated" <?php echo (($_POST['status'] ?? '') === 'Terminated') ? 'selected' : ''; ?>>Terminated</option>
-                                        <option value="Suspended" <?php echo (($_POST['status'] ?? '') === 'Suspended') ? 'selected' : ''; ?>>Suspended</option>
-                                    </select>
-                                    <small class="form-text text-muted" style="visibility: hidden;">Placeholder</small>
+                        <div class="form-group">
+                            <label for="status" class="form-label">Status <span class="text-danger">*</span></label>
+                            <select class="form-select" id="status" name="status" required>
+                                <option value="">Select Status</option>
+                                <option value="Active" <?php echo (($_POST['status'] ?? '') === 'Active') ? 'selected' : ''; ?>>Active</option>
+                                <option value="Inactive" <?php echo (($_POST['status'] ?? '') === 'Inactive') ? 'selected' : ''; ?>>Inactive</option>
+                                <option value="Terminated" <?php echo (($_POST['status'] ?? '') === 'Terminated') ? 'selected' : ''; ?>>Terminated</option>
+                                <option value="Suspended" <?php echo (($_POST['status'] ?? '') === 'Suspended') ? 'selected' : ''; ?>>Suspended</option>
+                            </select>
+                            <small class="form-text text-muted" style="visibility: hidden;">Placeholder</small>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                        </div>
 
                     <!-- Right side: 2x2 Photo -->
                     <div class="col-md-4">
@@ -1467,7 +1456,7 @@ if (empty($posts)) {
                 </div>
 
                 <!-- Government Examination Section -->
-                <div class="row g-3 mb-4">
+                <div class="row g-3 mb-4 gov-exam-section">
                     <div class="col-12">
                         <h4 class="form-section-title">Government Examination</h4>
                     </div>
@@ -1541,7 +1530,7 @@ if (empty($posts)) {
                 </div>
 
                 <!-- Contact Information Section -->
-                <div class="row g-3 mb-4">
+                <div class="row g-3 mb-4 contact-info-section">
                     <div class="col-12">
                         <h4 class="form-section-title">Contact Information</h4>
                     </div>
@@ -1711,7 +1700,7 @@ if (empty($posts)) {
                 </div>
 
                 <!-- License Information Section -->
-                <div class="row g-3 mb-4">
+                <div class="row g-3 mb-4 license-section">
                     <div class="col-12">
                         <h4 class="form-section-title">License Information</h4>
                     </div>
@@ -1757,7 +1746,7 @@ if (empty($posts)) {
                 </div>
 
                 <!-- Government IDs Section -->
-                <div class="row g-3 mb-4">
+                <div class="row g-3 mb-4 gov-ids-section">
                     <div class="col-12">
                         <h4 class="form-section-title">Government Identification Numbers</h4>
                     </div>
@@ -1827,12 +1816,12 @@ if (empty($posts)) {
                     </div>
                 </div>
 
-                <div class="alert alert-info mt-3">
+                <div class="alert alert-info add-employee-note">
                     Category 5 (Exit requirements), Category 6 (Clearances), and Category 7 (Cash bond) will be recorded later inside each employee profile. You can update these after the employee is created.
                 </div>
 
                 <!-- HR Final Remarks -->
-                <div class="row g-3 mb-4">
+                <div class="row g-3 mb-4 hr-remarks-section">
                     <div class="col-12">
                         <h4 class="form-section-title">HR Final Remarks</h4>
                     </div>
@@ -1867,9 +1856,9 @@ if (empty($posts)) {
                 </div>
             </form>
         </div>
-    </div>
         </div>
     </div>
+</div>
 
 <!-- Google Maps API - Optional, only loads if API key is configured -->
 <!-- <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places"></script> -->
