@@ -2023,7 +2023,7 @@ body.portal-hr-admin .hrdash-table {
    HR-ADMIN: NOTIFICATION & MESSAGE DROPDOWNS
    ============================================ */
 
-/* Icon button styles */
+/* Icon button styles - Facebook-style rounded box */
 body.portal-hr-admin .hrdash-welcome__icon-btn {
     position: relative;
     width: 40px;
@@ -2032,9 +2032,9 @@ body.portal-hr-admin .hrdash-welcome__icon-btn {
     align-items: center;
     justify-content: center;
     border: none;
-    background: transparent;
+    background: #f0f2f5;
     color: #64748b;
-    border-radius: 10px;
+    border-radius: 8px;
     transition: all 0.2s ease;
     cursor: pointer;
     padding: 0;
@@ -2046,17 +2046,43 @@ body.portal-hr-admin .hrdash-welcome__icon-btn.dropdown-toggle::after {
 }
 
 body.portal-hr-admin .hrdash-welcome__icon-btn:hover {
-    background: #f1f5f9;
+    background: #e4e6eb;
     color: #1e293b;
 }
 
-body.portal-hr-admin .hrdash-welcome__icon-btn:focus {
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(31, 178, 213, 0.1);
+body.portal-hr-admin .hrdash-welcome__icon-btn:focus,
+body.portal-hr-admin .hrdash-welcome__icon-btn:active,
+body.portal-hr-admin .hrdash-welcome__icon-btn:focus-visible,
+body.portal-hr-admin .hrdash-welcome__icon-btn.show,
+body.portal-hr-admin .hrdash-welcome__icon-btn[aria-expanded="true"] {
+    outline: none !important;
+    box-shadow: none !important;
+    border: none !important;
+    background: #e4e6eb;
+    color: #1e293b;
 }
 
 body.portal-hr-admin .hrdash-welcome__icon-btn i {
     font-size: 1.125rem;
+    color: #64748b;
+    display: inline-block;
+    line-height: 1;
+}
+
+body.portal-hr-admin .hrdash-welcome__icon-btn:hover i {
+    color: #1e293b;
+}
+
+/* Ensure custom icons are visible in icon buttons */
+body.portal-hr-admin .hrdash-welcome__icon-btn .hr-icon {
+    width: 24px !important;
+    height: 24px !important;
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    background-size: contain !important;
+    background-repeat: no-repeat !important;
+    background-position: center !important;
 }
 
 /* Badge on icon buttons */
