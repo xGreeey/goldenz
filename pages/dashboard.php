@@ -364,22 +364,22 @@ $display_employees = array_slice($all_employees, 0, 10); // Show first 10 employ
             </div>
         </div>
 
-        <!-- Shortcuts (directly below the two cards above) -->
+        <!-- Shortcuts (horizontal, compact layout) -->
         <div class="col-12">
-            <div class="card hrdash-card hrdash-shortcuts">
-                <div class="hrdash-card__header">
-                    <div>
-                        <h5 class="hrdash-card__title">Shortcuts</h5>
-                        <div class="hrdash-card__subtitle">Quick actions</div>
-                    </div>
-                </div>
-                <div class="hrdash-shortcuts__body">
-                    <a class="hrdash-shortcut" href="?page=add_employee"><i class="fas fa-user-plus"></i><span>Add Employee</span></a>
-                    <a class="hrdash-shortcut" href="?page=add_alert"><i class="fas fa-bell"></i><span>Add Alert</span></a>
-                    <a class="hrdash-shortcut" href="?page=posts"><i class="fas fa-briefcase"></i><span>Posts</span></a>
-                    <a class="hrdash-shortcut" href="?page=post_assignments"><i class="fas fa-diagram-project"></i><span>Assignments</span></a>
-                    <a class="hrdash-shortcut" href="?page=employees"><i class="fas fa-users"></i><span>Employees</span></a>
-                    <a class="hrdash-shortcut" href="?page=alerts"><i class="fas fa-bell"></i><span>Alerts</span></a>
+            <div class="hrdash-shortcuts-compact">
+                <span class="hrdash-shortcuts-compact__title">Shortcut</span>
+                <div class="hrdash-shortcuts-compact__buttons">
+                    <a class="hrdash-shortcut-btn" href="?page=add_employee">
+                        <i class="fas fa-file-minus"></i>
+                        <span>Post Job</span>
+                    </a>
+                    <a class="hrdash-shortcut-btn" href="?page=add_alert">
+                        <i class="fas fa-calendar-plus"></i>
+                        <span>Schedule Meeting</span>
+                    </a>
+                    <button class="hrdash-shortcut-btn hrdash-shortcut-btn--add" type="button" title="Add more shortcuts">
+                        <i class="fas fa-plus"></i>
+                    </button>
                 </div>
             </div>
         </div>
@@ -531,52 +531,74 @@ $display_employees = array_slice($all_employees, 0, 10); // Show first 10 employ
     letter-spacing: 0.08em;
     border-bottom: 1px solid #e2e8f0;
 }
-.hrdash-shortcuts__body {
-    padding: 1rem 1.25rem 1.25rem;
+/* Compact horizontal shortcuts */
+.hrdash-shortcuts-compact {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.875rem 1.25rem;
     background: #ffffff;
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 0.75rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    flex-wrap: wrap;
 }
-.hrdash-shortcut {
+.hrdash-shortcuts-compact__title {
+    font-weight: 700;
+    font-size: 0.9375rem;
+    color: #0f172a;
+    margin-right: 0.5rem;
+}
+.hrdash-shortcuts-compact__buttons {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex: 1;
+    flex-wrap: wrap;
+}
+.hrdash-shortcut-btn {
     display: inline-flex;
     align-items: center;
-    gap: 0.6rem;
-    padding: 0.75rem 0.85rem;
-    border-radius: 12px;
+    gap: 0.5rem;
+    padding: 0.625rem 1rem;
+    border-radius: 8px;
     border: 1px solid #e2e8f0;
     background: #f8fafc;
     color: #0f172a;
     text-decoration: none;
-    font-weight: 700;
+    font-weight: 500;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    border: 0;
 }
-.hrdash-shortcut i {
-    width: 28px;
-    height: 28px;
-    border-radius: 10px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    background: #ffffff;
-    border: 1px solid rgba(15,23,42,0.08);
-    color: #1f75cb;
-}
-.hrdash-shortcut:hover {
-    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.10);
+.hrdash-shortcut-btn:hover {
+    background: #e2e8f0;
     transform: translateY(-1px);
+}
+.hrdash-shortcut-btn i {
+    font-size: 0.875rem;
+    color: #475569;
+}
+.hrdash-shortcut-btn--add {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    justify-content: center;
+    border-radius: 8px;
+}
+.hrdash-shortcut-btn--add i {
+    font-size: 1rem;
 }
 @media (max-width: 992px) {
     .hrdash-schedule__body {
         min-height: 220px;
     }
-    .hrdash-shortcuts__body {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+    .hrdash-shortcuts-compact {
+        flex-direction: column;
+        align-items: flex-start;
     }
-}
-
-@media (max-width: 576px) {
-    .hrdash-shortcuts__body {
-        grid-template-columns: 1fr;
+    .hrdash-shortcuts-compact__buttons {
+        width: 100%;
     }
 }
 </style>
