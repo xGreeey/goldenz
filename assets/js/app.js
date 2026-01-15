@@ -59,9 +59,111 @@ function normalizeNumericText(root = document) {
 // Disable animations on page load to prevent hover effects on refresh
 document.documentElement.classList.add('no-animations');
 
-// Security features
+// THEME MANAGEMENT (Light / Dark / Auto)
+const THEME_STORAGE_KEY = 'goldenz-theme';
+
+function resolveTheme(theme) {
+    if (theme === 'auto') {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            return 'dark';
+        }
+        return 'light';
+    }
+    return theme || 'light';
+}
+
+function applyTheme(theme) {
+    const effective = resolveTheme(theme);
+
+    // Apply to <html> so CSS like html[data-theme="dark"] works
+    document.documentElement.setAttribute('data-theme', effective);
+
+    try {
+        localStorage.setItem(THEME_STORAGE_KEY, theme);
+    } catch (e) {
+        // Ignore storage errors (private mode, etc.)
+    }
+
+    // Sync all theme selects across the UI
+    document.querySelectorAll('.theme-select').forEach((select) => {
+        if (!select) return;
+        if (select.disabled) {
+            select.disabled = false;
+        }
+        if (select.value !== theme) {
+            select.value = theme;
+        }
+    });
+}
+
+function initThemeControls() {
+    let savedTheme = 'light';
+    try {
+        const stored = localStorage.getItem(THEME_STORAGE_KEY);
+        if (stored === 'light' || stored === 'dark' || stored === 'auto') {
+            savedTheme = stored;
+        }
+    } catch (e) {
+        // ignore and fall back to light
+    }
+
+    // Apply theme first
+    applyTheme(savedTheme);
+    
+    // Then ensure all selects show the correct value
+    document.querySelectorAll('.theme-select').forEach((select) => {
+        if (select && select.value !== savedTheme) {
+            select.value = savedTheme;
+        }
+    });
+
+    // Attach change handlers (live preview)
+    document.querySelectorAll('.theme-select').forEach((select) => {
+        if (!select) return;
+        select.disabled = false;
+        select.addEventListener('change', () => {
+            const value = select.value || 'light';
+            applyTheme(value);
+        });
+    });
+
+    // Confirm button in UI & Preferences (visual confirmation)
+    document.querySelectorAll('.save-ui-preferences-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+            // Find the theme select within the same form/card context
+            const form = btn.closest('form');
+            const select = form ? form.querySelector('.theme-select') : document.querySelector('#settingsThemeSelect') || document.querySelector('.theme-select');
+            const value = (select && select.value) ? select.value : 'light';
+            applyTheme(value);
+            if (typeof showAlert === 'function') {
+                showAlert('UI preferences updated successfully.', 'success');
+            }
+        });
+    });
+
+    // React to system theme changes when in "auto" mode
+    if (window.matchMedia) {
+        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+        if (mediaQuery.addEventListener) {
+            mediaQuery.addEventListener('change', () => {
+                let current = 'light';
+                try {
+                    current = localStorage.getItem(THEME_STORAGE_KEY) || 'light';
+                } catch (e) {}
+                if (current === 'auto') {
+                    applyTheme('auto');
+                }
+            });
+        }
+    }
+}
+
+// Security features + Theme init
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🔒 Golden Z-5 HR System loaded with high security');
+
+    // Initialize theme controls (UI & Preferences + Dashboard quick settings)
+    initThemeControls();
 
     // Normalize numeric text on initial load (fix boxed digits)
     normalizeNumericText(document);

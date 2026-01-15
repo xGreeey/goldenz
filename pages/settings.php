@@ -740,10 +740,10 @@ if (!empty($two_factor_secret)) {
                             <form class="row g-3">
                                 <div class="col-md-4">
                                     <label class="form-label">Theme</label>
-                                    <select class="form-select" disabled>
-                                        <option selected>Light</option>
-                                        <option>Dark</option>
-                                        <option>Auto</option>
+                                    <select class="form-select theme-select" id="settingsThemeSelect">
+                                        <option value="light" selected>Light</option>
+                                        <option value="dark">Dark</option>
+                                        <option value="auto">Auto (System)</option>
                                     </select>
                                 </div>
                                 <div class="col-md-4">
@@ -760,6 +760,11 @@ if (!empty($two_factor_secret)) {
                                         <option>Posts & Locations</option>
                                         <option>Users</option>
                                     </select>
+                                </div>
+                                <div class="col-12 d-flex justify-content-end mt-2">
+                                    <button type="button" class="btn btn-primary-modern save-ui-preferences-btn">
+                                        <i class="fas fa-check me-2"></i>Confirm UI Preferences
+                                    </button>
                                 </div>
                             </form>
                         </div>
