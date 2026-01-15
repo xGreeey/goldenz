@@ -119,58 +119,141 @@ ob_end_flush();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
     <title>Two-Factor Authentication - Golden Z-5 HR</title>
+
+    <!-- Favicon (match login page) -->
+    <link rel="icon" type="image/svg+xml" href="../public/logo.svg">
+    <link rel="icon" type="image/x-icon" href="../public/favicon.ico">
+    <link rel="apple-touch-icon" href="../public/logo.svg">
+
+    <!-- CSS (match login page stack) -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="assets/landing.css" rel="stylesheet">
+    <link href="../assets/css/font-override.css" rel="stylesheet">
+
+    <!-- Security headers equivalents -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+
+<style>
+        /* Slight tweaks for 2FA card within shared layout */
+        .auth-form-card-2fa .auth-title {
+            margin-bottom: 0.25rem;
+        }
+        .auth-form-card-2fa .auth-subtitle {
+            font-size: 0.925rem;
+        }
+        .twofa-code-input {
+            letter-spacing: 0.35em;
+        }
+
+        /* Shake animation when code is invalid */
+        @keyframes shake-card {
+            0% { transform: translateX(0); }
+            15% { transform: translateX(-6px); }
+            30% { transform: translateX(6px); }
+            45% { transform: translateX(-5px); }
+            60% { transform: translateX(5px); }
+            75% { transform: translateX(-3px); }
+            90% { transform: translateX(3px); }
+            100% { transform: translateX(0); }
+        }
+        .auth-form-card-2fa.shake {
+            animation: shake-card 0.4s ease-in-out;
+        }
+    </style>
 </head>
-<body class="bg-light">
-    <div class="container min-vh-100 d-flex align-items-center justify-content-center">
-        <div class="card shadow-lg border-0" style="max-width: 420px; width: 100%;">
-            <div class="card-body p-4 p-md-5">
-                <div class="text-center mb-4">
-                    <h5 class="fw-bold mb-1">Two-Factor Authentication</h5>
-                    <p class="text-muted mb-0">
-                        Enter the 6‑digit code from your <strong>Google Authenticator</strong> app to continue.
-                    </p>
+<body>
+    <div class="login-split-container">
+        <!-- Left Branded Panel (same as login) -->
+        <div class="login-branded-panel">
+            <div class="branded-content">
+                <img src="../public/logo.svg" alt="Golden Z-5 Logo" class="branded-logo" onerror="this.style.display='none'">
+                <h1 class="branded-headline">Secure Sign-in</h1>
+                <p class="branded-description">Verify your identity with a one-time code to keep your account protected.</p>
+            </div>
+        </div>
+
+        <!-- Right Form Panel -->
+        <div class="login-form-panel">
+            <div class="auth-form-container">
+                <div class="auth-form-card auth-form-card-2fa<?php echo !empty($error) ? ' shake' : ''; ?>">
+                    <div class="auth-header text-start text-md-start text-center">
+                        <h2 class="auth-title">Two-Factor Authentication</h2>
+                        <p class="auth-subtitle">
+                            Enter the 6‑digit code from your <strong>Google Authenticator</strong> app to continue.
+                        </p>
+                    </div>
+
+                    <?php if (!empty($error)): ?>
+                        <div class="alert alert-danger alert-dismissible fade show mt-2" role="alert">
+                            <i class="fas fa-exclamation-circle me-2"></i><?php echo htmlspecialchars($error); ?>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>
+                        </div>
+                    <?php endif; ?>
+
+                    <form method="post" autocomplete="off" class="auth-form mt-3" id="twofaForm">
+                        <div class="form-group mb-3">
+                            <label for="two_factor_code" class="form-label">Authentication Code</label>
+                            <input type="text"
+                                   id="two_factor_code"
+                                   name="two_factor_code"
+                                   class="form-control text-center fw-semibold fs-5 twofa-code-input"
+                                   inputmode="numeric"
+                                   autocomplete="one-time-code"
+                                   pattern="[0-9]{6}"
+                                   maxlength="6"
+                                   required
+                                   placeholder="••••••"
+                                   oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,6);">
+                            <small class="text-muted d-block mt-1">Codes refresh every 30 seconds.</small>
+                        </div>
+
+                        <div class="text-center text-muted small mt-3">
+                            <a href="index.php?logout=1" class="text-decoration-none" style="color: #2563eb; font-weight: 500;">
+                                Use a different account
+                            </a>
+                        </div>
+                    </form>
                 </div>
-
-                <?php if (!empty($error)): ?>
-                    <div class="alert alert-danger">
-                        <i class="fas fa-exclamation-circle me-2"></i><?php echo htmlspecialchars($error); ?>
-                    </div>
-                <?php endif; ?>
-
-                <form method="post" autocomplete="off">
-                    <div class="mb-3">
-                        <label for="two_factor_code" class="form-label">Authentication Code</label>
-                        <input type="text"
-                               id="two_factor_code"
-                               name="two_factor_code"
-                               class="form-control text-center fw-semibold fs-5"
-                               inputmode="numeric"
-                               autocomplete="one-time-code"
-                               pattern="[0-9]{6}"
-                               maxlength="6"
-                               required
-                               placeholder="••••••"
-                               oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,6);">
-                        <small class="text-muted d-block mt-1">Codes refresh every 30 seconds.</small>
-                    </div>
-
-                    <button type="submit" name="verify_2fa" class="btn btn-primary w-100 mt-2">
-                        <i class="fas fa-unlock-alt me-2"></i>Verify &amp; Continue
-                    </button>
-
-                    <div class="mt-3 text-center">
-                        <a href="index.php?logout=1" class="small text-muted">
-                            Use a different account
-                        </a>
-                    </div>
-                </form>
             </div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const codeInput = document.getElementById('two_factor_code');
+            const form = document.getElementById('twofaForm');
+
+            if (codeInput && form) {
+                codeInput.focus();
+
+                codeInput.addEventListener('input', function () {
+                    const value = codeInput.value.replace(/[^0-9]/g, '').slice(0, 6);
+                    codeInput.value = value;
+
+                    if (value.length === 6) {
+                        // Automatically submit when 6 digits are entered
+                        // Add a tiny delay so the last digit visibly renders
+                        setTimeout(function () {
+                            // Ensure the expected POST field is set
+                            if (!form.querySelector('input[name=\"verify_2fa\"]')) {
+                                const hidden = document.createElement('input');
+                                hidden.type = 'hidden';
+                                hidden.name = 'verify_2fa';
+                                hidden.value = '1';
+                                form.appendChild(hidden);
+                            }
+                            form.submit();
+                        }, 80);
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 </html>
 
