@@ -650,6 +650,72 @@ $users_by_role = $stats['users_by_role'] ?? [];
     vertical-align: middle;
 }
 
+/* Dark theme support for Super Admin Dashboard */
+html[data-theme="dark"] .super-admin-dashboard {
+    background: var(--interface-bg) !important;
+}
+
+html[data-theme="dark"] .super-admin-dashboard .card-modern,
+html[data-theme="dark"] .super-admin-dashboard .stat-card-modern {
+    background: #1a1d23 !important;
+    border-color: var(--interface-border) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .super-admin-dashboard .card-header-modern {
+    border-bottom-color: var(--interface-border) !important;
+}
+
+html[data-theme="dark"] .super-admin-dashboard .card-title-modern {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .super-admin-dashboard .card-subtitle {
+    color: var(--interface-text-muted) !important;
+}
+
+html[data-theme="dark"] .super-admin-dashboard .audit-action-badge {
+    color: var(--interface-text) !important;
+    background: #1e3a5f !important;
+    border-color: #2563eb !important;
+}
+
+html[data-theme="dark"] .super-admin-dashboard .role-breakdown-label,
+html[data-theme="dark"] .super-admin-dashboard .status-breakdown-label {
+    color: var(--interface-text-light) !important;
+}
+
+html[data-theme="dark"] .super-admin-dashboard .role-breakdown-value,
+html[data-theme="dark"] .super-admin-dashboard .status-breakdown-value {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .super-admin-dashboard .quick-stat-item {
+    background: #1a1d23 !important;
+    border-color: var(--interface-border) !important;
+}
+
+html[data-theme="dark"] .super-admin-dashboard .quick-stat-item:hover {
+    background: #1e293b !important;
+    border-color: var(--interface-border-light) !important;
+}
+
+html[data-theme="dark"] .super-admin-dashboard .quick-stat-label {
+    color: var(--interface-text-muted) !important;
+}
+
+html[data-theme="dark"] .super-admin-dashboard .quick-stat-value {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .super-admin-dashboard .table th {
+    color: var(--interface-text-muted) !important;
+}
+
+html[data-theme="dark"] .super-admin-dashboard .table td {
+    color: var(--interface-text-light) !important;
+}
+
 @media (max-width: 768px) {
     .super-admin-dashboard {
         padding: 1.5rem 1rem;
