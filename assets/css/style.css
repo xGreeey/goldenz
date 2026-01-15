@@ -4188,6 +4188,162 @@ button.btn-primary:focus {
     white-space: nowrap;
 }
 
+/* ------------------------------------------------------------------ */
+/* Add Employee - Document Style Layout                                */
+/* ------------------------------------------------------------------ */
+
+.add-employee-document-page {
+    background: transparent; /* remove gray background behind the header/document */
+    padding: 2.5rem 0 3rem;
+    display: block;
+    width: 100%;
+}
+
+.add-employee-document-shell {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+}
+
+.add-employee-document-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 2rem;
+    margin-bottom: 1.75rem;
+}
+
+.add-employee-document-title {
+    min-width: 0;
+}
+
+.add-employee-title {
+    font-size: 1.9rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    margin: 0 0 0.25rem 0;
+}
+
+.add-employee-subtitle {
+    margin: 0;
+    font-size: 0.95rem;
+    color: var(--interface-text-light);
+}
+
+.add-employee-document-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    align-items: flex-end;
+    font-size: 0.8rem;
+}
+
+.add-employee-meta-item {
+    display: flex;
+    gap: 0.75rem;
+    align-items: baseline;
+}
+
+.add-employee-meta-label {
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+    font-size: 0.68rem;
+    color: var(--interface-text-muted);
+}
+
+.add-employee-meta-value {
+    font-weight: 600;
+    color: var(--interface-text);
+}
+
+.add-employee-document-card {
+    border-radius: 12px;
+    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.14);
+    border: none; /* remove gray container border while keeping the sheet shadow */
+    overflow: hidden;
+}
+
+.add-employee-card-header {
+    padding: 1.25rem 1.75rem;
+    background: linear-gradient(135deg, #f9fafb 0%, #e5e7eb 60%, #dbeafe 100%);
+    border-bottom: 1px solid var(--interface-border);
+}
+
+.add-employee-card-body {
+    padding: 1.5rem 1.75rem 1.75rem;
+    background: #ffffff;
+}
+
+.add-employee-card-body .row + .row {
+    border-top: 1px solid rgba(229, 231, 235, 0.8);
+    padding-top: 1.5rem;
+    margin-top: 0.5rem;
+}
+
+.add-employee-card-body .row:last-of-type {
+    margin-bottom: 0;
+}
+
+.form-section-title {
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--interface-text-muted);
+    font-weight: 700;
+    margin: 0 0 0.5rem 0;
+}
+
+.add-employee-card-body h5.form-section-title {
+    margin-top: 0.5rem;
+}
+
+/* Tighten vertical rhythm inside the document sheet */
+.add-employee-card-body .form-group {
+    margin-bottom: 0.55rem;
+}
+
+.add-employee-card-body .form-label {
+    font-size: 0.8rem;
+    text-transform: none;
+}
+
+.add-employee-card-body .form-text {
+    font-size: 0.75rem;
+}
+
+/* Ensure two-column feel on desktop without breaking existing grid */
+@media (min-width: 992px) {
+    .add-employee-card-body .row.g-3 {
+        --bs-gutter-x: 1.75rem;
+        --bs-gutter-y: 1rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .add-employee-document-page {
+        padding: 1.5rem 0 2rem;
+    }
+
+    .add-employee-document-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+
+    .add-employee-document-meta {
+        align-items: flex-start;
+    }
+
+    .add-employee-title {
+        font-size: 1.6rem;
+    }
+
+    .add-employee-card-body {
+        padding: 1.25rem 1.25rem 1.5rem;
+    }
+}
+
 /* Print Styles */
 @media print {
     .sidebar, .header, .btn {
