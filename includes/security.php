@@ -230,3 +230,105 @@ if (!function_exists('display_message')) {
     }
 }
 
+/**
+ * TWO-FACTOR AUTHENTICATION (TOTP) HELPERS
+ * Simple Google Authenticator–compatible implementation
+ */
+
+if (!function_exists('generate_two_factor_secret')) {
+    /**
+     * Generate a random Base32 secret for TOTP (Google Authenticator compatible)
+     *
+     * @param int $length Number of Base32 characters (typical: 16)
+     * @return string
+     */
+    function generate_two_factor_secret($length = 16) {
+        $alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+        $secret = '';
+        $max = strlen($alphabet) - 1;
+        for ($i = 0; $i < $length; $i++) {
+            $secret .= $alphabet[random_int(0, $max)];
+        }
+        return $secret;
+    }
+}
+
+if (!function_exists('base32_decode_secret')) {
+    /**
+     * Decode a Base32-encoded TOTP secret
+     *
+     * @param string $secret
+     * @return string|false Binary string or false on failure
+     */
+    function base32_decode_secret($secret) {
+        if ($secret === '' || $secret === null) {
+            return false;
+        }
+
+        $alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+        $secret = strtoupper(preg_replace('/[^A-Z2-7]/', '', $secret));
+        $binaryString = '';
+        $buffer = 0;
+        $bitsLeft = 0;
+
+        $len = strlen($secret);
+        for ($i = 0; $i < $len; $i++) {
+            $val = strpos($alphabet, $secret[$i]);
+            if ($val === false) {
+                return false;
+            }
+            $buffer = ($buffer << 5) | $val;
+            $bitsLeft += 5;
+            if ($bitsLeft >= 8) {
+                $bitsLeft -= 8;
+                $binaryString .= chr(($buffer >> $bitsLeft) & 0xFF);
+            }
+        }
+
+        return $binaryString;
+    }
+}
+
+if (!function_exists('verify_totp_code')) {
+    /**
+     * Verify a 6‑digit TOTP code for a given secret
+     *
+     * @param string $secret Base32-encoded secret
+     * @param string $code   6-digit user input
+     * @param int $discrepancy Number of 30s windows to allow before/after (default ±1)
+     * @param int|null $timestamp Unix timestamp (defaults to time())
+     * @return bool
+     */
+    function verify_totp_code($secret, $code, $discrepancy = 1, $timestamp = null) {
+        $timestamp = $timestamp ?? time();
+        $code = trim($code);
+
+        if (!preg_match('/^\d{6}$/', $code)) {
+            return false;
+        }
+
+        $binarySecret = base32_decode_secret($secret);
+        if ($binarySecret === false) {
+            return false;
+        }
+
+        $timeSlice = (int)floor($timestamp / 30);
+
+        // Check current, previous, and next time window
+        for ($i = -$discrepancy; $i <= $discrepancy; $i++) {
+            $counter = pack('N*', 0) . pack('N*', $timeSlice + $i);
+            $hash = hash_hmac('sha1', $counter, $binarySecret, true);
+            $offset = ord(substr($hash, -1)) & 0x0F;
+            $truncatedHash = substr($hash, $offset, 4);
+            $value = unpack('N', $truncatedHash)[1] & 0x7FFFFFFF;
+            $generatedCode = str_pad($value % 1000000, 6, '0', STR_PAD_LEFT);
+
+            if (hash_equals($generatedCode, $code)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+}
+
