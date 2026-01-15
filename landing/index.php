@@ -219,14 +219,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
  */
 // Handle login
 $error = '';
-$success_message = '';
 $debug_info = [];
 $show_password_change_modal = isset($_SESSION['require_password_change']) && $_SESSION['require_password_change'];
-
-// Check for password reset success message
-if (isset($_GET['password_reset']) && $_GET['password_reset'] === 'success') {
-    $success_message = 'Your password has been successfully reset! You can now login with your new password.';
-}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
     $debug_info[] = "POST request received";
@@ -578,14 +572,6 @@ ob_end_flush();
                         <p class="auth-subtitle">Enter your credentials to access your account</p>
                     </div>
 
-                <?php if ($success_message): ?>
-                    <div class="alert alert-success alert-dismissible fade show" role="alert">
-                        <i class="fas fa-check-circle me-2"></i>
-                        <?php echo htmlspecialchars($success_message); ?>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>
-                    </div>
-                <?php endif; ?>
-                
                 <?php if ($error): ?>
                     <div class="alert alert-danger alert-dismissible fade show" role="alert">
                         <i class="fas fa-exclamation-circle me-2"></i>
