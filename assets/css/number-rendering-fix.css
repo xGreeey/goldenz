@@ -1,0 +1,196 @@
+/**
+ * Number Rendering Fix for Windows 10/11
+ * Fixes numeric values displaying as boxes instead of digits
+ * Ensures proper font fallbacks and tabular number alignment
+ */
+
+/* Universal number rendering fix - applies to all numeric elements */
+.stat-number,
+.card-number,
+.quick-stat-value,
+.metric-header h4,
+.rate-number,
+.card-number,
+[class*="number"],
+[class*="stat"],
+.number,
+.count,
+.value,
+.total {
+    /* Numeric-friendly font stack with proper fallbacks */
+    font-family: 'Segoe UI', 'Segoe UI Historic', Arial, Helvetica, 'Helvetica Neue', 
+                 -apple-system, BlinkMacSystemFont, 'Roboto', 'Oxygen', 'Ubuntu', 
+                 'Cantarell', 'Fira Sans', 'Droid Sans', sans-serif !important;
+    
+    /* Enable tabular numbers for proper alignment */
+    font-variant-numeric: tabular-nums !important;
+    font-feature-settings: 'tnum' !important;
+    -webkit-font-feature-settings: 'tnum' !important;
+    -moz-font-feature-settings: 'tnum' !important;
+    font-variant-numeric: tabular-nums !important;
+    
+    /* Font rendering optimizations */
+    text-rendering: optimizeLegibility !important;
+    -webkit-font-smoothing: antialiased !important;
+    -moz-osx-font-smoothing: grayscale !important;
+    font-smooth: always !important;
+    
+    /* Ensure proper character encoding */
+    unicode-bidi: embed !important;
+    direction: ltr !important;
+}
+
+/* Specific fixes for stat-number class */
+.stat-number {
+    font-family: 'Segoe UI', Arial, Helvetica, sans-serif !important;
+    font-variant-numeric: tabular-nums !important;
+    font-feature-settings: 'tnum' !important;
+    -webkit-font-feature-settings: 'tnum' !important;
+    -moz-font-feature-settings: 'tnum' !important;
+    text-rendering: optimizeLegibility !important;
+    -webkit-font-smoothing: antialiased !important;
+    -moz-osx-font-smoothing: grayscale !important;
+}
+
+/* Specific fixes for card-number class */
+.card-number {
+    font-family: 'Segoe UI', Arial, Helvetica, sans-serif !important;
+    font-variant-numeric: tabular-nums !important;
+    font-feature-settings: 'tnum' !important;
+    -webkit-font-feature-settings: 'tnum' !important;
+    -moz-font-feature-settings: 'tnum' !important;
+    text-rendering: optimizeLegibility !important;
+    -webkit-font-smoothing: antialiased !important;
+    -moz-osx-font-smoothing: grayscale !important;
+}
+
+/* Fix for numbers in badges */
+.badge,
+.badge-success-modern,
+.badge-primary-modern,
+.badge-warning-modern,
+.badge-danger-modern {
+    font-family: 'Segoe UI', Arial, Helvetica, sans-serif !important;
+    font-variant-numeric: tabular-nums !important;
+    font-feature-settings: 'tnum' !important;
+    -webkit-font-feature-settings: 'tnum' !important;
+    -moz-font-feature-settings: 'tnum' !important;
+    text-rendering: optimizeLegibility !important;
+    -webkit-font-smoothing: antialiased !important;
+    -moz-osx-font-smoothing: grayscale !important;
+}
+
+/* Fix for numbers in tables */
+table td,
+table th {
+    font-variant-numeric: tabular-nums !important;
+    font-feature-settings: 'tnum' !important;
+    -webkit-font-feature-settings: 'tnum' !important;
+    -moz-font-feature-settings: 'tnum' !important;
+}
+
+/* Fix for numbers in form inputs */
+input[type="number"],
+input[type="text"]:contains(numbers),
+.number-input {
+    font-family: 'Segoe UI', Arial, Helvetica, sans-serif !important;
+    font-variant-numeric: tabular-nums !important;
+    font-feature-settings: 'tnum' !important;
+    -webkit-font-feature-settings: 'tnum' !important;
+    -moz-font-feature-settings: 'tnum' !important;
+}
+
+/* Ensure all h3, h4 elements with numbers render correctly */
+h3.stat-number,
+h4.stat-number,
+h3.card-number,
+h4.card-number {
+    font-family: 'Segoe UI', Arial, Helvetica, sans-serif !important;
+    font-variant-numeric: tabular-nums !important;
+    font-feature-settings: 'tnum' !important;
+    -webkit-font-feature-settings: 'tnum' !important;
+    -moz-font-feature-settings: 'tnum' !important;
+    text-rendering: optimizeLegibility !important;
+    -webkit-font-smoothing: antialiased !important;
+    -moz-osx-font-smoothing: grayscale !important;
+}
+
+/* Quick stat values */
+.quick-stat-value {
+    font-family: 'Segoe UI', Arial, Helvetica, sans-serif !important;
+    font-variant-numeric: tabular-nums !important;
+    font-feature-settings: 'tnum' !important;
+    -webkit-font-feature-settings: 'tnum' !important;
+    -moz-font-feature-settings: 'tnum' !important;
+    text-rendering: optimizeLegibility !important;
+    -webkit-font-smoothing: antialiased !important;
+    -moz-osx-font-smoothing: grayscale !important;
+}
+
+/* Metric header numbers */
+.metric-header h4 {
+    font-family: 'Segoe UI', Arial, Helvetica, sans-serif !important;
+    font-variant-numeric: tabular-nums !important;
+    font-feature-settings: 'tnum' !important;
+    -webkit-font-feature-settings: 'tnum' !important;
+    -moz-font-feature-settings: 'tnum' !important;
+    text-rendering: optimizeLegibility !important;
+    -webkit-font-smoothing: antialiased !important;
+    -moz-osx-font-smoothing: grayscale !important;
+}
+
+/* Rate numbers */
+.rate-number {
+    font-family: 'Segoe UI', Arial, Helvetica, sans-serif !important;
+    font-variant-numeric: tabular-nums !important;
+    font-feature-settings: 'tnum' !important;
+    -webkit-font-feature-settings: 'tnum' !important;
+    -moz-font-feature-settings: 'tnum' !important;
+    text-rendering: optimizeLegibility !important;
+    -webkit-font-smoothing: antialiased !important;
+    -moz-osx-font-smoothing: grayscale !important;
+}
+
+/* Cross-browser compatibility for tabular numbers */
+@supports (font-variant-numeric: tabular-nums) {
+    .stat-number,
+    .card-number,
+    .quick-stat-value,
+    .metric-header h4,
+    .rate-number {
+        font-variant-numeric: tabular-nums;
+    }
+}
+
+/* Fallback for browsers that don't support font-variant-numeric */
+@supports not (font-variant-numeric: tabular-nums) {
+    .stat-number,
+    .card-number,
+    .quick-stat-value,
+    .metric-header h4,
+    .rate-number {
+        font-family: 'Courier New', 'Courier', monospace !important;
+        letter-spacing: 0.05em;
+    }
+}
+
+/* Windows-specific optimizations */
+@media screen and (-ms-high-contrast: active), (-ms-high-contrast: none) {
+    .stat-number,
+    .card-number,
+    .quick-stat-value,
+    .metric-header h4,
+    .rate-number {
+        font-family: 'Segoe UI', Arial, Helvetica, sans-serif !important;
+        -ms-font-feature-settings: 'tnum';
+    }
+}
+
+/* Ensure numbers in spans and divs render correctly */
+span:contains([0-9]),
+div:contains([0-9]) {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum';
+    -webkit-font-feature-settings: 'tnum';
+    -moz-font-feature-settings: 'tnum';
+}

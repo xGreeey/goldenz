@@ -382,9 +382,9 @@ $role_config = config('roles.roles', []);
 </div>
 
 <!-- Create User Modal -->
-<div class="modal fade" id="createUserModal" tabindex="-1" aria-labelledby="createUserModalLabel" aria-hidden="true" data-bs-backdrop="false" data-bs-keyboard="true">
+<div class="modal fade" id="createUserModal" tabindex="-1" aria-labelledby="createUserModalLabel" aria-hidden="true" data-bs-backdrop="true" data-bs-keyboard="true">
     <div class="modal-dialog modal-lg modal-dialog-scrollable">
-        <div class="modal-content" style="position: relative; z-index: 1057;">
+        <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="createUserModalLabel">Create New User</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -631,59 +631,244 @@ $role_config = config('roles.roles', []);
 }
 
 /* Fix modal z-index - Must be above header (1100) and sidebar (1000) */
-/* Create User Modal - Scroll-relative positioning */
+/* Create User Modal - Flexible and Responsive */
 #createUserModal {
     z-index: 1200 !important;
 }
 
 #createUserModal .modal-dialog {
     z-index: 1201 !important;
-    position: absolute !important;
-    margin: 0 !important;
-    max-width: 800px;
-    width: calc(100% - 2rem);
-    left: 50% !important;
-    transform: translateX(-50%) !important;
+    margin: 1rem auto !important;
+    max-width: 900px;
+    width: 95%;
     display: flex;
     flex-direction: column;
     pointer-events: auto !important;
-    /* Top position will be set dynamically via JavaScript based on scroll */
+    position: relative;
+}
+
+/* Responsive breakpoints for modal width */
+@media (min-width: 1400px) {
+    #createUserModal .modal-dialog {
+        max-width: 1000px;
+        width: 90%;
+    }
+}
+
+@media (min-width: 1200px) and (max-width: 1399px) {
+    #createUserModal .modal-dialog {
+        max-width: 900px;
+        width: 92%;
+    }
+}
+
+@media (min-width: 992px) and (max-width: 1199px) {
+    #createUserModal .modal-dialog {
+        max-width: 850px;
+        width: 95%;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+    #createUserModal .modal-dialog {
+        max-width: 750px;
+        width: 95%;
+    }
+}
+
+@media (min-width: 576px) and (max-width: 767px) {
+    #createUserModal .modal-dialog {
+        max-width: 90%;
+        width: 90%;
+        margin: 0.75rem auto !important;
+    }
 }
 
 /* Mobile responsive */
-@media (max-width: 576px) {
+@media (max-width: 575px) {
     #createUserModal .modal-dialog {
         width: calc(100% - 1rem) !important;
         max-width: 100%;
+        margin: 0.5rem auto !important;
     }
 }
 
 #createUserModal .modal-content {
     z-index: 1202 !important;
     position: relative;
-    /* Glassmorphism-style blurred background for nicer appearance */
-    background: rgba(255, 255, 255, 0.85) !important;
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    max-height: calc(100vh - 100px);
+    /* Clear, non-blurred background */
+    background: #ffffff !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    max-height: calc(100vh - 2rem);
     display: flex;
     flex-direction: column;
-    border-radius: 8px;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
 }
 
-/* Mobile modal content */
-@media (max-width: 576px) {
+/* Responsive modal content height */
+@media (min-width: 992px) {
     #createUserModal .modal-content {
-        max-height: calc(100vh - 40px);
+        max-height: calc(100vh - 3rem);
+    }
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+    #createUserModal .modal-content {
+        max-height: calc(100vh - 2rem);
+    }
+}
+
+@media (max-width: 767px) {
+    #createUserModal .modal-content {
+        max-height: calc(100vh - 1rem);
+        border-radius: 8px;
+    }
+}
+
+/* Responsive modal body padding */
+#createUserModal .modal-body {
+    padding: 1.5rem;
+    overflow-y: auto;
+    flex: 1 1 auto;
+}
+
+@media (min-width: 992px) {
+    #createUserModal .modal-body {
+        padding: 2rem;
+    }
+}
+
+@media (max-width: 575px) {
+    #createUserModal .modal-body {
+        padding: 1rem;
+    }
+}
+
+/* Responsive form layout */
+#createUserModal .row {
+    margin-left: -0.75rem;
+    margin-right: -0.75rem;
+}
+
+#createUserModal .row > * {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+}
+
+@media (max-width: 767px) {
+    #createUserModal .row {
+        margin-left: -0.5rem;
+        margin-right: -0.5rem;
+    }
+    
+    #createUserModal .row > * {
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+    }
+    
+    /* Stack form fields on mobile */
+    #createUserModal .col-md-6 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+}
+
+/* Responsive modal header */
+#createUserModal .modal-header {
+    padding: 1.25rem 1.5rem;
+    flex-shrink: 0;
+}
+
+@media (min-width: 992px) {
+    #createUserModal .modal-header {
+        padding: 1.5rem 2rem;
+    }
+}
+
+@media (max-width: 575px) {
+    #createUserModal .modal-header {
+        padding: 1rem;
+    }
+    
+    #createUserModal .modal-title {
+        font-size: 1.125rem;
+    }
+}
+
+/* Responsive modal footer */
+#createUserModal .modal-footer {
+    padding: 1rem 1.5rem;
+    flex-shrink: 0;
+    border-top: 1px solid #e2e8f0;
+}
+
+@media (min-width: 992px) {
+    #createUserModal .modal-footer {
+        padding: 1.25rem 2rem;
+    }
+}
+
+@media (max-width: 575px) {
+    #createUserModal .modal-footer {
+        padding: 0.75rem 1rem;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    #createUserModal .modal-footer .btn {
+        width: 100%;
+        margin: 0;
     }
 }
 
 body.modal-open .modal-backdrop {
     z-index: 1101 !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background-color: rgba(0, 0, 0, 0.5) !important;
+    cursor: pointer !important;
+}
+
+/* Ensure backdrop is clickable */
+.modal-backdrop.show {
+    pointer-events: auto !important;
+    cursor: pointer !important;
+}
+
+/* Make sure backdrop click closes modal */
+#createUserModal.show ~ .modal-backdrop,
+body.modal-open .modal-backdrop:not(.modal-backdrop-static) {
+    pointer-events: auto !important;
+    cursor: pointer !important;
 }
 
 body.modal-open #createUserModal {
     z-index: 1200 !important;
+}
+
+/* Ensure modal backdrop has no blur */
+.modal-backdrop,
+.modal-backdrop-clear {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background-color: rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Ensure no blur on body when modal is open */
+body.modal-open {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+/* Ensure main content is not blurred */
+body.modal-open .main-content,
+body.modal-open .content {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    filter: none !important;
 }
 
 /* Fix any potential pointer-events issues */
@@ -840,12 +1025,18 @@ function initializeUsersPage() {
     if (modalInstance) {
         modalInstance.dispose();
     }
-    new bootstrap.Modal(createUserModal, {
+    modalInstance = new bootstrap.Modal(createUserModal, {
         backdrop: true,
         keyboard: true,
         focus: true
     });
     console.log('✅ Modal initialized');
+    
+    // Store modal instance for later use
+    createUserModal._modalInstance = modalInstance;
+    
+    // Store modal instance for later use
+    createUserModal._modalInstance = modalInstance;
     
     // Attach form submit handler ONLY ONCE
     if (!createUserForm.hasAttribute('data-submit-handler')) {
@@ -982,10 +1173,22 @@ function initializeUsersPage() {
     if (!createUserModal.hasAttribute('data-modal-events')) {
         createUserModal.setAttribute('data-modal-events', 'attached');
         
-        // Position modal before showing (for both data-bs-toggle and programmatic opening)
+        // Handle modal show event - responsive positioning
         createUserModal.addEventListener('show.bs.modal', function() {
+            // Adjust modal for current viewport size
             if (typeof positionModalRelativeToScroll === 'function') {
                 positionModalRelativeToScroll(createUserModal);
+            }
+        });
+        
+        // Handle backdrop clicks to close modal
+        createUserModal.addEventListener('click', function(e) {
+            // If click is on the modal backdrop (not on modal-content), close the modal
+            if (e.target === createUserModal) {
+                const modalInstance = bootstrap.Modal.getInstance(createUserModal);
+                if (modalInstance) {
+                    modalInstance.hide();
+                }
             }
         });
         
@@ -997,31 +1200,101 @@ function initializeUsersPage() {
             const alertDiv = document.getElementById('createUserAlert');
             if (alertDiv) alertDiv.innerHTML = '';
             
-            // Remove scroll listener when modal is hidden
+            // Remove scroll and resize listeners when modal is hidden
             if (createUserModal._scrollHandler) {
                 window.removeEventListener('scroll', createUserModal._scrollHandler);
                 delete createUserModal._scrollHandler;
             }
+            if (createUserModal._resizeHandler) {
+                window.removeEventListener('resize', createUserModal._resizeHandler);
+                delete createUserModal._resizeHandler;
+            }
+            if (createUserModal._visibilityHandler) {
+                delete createUserModal._visibilityHandler;
+            }
         });
         
         createUserModal.addEventListener('shown.bs.modal', function() {
-            // Position modal relative to current scroll position after animation
+            // Position modal relative to current viewport after animation
             if (typeof positionModalRelativeToScroll === 'function') {
                 positionModalRelativeToScroll(createUserModal);
             }
+            
+            // Check if modal is out of viewport/container and close if needed
+            const checkModalVisibility = () => {
+                if (!createUserModal.classList.contains('show')) return;
+                
+                const modalDialog = createUserModal.querySelector('.modal-dialog');
+                if (!modalDialog) return;
+                
+                const rect = modalDialog.getBoundingClientRect();
+                const viewportHeight = window.innerHeight;
+                const viewportWidth = window.innerWidth;
+                
+                // Check if modal is completely out of viewport
+                const isOutOfView = (
+                    rect.bottom < 0 || 
+                    rect.top > viewportHeight || 
+                    rect.right < 0 || 
+                    rect.left > viewportWidth
+                );
+                
+                // Check if modal is mostly out of viewport (less than 20% visible)
+                const visibleHeight = Math.max(0, Math.min(rect.bottom, viewportHeight) - Math.max(rect.top, 0));
+                const visibleWidth = Math.max(0, Math.min(rect.right, viewportWidth) - Math.max(rect.left, 0));
+                const visibleArea = visibleHeight * visibleWidth;
+                const totalArea = rect.height * rect.width;
+                const visibilityRatio = totalArea > 0 ? visibleArea / totalArea : 0;
+                
+                if (isOutOfView || visibilityRatio < 0.2) {
+                    const modalInstance = bootstrap.Modal.getInstance(createUserModal);
+                    if (modalInstance) {
+                        console.log('Modal out of viewport, closing...');
+                        modalInstance.hide();
+                    }
+                }
+            };
             
             // Reposition on scroll while modal is open
             const handleScroll = () => {
                 if (createUserModal.classList.contains('show')) {
                     positionModalRelativeToScroll(createUserModal);
+                    checkModalVisibility();
                 }
             };
             
-            // Add scroll listener
-            window.addEventListener('scroll', handleScroll, { passive: true });
+            // Reposition on window resize for responsive behavior
+            const handleResize = () => {
+                if (createUserModal.classList.contains('show')) {
+                    positionModalRelativeToScroll(createUserModal);
+                    checkModalVisibility();
+                }
+            };
             
-            // Store handler for cleanup
+            // Check visibility periodically and on scroll/resize
+            const handleVisibility = () => {
+                if (createUserModal.classList.contains('show')) {
+                    checkModalVisibility();
+                }
+            };
+            
+            // Add scroll, resize, and visibility listeners
+            window.addEventListener('scroll', handleScroll, { passive: true });
+            window.addEventListener('resize', handleResize, { passive: true });
+            
+            // Check visibility every 500ms while modal is open
+            const visibilityInterval = setInterval(() => {
+                if (!createUserModal.classList.contains('show')) {
+                    clearInterval(visibilityInterval);
+                } else {
+                    checkModalVisibility();
+                }
+            }, 500);
+            
+            // Store handlers for cleanup
             createUserModal._scrollHandler = handleScroll;
+            createUserModal._resizeHandler = handleResize;
+            createUserModal._visibilityHandler = visibilityInterval;
             
             const usernameInput = document.getElementById('create_username');
             if (usernameInput) setTimeout(() => usernameInput.focus(), 100);
@@ -1243,8 +1516,8 @@ function showRoleChangeModal(userName, newRoleText) {
 }
 
 /**
- * Position modal relative to current scroll position
- * Modal appears near the top of the visible viewport, positioned relative to document
+ * Position modal relative to current scroll position - Flexible responsive positioning
+ * Modal adapts to viewport size and scroll position
  */
 function positionModalRelativeToScroll(modalElement) {
     const modalDialog = modalElement.querySelector('.modal-dialog');
@@ -1254,24 +1527,42 @@ function positionModalRelativeToScroll(modalElement) {
     const viewportWidth = window.innerWidth;
     const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
     
-    // Calculate top offset from viewport top (50px on desktop, 20px on mobile)
-    const topOffset = viewportWidth <= 576 ? 20 : 50;
+    // Responsive top offset based on viewport size
+    let topOffset;
+    if (viewportWidth <= 575) {
+        topOffset = 0.5; // 0.5rem on mobile
+    } else if (viewportWidth <= 767) {
+        topOffset = 1; // 1rem on small tablets
+    } else if (viewportWidth <= 991) {
+        topOffset = 1.25; // 1.25rem on tablets
+    } else if (viewportWidth <= 1199) {
+        topOffset = 1.5; // 1.5rem on small desktops
+    } else if (viewportWidth <= 1399) {
+        topOffset = 1.75; // 1.75rem on medium desktops
+    } else {
+        topOffset = 2; // 2rem on large desktops
+    }
     
-    // Calculate absolute position: scroll position + viewport offset
-    // This positions the modal relative to the document, appearing in the visible area
-    const absoluteTop = scrollTop + topOffset;
+    // Convert rem to pixels (assuming 16px base)
+    const topOffsetPx = topOffset * 16;
     
-    // Set absolute position relative to document
-    modalDialog.style.position = 'absolute';
-    modalDialog.style.top = `${absoluteTop}px`;
-    modalDialog.style.left = '50%';
-    modalDialog.style.transform = 'translateX(-50%)';
-    modalDialog.style.maxHeight = `${viewportHeight - (topOffset * 2)}px`;
-    modalDialog.style.width = viewportWidth <= 576 ? 'calc(100% - 1rem)' : 'calc(100% - 2rem)';
-    modalDialog.style.maxWidth = '500px';
+    // Use Bootstrap's default centering for better responsiveness
+    // Only adjust if viewport is very small
+    if (viewportWidth <= 575) {
+        modalDialog.style.marginTop = `${topOffsetPx}px`;
+        modalDialog.style.marginBottom = `${topOffsetPx}px`;
+    } else {
+        // Reset to default Bootstrap centering for larger screens
+        modalDialog.style.marginTop = '';
+        modalDialog.style.marginBottom = '';
+    }
     
-    // Ensure modal is visible and above other content
-    modalDialog.style.zIndex = '1201';
+    // Ensure modal content height adapts to viewport
+    const modalContent = modalElement.querySelector('.modal-content');
+    if (modalContent) {
+        const maxHeight = viewportHeight - (topOffsetPx * 2);
+        modalContent.style.maxHeight = `${maxHeight}px`;
+    }
     
     // Force reflow to ensure styles are applied
     modalDialog.offsetHeight;

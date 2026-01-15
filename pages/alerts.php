@@ -1019,6 +1019,15 @@ function loadMoreAuditLogs() {
     margin: 0;
     line-height: 1;
     letter-spacing: -0.02em;
+    /* Number rendering fix - ensures digits display correctly on Windows 10/11 */
+    font-family: 'Segoe UI', Arial, Helvetica, sans-serif !important;
+    font-variant-numeric: tabular-nums !important;
+    font-feature-settings: 'tnum' !important;
+    -webkit-font-feature-settings: 'tnum' !important;
+    -moz-font-feature-settings: 'tnum' !important;
+    text-rendering: optimizeLegibility !important;
+    -webkit-font-smoothing: antialiased !important;
+    -moz-osx-font-smoothing: grayscale !important;
 }
 
 .stat-footer {

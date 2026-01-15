@@ -29,6 +29,30 @@
     -moz-osx-font-smoothing: grayscale !important;
 }
 
+/* Number rendering fix - ensure numeric values use numeric-friendly fonts */
+.stat-number,
+.card-number,
+.quick-stat-value,
+.metric-header h4,
+.rate-number,
+[class*="number"],
+[class*="stat"],
+.number,
+.count,
+.value,
+.total {
+    font-family: 'Segoe UI', 'Segoe UI Historic', Arial, Helvetica, 'Helvetica Neue', 
+                 -apple-system, BlinkMacSystemFont, 'Roboto', 'Oxygen', 'Ubuntu', 
+                 'Cantarell', 'Fira Sans', 'Droid Sans', sans-serif !important;
+    font-variant-numeric: tabular-nums !important;
+    font-feature-settings: 'tnum' !important;
+    -webkit-font-feature-settings: 'tnum' !important;
+    -moz-font-feature-settings: 'tnum' !important;
+    text-rendering: optimizeLegibility !important;
+    -webkit-font-smoothing: antialiased !important;
+    -moz-osx-font-smoothing: grayscale !important;
+}
+
 /* Ensure all text elements use accessible font sizes */
 body, html {
     font-size: 16px !important; /* WCAG minimum recommendation */
