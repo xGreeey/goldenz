@@ -151,8 +151,16 @@
 
 /* Dashboard welcome icon buttons */
 .hrdash-welcome__icon-btn .hr-icon {
-    width: 18px;
-    height: 18px;
+    width: 24px;
+    height: 24px;
     display: inline-block;
     vertical-align: middle;
+    opacity: 1 !important;
+    filter: brightness(0) saturate(100%) invert(40%) sepia(8%) saturate(750%) hue-rotate(177deg) brightness(94%) contrast(88%);
+    transition: filter 0.2s ease;
+}
+
+/* Make icons more visible on hover */
+.hrdash-welcome__icon-btn:hover .hr-icon {
+    filter: brightness(0) saturate(100%) invert(15%) sepia(8%) saturate(750%) hue-rotate(177deg) brightness(94%) contrast(88%);
 }
