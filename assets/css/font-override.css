@@ -401,25 +401,49 @@ div i[class*="fa-"] {
     -ms-font-feature-settings: 'tnum' 1 !important;
 }
 
-/* --- Sidebar visual overrides (ensure dropdowns are clearly visible) --- */
+/* --- Sidebar visual overrides (match sidebar dark background) --- */
 .sidebar .nav-submenu {
-    background: #ffffff !important;          /* solid white dropdown panel */
+    background: var(--sidebar-bg) !important;          /* match sidebar dark background */
     border-radius: 10px !important;
-    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.45) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
 }
 
 .sidebar .nav-submenu .nav-link {
-    color: #0f172a !important;               /* dark text on white */
+    color: var(--sidebar-text) !important;               /* light text on dark background */
 }
 
 .sidebar .nav-submenu .nav-link:hover {
-    background: #f1f5f9 !important;
-    color: #0f172a !important;
+    background: var(--sidebar-hover) !important;
+    color: #ffffff !important;
 }
 
 .sidebar .nav-submenu .nav-link.active {
-    background: linear-gradient(135deg, rgba(251, 191, 36, 0.15) 0%, rgba(59, 130, 246, 0.12) 100%) !important;
-    color: #0f172a !important;
+    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1e293b 100%) !important;
+    color: #ffffff !important;
+}
+
+/* Dark theme overrides for sidebar submenu */
+html[data-theme="dark"] .sidebar .nav-submenu,
+html[data-theme="dark"] .sidebar .nav-submenu.expanded {
+    background: #1a1d23 !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
+}
+
+html[data-theme="dark"] .sidebar .nav-submenu .nav-link,
+html[data-theme="dark"] .sidebar .nav-submenu.expanded .nav-link {
+    color: var(--interface-text-light) !important;
+}
+
+html[data-theme="dark"] .sidebar .nav-submenu .nav-link:hover,
+html[data-theme="dark"] .sidebar .nav-submenu.expanded .nav-link:hover {
+    background: #1e293b !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .sidebar .nav-submenu .nav-link.active,
+html[data-theme="dark"] .sidebar .nav-submenu.expanded .nav-link.active {
+    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1e293b 100%) !important;
+    color: #ffffff !important;
 }
 
 /* ============================================
@@ -2023,7 +2047,7 @@ body.portal-hr-admin .hrdash-table {
    HR-ADMIN: NOTIFICATION & MESSAGE DROPDOWNS
    ============================================ */
 
-/* Icon button styles */
+/* Icon button styles - Facebook-style rounded box */
 body.portal-hr-admin .hrdash-welcome__icon-btn {
     position: relative;
     width: 40px;
@@ -2032,9 +2056,9 @@ body.portal-hr-admin .hrdash-welcome__icon-btn {
     align-items: center;
     justify-content: center;
     border: none;
-    background: transparent;
+    background: #f0f2f5;
     color: #64748b;
-    border-radius: 10px;
+    border-radius: 8px;
     transition: all 0.2s ease;
     cursor: pointer;
     padding: 0;
@@ -2046,17 +2070,43 @@ body.portal-hr-admin .hrdash-welcome__icon-btn.dropdown-toggle::after {
 }
 
 body.portal-hr-admin .hrdash-welcome__icon-btn:hover {
-    background: #f1f5f9;
+    background: #e4e6eb;
     color: #1e293b;
 }
 
-body.portal-hr-admin .hrdash-welcome__icon-btn:focus {
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(31, 178, 213, 0.1);
+body.portal-hr-admin .hrdash-welcome__icon-btn:focus,
+body.portal-hr-admin .hrdash-welcome__icon-btn:active,
+body.portal-hr-admin .hrdash-welcome__icon-btn:focus-visible,
+body.portal-hr-admin .hrdash-welcome__icon-btn.show,
+body.portal-hr-admin .hrdash-welcome__icon-btn[aria-expanded="true"] {
+    outline: none !important;
+    box-shadow: none !important;
+    border: none !important;
+    background: #e4e6eb;
+    color: #1e293b;
 }
 
 body.portal-hr-admin .hrdash-welcome__icon-btn i {
     font-size: 1.125rem;
+    color: #64748b;
+    display: inline-block;
+    line-height: 1;
+}
+
+body.portal-hr-admin .hrdash-welcome__icon-btn:hover i {
+    color: #1e293b;
+}
+
+/* Ensure custom icons are visible in icon buttons */
+body.portal-hr-admin .hrdash-welcome__icon-btn .hr-icon {
+    width: 24px !important;
+    height: 24px !important;
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    background-size: contain !important;
+    background-repeat: no-repeat !important;
+    background-position: center !important;
 }
 
 /* Badge on icon buttons */

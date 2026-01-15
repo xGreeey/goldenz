@@ -217,6 +217,50 @@ html[data-theme="dark"] .card-header-modern {
     color: var(--interface-text) !important;
 }
 
+/* Dark theme support for sidebar submenu */
+html[data-theme="dark"] .sidebar .nav-submenu,
+html[data-theme="dark"] .sidebar .nav-submenu.expanded {
+    background: #1a1d23 !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
+}
+
+html[data-theme="dark"] .sidebar .nav-submenu .nav-link,
+html[data-theme="dark"] .sidebar .nav-submenu.expanded .nav-link {
+    color: var(--interface-text-light) !important;
+}
+
+html[data-theme="dark"] .sidebar .nav-submenu .nav-link:hover,
+html[data-theme="dark"] .sidebar .nav-submenu.expanded .nav-link:hover {
+    background: #1e293b !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .sidebar .nav-submenu .nav-link.active,
+html[data-theme="dark"] .sidebar .nav-submenu.expanded .nav-link.active {
+    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1e293b 100%) !important;
+    color: #ffffff !important;
+}
+
+html[data-theme="dark"] .nav-toggle {
+    color: var(--interface-text-light) !important;
+}
+
+html[data-theme="dark"] .nav-toggle:hover {
+    color: #ffffff !important;
+}
+
+html[data-theme="dark"] .nav-toggle.active {
+    color: var(--interface-text-light) !important;
+}
+
+html[data-theme="dark"] .nav-arrow {
+    color: var(--interface-text-light) !important;
+}
+
+html[data-theme="dark"] .nav-arrow.rotated {
+    color: var(--sidebar-accent-blue) !important;
+}
+
 /* Global Styles - Accessible Font System for Poor Eyesight */
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap');
 
@@ -851,11 +895,11 @@ html::-webkit-scrollbar-button {
     max-height: 0;
     overflow: hidden;
     transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease, padding 0.3s ease;
-    background: #ffffff; /* visible white dropdown panel */
+    background: var(--sidebar-bg); /* match sidebar dark background */
     opacity: 0;
     border-radius: 10px;
     padding-left: 0.5rem;
-    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.45);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
 
 .nav-submenu.expanded {
@@ -873,7 +917,7 @@ html::-webkit-scrollbar-button {
     padding: 0.75rem 1rem 0.75rem 2.5rem !important;
     margin: 0.125rem 0;
     font-size: 0.875rem !important;
-    color: #0f172a !important; /* dark text on white */
+    color: var(--sidebar-text) !important; /* light text on dark background */
     min-height: 40px;
     border: 1px solid transparent !important;
     border-radius: 999px;
@@ -887,8 +931,8 @@ html::-webkit-scrollbar-button {
 }
 
 .sidebar .nav-submenu .nav-link:hover {
-    background: #f1f5f9 !important;
-    color: #0f172a !important;
+    background: var(--sidebar-hover) !important;
+    color: #ffffff !important;
     border: 1px solid transparent !important;
     position: relative !important;
     transform: none;
@@ -924,6 +968,30 @@ html::-webkit-scrollbar-button {
     /* Remove the yellow active indicator dot (submenu) */
     content: none !important;
     display: none !important;
+}
+
+/* Dark theme support for sidebar submenu - placed after base rules to ensure override */
+html[data-theme="dark"] .sidebar .nav-submenu,
+html[data-theme="dark"] .sidebar .nav-submenu.expanded {
+    background: #1a1d23 !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
+}
+
+html[data-theme="dark"] .sidebar .nav-submenu .nav-link,
+html[data-theme="dark"] .sidebar .nav-submenu.expanded .nav-link {
+    color: var(--interface-text-light) !important;
+}
+
+html[data-theme="dark"] .sidebar .nav-submenu .nav-link:hover,
+html[data-theme="dark"] .sidebar .nav-submenu.expanded .nav-link:hover {
+    background: #1e293b !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .sidebar .nav-submenu .nav-link.active,
+html[data-theme="dark"] .sidebar .nav-submenu.expanded .nav-link.active {
+    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1e293b 100%) !important;
+    color: #ffffff !important;
 }
 
 .nav-submenu .nav-link i {
