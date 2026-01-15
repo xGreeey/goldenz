@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jan 14, 2026 at 12:46 AM
+-- Generation Time: Jan 15, 2026 at 11:14 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -110,6 +110,7 @@ CREATE TABLE `audit_logs` (
 --
 
 INSERT INTO `audit_logs` (`id`, `user_id`, `action`, `table_name`, `record_id`, `old_values`, `new_values`, `ip_address`, `user_agent`, `created_at`) VALUES
+(0, 25, 'LOGIN_ATTEMPT', 'users', 25, NULL, '{\"login_time\":\"2026-01-15 11:01:02\"}', '192.168.1.7', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-01-15 03:01:02'),
 (1, 1, 'INSERT', 'employees', 1, NULL, '{\"surname\": \"ABAD\", \"first_name\": \"JOHN MARK\", \"employee_no\": 1, \"employee_type\": \"SG\"}', '192.168.1.100', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36', '2024-01-15 00:30:00'),
 (2, 1, 'UPDATE', 'employees', 1, '{\"status\": \"Active\"}', '{\"status\": \"Active\"}', '192.168.1.100', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36', '2024-01-15 01:15:00'),
 (3, 2, 'INSERT', 'time_off_requests', 1, NULL, '{\"start_date\": \"2024-02-01\", \"employee_id\": 1, \"request_type\": \"vacation\"}', '192.168.1.101', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36', '2024-01-15 02:00:00'),
@@ -180,9 +181,9 @@ CREATE TABLE `dtr_entries` (
   `time_out` time DEFAULT NULL,
   `entry_type` enum('time-in','time-out','break','overtime') NOT NULL,
   `notes` text DEFAULT NULL,
-  `created_at` timestamp NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -235,90 +236,19 @@ CREATE TABLE `employees` (
   `blood_type` varchar(5) DEFAULT NULL,
   `religion` varchar(50) DEFAULT NULL,
   `status` enum('Active','Inactive','Terminated','Suspended') DEFAULT 'Active',
-  `created_at` timestamp NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  `profile_image` varchar(255) DEFAULT NULL,
-  `created_by` int(11) DEFAULT NULL,
-  `created_by_name` varchar(100) DEFAULT NULL,
-  `gender` varchar(10) DEFAULT NULL,
-  `civil_status` varchar(20) DEFAULT NULL,
-  `age` int(11) DEFAULT NULL,
-  `birthplace` varchar(150) DEFAULT NULL,
-  `citizenship` varchar(80) DEFAULT NULL,
-  `provincial_address` varchar(255) DEFAULT NULL,
-  `special_skills` text DEFAULT NULL,
-  `spouse_name` varchar(150) DEFAULT NULL,
-  `spouse_age` int(11) DEFAULT NULL,
-  `spouse_occupation` varchar(150) DEFAULT NULL,
-  `father_name` varchar(150) DEFAULT NULL,
-  `father_age` int(11) DEFAULT NULL,
-  `father_occupation` varchar(150) DEFAULT NULL,
-  `mother_name` varchar(150) DEFAULT NULL,
-  `mother_age` int(11) DEFAULT NULL,
-  `mother_occupation` varchar(150) DEFAULT NULL,
-  `children_names` text DEFAULT NULL,
-  `college_course` varchar(150) DEFAULT NULL,
-  `college_school_name` varchar(200) DEFAULT NULL,
-  `college_school_address` varchar(255) DEFAULT NULL,
-  `college_years` varchar(15) DEFAULT NULL,
-  `vocational_course` varchar(150) DEFAULT NULL,
-  `vocational_school_name` varchar(200) DEFAULT NULL,
-  `vocational_school_address` varchar(255) DEFAULT NULL,
-  `vocational_years` varchar(15) DEFAULT NULL,
-  `highschool_school_name` varchar(200) DEFAULT NULL,
-  `highschool_school_address` varchar(255) DEFAULT NULL,
-  `highschool_years` varchar(15) DEFAULT NULL,
-  `elementary_school_name` varchar(200) DEFAULT NULL,
-  `elementary_school_address` varchar(255) DEFAULT NULL,
-  `elementary_years` varchar(15) DEFAULT NULL,
-  `trainings_json` text DEFAULT NULL,
-  `gov_exam_taken` tinyint(1) DEFAULT NULL,
-  `gov_exam_json` text DEFAULT NULL,
-  `employment_history_json` text DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `employees`
 --
 
-INSERT INTO `employees` (`id`, `employee_no`, `employee_type`, `surname`, `first_name`, `middle_name`, `post`, `license_no`, `license_exp_date`, `rlm_exp`, `date_hired`, `cp_number`, `sss_no`, `pagibig_no`, `tin_number`, `philhealth_no`, `birth_date`, `height`, `weight`, `address`, `contact_person`, `relationship`, `contact_person_address`, `contact_person_number`, `blood_type`, `religion`, `status`, `created_at`, `updated_at`, `profile_image`, `created_by`, `created_by_name`, `gender`, `civil_status`, `age`, `birthplace`, `citizenship`, `provincial_address`, `special_skills`, `spouse_name`, `spouse_age`, `spouse_occupation`, `father_name`, `father_age`, `father_occupation`, `mother_name`, `mother_age`, `mother_occupation`, `children_names`, `college_course`, `college_school_name`, `college_school_address`, `college_years`, `vocational_course`, `vocational_school_name`, `vocational_school_address`, `vocational_years`, `highschool_school_name`, `highschool_school_address`, `highschool_years`, `elementary_school_name`, `elementary_school_address`, `elementary_years`, `trainings_json`, `gov_exam_taken`, `gov_exam_json`, `employment_history_json`) VALUES
-(1, 1, 'SG', 'ABAD', 'JOHN MARK', 'DANIEL', 'BENAVIDES', 'R4B-202309000367', '2028-09-14', '2025-10-05', '2023-09-28', '0926-6917781', '04-4417766-7', '1213-0723-0701', '623-432-731-000', '09-202633701-3', '1999-10-05', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Active', '2025-12-01 02:11:35', '2025-12-01 02:11:35', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(2, 2, 'LG', 'ABADILLA', 'NORA', 'CABALQUINTO', 'SAPPORO', 'NCR-202411000339', '2029-11-07', '2025-12-27', '2024-11-13', '0967-9952106', '03-9677548-9', '1210-1313-3667', '905-112-708-000', '02-200206334-6', '1970-12-27', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Active', '2025-12-01 02:11:35', '2025-12-01 02:11:35', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(3, 3, 'LG', 'ABANILLA', 'VILMA', 'ABEDAÑO', 'MCMC', 'R05-202412001808', '2029-12-20', '2025-04-05', '2022-03-30', '0928-5781417', '33-0816833-7', '1211-3233-7121', '236-835-638-000', '19-090526559-1', '1974-06-10', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Active', '2025-12-01 02:11:35', '2025-12-01 02:11:35', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(4, 4, 'SG', 'ABDULMAN', 'ALMAN', 'JAINUDDIN', 'MCMC', 'BAR-202504000186', '2030-04-07', 'NO SEMINAR', '2025-06-26', '0905-1844366', '10-1537326-8', '1213-4444-8273', '676-724-973-000', '14-050287358-6', '2002-12-04', '5\'7', '62 KG', 'BLOCK 27, ADDITION HILLS, MANDALUYONG CITY', 'ALNISAR SAID', 'COUSIN', 'BLOCK 27, ADDITION HILLS, MANDALUYONG CITY', '0912-9440814', NULL, 'MUSLIM', 'Active', '2025-12-01 02:11:35', '2025-12-01 02:11:35', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(5, 5, 'SO', 'SANTOS', 'MARIA', 'CRUZ', 'HEADQUARTERS', 'SO-2024001', '2026-12-31', '2025-06-15', '2024-01-15', '0917-1234567', '12-3456789-0', '1234-5678-9012', '123-456-789-000', '12-345678901-2', '1985-03-15', '5\'6', '55 KG', '123 MAIN ST, QUEZON CITY', 'JUAN SANTOS', 'HUSBAND', '123 MAIN ST, QUEZON CITY', '0918-7654321', 'O+', 'CATHOLIC', 'Active', '2025-12-01 02:11:35', '2025-12-01 02:11:35', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(6, 6, 'SG', 'CRUZ', 'PEDRO', 'REYES', 'MALL SECURITY', 'SG-2024002', '2027-08-20', '2025-02-10', '2024-02-01', '0928-9876543', '23-4567890-1', '2345-6789-0123', '234-567-890-000', '23-456789012-3', '1990-07-22', '5\'8', '70 KG', '456 SIDE ST, MANILA', 'ANA CRUZ', 'WIFE', '456 SIDE ST, MANILA', '0919-8765432', 'A+', 'PROTESTANT', 'Active', '2025-12-01 02:11:35', '2025-12-01 02:11:35', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(7, 7, 'LG', 'GARCIA', 'SOPHIA', 'MARTINEZ', 'OFFICE SECURITY', 'LG-2024003', '2028-03-10', '2025-01-20', '2024-03-15', '0933-5555555', '34-5678901-2', '3456-7890-1234', '345-678-901-000', '34-567890123-4', '1988-11-08', '5\'4', '50 KG', '789 AVENUE ST, MAKATI', 'CARLOS GARCIA', 'BROTHER', '789 AVENUE ST, MAKATI', '0920-1111111', 'B+', 'CATHOLIC', 'Active', '2025-12-01 02:11:35', '2025-12-01 02:11:35', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(8, 8, 'SO', 'RAMOS', 'ANTONIO', 'DELA CRUZ', 'FIELD SUPERVISOR', 'SO-2024004', '2026-06-30', '2025-03-25', '2024-04-01', '0944-7777777', '45-6789012-3', '4567-8901-2345', '456-789-012-000', '45-678901234-5', '1982-09-12', '5\'10', '75 KG', '321 ELM ST, PASIG', 'ROSA RAMOS', 'SISTER', '321 ELM ST, PASIG', '0921-2222222', 'AB+', 'CATHOLIC', 'Active', '2025-12-01 02:11:35', '2025-12-01 02:11:35', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(9, 9, 'SO', 'AMOR', 'FERDINAND', 'HABIG', 'OFFICE/ADMINISTRATION', NULL, NULL, NULL, '2024-01-15', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Active', '2025-12-01 02:11:35', '2025-12-01 02:11:35', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(10, 10, 'SO', 'PALAROAN', 'FLOR', 'BONAGUA', 'OFFICE/ADMINISTRATION', NULL, NULL, NULL, '2024-01-15', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Active', '2025-12-01 02:11:35', '2025-12-01 02:11:35', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(11, 11, 'SO', 'SARMIENTO', 'LUISA', 'A.', 'OFFICE/ADMINISTRATION', NULL, NULL, NULL, '2024-01-15', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Active', '2025-12-01 02:11:35', '2025-12-01 02:11:35', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(12, 12, 'SO', 'GATBONTON', 'EDUARDO JR', 'RIVERA', 'OFFICE/ADMINISTRATION', NULL, NULL, NULL, '2024-01-15', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Active', '2025-12-01 02:11:35', '2025-12-01 02:11:35', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(13, 13, 'SO', 'BAYUN', 'DESIRE', 'R.', 'OFFICE/ADMINISTRATION', NULL, NULL, NULL, '2024-01-15', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Active', '2025-12-01 02:11:35', '2025-12-01 02:11:35', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(14, 14, 'SO', 'MACABONTOC', 'ADEL GLENN', 'MARTIN', 'OFFICE/ADMINISTRATION', NULL, NULL, NULL, '2024-01-15', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Active', '2025-12-01 02:11:35', '2025-12-01 02:11:35', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(15, 15, 'SO', 'ARZAGA', 'JOSEPH MATTHEW', 'R', 'OFFICE/ADMINISTRATION', NULL, NULL, NULL, '2024-01-15', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Active', '2025-12-01 02:11:35', '2025-12-01 02:11:35', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(16, 16, 'SO', 'ELPEDES', 'MARITES', 'BOTO', 'OFFICE/ADMINISTRATION', NULL, NULL, NULL, '2024-01-15', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Active', '2025-12-01 02:11:35', '2025-12-01 02:11:35', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(17, 17, 'SO', 'GUINTO', 'JOSHUA MATTHEW', 'C', 'OFFICE/ADMINISTRATION', NULL, NULL, NULL, '2024-01-15', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Active', '2025-12-01 02:11:35', '2025-12-01 02:11:35', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(18, 18, 'SO', 'BALLESTEROS', 'LESTER', 'B', 'OFFICE/ADMINISTRATION', NULL, NULL, NULL, '2024-01-15', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Active', '2025-12-01 02:11:35', '2025-12-01 02:11:35', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(19, 19, 'SO', 'DELLAVA', 'RENNIEL', 'MAGDASOC', 'OFFICE/ADMINISTRATION', NULL, NULL, NULL, '2024-01-15', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Active', '2025-12-01 02:11:35', '2025-12-01 02:11:35', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(20, 20, 'SO', 'REYES', 'KATE ANDREA', 'DELA PAZ', 'OFFICE/ADMINISTRATION', NULL, NULL, NULL, '2024-01-15', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Active', '2025-12-01 02:11:35', '2025-12-01 02:11:35', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(21, 21, 'SO', 'TRONGCO', 'CIELO MAR', 'PEDRAZA', 'OFFICE/ADMINISTRATION', NULL, NULL, NULL, '2024-01-15', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Active', '2025-12-01 02:11:35', '2025-12-01 02:11:35', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(22, 22, 'SO', 'ISULAT', 'JOHN CYREL', 'ENRIQUEZ', 'OFFICE/ADMINISTRATION', NULL, NULL, NULL, '2024-01-15', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Active', '2025-12-01 02:11:35', '2025-12-01 02:11:35', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(23, 23, 'SO', 'MVAZ', 'TBD', NULL, 'OFFICE/ADMINISTRATION', NULL, NULL, NULL, '2024-01-15', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Active', '2025-12-01 02:11:35', '2025-12-01 02:11:35', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(24, 24, 'SO', 'RVM', 'TBD', NULL, 'OFFICE/ADMINISTRATION', NULL, NULL, NULL, '2024-01-15', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Active', '2025-12-01 02:11:35', '2025-12-01 02:11:35', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(25, 25, 'SO', 'MLA', 'TBD', NULL, 'OFFICE/ADMINISTRATION', NULL, NULL, NULL, '2024-01-15', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Active', '2025-12-01 02:11:35', '2025-12-01 02:11:35', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(2574, 23432, 'SG', 'SDFASDFSDFSDFASDFSDAFSDF', 'ASDFSDFSDFSD', 'SDFSDFSDF', 'LADY GUARD - HOSPITAL', 'NCC-2000324432', '2025-12-13', '2025-12-13', '2025-12-13', NULL, '34-4323432-2', '2342-4322-4342', '234-234-432-432', '32-432432324-3', '2025-12-13', NULL, '13123', 'SDFSDF', '9234324324', 'Mother', NULL, NULL, 'A-', 'No Religion', 'Inactive', '2025-12-13 04:52:11', '2025-12-13 04:52:11', NULL, 25, 'HR Administrator', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(2867, 43434, 'SG', 'SADF', 'ASDF', 'ASDF', 'LADY GUARD - HOSPITAL', 'R03-202210000014', '2025-12-14', NULL, '2025-12-14', NULL, '23-2342344-3', '2344-2345-4323', '432-234-234-234', '32-345343253-2', '2025-12-14', NULL, NULL, 'ASDFASDF', '234324', 'Mother', 'SADFASDFASD', NULL, 'O+', 'Born Again Christian', 'Active', '2025-12-14 06:13:18', '2025-12-14 06:13:18', NULL, 25, 'HR Administrator', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(2924, 12121, 'SG', 'ASFD', 'ASDFSADF', NULL, 'LADY GUARD - OFFICE BUILDING', 'EREO-2384982332', '2025-12-14', NULL, '2025-12-14', NULL, '23-2398321-2', '3213-2133-4345', '323-321-321-321', '32-323435634-2', '2025-12-14', NULL, NULL, 'ASDF', '43434', 'Guardian', NULL, NULL, 'B-', 'Hindu', 'Active', '2025-12-14 06:24:02', '2025-12-14 06:24:02', NULL, 25, 'HR Administrator', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(3141, 21342, 'SO', 'EFSDAFA', 'DSAFSDFSADF', NULL, 'SECURITY OFFICER - HEADQUARTERS', 'ROOO-200032094232', '2025-12-14', NULL, '2025-12-14', NULL, '23-2343432-2', '3123-2321-3213', '123-432-345-343', '32-321343543-1', '2025-12-14', NULL, NULL, 'SADFAS', '32432', 'Colleague', 'SDFAD', NULL, 'B-', 'No Religion', 'Inactive', '2025-12-14 06:34:18', '2025-12-14 06:34:18', NULL, 25, 'HR Administrator', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(3401, 34232, 'LG', 'SADFSF', 'SADFASFDASD', NULL, 'SECURITY OFFICER - HEADQUARTERS', 'RIIO-200032094232', '2025-12-14', NULL, '2025-12-14', NULL, '23-2343432-2', '3123-2321-3213', '123-432-345-343', '32-321343543-1', '2025-12-15', NULL, NULL, NULL, '2342343', 'Guardian', 'SDFASDFA', NULL, 'B+', 'Indigenous / Tribal', 'Terminated', '2025-12-14 07:26:36', '2025-12-14 07:26:36', NULL, 25, 'HR Administrator', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(3750, 23423, 'SG', 'ASDFSADF', 'SADFSADF', NULL, 'LADY GUARD - OFFICE BUILDING', 'SDFS-3034234234234', '2025-12-14', NULL, '2025-12-14', '9243243242', '23-4324324-3', '4234-3242-3432', '324-234-324-324', '23-423423423-4', '2025-12-14', '5\'5\"', '34324', NULL, '9324324234', 'Guardian', 'ASDFSADFSADF', '9242342342', 'B+', 'Taoist', 'Terminated', '2025-12-14 08:15:05', '2025-12-14 08:15:05', NULL, 25, 'HR Administrator', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(3783, 24234, 'SG', 'SAFASDF', 'SDFASDFSFA', NULL, 'LADY GUARD - OFFICE BUILDING', 'SDF2-342343232423', '2025-12-21', NULL, '2025-12-14', '9243243243', '23-4234324-3', '4324-3223-4232', '432-432-432-432', '34-323243243-4', '2025-12-08', '5\'5\"', '234234', NULL, '9243243242', 'Sibling', NULL, '9424324234', 'B-', 'Taoist', 'Inactive', '2025-12-14 08:17:00', '2025-12-14 08:17:00', NULL, 25, 'HR Administrator', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(3817, 23423, 'SG', 'SADFSADFASD', 'FASDFSADFS', NULL, 'SECURITY GUARD - RESIDENTIAL', 'SFD3-432423432423', '2025-12-14', NULL, '2025-12-14', '9342342343', '34-5365345-4', '4355-4354-3543', '345-345-435-345', '34-543543534-5', '2025-12-14', '5\'5\"', '324234', 'SADFASDFSD', '9243243242', 'Friend', NULL, '9342343243', 'B+', 'Muslim', 'Inactive', '2025-12-14 08:20:48', '2025-12-14 08:20:48', 'uploads/employees/3817.jpg', 25, 'HR Administrator', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(3866, 24324, 'SG', 'SDFASDFASDF', 'SADFASFASFSADF', NULL, 'LADY GUARD - OFFICE BUILDING', 'ASDF-34324234324324', '2025-12-22', NULL, '2025-12-14', '9243243243', '23-4234324-2', '5635-3454-3534', '345-435-345-543', '54-354353454-3', '2025-12-14', '5\'5\"', '34234', NULL, '9242342343', 'Father', NULL, '9324324234', 'B+', 'Hindu', 'Inactive', '2025-12-14 08:27:18', '2025-12-14 08:27:18', 'uploads/employees/3866.jpg', 25, 'HR Administrator', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(3907, 23432, 'LG', 'ASFSDFSADFASDF', 'ASDFSDFSD', NULL, 'SECURITY GUARD - RESIDENTIAL', 'SDF3-2423432423', '2025-12-14', NULL, '2025-12-14', '9242343243', '23-4324324-2', '4234-2342-3423', '423-423-423-432', '42-342323425-2', '2025-12-14', '5\'5\"', '34324', NULL, '9234324324', 'Partner', NULL, '9234324324', 'A-', 'Taoist', 'Suspended', '2025-12-14 08:30:41', '2025-12-14 08:30:41', 'uploads/employees/3907.jpg', 25, 'HR Administrator', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(12729, 34324, 'SG', 'HAHA', 'HEHE', 'HOHO', 'UNASSIGNED', 'NCR2-13872183182973', '2026-01-12', NULL, '2026-01-12', '9563212312', '12-3213213-1', '1232-1312-3121', '312-321-312-312', '21-312321312-3', '2000-08-27', NULL, '800', 'KUNGSAAN', 'ALDRIN', 'Mother', 'ASDFSAFSAD', '9563211331', 'A-', 'No Religion', 'Active', '2026-01-12 07:30:43', '2026-01-12 07:30:43', NULL, 25, 'HR Administrator', 'Female', 'Separated', 25, 'DIYAN LANG', 'PINOY', 'DITO LANG', 'MADAMI', 'DIKO ALAM', 59, 'SA MAY', 'MALAY KO', 50, 'DOON', 'HAYS', 50, 'DUNNO', 'DAMI', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'SADFSADFSD', 'ASDFSDFA', '2012-2018', 'SDAFSADF', 'SADFSD', '2012-2018', '[{\"title\":\"SAFSDFSDA\",\"by\":\"SADFSDSADF\",\"date\":\"2026-01-14\"}]', 0, NULL, '[{\"position\":\"SADFSADFS\",\"company_name\":\"\",\"company_address\":\"\",\"company_phone\":\"\",\"period\":\"03\\/2025 - 03\\/2030\",\"reason\":\"SFAASDFSA\"}]'),
-(13042, 24324, 'SG', 'AMOR', 'CHRISTIAN', 'B', 'KAHIT SAN', 'R332-32323232322333', '2001-03-22', NULL, '0012-02-02', '9123876127', '23-3232323-2', '2332-4234-3423', '233-232-322-323', '32-324324432-3', '2002-04-04', '5\'1\"', '45', 'SAMIN', 'SASADDSADASDAS', 'Colleague', 'SDFSDAASDSDFASDFA', '9217361278', 'O+', 'Sikh', 'Active', '2026-01-12 07:47:54', '2026-01-12 07:47:54', NULL, 25, 'HR Administrator', 'Male', 'Single', 23, 'MANDALUYONG', 'FILIPINA', 'WADS', 'wala batugan', 'SDASDW', 12, 'SDSADA', 'WDAWD', 23, 'DASASD', 'WDAWDW', 12, 'ADSADSADAS', 'ASDDASSDADSADSA', 'SDASADDSASDA', 'ASDASDDSA', 'DSAASDSDASAD', '2001-2020', 'ASDSADASD', 'ASDSADSDA', 'SASASADDSAD', '2001-2020', 'SDSD', 'DSASDSDADDSA', '2001-2020', 'DSSDAASDSADSDA', 'DSASDSDADASASD', '2001-2020', '[{\"title\":\"SDASADSDA\",\"by\":\"SSADDSADSA\",\"date\":\"2022-03-04\"}]', 0, NULL, '[{\"position\":\"34432324342\",\"company_name\":\"SDADAW\",\"company_address\":\"AWAWDDWA\",\"company_phone\":\"342332ASDA\",\"period\":\"03\\/2021 - 03\\/2025\",\"reason\":\"SDSDAADSSAD\"}]');
+INSERT INTO `employees` (`id`, `employee_no`, `employee_type`, `surname`, `first_name`, `middle_name`, `post`, `license_no`, `license_exp_date`, `rlm_exp`, `date_hired`, `cp_number`, `sss_no`, `pagibig_no`, `tin_number`, `philhealth_no`, `birth_date`, `height`, `weight`, `address`, `contact_person`, `relationship`, `contact_person_address`, `contact_person_number`, `blood_type`, `religion`, `status`, `created_at`, `updated_at`) VALUES
+(1, 1, 'SG', 'ABAD', 'JOHN MARK', 'DANIEL', 'BENAVIDES', 'R4B-202309000367', '2028-09-14', '2025-10-05', '2023-09-28', '0926-6917781', '04-4417766-7', '1213-0723-0701', '623-432-731-000', '09-202633701-3', '1999-10-05', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Active', '2026-01-15 02:59:38', '2026-01-15 02:59:38'),
+(2, 2, 'LG', 'ABADILLA', 'NORA', 'CABALQUINTO', 'SAPPORO', 'NCR-202411000339', '2029-11-07', '2025-12-27', '2024-11-13', '0967-9952106', '03-9677548-9', '1210-1313-3667', '905-112-708-000', '02-200206334-6', '1970-12-27', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Active', '2026-01-15 02:59:38', '2026-01-15 02:59:38'),
+(3, 3, 'LG', 'ABANILLA', 'VILMA', 'ABEDAÑO', 'MCMC', 'R05-202412001808', '2029-12-20', '2025-04-05', '2022-03-30', '0928-5781417', '33-0816833-7', '1211-3233-7121', '236-835-638-000', '19-090526559-1', '1974-06-10', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Active', '2026-01-15 02:59:38', '2026-01-15 02:59:38'),
+(4, 4, 'SG', 'ABDULMAN', 'ALMAN', 'JAINUDDIN', 'MCMC', 'BAR-202504000186', '2030-04-07', 'NO SEMINAR', '2025-06-26', '0905-1844366', '10-1537326-8', '1213-4444-8273', '676-724-973-000', '14-050287358-6', '2002-12-04', '5\'7', '62 KG', 'BLOCK 27, ADDITION HILLS, MANDALUYONG CITY', 'ALNISAR SAID', 'COUSIN', 'BLOCK 27, ADDITION HILLS, MANDALUYONG CITY', '0912-9440814', NULL, 'MUSLIM', 'Active', '2026-01-15 02:59:38', '2026-01-15 02:59:38');
 
 --
 -- Triggers `employees`
@@ -580,6 +510,27 @@ CREATE TABLE `post_statistics` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `security_settings`
+--
+
+CREATE TABLE `security_settings` (
+  `key` varchar(100) NOT NULL,
+  `value` varchar(255) DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `security_settings`
+--
+
+INSERT INTO `security_settings` (`key`, `value`, `updated_at`) VALUES
+('password_expiry_days', '90', '2026-01-15 08:23:05'),
+('password_min_length', '8', '2026-01-15 07:17:22'),
+('password_require_special', '0', '2026-01-15 08:39:28');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `support_tickets`
 --
 
@@ -675,6 +626,9 @@ CREATE TABLE `users` (
   `locked_until` timestamp NULL DEFAULT NULL COMMENT 'Account lockout until this timestamp',
   `password_changed_at` timestamp NULL DEFAULT NULL,
   `remember_token` varchar(100) DEFAULT NULL,
+  `two_factor_secret` varchar(64) DEFAULT NULL,
+  `two_factor_enabled` tinyint(1) NOT NULL DEFAULT 0,
+  `two_factor_recovery_codes` text DEFAULT NULL,
   `created_by` int(11) DEFAULT NULL COMMENT 'User who created this account',
   `created_at` timestamp NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
@@ -684,17 +638,22 @@ CREATE TABLE `users` (
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`id`, `username`, `email`, `password_hash`, `name`, `role`, `status`, `employee_id`, `department`, `phone`, `avatar`, `last_login`, `last_login_ip`, `failed_login_attempts`, `locked_until`, `password_changed_at`, `remember_token`, `created_by`, `created_at`, `updated_at`) VALUES
-(1, 'hr.admin', 'hr.admin@goldenz5.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Maria L. Santos', 'hr_admin', 'active', NULL, 'Human Resources', '0917-100-0001', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, '2025-12-01 02:11:35', '2025-12-01 02:11:35'),
-(2, 'hr.lead', 'hr.lead@goldenz5.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Angela M. Reyes', 'hr_admin', 'active', NULL, 'Human Resources', '0917-100-0002', NULL, NULL, NULL, 0, NULL, NULL, NULL, 1, '2025-12-01 02:11:35', '2025-12-01 02:11:35'),
-(3, 'hr.ops', 'hr.ops@goldenz5.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Carlos P. Dizon', 'hr_admin', 'active', NULL, 'Human Resources', '0917-100-0003', NULL, NULL, NULL, 0, NULL, NULL, NULL, 1, '2025-12-01 02:11:35', '2025-12-01 02:11:35'),
-(4, 'dev.lead', 'dev.lead@goldenz5.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Jacob R. Villanueva', 'developer', 'active', NULL, 'IT/Development', '0917-200-0001', NULL, NULL, NULL, 0, NULL, NULL, NULL, 1, '2025-12-01 02:11:35', '2025-12-01 02:11:35'),
-(5, 'dev.engineer', 'dev.engineer@goldenz5.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Lara S. Mendoza', 'developer', 'active', NULL, 'IT/Development', '0917-200-0002', NULL, NULL, NULL, 0, NULL, NULL, NULL, 1, '2025-12-01 02:11:35', '2025-12-01 02:11:35'),
-(6, 'dev.ops', 'dev.ops@goldenz5.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Noel T. Cruz', 'developer', 'active', NULL, 'IT/Development', '0917-200-0003', NULL, NULL, NULL, 0, NULL, NULL, NULL, 1, '2025-12-01 02:11:35', '2025-12-01 02:11:35'),
-(25, 'hradmin', 'hradmin@goldenz5.com', '$2y$10$2Fp4cu96Oey7AQ87V/fWd.EVqmVzV5chLxspeoyzzSPooNUOXxYDq', 'HR Administrator', 'hr_admin', 'active', NULL, NULL, NULL, NULL, '2026-01-13 09:46:51', '192.168.1.7', 0, NULL, '2026-01-13 05:22:28', NULL, NULL, '2025-12-11 17:49:50', '2026-01-13 09:46:51'),
-(30, 'grey', 'greycruz00000000@gmail.com', '$2y$10$6Q1oBkI/zKA2UL9gvWggW.bbUGpXVezwHYjm7VgF9SB..gH8NSD6q', 'aldrin', 'super_admin', 'active', NULL, 'dikoalam', '09563211331', NULL, '2026-01-13 23:42:03', '192.168.1.7', 0, NULL, '2026-01-13 08:40:00', NULL, 25, '2026-01-13 08:36:54', '2026-01-13 23:42:03'),
-(31, 'amor', 'amor@gmail.com', '$2y$10$evvPUIl.aoXr/icZ85PNH.zTj4wnx.TEzKxHqijLpO0NgoAw7OyAa', 'amor', 'hr_admin', 'active', NULL, 'asdfjh', '09562312321', NULL, NULL, NULL, 0, NULL, NULL, NULL, 30, '2026-01-13 09:58:43', '2026-01-13 09:58:43'),
-(32, 'ChristianAmor', 'christian5787264@gmail.com', '$2y$10$6KSwq4UNuSBGN9up2Nw4A.9NobQbOVzeybdNn5SixwsoRmmI.5eIS', 'christian amor', 'super_admin', 'active', NULL, 'it', '09613014462', NULL, '2026-01-13 10:01:59', '192.168.1.7', 0, NULL, NULL, NULL, 30, '2026-01-13 10:01:09', '2026-01-13 10:01:59');
+INSERT INTO `users` (`id`, `username`, `email`, `password_hash`, `name`, `role`, `status`, `employee_id`, `department`, `phone`, `avatar`, `last_login`, `last_login_ip`, `failed_login_attempts`, `locked_until`, `password_changed_at`, `remember_token`, `two_factor_secret`, `two_factor_enabled`, `two_factor_recovery_codes`, `created_by`, `created_at`, `updated_at`) VALUES
+(1, 'hr.admin', 'hr.admin@goldenz5.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Maria L. Santos', 'hr_admin', 'active', NULL, 'Human Resources', '0917-100-0001', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, 0, NULL, NULL, '2025-12-01 02:11:35', '2025-12-01 02:11:35'),
+(2, 'hr.lead', 'hr.lead@goldenz5.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Angela M. Reyes', 'hr_admin', 'active', NULL, 'Human Resources', '0917-100-0002', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, 0, NULL, 1, '2025-12-01 02:11:35', '2025-12-01 02:11:35'),
+(3, 'hr.ops', 'hr.ops@goldenz5.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Carlos P. Dizon', 'hr_admin', 'active', NULL, 'Human Resources', '0917-100-0003', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, 0, NULL, 1, '2025-12-01 02:11:35', '2025-12-01 02:11:35'),
+(4, 'dev.lead', 'dev.lead@goldenz5.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Jacob R. Villanueva', 'developer', 'active', NULL, 'IT/Development', '0917-200-0001', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, 0, NULL, 1, '2025-12-01 02:11:35', '2025-12-01 02:11:35'),
+(5, 'dev.engineer', 'dev.engineer@goldenz5.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Lara S. Mendoza', 'developer', 'active', NULL, 'IT/Development', '0917-200-0002', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, 0, NULL, 1, '2025-12-01 02:11:35', '2025-12-01 02:11:35'),
+(6, 'dev.ops', 'dev.ops@goldenz5.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Noel T. Cruz', 'developer', 'active', NULL, 'IT/Development', '0917-200-0003', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, 0, NULL, 1, '2025-12-01 02:11:35', '2025-12-01 02:11:35'),
+(25, 'hradmin', 'hradmin@goldenz5.com', '$2y$10$2Fp4cu96Oey7AQ87V/fWd.EVqmVzV5chLxspeoyzzSPooNUOXxYDq', 'HR Administrator', 'hr_admin', 'active', NULL, NULL, NULL, NULL, '2026-01-15 08:42:25', '192.168.1.7', 0, NULL, '2026-01-13 05:22:28', NULL, NULL, 0, NULL, NULL, '2025-12-11 17:49:50', '2026-01-15 08:42:25'),
+(30, 'grey', 'greycruz00000000@gmail.com', '$2y$10$7qyDoZ3GUP4okfOd0TGQpeDWUkPAdvBJTXDnTVqOXCoOxOu.z/Vui', 'aldrin', 'super_admin', 'active', NULL, 'dikoalam', '09563211331', NULL, '2026-01-15 10:09:46', '192.168.1.7', 0, NULL, '2026-01-15 05:31:24', NULL, 'IG5TPS6YVHHLKPTL', 1, NULL, 25, '2026-01-13 08:36:54', '2026-01-15 10:09:46'),
+(31, 'amor', 'amor@gmail.com', '$2y$10$evvPUIl.aoXr/icZ85PNH.zTj4wnx.TEzKxHqijLpO0NgoAw7OyAa', 'amor', 'hr_admin', 'active', NULL, 'asdfjh', '09562312321', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, 0, NULL, 30, '2026-01-13 09:58:43', '2026-01-13 09:58:43'),
+(32, 'ChristianAmor', 'christian5787264@gmail.com', '$2y$10$4jtmtLYPqQBDYvKq3D9AouI3kPDYDJObT7mtYZ.PHY2j5rx64rqj.', 'christian amor', 'super_admin', 'active', NULL, 'it', '09613014462', NULL, '2026-01-15 08:20:37', '192.168.1.23', 0, NULL, '2026-01-15 08:18:54', NULL, 'ZHLMOAXVWIX2DK4A', 1, NULL, 30, '2026-01-13 10:01:09', '2026-01-15 08:20:37'),
+(0, 'aaaaa', 'aa@gmail.com', '$2y$10$qQKlgAavsZ6C7QHcXYq2TeSoJeGi7jZs0VXQZMjAvdgFN1eSSkR.6', 'alskdjfjklfdsa', 'hr', 'active', NULL, 'askldjf', '2980374234', NULL, '2026-01-15 05:28:23', '192.168.1.7', 0, NULL, '2026-01-15 06:29:12', 'd95a49d4bb7ba0a9c1a277b9fe776d20bbc3c7fd633877cba5b9f4198b03245d|1768458552', NULL, 0, NULL, 30, '2026-01-15 03:07:15', '2026-01-15 05:29:12'),
+(0, 'zzzzz', 'zzz@gmail.com', '$2y$10$qQKlgAavsZ6C7QHcXYq2TeSoJeGi7jZs0VXQZMjAvdgFN1eSSkR.6', 'salkjfksldaj', 'hr', 'active', NULL, 'salkjfdklsajd', '213849089234', NULL, '2026-01-15 05:28:23', '192.168.1.7', 0, NULL, '2026-01-15 06:29:12', 'd95a49d4bb7ba0a9c1a277b9fe776d20bbc3c7fd633877cba5b9f4198b03245d|1768458552', NULL, 0, NULL, 30, '2026-01-15 03:08:25', '2026-01-15 05:29:12'),
+(0, 'bbbbaaa', 'bb@gmail.com', '$2y$10$qQKlgAavsZ6C7QHcXYq2TeSoJeGi7jZs0VXQZMjAvdgFN1eSSkR.6', 'sadfsdfa', 'hr', 'active', NULL, 'sadfasfd', '2893749823', NULL, '2026-01-15 05:28:23', '192.168.1.7', 0, NULL, '2026-01-15 06:29:12', 'd95a49d4bb7ba0a9c1a277b9fe776d20bbc3c7fd633877cba5b9f4198b03245d|1768458552', NULL, 0, NULL, 30, '2026-01-15 03:21:17', '2026-01-15 05:29:12'),
+(0, 'zazaza', 'zz@gmail.com', '$2y$10$qQKlgAavsZ6C7QHcXYq2TeSoJeGi7jZs0VXQZMjAvdgFN1eSSkR.6', 'saddfsafdas', 'hr', 'active', NULL, 'asfsadf', '12312321', NULL, '2026-01-15 05:28:23', '192.168.1.7', 0, NULL, '2026-01-15 06:29:12', 'd95a49d4bb7ba0a9c1a277b9fe776d20bbc3c7fd633877cba5b9f4198b03245d|1768458552', NULL, 0, NULL, 30, '2026-01-15 03:23:16', '2026-01-15 05:29:12'),
+(0, 'aldrin', 'aldrininocencio212527@gmail.com', '$2y$10$qQKlgAavsZ6C7QHcXYq2TeSoJeGi7jZs0VXQZMjAvdgFN1eSSkR.6', 'aldrin', 'hr_admin', 'active', NULL, 'IT', '09563211331', NULL, '2026-01-15 05:28:23', '192.168.1.7', 0, NULL, '2026-01-15 06:29:12', 'd95a49d4bb7ba0a9c1a277b9fe776d20bbc3c7fd633877cba5b9f4198b03245d|1768458552', NULL, 0, NULL, 30, '2026-01-15 05:23:05', '2026-01-15 05:29:12');
 
 -- --------------------------------------------------------
 
@@ -768,8 +727,7 @@ ALTER TABLE `employees`
   ADD KEY `idx_post` (`post`),
   ADD KEY `idx_license_no` (`license_no`),
   ADD KEY `idx_license_exp` (`license_exp_date`),
-  ADD KEY `idx_status` (`status`),
-  ADD KEY `idx_created_by` (`created_by`);
+  ADD KEY `idx_status` (`status`);
 
 --
 -- Indexes for table `employee_alerts`
@@ -827,6 +785,12 @@ ALTER TABLE `posts`
   ADD KEY `idx_department` (`department`);
 
 --
+-- Indexes for table `security_settings`
+--
+ALTER TABLE `security_settings`
+  ADD PRIMARY KEY (`key`);
+
+--
 -- Indexes for table `support_tickets`
 --
 ALTER TABLE `support_tickets`
@@ -845,82 +809,26 @@ ALTER TABLE `ticket_replies`
   ADD KEY `idx_ticket_id` (`ticket_id`);
 
 --
--- Indexes for table `time_off_requests`
---
-ALTER TABLE `time_off_requests`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `idx_employee_id` (`employee_id`),
-  ADD KEY `idx_request_type` (`request_type`),
-  ADD KEY `idx_status` (`status`),
-  ADD KEY `idx_start_date` (`start_date`),
-  ADD KEY `idx_end_date` (`end_date`);
-
---
--- Indexes for table `users`
---
-ALTER TABLE `users`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `username` (`username`),
-  ADD UNIQUE KEY `email` (`email`),
-  ADD KEY `idx_username` (`username`),
-  ADD KEY `idx_email` (`email`),
-  ADD KEY `idx_role` (`role`),
-  ADD KEY `idx_status` (`status`),
-  ADD KEY `idx_employee_id` (`employee_id`),
-  ADD KEY `idx_department` (`department`),
-  ADD KEY `users_ibfk_2` (`created_by`);
-
---
 -- AUTO_INCREMENT for dumped tables
 --
-
---
--- AUTO_INCREMENT for table `audit_logs`
---
-ALTER TABLE `audit_logs`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=56;
 
 --
 -- AUTO_INCREMENT for table `dtr_entries`
 --
 ALTER TABLE `dtr_entries`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `employees`
 --
 ALTER TABLE `employees`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29871;
-
---
--- AUTO_INCREMENT for table `employee_alerts`
---
-ALTER TABLE `employee_alerts`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
-
---
--- AUTO_INCREMENT for table `employee_checklist`
---
-ALTER TABLE `employee_checklist`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7237;
 
 --
 -- AUTO_INCREMENT for table `hr_tasks`
 --
 ALTER TABLE `hr_tasks`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `leave_balances`
---
-ALTER TABLE `leave_balances`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
-
---
--- AUTO_INCREMENT for table `posts`
---
-ALTER TABLE `posts`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `support_tickets`
@@ -935,26 +843,8 @@ ALTER TABLE `ticket_replies`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `time_off_requests`
---
-ALTER TABLE `time_off_requests`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
-
---
--- AUTO_INCREMENT for table `users`
---
-ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
-
---
 -- Constraints for dumped tables
 --
-
---
--- Constraints for table `audit_logs`
---
-ALTER TABLE `audit_logs`
-  ADD CONSTRAINT `audit_logs_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL;
 
 --
 -- Constraints for table `dtr_entries`
@@ -963,42 +853,10 @@ ALTER TABLE `dtr_entries`
   ADD CONSTRAINT `dtr_entries_ibfk_1` FOREIGN KEY (`employee_id`) REFERENCES `employees` (`id`) ON DELETE CASCADE;
 
 --
--- Constraints for table `employee_alerts`
---
-ALTER TABLE `employee_alerts`
-  ADD CONSTRAINT `employee_alerts_ibfk_1` FOREIGN KEY (`employee_id`) REFERENCES `employees` (`id`) ON DELETE CASCADE;
-
---
--- Constraints for table `employee_checklist`
---
-ALTER TABLE `employee_checklist`
-  ADD CONSTRAINT `employee_checklist_ibfk_1` FOREIGN KEY (`employee_id`) REFERENCES `employees` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `employee_checklist_ibfk_2` FOREIGN KEY (`completed_by`) REFERENCES `users` (`id`) ON DELETE SET NULL;
-
---
--- Constraints for table `leave_balances`
---
-ALTER TABLE `leave_balances`
-  ADD CONSTRAINT `leave_balances_ibfk_1` FOREIGN KEY (`employee_id`) REFERENCES `employees` (`id`) ON DELETE CASCADE;
-
---
 -- Constraints for table `ticket_replies`
 --
 ALTER TABLE `ticket_replies`
   ADD CONSTRAINT `ticket_replies_ibfk_1` FOREIGN KEY (`ticket_id`) REFERENCES `support_tickets` (`id`) ON DELETE CASCADE;
-
---
--- Constraints for table `time_off_requests`
---
-ALTER TABLE `time_off_requests`
-  ADD CONSTRAINT `time_off_requests_ibfk_1` FOREIGN KEY (`employee_id`) REFERENCES `employees` (`id`) ON DELETE CASCADE;
-
---
--- Constraints for table `users`
---
-ALTER TABLE `users`
-  ADD CONSTRAINT `users_ibfk_1` FOREIGN KEY (`employee_id`) REFERENCES `employees` (`id`) ON DELETE SET NULL,
-  ADD CONSTRAINT `users_ibfk_2` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

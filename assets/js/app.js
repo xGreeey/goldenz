@@ -62,6 +62,30 @@ document.documentElement.classList.add('no-animations');
 // THEME MANAGEMENT (Light / Dark / Auto)
 const THEME_STORAGE_KEY = 'goldenz-theme';
 
+// Apply theme immediately to prevent flash of unstyled content
+(function() {
+    let savedTheme = 'light';
+    try {
+        const stored = localStorage.getItem(THEME_STORAGE_KEY);
+        if (stored === 'light' || stored === 'dark' || stored === 'auto') {
+            savedTheme = stored;
+        }
+    } catch (e) {
+        // ignore and fall back to light
+    }
+    
+    // Apply theme immediately
+    const effective = savedTheme === 'auto' 
+        ? (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+        : savedTheme;
+    // For light mode, remove the attribute entirely to ensure default styles apply
+    if (effective === 'light') {
+        document.documentElement.removeAttribute('data-theme');
+    } else {
+        document.documentElement.setAttribute('data-theme', effective);
+    }
+})();
+
 function resolveTheme(theme) {
     if (theme === 'auto') {
         if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
@@ -76,7 +100,12 @@ function applyTheme(theme) {
     const effective = resolveTheme(theme);
 
     // Apply to <html> so CSS like html[data-theme="dark"] works
-    document.documentElement.setAttribute('data-theme', effective);
+    // For light mode, remove the attribute entirely to ensure default styles apply
+    if (effective === 'light') {
+        document.documentElement.removeAttribute('data-theme');
+    } else {
+        document.documentElement.setAttribute('data-theme', effective);
+    }
 
     try {
         localStorage.setItem(THEME_STORAGE_KEY, theme);
@@ -94,6 +123,9 @@ function applyTheme(theme) {
             select.value = theme;
         }
     });
+    
+    // Force a reflow to ensure styles are recalculated
+    document.documentElement.offsetHeight;
 }
 
 function initThemeControls() {
@@ -158,6 +190,30 @@ function initThemeControls() {
     }
 }
 
+// Global delegated listeners so theme changes always work,
+// even if page-specific init misses some controls.
+document.addEventListener('change', function (e) {
+    const select = e.target.closest('.theme-select');
+    if (!select) return;
+    const value = select.value || 'light';
+    applyTheme(value);
+});
+
+document.addEventListener('click', function (e) {
+    const btn = e.target.closest('.save-ui-preferences-btn');
+    if (!btn) return;
+    const form = btn.closest('form');
+    const select =
+        (form && form.querySelector('.theme-select')) ||
+        document.querySelector('#settingsThemeSelect') ||
+        document.querySelector('.theme-select');
+    const value = (select && select.value) ? select.value : 'light';
+    applyTheme(value);
+    if (typeof showAlert === 'function') {
+        showAlert('UI preferences updated successfully.', 'success');
+    }
+});
+
 // Security features + Theme init
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🔒 Golden Z-5 HR System loaded with high security');
@@ -187,6 +243,8 @@ document.addEventListener('DOMContentLoaded', function() {
 // Also re-run after AJAX-style page transitions (page-transitions.js dispatches `pageLoaded`)
 document.addEventListener('pageLoaded', function() {
     normalizeNumericText(document);
+    // Re-initialize theme controls so buttons work on dynamically loaded pages
+    initThemeControls();
 });
 
 // Re-enable animations after page is fully loaded
