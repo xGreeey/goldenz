@@ -24,7 +24,7 @@ $posts = get_posts($filters);
         </div>
         <div class="page-actions-modern">
             <a href="?page=add_post" class="btn btn-primary-modern">
-                <i class="fas fa-plus me-2"></i>Add New Post
+                <span class="hr-icon hr-icon-plus me-2"></span>Add New Post
             </a>
         </div>
     </div>
@@ -159,19 +159,40 @@ $posts = get_posts($filters);
     <div class="row g-4">
         <div class="col-12">
             <div class="table-container">
-                <table class="posts-table" id="postsTable">
+                <table class="table posts-table" id="postsTable">
             <thead>
                 <tr>
                     <th>
                         <input type="checkbox" id="selectAll" class="form-check-input">
                     </th>
-                    <th>Post Details</th>
-                    <th>Department</th>
-                    <th>Employee Type</th>
-                    <th>Location</th>
-                    <th>Positions</th>
-                    <th>Priority</th>
-                    <th>Status</th>
+                    <th class="sortable" data-sort="post_details">
+                        Post Details
+                        <i class="fas fa-sort"></i>
+                    </th>
+                    <th class="sortable" data-sort="department">
+                        Department
+                        <i class="fas fa-sort"></i>
+                    </th>
+                    <th class="sortable" data-sort="employee_type">
+                        Employee Type
+                        <i class="fas fa-sort"></i>
+                    </th>
+                    <th class="sortable" data-sort="location">
+                        Location
+                        <i class="fas fa-sort"></i>
+                    </th>
+                    <th class="sortable" data-sort="positions">
+                        Positions
+                        <i class="fas fa-sort"></i>
+                    </th>
+                    <th class="sortable" data-sort="priority">
+                        Priority
+                        <i class="fas fa-sort"></i>
+                    </th>
+                    <th class="sortable" data-sort="status">
+                        Status
+                        <i class="fas fa-sort"></i>
+                    </th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -250,10 +271,10 @@ $posts = get_posts($filters);
                             <td>
                                 <div class="post-actions">
                                     <a href="?page=edit_post&id=<?php echo $post['id']; ?>" class="btn btn-sm btn-outline-primary" title="Edit Post">
-                                        <i class="fas fa-edit"></i>
+                                        <span class="hr-icon hr-icon-edit"></span>
                                     </a>
                                     <a href="?page=post_assignments&post_id=<?php echo $post['id']; ?>" class="btn btn-sm btn-outline-info" title="View Assignments">
-                                        <i class="fas fa-users"></i>
+                                        <span class="hr-icon hr-icon-view"></span>
                                     </a>
                                 </div>
                             </td>
@@ -300,52 +321,6 @@ $posts = get_posts($filters);
 /* HR-Admin: use light separated background */
 body.portal-hr-admin .posts-modern {
     background: #f8fafc;
-}
-
-/* Card styling to match HR admin dashboard */
-.hrdash .card-modern,
-.hrdash .hrdash-stat {
-    border: 1px solid #e2e8f0;
-    border-radius: 14px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.04);
-    background: #ffffff;
-    overflow: hidden;
-    transition: all 0.3s ease;
-    outline: none !important;
-}
-
-.hrdash .card-modern:hover,
-.hrdash .hrdash-stat:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08), 0 8px 24px rgba(0, 0, 0, 0.06);
-    border: 1px solid #e2e8f0 !important;
-    outline: none !important;
-}
-
-.hrdash .card-modern:focus,
-.hrdash .hrdash-stat:focus,
-.hrdash .card-modern:focus-visible,
-.hrdash .hrdash-stat:focus-visible {
-    outline: none !important;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.04);
-    border: 1px solid #e2e8f0 !important;
-}
-
-.hrdash .card-body-modern {
-    padding: 1.5rem;
-}
-
-.hrdash .card-header-modern {
-    margin-bottom: 1.5rem;
-    padding-bottom: 1rem;
-    border-bottom: 1px solid #e2e8f0;
-}
-
-.hrdash .card-title-modern {
-    font-size: 1.125rem;
-    font-weight: 700;
-    color: #0f172a;
-    margin: 0 0 0.25rem 0;
 }
 
 /* Page Header */
@@ -647,6 +622,7 @@ body.portal-hr-admin .posts-modern {
     background: #ffffff;
     font-size: 0.9375rem;
     table-layout: auto;
+    min-width: 900px; /* Minimum width for readability */
 }
 
 .posts-table thead {
