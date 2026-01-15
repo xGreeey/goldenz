@@ -378,7 +378,7 @@ ob_end_flush();
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
     <title>Login - Golden Z-5 HR Management System</title>
     
     <!-- Favicon -->
@@ -529,6 +529,21 @@ ob_end_flush();
         
         #passwordChangeModal .modal-footer a:hover {
             text-decoration: underline;
+        }
+        
+        /* Prevent scrolling and zoom */
+        html, body {
+            overflow: hidden !important;
+            height: 100% !important;
+            width: 100% !important;
+            position: fixed !important;
+            touch-action: none !important;
+        }
+        
+        /* Ensure login container fits viewport */
+        .login-split-container {
+            height: 100vh !important;
+            overflow: hidden !important;
         }
     </style>
     
@@ -730,6 +745,56 @@ ob_end_flush();
     // Simplified JavaScript - minimal interference
     document.addEventListener('DOMContentLoaded', function() {
         console.log('Page loaded');
+        
+        // Prevent zoom with keyboard shortcuts (Ctrl/Cmd + Plus/Minus/0)
+        document.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && (e.key === '+' || e.key === '-' || e.key === '=' || e.key === '0' || e.keyCode === 187 || e.keyCode === 189 || e.keyCode === 48)) {
+                e.preventDefault();
+                return false;
+            }
+        });
+        
+        // Prevent zoom with mouse wheel + Ctrl/Cmd
+        document.addEventListener('wheel', function(e) {
+            if (e.ctrlKey || e.metaKey) {
+                e.preventDefault();
+                return false;
+            }
+        }, { passive: false });
+        
+        // Prevent pinch zoom on touch devices
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', function(e) {
+            const now = Date.now();
+            if (now - lastTouchEnd <= 300) {
+                e.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, { passive: false });
+        
+        // Prevent scrolling
+        document.addEventListener('scroll', function(e) {
+            window.scrollTo(0, 0);
+            document.body.scrollTop = 0;
+            document.documentElement.scrollTop = 0;
+        }, { passive: false });
+        
+        // Lock scroll position continuously
+        function lockScroll() {
+            window.scrollTo(0, 0);
+            document.body.scrollTop = 0;
+            document.documentElement.scrollTop = 0;
+        }
+        
+        // Continuously lock scroll
+        setInterval(lockScroll, 10);
+        
+        // Prevent scroll on window resize
+        window.addEventListener('resize', function() {
+            window.scrollTo(0, 0);
+            document.body.scrollTop = 0;
+            document.documentElement.scrollTop = 0;
+        });
         
         // Toggle Password Visibility for login form
         const togglePassword = document.getElementById('togglePassword');
