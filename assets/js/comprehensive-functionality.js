@@ -625,19 +625,31 @@ class ComprehensiveFunctionalityManager {
     }
 
     async loadDTRData() {
+        // Only load DTR data if we're on a page that uses it
+        const dtrContainer = document.getElementById('employeeStatusGrid');
+        if (!dtrContainer) {
+            return; // DTR functionality not needed on this page
+        }
+        
         try {
+            // Ensure currentDate is set
+            if (!this.dtrData.currentDate) {
+                this.dtrData.currentDate = new Date();
+            }
+            
             const response = await this.makeRequest('dtr', {
                 action: 'get_all_status',
                 date: this.dtrData.currentDate.toISOString().split('T')[0]
             });
             
-            if (response.success) {
-                this.dtrData.employees = response.data;
+            if (response && response.success) {
+                this.dtrData.employees = response.data || [];
                 this.updateDTRDisplay();
                 this.updateStatusCounts();
             }
         } catch (error) {
-            console.error('Error loading DTR data:', error);
+            // Silently fail if DTR page doesn't exist or isn't available
+            console.warn('DTR data not available:', error.message);
         }
     }
 
@@ -940,6 +952,14 @@ class ComprehensiveFunctionalityManager {
             method: 'POST',
             body: formData
         });
+        
+        // Check if response is actually JSON
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            const text = await response.text();
+            console.error(`Expected JSON but got ${contentType}. Response:`, text.substring(0, 200));
+            throw new Error(`Server returned non-JSON response for page: ${page}`);
+        }
         
         return await response.json();
     }

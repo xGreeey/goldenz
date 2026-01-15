@@ -604,13 +604,13 @@ html::-webkit-scrollbar-button {
     color: var(--sidebar-text) !important;
     text-decoration: none;
     transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
-    border-radius: 10px;
+    border-radius: 999px;
     margin: 0.25rem 0 !important;
     font-weight: 500;
     font-size: 0.9375rem !important;
     font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, sans-serif;
     min-height: 44px;
-    border-left: 3px solid transparent !important;
+    border: 1px solid transparent !important;
     position: relative;
     letter-spacing: 0.01em;
     line-height: 1.5;
@@ -618,43 +618,31 @@ html::-webkit-scrollbar-button {
 }
 
 .sidebar .nav-link::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 3px;
-    background: #fbbf24 !important; /* Gold accent */
-    transform: scaleY(0);
-    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    border-radius: 0 2px 2px 0;
-    z-index: 1;
+    display: none !important;
 }
 
 .sidebar .nav-link:hover {
     background: rgba(255, 255, 255, 0.06) !important;
     color: #ffffff !important;
-    transform: translateX(3px);
-    padding-left: 1.125rem !important;
-}
-
-.sidebar .nav-link:hover::before {
-    transform: scaleY(1) !important;
+    border: 1px solid #fbbf24 !important; /* Gold border around entire element */
+    transform: none;
+    padding-left: 1rem !important;
 }
 
 .sidebar .nav-link.active {
-    background: linear-gradient(135deg, rgba(251, 191, 36, 0.15) 0%, rgba(59, 130, 246, 0.12) 100%) !important;
+    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1e293b 100%) !important;
     color: #ffffff !important;
     font-weight: 600 !important;
-    border-left-color: #fbbf24 !important;
-    box-shadow: 0 0 0 1px rgba(251, 191, 36, 0.1), 0 4px 12px rgba(251, 191, 36, 0.15) !important;
+    border-left-color: transparent !important;
+    border-radius: 999px !important;
+    box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2) !important;
     position: relative;
-    padding-left: 1.125rem !important;
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
 }
 
 .sidebar .nav-link.active::before {
-    transform: scaleY(1) !important;
-    box-shadow: 0 0 8px rgba(251, 191, 36, 0.2) !important;
+    display: none !important;
 }
 
 .sidebar .nav-link.active::after {
@@ -795,23 +783,27 @@ html::-webkit-scrollbar-button {
     font-size: 0.875rem !important;
     color: #0f172a !important; /* dark text on white */
     min-height: 40px;
-    border-left: 3px solid transparent !important;
+    border: 1px solid transparent !important;
+    border-radius: 999px;
 }
 
 .sidebar .nav-submenu .nav-link:hover {
     background: #f1f5f9 !important;
     color: #0f172a !important;
-    transform: translateX(2px);
-    padding-left: 2.625rem !important;
+    border: 1px solid #fbbf24 !important; /* Gold border around entire element */
+    transform: none;
+    padding-left: 2.5rem !important;
 }
 
 .sidebar .nav-submenu .nav-link.active {
-    background: linear-gradient(135deg, rgba(251, 191, 36, 0.15) 0%, rgba(59, 130, 246, 0.12) 100%) !important;
-    color: #0f172a !important;
+    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1e293b 100%) !important;
+    color: #ffffff !important;
     font-weight: 600 !important;
-    border-left-color: #fbbf24 !important;
-    box-shadow: 0 0 0 1px rgba(251, 191, 36, 0.1), 0 2px 8px rgba(251, 191, 36, 0.12) !important;
-    padding-left: 2.625rem !important;
+    border-left-color: transparent !important;
+    border-radius: 999px !important;
+    box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2) !important;
+    padding-left: 2.5rem !important;
+    padding-right: 1rem !important;
 }
 
 .sidebar .nav-submenu .nav-link.active::after {
