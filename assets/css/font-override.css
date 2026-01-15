@@ -5,6 +5,27 @@
  * Includes emoji font support to prevent rectangle display
  */
 
+/* ============================================
+   GLOBAL TYPOGRAPHY (CONSISTENT ACROSS ALL PAGES)
+   - Single app-wide font stack to reduce confusion
+   - Emoji fonts kept as fallback (but NOT forced for all text)
+   - Icons (Font Awesome) kept intact
+   ============================================ */
+
+:root {
+    /* Use Windows-native first for best Win10/11 rendering */
+    --app-font: 'Segoe UI', 'Segoe UI Variable', -apple-system, BlinkMacSystemFont,
+        'Inter', 'Open Sans', Roboto, 'Helvetica Neue', Arial, sans-serif;
+
+    /* Emoji fallbacks */
+    --emoji-font: 'Emoji Fallback', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+        'Noto Color Emoji', 'Twemoji Mozilla', 'EmojiOne Color';
+
+    /* Numeric-safe stack (explicitly avoids emoji/keycap digit presentation) */
+    --numeric-font-stack: 'Segoe UI', 'Segoe UI Variable', 'Segoe UI Historic',
+        'Helvetica Neue', Arial, Helvetica, sans-serif;
+}
+
 /* Emoji font fallback - ensures emojis render correctly */
 @font-face {
     font-family: 'Emoji Fallback';
@@ -16,40 +37,19 @@
     unicode-range: U+1F300-1F9FF, U+2600-26FF, U+2700-27BF, U+1F600-1F64F, U+1F680-1F6FF, U+1F1E0-1F1FF;
 }
 
-/* Universal font application - highest priority with emoji support */
-*,
-*::before,
-*::after {
-    font-family: 'Google Sans', 'Product Sans', 'Inter', 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif,
-                 'Emoji Fallback', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji', 
-                 'EmojiOne Color', 'Twemoji Mozilla' !important;
-    font-variant-emoji: emoji !important;
-    text-rendering: optimizeLegibility !important;
-    -webkit-font-smoothing: antialiased !important;
-    -moz-osx-font-smoothing: grayscale !important;
-}
-
-/* Number rendering fix - ensure numeric values use numeric-friendly fonts */
-/* This is a global fallback - number-rendering-fix.css has more specific rules */
-.stat-number,
-.card-number,
-.quick-stat-value,
-.metric-header h4,
-.rate-number,
-[class*="number"],
-[class*="stat"],
-.number,
-.count,
-.value,
-.total {
-    font-family: 'Segoe UI', 'Segoe UI Historic', Arial, Helvetica, 'Helvetica Neue', 
-                 -apple-system, BlinkMacSystemFont, 'Roboto', 'Oxygen', 'Ubuntu', 
-                 'Cantarell', 'Fira Sans', 'Droid Sans', sans-serif !important;
-    font-variant-numeric: tabular-nums !important;
-    font-feature-settings: 'tnum' !important;
-    -webkit-font-feature-settings: 'tnum' !important;
-    -moz-font-feature-settings: 'tnum' !important;
-    -ms-font-feature-settings: 'tnum' !important;
+/* Apply ONE consistent font across all content elements */
+:where(
+  html, body,
+  button, input, textarea, select,
+  h1, h2, h3, h4, h5, h6,
+  p, span, div, a, li, td, th, label, small
+) {
+    font-family: var(--app-font), var(--emoji-font) !important;
+    /*
+      IMPORTANT:
+      Do NOT force emoji presentation globally (can cause boxed/keycap digits).
+    */
+    font-variant-emoji: normal !important;
     text-rendering: optimizeLegibility !important;
     -webkit-font-smoothing: antialiased !important;
     -moz-osx-font-smoothing: grayscale !important;
@@ -59,80 +59,67 @@
 body, html {
     font-size: 16px !important; /* WCAG minimum recommendation */
     line-height: 1.7 !important; /* Increased for better readability */
-    font-family: 'Google Sans', 'Product Sans', 'Inter', 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif,
-                 'Emoji Fallback', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji', 
-                 'EmojiOne Color', 'Twemoji Mozilla' !important;
 }
 
 /* Form elements */
 input, textarea, select, button {
     font-size: 16px !important; /* Prevents zoom on iOS */
-    font-family: 'Google Sans', 'Product Sans', 'Inter', 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif,
-                 'Emoji Fallback', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji' !important;
     line-height: 1.6 !important;
 }
 
 /* Tables */
 table, th, td {
     font-size: 1rem !important;
-    font-family: 'Google Sans', 'Product Sans', 'Inter', 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif,
-                 'Emoji Fallback', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji' !important;
     line-height: 1.6 !important;
 }
 
 /* Cards and containers */
 .card, .card-body, .card-header, .card-title {
-    font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif,
-                 'Emoji Fallback', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji' !important;
+    font-family: var(--app-font), var(--emoji-font) !important;
 }
 
 /* Buttons */
 .btn {
     font-size: 1rem !important;
-    font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif,
-                 'Emoji Fallback', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji' !important;
+    font-family: var(--app-font), var(--emoji-font) !important;
     line-height: 1.6 !important;
 }
 
 /* Alerts */
 .alert {
     font-size: 1rem !important;
-    font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif,
-                 'Emoji Fallback', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji' !important;
+    font-family: var(--app-font), var(--emoji-font) !important;
     line-height: 1.7 !important;
 }
 
 /* Labels */
 label, .form-label {
     font-size: 1rem !important;
-    font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif,
-                 'Emoji Fallback', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji' !important;
+    font-family: var(--app-font), var(--emoji-font) !important;
     font-weight: 500 !important;
 }
 
 /* Small text - minimum readable size */
 small, .small, .text-muted {
     font-size: 0.9375rem !important; /* 15px minimum for readability */
-    font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif,
-                 'Emoji Fallback', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji' !important;
     line-height: 1.6 !important;
 }
 
 /* Headings */
 h1, h2, h3, h4, h5, h6 {
-    font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif,
-                 'Emoji Fallback', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji' !important;
+    font-family: var(--app-font), var(--emoji-font) !important;
 }
 
 /* Paragraphs and text content */
 p, span, div, a, li, td, th {
-    font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif,
-                 'Emoji Fallback', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji' !important;
+    font-family: var(--app-font), var(--emoji-font) !important;
 }
 
 /* Emoji-specific support - ensures emojis render correctly */
 .emoji, [class*="emoji"], [data-emoji] {
     font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji', 'EmojiOne Color', 'Twemoji Mozilla' !important;
+    /* Explicitly request emoji presentation ONLY for emoji-marked elements */
+    font-variant-emoji: emoji !important;
     font-style: normal !important;
     font-weight: normal !important;
 }
@@ -142,7 +129,6 @@ i[class*="fa-"], .fas, .far, .fal, .fab {
     font-family: 'Font Awesome 6 Free', 'Font Awesome 5 Free', 'Font Awesome 6 Brands', 'Font Awesome 5 Brands' !important;
     font-style: normal !important;
     font-weight: 900 !important; /* solid weight */
-    speak: none;
 }
 
 /* Font Awesome renders many icons via ::before; our global *::before font override can break them */
@@ -159,18 +145,86 @@ i[class*="fa-"]::after,
     font-style: normal !important;
 }
 
-/* Prevent emoji rendering issues - force emoji font stack for all text content */
-/* Also ensure tabular numbers for all text elements */
-body, p, span, div, a, li, td, th, label, input, textarea, select, button, h1, h2, h3, h4, h5, h6 {
-    font-variant-emoji: emoji !important;
+/* ============================================
+   NUMERIC TYPOGRAPHY (MERGED FROM number-rendering-fix.css)
+   - Targets numeric UI only (stats, badges, tables, numeric inputs)
+   - Tabular numbers for alignment
+   ============================================ */
+
+:where(
+  /* Main stat numbers */
+  .stat-number,
+  .card-number,
+  .quick-stat-value,
+  .rate-number,
+  .stat-value,
+  .metric-value,
+  .count-value,
+  .total-value,
+  .number-display,
+  .progress-value,
+
+  /* Badges / pills that often contain numbers or percents */
+  .badge,
+  .badge-success-modern,
+  .badge-primary-modern,
+  .badge-warning-modern,
+  .badge-danger-modern,
+  .badge-info-modern,
+  .badge-secondary-modern,
+  .badge-live,
+  .status-badge,
+  .alert-badge,
+  .priority-badge,
+  .nav-badge,
+
+  /* IDs, dates, timestamps */
+  .employee-number,
+  .employee-id,
+  .user-id,
+  .record-id,
+  .date-number,
+  .time-number,
+  .timestamp,
+
+  /* Tables (numbers frequently appear in cells) */
+  table td,
+  table th,
+
+  /* Inputs */
+  input[type="number"],
+  input[type="tel"],
+  input[inputmode="numeric"],
+
+  /* License code style in dashboard tables */
+  .license-code,
+  code.license-code
+) {
+    font-family: var(--numeric-font-stack) !important;
+
+    /* Alignment */
     font-variant-numeric: tabular-nums !important;
-    font-feature-settings: 'tnum' !important;
-    -webkit-font-feature-settings: 'tnum' !important;
-    -moz-font-feature-settings: 'tnum' !important;
-    -ms-font-feature-settings: 'tnum' !important;
+    font-feature-settings: 'tnum' 1 !important;
+    -webkit-font-feature-settings: 'tnum' 1 !important;
+    -moz-font-feature-settings: 'tnum' 1 !important;
+    -ms-font-feature-settings: 'tnum' 1 !important;
+
+    /* Prevent keycap/emoji-like digit rendering where supported */
+    font-variant-emoji: text !important;
+
+    /* Clarity */
     text-rendering: optimizeLegibility !important;
     -webkit-font-smoothing: antialiased !important;
     -moz-osx-font-smoothing: grayscale !important;
+    font-synthesis: none;
+}
+
+.tabular-nums-only {
+    font-variant-numeric: tabular-nums !important;
+    font-feature-settings: 'tnum' 1 !important;
+    -webkit-font-feature-settings: 'tnum' 1 !important;
+    -moz-font-feature-settings: 'tnum' 1 !important;
+    -ms-font-feature-settings: 'tnum' 1 !important;
 }
 
 /* --- Sidebar visual overrides (ensure dropdowns are clearly visible) --- */

@@ -62,7 +62,7 @@ $activeSection = getActiveSection($page);
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400,0,0&family=Google+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&family=Open+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="<?php echo asset_url('css/style.css'); ?>" rel="stylesheet">
     <link href="<?php echo asset_url('css/font-override.css'); ?>" rel="stylesheet">
-    <link href="<?php echo asset_url('css/number-rendering-fix.css'); ?>" rel="stylesheet">
+    <!-- number-rendering-fix.css merged into font-override.css -->
     
     <!-- Security Headers -->
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
