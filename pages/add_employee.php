@@ -791,24 +791,55 @@ if (empty($posts)) {
     </script>
     <?php endif; ?>
 
-    <?php if (!empty($errors)): ?>
-        <div class="alert alert-danger">
-            <i class="fas fa-circle-exclamation me-2"></i>
-            <ul class="mb-0">
-                <?php foreach ($errors as $error): ?>
-                    <li><?php echo htmlspecialchars($error); ?></li>
-                <?php endforeach; ?>
-            </ul>
+    <?php if (($_SESSION['user_role'] ?? '') === 'hr_admin'): ?>
+    <div class="container-fluid hrdash mb-3">
+        <div class="hrdash-welcome">
+            <div class="hrdash-welcome__left">
+                <h2 class="hrdash-welcome__title">Add New Employee</h2>
+                <p class="hrdash-welcome__subtitle">Create and file a new employee record in the Golden Z-5 HR system.</p>
+            </div>
         </div>
+    </div>
     <?php endif; ?>
 
-    <!-- Add Employee Form -->
-    <div class="card">
-        <div class="card-header">
-            <h3>Employee Information</h3>
-        </div>
-        <div class="card-body">
-        <form method="POST" id="addEmployeeForm" enctype="multipart/form-data" action="?page=add_employee" novalidate>
+    <!-- Add Employee Document Layout -->
+    <div class="add-employee-document-page">
+        <div class="add-employee-document-shell">
+            <?php if (!empty($errors)): ?>
+                <div class="alert alert-danger mb-4">
+                    <i class="fas fa-circle-exclamation me-2"></i>
+                    <ul class="mb-0">
+                        <?php foreach ($errors as $error): ?>
+                            <li><?php echo htmlspecialchars($error); ?></li>
+                        <?php endforeach; ?>
+                    </ul>
+                </div>
+            <?php endif; ?>
+
+            <div class="add-employee-document-header">
+                <div class="add-employee-document-title">
+                    <h1 class="add-employee-title">New Employee Record</h1>
+                    <p class="add-employee-subtitle">Complete this HR personnel sheet to add a new employee to the Golden Z-5 system.</p>
+                </div>
+                <div class="add-employee-document-meta">
+                    <div class="add-employee-meta-item">
+                        <span class="add-employee-meta-label">Form</span>
+                        <span class="add-employee-meta-value">HR-EMP-001</span>
+                    </div>
+                    <div class="add-employee-meta-item">
+                        <span class="add-employee-meta-label">Date</span>
+                        <span class="add-employee-meta-value"><?php echo date('M d, Y'); ?></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add Employee Form -->
+            <div class="card add-employee-document-card">
+                <div class="card-header add-employee-card-header">
+                    <h3 class="mb-0">Employee Information Sheet</h3>
+                </div>
+                <div class="card-body add-employee-card-body">
+                <form method="POST" id="addEmployeeForm" enctype="multipart/form-data" action="?page=add_employee" novalidate>
                 <!-- Employee Created By Info -->
                 <div class="alert alert-info mb-4">
                     <i class="fas fa-circle-info me-2"></i>
@@ -1845,7 +1876,8 @@ if (empty($posts)) {
             </form>
         </div>
     </div>
-</div>
+        </div>
+    </div>
 
 <!-- Google Maps API - Optional, only loads if API key is configured -->
 <!-- <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places"></script> -->
