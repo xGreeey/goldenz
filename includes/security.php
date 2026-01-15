@@ -102,6 +102,71 @@ if (!function_exists('verify_password')) {
     }
 }
 
+/**
+ * Check if user's password has expired
+ * 
+ * @param int|null $user_id User ID (defaults to current session user)
+ * @return array Returns ['expired' => bool, 'days_until_expiry' => int|null, 'expiry_date' => string|null]
+ */
+if (!function_exists('check_password_expiry')) {
+    function check_password_expiry($user_id = null) {
+        if (!$user_id) {
+            $user_id = $_SESSION['user_id'] ?? null;
+        }
+        
+        if (!$user_id) {
+            return ['expired' => false, 'days_until_expiry' => null, 'expiry_date' => null];
+        }
+        
+        try {
+            if (!function_exists('get_user_by_id') || !function_exists('get_password_policy')) {
+                require_once __DIR__ . '/database.php';
+            }
+
+            $policy = get_password_policy();
+            $expiry_days = isset($policy['expiry_days']) ? (int)$policy['expiry_days'] : 90;
+
+            $user = get_user_by_id($user_id);
+            
+            if (!$user) {
+                return ['expired' => false, 'days_until_expiry' => null, 'expiry_date' => null];
+            }
+
+            // If expiry_days is 0, password never expires
+            if ($expiry_days === 0) {
+                return ['expired' => false, 'days_until_expiry' => null, 'expiry_date' => null];
+            }
+
+            // If password_changed_at is NULL, consider it expired for security
+            if (empty($user['password_changed_at'])) {
+                return ['expired' => true, 'days_until_expiry' => 0, 'expiry_date' => null];
+            }
+            
+            $password_changed = strtotime($user['password_changed_at']);
+            $expiry_timestamp = $password_changed + ($expiry_days * 24 * 60 * 60);
+            $current_timestamp = time();
+            
+            if ($expiry_timestamp < $current_timestamp) {
+                return [
+                    'expired' => true,
+                    'days_until_expiry' => 0,
+                    'expiry_date' => date('Y-m-d H:i:s', $expiry_timestamp)
+                ];
+            } else {
+                $days_until = ceil(($expiry_timestamp - $current_timestamp) / (24 * 60 * 60));
+                return [
+                    'expired' => false,
+                    'days_until_expiry' => $days_until,
+                    'expiry_date' => date('Y-m-d H:i:s', $expiry_timestamp)
+                ];
+            }
+        } catch (Exception $e) {
+            error_log("Error checking password expiry: " . $e->getMessage());
+            return ['expired' => false, 'days_until_expiry' => null, 'expiry_date' => null];
+        }
+    }
+}
+
 // Generate secure random string
 if (!function_exists('generate_secure_string')) {
     function generate_secure_string($length = 32) {
