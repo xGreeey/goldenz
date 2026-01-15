@@ -250,7 +250,7 @@ $display_employees = array_slice($all_employees, 0, 10); // Show first 10 employ
             ?>
             <div class="dropdown">
                 <button class="hrdash-welcome__icon-btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Messages" aria-label="Messages">
-                    <span class="hr-icon hr-icon-message"></span>
+                    <i class="fas fa-envelope"></i>
                     <?php if ($messageCount > 0): ?>
                         <span class="hrdash-welcome__badge"><?php echo $messageCount > 99 ? '99+' : $messageCount; ?></span>
                     <?php endif; ?>
@@ -340,7 +340,7 @@ $display_employees = array_slice($all_employees, 0, 10); // Show first 10 employ
             ?>
             <div class="dropdown">
                 <button class="hrdash-welcome__icon-btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Notifications" aria-label="Notifications">
-                    <span class="hr-icon hr-icon-notification"></span>
+                    <i class="fas fa-bell"></i>
                     <?php if ($pendingTasks > 0): ?>
                         <span class="hrdash-welcome__badge"><?php echo $pendingTasks > 99 ? '99+' : $pendingTasks; ?></span>
                     <?php endif; ?>
@@ -774,8 +774,8 @@ $display_employees = array_slice($all_employees, 0, 10); // Show first 10 employ
     width: 40px;
     height: 40px;
     border-radius: 8px;
-    border: 1px solid #e2e8f0;
-    background: #f8fafc;
+    border: none;
+    background: #f0f2f5;
     color: #64748b;
     display: inline-flex;
     align-items: center;
@@ -785,11 +785,29 @@ $display_employees = array_slice($all_employees, 0, 10); // Show first 10 employ
     transition: all 0.2s ease;
 }
 .hrdash-welcome__icon-btn:hover {
-    background: #e2e8f0;
-    color: #0f172a;
+    background: #e4e6eb;
+    color: #1e293b;
+}
+.hrdash-welcome__icon-btn:focus,
+.hrdash-welcome__icon-btn:active,
+.hrdash-welcome__icon-btn:focus-visible,
+.hrdash-welcome__icon-btn.show,
+.hrdash-welcome__icon-btn[aria-expanded="true"] {
+    outline: none !important;
+    box-shadow: none !important;
+    border: none !important;
+    background: #e4e6eb;
+    color: #1e293b;
 }
 .hrdash-welcome__icon-btn i {
-    font-size: 1rem;
+    font-size: 1.125rem;
+    color: #64748b;
+    display: inline-block;
+    line-height: 1;
+}
+
+.hrdash-welcome__icon-btn:hover i {
+    color: #1e293b;
 }
 .hrdash-welcome__badge {
     position: absolute;

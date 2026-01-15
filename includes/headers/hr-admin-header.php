@@ -126,6 +126,23 @@ $activeSection = getActiveSection($page);
         display: inline-block !important;
         visibility: visible !important;
     }
+    
+    /* Make notification and message icons visible in header buttons */
+    .hrdash-welcome__icon-btn .hr-icon-notification,
+    .hrdash-welcome__icon-btn .hr-icon-message {
+        width: 24px !important;
+        height: 24px !important;
+        opacity: 1 !important;
+        filter: brightness(0) saturate(100%) invert(40%) sepia(8%) saturate(750%) hue-rotate(177deg) brightness(94%) contrast(88%) !important;
+        background-size: contain !important;
+        background-repeat: no-repeat !important;
+        background-position: center !important;
+    }
+    
+    .hrdash-welcome__icon-btn:hover .hr-icon-notification,
+    .hrdash-welcome__icon-btn:hover .hr-icon-message {
+        filter: brightness(0) saturate(100%) invert(15%) sepia(8%) saturate(750%) hue-rotate(177deg) brightness(94%) contrast(88%) !important;
+    }
     </style>
     
     <!-- Enhanced Fonts -->
