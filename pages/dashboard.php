@@ -232,21 +232,182 @@ $display_employees = array_slice($all_employees, 0, 10); // Show first 10 employ
             <p class="hrdash-welcome__subtitle">Ready to manage your HR tasks today?</p>
         </div>
         <div class="hrdash-welcome__actions">
-            <span id="current-time" class="hrdash-welcome__time"><?php echo date('H:i'); ?></span>
-            <a href="?page=alerts" class="hrdash-welcome__icon-btn" title="Messages" aria-label="Messages">
-                <i class="far fa-envelope"></i>
-            </a>
-            <a href="?page=alerts" class="hrdash-welcome__icon-btn" title="Notifications" aria-label="Notifications">
-                <i class="far fa-bell"></i>
-                <?php
-                $pendingTasks = 0;
-                if (function_exists('get_pending_task_count')) {
-                    $pendingTasks = (int) get_pending_task_count();
+            <span id="current-time" class="hrdash-welcome__time"><?php echo strtolower(date('h:i A')); ?></span>
+            
+            <!-- Messages Dropdown -->
+            <?php
+            // Get recent messages/alerts (last 5 active alerts)
+            $recentMessages = [];
+            if (function_exists('get_employee_alerts')) {
+                try {
+                    $recentMessages = get_employee_alerts('active', null);
+                    $recentMessages = array_slice($recentMessages, 0, 5);
+                } catch (Exception $e) {
+                    $recentMessages = [];
                 }
-                if ($pendingTasks > 0): ?>
-                    <span class="hrdash-welcome__badge"><?php echo $pendingTasks > 99 ? '99+' : $pendingTasks; ?></span>
-                <?php endif; ?>
-            </a>
+            }
+            $messageCount = count($recentMessages);
+            ?>
+            <div class="dropdown">
+                <button class="hrdash-welcome__icon-btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Messages" aria-label="Messages">
+                    <span class="hr-icon hr-icon-message"></span>
+                    <?php if ($messageCount > 0): ?>
+                        <span class="hrdash-welcome__badge"><?php echo $messageCount > 99 ? '99+' : $messageCount; ?></span>
+                    <?php endif; ?>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end hrdash-notification-dropdown">
+                    <li class="dropdown-header">
+                        <strong>Messages</strong>
+                        <a href="?page=alerts" class="text-decoration-none ms-auto">View All</a>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <?php if (empty($recentMessages)): ?>
+                        <li class="dropdown-item-text text-muted text-center py-3">
+                            <i class="far fa-envelope-open fa-2x mb-2 d-block"></i>
+                            <small>No new messages</small>
+                        </li>
+                    <?php else: ?>
+                        <?php foreach ($recentMessages as $msg): 
+                            $priorityClass = '';
+                            $priorityIcon = 'fa-info-circle';
+                            switch(strtolower($msg['priority'] ?? '')) {
+                                case 'urgent':
+                                    $priorityClass = 'text-danger';
+                                    $priorityIcon = 'fa-exclamation-triangle';
+                                    break;
+                                case 'high':
+                                    $priorityClass = 'text-warning';
+                                    $priorityIcon = 'fa-exclamation-circle';
+                                    break;
+                                default:
+                                    $priorityClass = 'text-info';
+                            }
+                            $employeeName = trim(($msg['surname'] ?? '') . ', ' . ($msg['first_name'] ?? '') . ' ' . ($msg['middle_name'] ?? ''));
+                            $timeAgo = '';
+                            if (!empty($msg['created_at'])) {
+                                $created = new DateTime($msg['created_at']);
+                                $now = new DateTime();
+                                $diff = $now->diff($created);
+                                if ($diff->days > 0) {
+                                    $timeAgo = $diff->days . 'd ago';
+                                } elseif ($diff->h > 0) {
+                                    $timeAgo = $diff->h . 'h ago';
+                                } else {
+                                    $timeAgo = $diff->i . 'm ago';
+                                }
+                            }
+                        ?>
+                            <li>
+                                <a class="dropdown-item hrdash-notification-item" href="?page=alerts">
+                                    <div class="d-flex align-items-start">
+                                        <i class="fas <?php echo $priorityIcon; ?> <?php echo $priorityClass; ?> me-2 mt-1"></i>
+                                        <div class="flex-grow-1">
+                                            <div class="fw-semibold small"><?php echo htmlspecialchars($msg['title'] ?? 'Alert'); ?></div>
+                                            <div class="text-muted small"><?php echo htmlspecialchars($employeeName); ?></div>
+                                            <?php if ($timeAgo): ?>
+                                                <div class="text-muted" style="font-size: 0.7rem;"><?php echo $timeAgo; ?></div>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                </a>
+                            </li>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </ul>
+            </div>
+            
+            <!-- Notifications Dropdown -->
+            <?php
+            // Get recent notifications (pending tasks)
+            $recentNotifications = [];
+            $pendingTasks = 0;
+            if (function_exists('get_all_tasks')) {
+                try {
+                    $recentNotifications = get_all_tasks('pending', null, null);
+                    $recentNotifications = array_slice($recentNotifications, 0, 5);
+                    $pendingTasks = count($recentNotifications);
+                } catch (Exception $e) {
+                    $recentNotifications = [];
+                }
+            }
+            if (function_exists('get_pending_task_count')) {
+                try {
+                    $pendingTasks = (int) get_pending_task_count();
+                } catch (Exception $e) {
+                    $pendingTasks = 0;
+                }
+            }
+            ?>
+            <div class="dropdown">
+                <button class="hrdash-welcome__icon-btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Notifications" aria-label="Notifications">
+                    <span class="hr-icon hr-icon-notification"></span>
+                    <?php if ($pendingTasks > 0): ?>
+                        <span class="hrdash-welcome__badge"><?php echo $pendingTasks > 99 ? '99+' : $pendingTasks; ?></span>
+                    <?php endif; ?>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end hrdash-notification-dropdown">
+                    <li class="dropdown-header">
+                        <strong>Notifications</strong>
+                        <a href="?page=tasks" class="text-decoration-none ms-auto">View All</a>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <?php if (empty($recentNotifications)): ?>
+                        <li class="dropdown-item-text text-muted text-center py-3">
+                            <i class="far fa-bell-slash fa-2x mb-2 d-block"></i>
+                            <small>No new notifications</small>
+                        </li>
+                    <?php else: ?>
+                        <?php foreach ($recentNotifications as $notif): 
+                            $priorityClass = '';
+                            $priorityIcon = 'fa-circle';
+                            switch(strtolower($notif['priority'] ?? '')) {
+                                case 'urgent':
+                                    $priorityClass = 'text-danger';
+                                    $priorityIcon = 'fa-exclamation-triangle';
+                                    break;
+                                case 'high':
+                                    $priorityClass = 'text-warning';
+                                    $priorityIcon = 'fa-exclamation-circle';
+                                    break;
+                                case 'medium':
+                                    $priorityClass = 'text-info';
+                                    $priorityIcon = 'fa-info-circle';
+                                    break;
+                                default:
+                                    $priorityClass = 'text-muted';
+                            }
+                            $timeAgo = '';
+                            if (!empty($notif['created_at'])) {
+                                $created = new DateTime($notif['created_at']);
+                                $now = new DateTime();
+                                $diff = $now->diff($created);
+                                if ($diff->days > 0) {
+                                    $timeAgo = $diff->days . 'd ago';
+                                } elseif ($diff->h > 0) {
+                                    $timeAgo = $diff->h . 'h ago';
+                                } else {
+                                    $timeAgo = $diff->i . 'm ago';
+                                }
+                            }
+                        ?>
+                            <li>
+                                <a class="dropdown-item hrdash-notification-item" href="?page=tasks">
+                                    <div class="d-flex align-items-start">
+                                        <i class="fas <?php echo $priorityIcon; ?> <?php echo $priorityClass; ?> me-2 mt-1"></i>
+                                        <div class="flex-grow-1">
+                                            <div class="fw-semibold small"><?php echo htmlspecialchars($notif['title'] ?? 'Task'); ?></div>
+                                            <div class="text-muted small"><?php echo htmlspecialchars($notif['category'] ?? 'Task'); ?></div>
+                                            <?php if ($timeAgo): ?>
+                                                <div class="text-muted" style="font-size: 0.7rem;"><?php echo $timeAgo; ?></div>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                </a>
+                            </li>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </ul>
+            </div>
             <div class="dropdown">
                 <button class="hrdash-welcome__profile-btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Profile menu">
                     <?php
@@ -263,7 +424,8 @@ $display_employees = array_slice($all_employees, 0, 10); // Show first 10 employ
                     <i class="fas fa-chevron-down hrdash-welcome__chevron"></i>
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end">
-                    <li><a class="dropdown-item" href="?page=settings"><i class="fas fa-user me-2"></i>Profile</a></li>
+                    <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#profileSettingsModal" data-tab="profile"><i class="fas fa-user me-2"></i>Profile</a></li>
+                    <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#profileSettingsModal" data-tab="settings"><i class="fas fa-cog me-2"></i>Settings</a></li>
                     <li><hr class="dropdown-divider"></li>
                     <li>
                         <a class="dropdown-item text-danger" href="<?php echo base_url(); ?>/index.php?logout=1" data-no-transition="true">
@@ -321,33 +483,27 @@ $display_employees = array_slice($all_employees, 0, 10); // Show first 10 employ
         <div class="col-xl-3 col-md-6">
             <div class="card hrdash-stat">
                 <div class="hrdash-stat__header">
-                    <div class="hrdash-stat__label">On Leave</div>
+                    <div class="hrdash-stat__label">Regular</div>
                 </div>
                 <div class="hrdash-stat__content">
                     <div class="hrdash-stat__value"><?php 
-                        // Calculate employees on leave (count pending leave requests)
-                        $onLeaveCount = 0;
+                        // Calculate regular employees (hired more than 6 months ago)
+                        $regularCount = 0;
                         try {
-                            // Count active leave requests from hr_tasks table
-                            $leaveStmt = $pdo->query("SELECT COUNT(DISTINCT assigned_to) as total 
-                                                      FROM hr_tasks 
-                                                      WHERE category = 'Leave Request' 
-                                                      AND status IN ('pending', 'in_progress')
-                                                      AND assigned_to IS NOT NULL");
-                            $leaveRow = $leaveStmt->fetch(PDO::FETCH_ASSOC);
-                            $onLeaveCount = (int)($leaveRow['total'] ?? 0);
+                            $regularStmt = $pdo->query("SELECT COUNT(*) as total FROM employees WHERE status = 'Active' AND date_hired < DATE_SUB(CURDATE(), INTERVAL 6 MONTH)");
+                            $regularRow = $regularStmt->fetch(PDO::FETCH_ASSOC);
+                            $regularCount = (int)($regularRow['total'] ?? 0);
                         } catch (Exception $e) {
-                            // If query fails, return 0
-                            $onLeaveCount = 0;
+                            $regularCount = 0;
                         }
-                        echo number_format($onLeaveCount);
+                        echo number_format($regularCount);
                     ?></div>
-                    <div class="hrdash-stat__trend hrdash-stat__trend--negative">
-                        <i class="fas fa-arrow-down"></i>
+                    <div class="hrdash-stat__trend hrdash-stat__trend--positive">
+                        <i class="fas fa-arrow-up"></i>
                         <span>2%</span>
                     </div>
                 </div>
-                <div class="hrdash-stat__meta">The number of employees currently on leave or absent.</div>
+                <div class="hrdash-stat__meta">The number of employees who have completed their probation period.</div>
             </div>
         </div>
         <div class="col-xl-3 col-md-6">
@@ -679,6 +835,82 @@ $display_employees = array_slice($all_employees, 0, 10); // Show first 10 employ
     color: #64748b;
     margin-left: 0.25rem;
 }
+
+/* Profile & Settings Modal Styles */
+.profile-avatar-large {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1fb2d5 0%, #0ea5e9 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(31, 178, 213, 0.25);
+}
+
+.profile-avatar-text {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: 0.02em;
+}
+
+#profileSettingsModal .nav-tabs {
+    border-bottom: 2px solid #e2e8f0;
+}
+
+#profileSettingsModal .nav-tabs .nav-link {
+    color: #64748b;
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 0.75rem 1.25rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+#profileSettingsModal .nav-tabs .nav-link:hover {
+    color: #1fb2d5;
+    border-bottom-color: #cbd5e1;
+}
+
+#profileSettingsModal .nav-tabs .nav-link.active {
+    color: #1fb2d5;
+    border-bottom-color: #1fb2d5;
+    background: transparent;
+}
+
+#profileSettingsModal .form-label {
+    font-weight: 600;
+    color: #475569;
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+}
+
+#profileSettingsModal .form-control,
+#profileSettingsModal .form-select {
+    border: 1.5px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 0.625rem 0.875rem;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+}
+
+#profileSettingsModal .form-control:focus,
+#profileSettingsModal .form-select:focus {
+    border-color: #1fb2d5;
+    box-shadow: 0 0 0 3px rgba(31, 178, 213, 0.1);
+    outline: none;
+}
+
+#profileSettingsModal .form-check-input:checked {
+    background-color: #1fb2d5;
+    border-color: #1fb2d5;
+}
+
+#profileSettingsModal .form-check-input:focus {
+    border-color: #1fb2d5;
+    box-shadow: 0 0 0 3px rgba(31, 178, 213, 0.1);
+}
 @media (max-width: 768px) {
     .hrdash-welcome {
         flex-direction: column;
@@ -876,12 +1108,93 @@ $display_employees = array_slice($all_employees, 0, 10); // Show first 10 employ
     background: #f8fafc;
 }
 .hrdash-license__body .table-responsive {
+    overflow-x: auto;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
     overflow-x: hidden;
     flex: 1;
     min-height: 0;
     max-height: 100%;
+    border: none;
+    border-radius: 0;
+    background: transparent;
 }
+/* Profile & Settings Modal Styles */
+.profile-avatar-large {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1fb2d5 0%, #0ea5e9 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(31, 178, 213, 0.25);
+}
+
+.profile-avatar-text {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: 0.02em;
+}
+
+#profileSettingsModal .nav-tabs {
+    border-bottom: 2px solid #e2e8f0;
+}
+
+#profileSettingsModal .nav-tabs .nav-link {
+    color: #64748b;
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 0.75rem 1.25rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+#profileSettingsModal .nav-tabs .nav-link:hover {
+    color: #1fb2d5;
+    border-bottom-color: #cbd5e1;
+}
+
+#profileSettingsModal .nav-tabs .nav-link.active {
+    color: #1fb2d5;
+    border-bottom-color: #1fb2d5;
+    background: transparent;
+}
+
+#profileSettingsModal .form-label {
+    font-weight: 600;
+    color: #475569;
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+}
+
+#profileSettingsModal .form-control,
+#profileSettingsModal .form-select {
+    border: 1.5px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 0.625rem 0.875rem;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+}
+
+#profileSettingsModal .form-control:focus,
+#profileSettingsModal .form-select:focus {
+    border-color: #1fb2d5;
+    box-shadow: 0 0 0 3px rgba(31, 178, 213, 0.1);
+    outline: none;
+}
+
+#profileSettingsModal .form-check-input:checked {
+    background-color: #1fb2d5;
+    border-color: #1fb2d5;
+}
+
+#profileSettingsModal .form-check-input:focus {
+    border-color: #1fb2d5;
+    box-shadow: 0 0 0 3px rgba(31, 178, 213, 0.1);
+}
+
 .hrdash-schedule__body {
     padding: 1.25rem;
     background: #ffffff;
@@ -1180,9 +1493,13 @@ $display_employees = array_slice($all_employees, 0, 10); // Show first 10 employ
             if (timeEl) {
                 function updateTime() {
                     const now = new Date();
-                    const hours = String(now.getHours()).padStart(2, '0');
+                    let hours = now.getHours();
                     const minutes = String(now.getMinutes()).padStart(2, '0');
-                    timeEl.textContent = `${hours}:${minutes}`;
+                    const ampm = hours >= 12 ? 'pm' : 'am';
+                    hours = hours % 12;
+                    hours = hours ? hours : 12; // the hour '0' should be '12'
+                    hours = String(hours).padStart(2, '0');
+                    timeEl.textContent = `${hours}:${minutes} ${ampm}`;
                 }
                 updateTime(); // Set initial time
                 setInterval(updateTime, 60000); // Update every minute
@@ -1496,6 +1813,153 @@ $display_employees = array_slice($all_employees, 0, 10); // Show first 10 employ
                                 </div>
                             <?php endforeach; ?>
                         <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Profile & Settings Modal -->
+<div class="modal fade" id="profileSettingsModal" tabindex="-1" aria-labelledby="profileSettingsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="profileSettingsModalLabel">
+                    <i class="fas fa-user me-2" id="modalIcon"></i>
+                    <span id="modalTitle">Profile</span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Tab Navigation -->
+                <ul class="nav nav-tabs mb-4" id="profileSettingsTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile-pane" type="button" role="tab" aria-controls="profile-pane" aria-selected="true">
+                            <i class="fas fa-user me-2"></i>Profile
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="settings-tab" data-bs-toggle="tab" data-bs-target="#settings-pane" type="button" role="tab" aria-controls="settings-pane" aria-selected="false">
+                            <i class="fas fa-cog me-2"></i>Settings
+                        </button>
+                    </li>
+                </ul>
+
+                <!-- Tab Content -->
+                <div class="tab-content" id="profileSettingsTabContent">
+                    <!-- Profile Tab -->
+                    <div class="tab-pane fade show active" id="profile-pane" role="tabpanel" aria-labelledby="profile-tab">
+                        <div class="row g-4">
+                            <div class="col-md-4 text-center">
+                                <div class="mb-3">
+                                    <div class="profile-avatar-large mx-auto mb-3">
+                                        <span class="profile-avatar-text"><?php echo htmlspecialchars($initials); ?></span>
+                                    </div>
+                                    <h5 class="mb-1"><?php echo htmlspecialchars($displayName); ?></h5>
+                                    <p class="text-muted mb-0"><?php echo htmlspecialchars(ucfirst(str_replace('_', ' ', $_SESSION['user_role'] ?? 'HR Admin'))); ?></p>
+                                </div>
+                            </div>
+                            <div class="col-md-8">
+                                <form id="profileForm">
+                                    <div class="mb-3">
+                                        <label for="profileName" class="form-label">Full Name</label>
+                                        <input type="text" class="form-control" id="profileName" value="<?php echo htmlspecialchars($displayName); ?>" placeholder="Enter your full name">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="profileEmail" class="form-label">Email</label>
+                                        <input type="email" class="form-control" id="profileEmail" value="<?php echo htmlspecialchars($_SESSION['email'] ?? ''); ?>" placeholder="Enter your email">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="profilePhone" class="form-label">Phone Number</label>
+                                        <input type="tel" class="form-control" id="profilePhone" value="<?php echo htmlspecialchars($_SESSION['phone'] ?? ''); ?>" placeholder="Enter your phone number">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="profileDepartment" class="form-label">Department</label>
+                                        <input type="text" class="form-control" id="profileDepartment" value="Human Resources" readonly>
+                                    </div>
+                                    <div class="d-flex gap-2">
+                                        <button type="button" class="btn btn-primary-modern">
+                                            <i class="fas fa-save me-2"></i>Save Changes
+                                        </button>
+                                        <button type="button" class="btn btn-outline-modern" data-bs-dismiss="modal">
+                                            Cancel
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Settings Tab -->
+                    <div class="tab-pane fade" id="settings-pane" role="tabpanel" aria-labelledby="settings-tab">
+                        <form id="settingsForm">
+                            <div class="mb-4">
+                                <h6 class="mb-3"><i class="fas fa-bell me-2"></i>Notifications</h6>
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" id="notifyEmail" checked>
+                                    <label class="form-check-label" for="notifyEmail">
+                                        Email Notifications
+                                    </label>
+                                </div>
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" id="notifyLicense" checked>
+                                    <label class="form-check-label" for="notifyLicense">
+                                        License Expiry Alerts
+                                    </label>
+                                </div>
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" id="notifyTasks" checked>
+                                    <label class="form-check-label" for="notifyTasks">
+                                        Task Assignments
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <h6 class="mb-3"><i class="fas fa-palette me-2"></i>Appearance</h6>
+                                <div class="mb-3">
+                                    <label for="themeSelect" class="form-label">Theme</label>
+                                    <select class="form-select" id="themeSelect">
+                                        <option value="light" selected>Light</option>
+                                        <option value="dark">Dark</option>
+                                        <option value="auto">Auto (System)</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="timeFormat" class="form-label">Time Format</label>
+                                    <select class="form-select" id="timeFormat">
+                                        <option value="12" selected>12-hour (AM/PM)</option>
+                                        <option value="24">24-hour</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <h6 class="mb-3"><i class="fas fa-shield-alt me-2"></i>Security</h6>
+                                <div class="mb-3">
+                                    <label for="currentPassword" class="form-label">Current Password</label>
+                                    <input type="password" class="form-control" id="currentPassword" placeholder="Enter current password">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="newPassword" class="form-label">New Password</label>
+                                    <input type="password" class="form-control" id="newPassword" placeholder="Enter new password">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="confirmPassword" class="form-label">Confirm New Password</label>
+                                    <input type="password" class="form-control" id="confirmPassword" placeholder="Confirm new password">
+                                </div>
+                            </div>
+
+                            <div class="d-flex gap-2">
+                                <button type="button" class="btn btn-primary-modern">
+                                    <i class="fas fa-save me-2"></i>Save Settings
+                                </button>
+                                <button type="button" class="btn btn-outline-modern" data-bs-dismiss="modal">
+                                    Cancel
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>

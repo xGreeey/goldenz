@@ -128,7 +128,7 @@ try {
         </div>
         <div class="page-actions-modern">
             <a href="?page=add_alert" class="btn btn-primary-modern">
-                <i class="fas fa-plus me-2"></i>Add New Alert
+                <span class="hr-icon hr-icon-plus me-2"></span>Add New Alert
             </a>
         </div>
     </div>
@@ -207,7 +207,7 @@ try {
                 <h5 class="mb-0 card-title-modern"><i class="fas fa-bell me-2"></i>Employee Alerts</h5>
                 <div class="page-actions-modern">
                     <button class="btn btn-primary-modern btn-sm" data-bs-toggle="modal" data-bs-target="#addAlertModal">
-                        <i class="fas fa-plus me-2"></i>Add Alert
+                        <span class="hr-icon hr-icon-plus me-2"></span>Add Alert
                     </button>
                     <button class="btn btn-outline-modern btn-sm" onclick="generateLicenseAlerts()">
                         <i class="fas fa-sync me-2"></i>Generate License Alerts
@@ -254,7 +254,7 @@ try {
                         <div class="col-md-3 mb-3">
                             <label class="form-label">&nbsp;</label>
                             <button class="btn btn-outline-secondary w-100" onclick="clearFilters()">
-                                <i class="fas fa-times me-2"></i>Clear Filters
+                                <span class="hr-icon hr-icon-dismiss me-2"></span>Clear Filters
                             </button>
                         </div>
                     </div>
@@ -265,19 +265,40 @@ try {
                     <table class="table table-hover">
                         <thead>
                             <tr>
-                                <th>Priority</th>
-                                <th>Employee</th>
-                                <th>Alert Type</th>
-                                <th>Title</th>
-                                <th>Due Date</th>
-                                <th>Status</th>
+                                <th>
+                                    <input type="checkbox" id="selectAll" class="form-check-input">
+                                </th>
+                                <th class="sortable" data-sort="priority">
+                                    Priority
+                                    <i class="fas fa-sort"></i>
+                                </th>
+                                <th class="sortable" data-sort="employee">
+                                    Employee
+                                    <i class="fas fa-sort"></i>
+                                </th>
+                                <th class="sortable" data-sort="type">
+                                    Alert Type
+                                    <i class="fas fa-sort"></i>
+                                </th>
+                                <th class="sortable" data-sort="title">
+                                    Title
+                                    <i class="fas fa-sort"></i>
+                                </th>
+                                <th class="sortable" data-sort="due_date">
+                                    Due Date
+                                    <i class="fas fa-sort"></i>
+                                </th>
+                                <th class="sortable" data-sort="status">
+                                    Status
+                                    <i class="fas fa-sort"></i>
+                                </th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php if (empty($alerts)): ?>
                             <tr>
-                                <td colspan="7" class="text-center py-5">
+                                <td colspan="8" class="text-center py-5">
                                     <div class="text-muted">
                                         <i class="fas fa-bell-slash fa-3x mb-3" style="opacity: 0.3;"></i>
                                         <h5 class="mb-2">No Alerts Found</h5>
@@ -290,7 +311,7 @@ try {
                                         </p>
                                         <div class="d-flex gap-2 justify-content-center flex-wrap">
                                             <a href="?page=add_alert" class="btn btn-primary btn-sm">
-                                                <i class="fas fa-plus me-1"></i>Create Alert
+                                                <span class="hr-icon hr-icon-plus me-1"></span>Create Alert
                                             </a>
                                             <?php if ($status === 'active'): ?>
                                             <button class="btn btn-info btn-sm" onclick="generateLicenseAlerts()">
@@ -309,6 +330,9 @@ try {
                             <?php else: ?>
                                 <?php foreach ($alerts as $alert): ?>
                                 <tr class="alert-row" data-id="<?php echo htmlspecialchars($alert['id'] ?? ''); ?>">
+                                    <td>
+                                        <input type="checkbox" class="form-check-input alert-checkbox" value="<?php echo htmlspecialchars($alert['id'] ?? ''); ?>">
+                                    </td>
                                     <td>
                                         <span class="priority-badge <?php echo htmlspecialchars($alert['priority'] ?? 'medium'); ?>">
                                             <?php echo strtoupper(htmlspecialchars($alert['priority'] ?? 'medium')); ?>
@@ -370,17 +394,17 @@ try {
                                         <div class="btn-group-modern" role="group">
                                             <?php if (($alert['status'] ?? '') === 'active'): ?>
                                             <button class="btn btn-action-modern btn-info-modern" onclick="acknowledgeAlert(<?php echo htmlspecialchars($alert['id'] ?? 0); ?>)" title="Acknowledge">
-                                                <i class="fas fa-check"></i>
+                                                <span class="hr-icon hr-icon-check"></span>
                                             </button>
                                             <button class="btn btn-action-modern btn-success-modern" onclick="resolveAlert(<?php echo htmlspecialchars($alert['id'] ?? 0); ?>)" title="Resolve">
-                                                <i class="fas fa-check-double"></i>
+                                                <span class="hr-icon hr-icon-double-check"></span>
                                             </button>
                                             <?php endif; ?>
                                             <button class="btn btn-action-modern btn-secondary-modern" onclick="dismissAlert(<?php echo htmlspecialchars($alert['id'] ?? 0); ?>)" title="Dismiss">
-                                                <i class="fas fa-times"></i>
+                                                <span class="hr-icon hr-icon-dismiss"></span>
                                             </button>
                                             <button class="btn btn-action-modern btn-primary-modern" onclick="viewAlert(<?php echo htmlspecialchars($alert['id'] ?? 0); ?>)" title="View Details">
-                                                <i class="fas fa-eye"></i>
+                                                <span class="hr-icon hr-icon-view"></span>
                                             </button>
                                         </div>
                                     </td>
@@ -446,7 +470,7 @@ try {
                         <div class="col-md-2">
                             <label class="form-label">&nbsp;</label>
                             <button class="btn btn-outline-secondary btn-sm w-100" onclick="clearAuditFilters()">
-                                <i class="fas fa-times me-1"></i>Clear
+                                <span class="hr-icon hr-icon-dismiss me-1"></span>Clear
                             </button>
                         </div>
                     </div>
@@ -980,20 +1004,18 @@ body.portal-hr-admin .alerts-modern {
     margin-bottom: 1.5rem;
 }
 
-.stat-card-modern,
-.alerts-card-modern {
+.stat-card-modern {
     background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 14px;
-    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.04);
+    transition: all 0.2s ease;
     overflow: hidden;
 }
 
-.stat-card-modern:hover,
-.alerts-card-modern:hover {
+.stat-card-modern:hover {
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08), 0 8px 16px rgba(0, 0, 0, 0.06);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.1);
 }
 
 .card-body-modern {
