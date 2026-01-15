@@ -232,6 +232,12 @@ usort($filtered_employees, function($a, $b) use ($sort_by, $sort_order) {
             $b_date = strtotime($b['date_hired']);
             $result = $a_date - $b_date;
             break;
+        case 'license_exp':
+            // Sort by license expiration date
+            $a_date = !empty($a['license_exp_date']) && $a['license_exp_date'] !== '0000-00-00' ? strtotime($a['license_exp_date']) : 0;
+            $b_date = !empty($b['license_exp_date']) && $b['license_exp_date'] !== '0000-00-00' ? strtotime($b['license_exp_date']) : 0;
+            $result = $a_date - $b_date;
+            break;
         case 'status':
             $result = strcmp(strtolower($a['status']), strtolower($b['status']));
             break;
@@ -271,7 +277,7 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
                 <i class="fas fa-download me-2"></i>Export CSV
             </button>
             <a href="?page=add_employee" class="btn btn-primary-modern">
-                <i class="fas fa-plus me-2"></i>Add New Employee
+                <span class="hr-icon hr-icon-plus me-2"></span>Add New Employee
             </a>
         </div>
     </div>
@@ -291,7 +297,7 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
     <!-- Summary Cards -->
     <div class="row g-4">
         <div class="col-xl-4 col-md-6">
-            <div class="hrdash-stat hrdash-stat--primary">
+            <div class="card hrdash-stat hrdash-stat--primary">
                 <div class="hrdash-stat__header">
                     <div class="hrdash-stat__label">Total Employees</div>
                 </div>
@@ -307,7 +313,7 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
         </div>
 
         <div class="col-xl-4 col-md-6">
-            <div class="hrdash-stat">
+            <div class="card hrdash-stat">
                 <div class="hrdash-stat__header">
                     <div class="hrdash-stat__label">Active</div>
                 </div>
@@ -323,7 +329,7 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
         </div>
 
         <div class="col-xl-4 col-md-6">
-            <div class="hrdash-stat">
+            <div class="card hrdash-stat">
                 <div class="hrdash-stat__header">
                     <div class="hrdash-stat__label">Inactive</div>
                 </div>
@@ -349,23 +355,15 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
                             </th>
                             <th class="sortable" data-sort="name">
                                 EMPLOYEE INFO
-                                <i class="fas fa-sort ms-1"></i>
-                            </th>
-                            <th class="sortable" data-sort="department">
-                                POST
-                                <i class="fas fa-sort ms-1"></i>
+                                <i class="fas fa-sort"></i>
                             </th>
                             <th class="sortable" data-sort="license_exp">
-                                LICENSE & EXPIRY
-                                <i class="fas fa-sort ms-1"></i>
-                            </th>
-                            <th class="sortable" data-sort="join_date">
-                                EMPLOYMENT DETAILS
-                                <i class="fas fa-sort ms-1"></i>
+                                LICENSE / RLM
+                                <i class="fas fa-sort"></i>
                             </th>
                             <th class="sortable" data-sort="status">
                                 STATUS
-                                <i class="fas fa-sort ms-1"></i>
+                                <i class="fas fa-sort"></i>
                             </th>
                             <th>CREATED BY</th>
                             </tr>
@@ -373,7 +371,7 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
                     <tbody>
                         <?php if (empty($paginated_employees)): ?>
                             <tr>
-                                <td colspan="7" class="text-center py-5">
+                                <td colspan="5" class="text-center py-5">
                                     <div class="d-flex flex-column align-items-center">
                                         <i class="fas fa-users fa-3x text-muted mb-3"></i>
                                         <h5 class="text-muted">No employees found</h5>
@@ -400,94 +398,79 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
                                 <td onclick="event.stopPropagation();">
                                     <input type="checkbox" class="form-check-input employee-checkbox" value="<?php echo $employee['id']; ?>">
                                 </td>
-                                <!-- Employee Info -->
+                                <!-- Employee Info (with Post and Employment Status) -->
                                 <td>
-                                    <div class="employee-info">
-                                        <div class="employee-avatar">
-                                            <?php echo strtoupper(substr($employee['first_name'] ?? '', 0, 1) . substr($employee['surname'] ?? '', 0, 1)); ?>
+                                    <div class="employee-info-combined">
+                                        <div class="employee-info-line fw-semibold">
+                                            <?php 
+                                            $employee_type = strtoupper(trim($employee['employee_type'] ?? ''));
+                                            $employee_no = htmlspecialchars($employee['employee_no'] ?? $employee['id']);
+                                            $full_name = htmlspecialchars($full_name);
+                                            
+                                            // Format: TYPE | #NUM | NAME
+                                            $info_parts = [];
+                                            if (!empty($employee_type)) {
+                                                $info_parts[] = $employee_type;
+                                            }
+                                            $info_parts[] = '#' . $employee_no;
+                                            $info_parts[] = $full_name;
+                                            echo implode(' | ', $info_parts);
+                                            ?>
                                         </div>
-                                        <div class="employee-details">
-                                            <div class="employee-name fw-semibold"><?php echo htmlspecialchars($full_name); ?></div>
-                                            <div class="employee-email text-muted small">
-                                                <?php echo getEmployeeTypeLabel($employee['employee_type'] ?? ''); ?>
-                                            </div>
-                                            <div class="employee-number text-muted" style="font-size: 0.6875rem; margin-top: 0.125rem;">
-                                                #<?php echo htmlspecialchars($employee['employee_no'] ?? $employee['id']); ?>
-                                            </div>
+                                        <div class="employee-post text-muted" style="font-size: 0.8125rem; margin-top: 0.25rem;">
+                                            <?php echo htmlspecialchars($employee['post'] ?? 'Unassigned'); ?>
                                         </div>
-                                    </div>
-                                </td>
-                                <!-- Post -->
-                                <td>
-                                    <span class="badge bg-light text-dark" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;"><?php echo htmlspecialchars($employee['post'] ?? 'Unassigned'); ?></span>
-                                </td>
-                                <!-- License & Expiry -->
-                                <td>
-                                    <div class="license-info">
-                                        <?php if (!empty($employee['license_no'])): ?>
-                                            <div class="mb-1">
-                                                <small class="text-muted d-block mb-0" style="font-size: 0.6875rem;">License:</small>
-                                                <strong style="font-size: 0.8125rem;"><?php echo htmlspecialchars($employee['license_no']); ?></strong>
-                                                <?php if ($license_formatted): ?>
-                                                    <div class="mt-0" style="margin-top: 0.125rem;">
-                                                        <div class="<?php echo $license_indicator['class']; ?>" style="font-size: 0.75rem;">
-                                                            <?php if (!empty($license_indicator['icon'])): ?>
-                                                                <i class="fas <?php echo $license_indicator['icon']; ?> me-1" style="font-size: 0.625rem;"></i>
-                                                            <?php endif; ?>
-                                                            <?php echo htmlspecialchars($license_formatted['status_text']); ?>
-                                                        </div>
-                                                        <div class="<?php echo ($license_formatted['days'] < 0 || $license_formatted['days'] <= 30) ? 'text-danger' : ''; ?>" style="font-size: 0.75rem;">
-                                                            <?php echo htmlspecialchars($license_formatted['text']); ?>
-                                                        </div>
-                                                    </div>
-                                                <?php else: ?>
-                                                    <div class="text-muted small mt-1" style="font-size: 0.75rem;">No expiration date</div>
-                                                <?php endif; ?>
-                                            </div>
-                                        <?php else: ?>
-                                            <div class="mb-1">
-                                                <small class="text-muted d-block mb-0" style="font-size: 0.6875rem;">License:</small>
-                                                <span class="text-danger fw-bold" style="font-size: 0.8125rem;">
-                                                    <i class="fas fa-exclamation-triangle me-1" style="font-size: 0.75rem;"></i>No License
-                                                    <span class="badge bg-danger ms-1" style="font-size: 0.6875rem; padding: 0.125rem 0.375rem;">URGENT</span>
-                                                </span>
-                                            </div>
-                                        <?php endif; ?>
-                                        <?php if ($rlm_formatted && !empty($employee['rlm_exp'])): ?>
-                                            <div class="mt-1">
-                                                <small class="text-muted d-block mb-0" style="font-size: 0.6875rem;">RLM:</small>
-                                                <div>
-                                                    <div class="<?php echo $rlm_indicator['class']; ?>" style="font-size: 0.75rem;">
-                                                        <?php if (!empty($rlm_indicator['icon'])): ?>
-                                                            <i class="fas <?php echo $rlm_indicator['icon']; ?> me-1" style="font-size: 0.625rem;"></i>
-                                                        <?php endif; ?>
-                                                        <?php echo htmlspecialchars($rlm_formatted['status_text']); ?>
-                                                    </div>
-                                                    <div class="<?php echo ($rlm_formatted['days'] < 0 || $rlm_formatted['days'] <= 30) ? 'text-danger' : ''; ?>" style="font-size: 0.75rem;">
-                                                        <?php echo htmlspecialchars($rlm_formatted['text']); ?>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        <?php endif; ?>
-                                    </div>
-                                </td>
-                                <!-- Employment Details -->
-                                <td>
-                                    <div class="employment-details">
-                                        <div class="mb-0" style="margin-bottom: 0.375rem;">
-                                            <small class="text-muted d-block" style="font-size: 0.6875rem; margin-bottom: 0.125rem;">Hired:</small>
-                                            <span style="font-size: 0.8125rem;"><?php echo !empty($employee['date_hired']) ? date('M d, Y', strtotime($employee['date_hired'])) : 'N/A'; ?></span>
-                                        </div>
-                                        <div class="mb-0" style="margin-bottom: 0.375rem;">
-                                            <small class="text-muted d-block" style="font-size: 0.6875rem; margin-bottom: 0.125rem;">Status:</small>
-                                            <span class="badge <?php echo strtolower($employment_status) === 'probationary' ? 'bg-warning text-dark' : 'bg-success'; ?>" style="font-size: 0.6875rem; padding: 0.25rem 0.5rem;">
-                                                <?php echo htmlspecialchars($employment_status); ?>
+                                        <div class="employee-status-badge" style="margin-top: 0.25rem;">
+                                            <?php 
+                                            $status_class = ($employment_status === 'Probationary') ? 'bg-warning text-dark' : 'bg-info text-white';
+                                            $status_text = $employment_status;
+                                            ?>
+                                            <span class="badge <?php echo $status_class; ?>" style="font-size: 0.6875rem; padding: 0.25rem 0.5rem;">
+                                                <?php echo htmlspecialchars($status_text); ?>
                                             </span>
                                         </div>
+                                    </div>
+                                </td>
+                                <!-- License and RLM -->
+                                <td>
+                                    <div class="license-rlm-info">
+                                        <!-- LICENSE NO -->
                                         <div>
-                                            <small class="text-muted d-block" style="font-size: 0.6875rem; margin-bottom: 0.125rem;">Shift:</small>
-                                            <span class="text-muted" style="font-size: 0.8125rem;">N/A</span>
+                                            <small class="text-muted d-block mb-1" style="font-size: 0.6875rem; font-weight: 600;">LICENSE NO</small>
+                                            <?php if (!empty($employee['license_no'])): ?>
+                                                <strong style="font-size: 0.8125rem; color: #1e293b;"><?php echo htmlspecialchars($employee['license_no']); ?></strong>
+                                            <?php else: ?>
+                                                <span class="text-danger" style="font-size: 0.8125rem;">
+                                                    No License
+                                                </span>
+                                            <?php endif; ?>
                                         </div>
+                                        
+                                        <!-- LICENSE EXPIRATION DATE -->
+                                        <div style="margin-top: 0.5rem;">
+                                            <small class="text-muted d-block mb-1" style="font-size: 0.6875rem; font-weight: 600;">EXPIRATION DATE</small>
+                                            <?php if ($license_formatted): ?>
+                                                <div class="<?php echo ($license_formatted['days'] < 0 || $license_formatted['days'] <= 30) ? 'text-danger' : ''; ?>" style="font-size: 0.8125rem;">
+                                                    <?php echo htmlspecialchars($license_formatted['text']); ?>
+                                                </div>
+                                            <?php else: ?>
+                                                <span class="text-muted" style="font-size: 0.8125rem;">N/A</span>
+                                            <?php endif; ?>
+                                        </div>
+                                        
+                                        <!-- RLM - Only show if RLM exists -->
+                                        <?php if (!empty($employee['rlm_exp'])): ?>
+                                            <div style="margin-top: 0.5rem;">
+                                                <small class="text-muted d-block mb-1" style="font-size: 0.6875rem; font-weight: 600;">RLM</small>
+                                                <?php if ($rlm_formatted): ?>
+                                                    <div class="<?php echo ($rlm_formatted['days'] < 0 || $rlm_formatted['days'] <= 30) ? 'text-danger' : ''; ?>" style="font-size: 0.8125rem;">
+                                                        <?php echo htmlspecialchars($rlm_formatted['text']); ?>
+                                                    </div>
+                                                <?php else: ?>
+                                                    <span style="font-size: 0.8125rem; color: #1e293b;">Yes</span>
+                                                <?php endif; ?>
+                                            </div>
+                                        <?php endif; ?>
                                     </div>
                                 </td>
                                 <!-- Status -->
@@ -553,7 +536,7 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
                         <div class="modal-footer">
                             <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
                             <a href="#" id="editEmployeeBtn" class="btn btn-primary">
-                                <i class="fas fa-edit me-2"></i>Edit Employee
+                                <span class="hr-icon hr-icon-edit me-2"></span>Edit Employee
                             </a>
                         </div>
                     </div>
@@ -862,13 +845,19 @@ body.portal-hr-admin .employees-modern {
 }
 
 .employees-table thead th.sortable {
-    cursor: pointer;
-    user-select: none;
+    cursor: pointer !important;
+    user-select: none !important;
     transition: color 0.2s ease;
+    position: relative;
 }
 
 .employees-table thead th.sortable:hover {
     color: #1fb2d5;
+    background-color: rgba(31, 178, 213, 0.05);
+}
+
+.employees-table thead th.sortable i {
+    pointer-events: none; /* Prevent icon from blocking clicks */
 }
 
 .employees-table tbody tr {
@@ -1166,135 +1155,6 @@ body.portal-hr-admin .employees-modern {
         overflow-x: hidden;
     }
 }
-
-/* Card styling to match HR admin dashboard */
-.card-modern,
-.card {
-    border: 1px solid #e2e8f0;
-    border-radius: 14px;
-    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
-    background: #ffffff;
-    overflow: hidden;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.card-modern:hover,
-.card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.1);
-}
-
-.card-body-modern,
-.card-body {
-    padding: 1.5rem;
-}
-
-.card-header-modern {
-    margin-bottom: 1.5rem;
-    padding-bottom: 1rem;
-    border-bottom: 1px solid #e2e8f0;
-}
-
-.card-title-modern {
-    font-size: 1.125rem;
-    font-weight: 700;
-    color: #0f172a;
-    margin: 0 0 0.25rem 0;
-}
-
-/* Ensure hrdash-stat cards match dashboard stat-card-modern styling exactly */
-.hrdash-stat {
-    border: none !important;
-    border-radius: 16px !important;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.04) !important;
-    background: #ffffff !important;
-    overflow: hidden;
-    transition: all 0.3s ease;
-    padding: 1.5rem;
-}
-
-/* Fix text overlapping - ensure proper spacing and layout matching dashboard */
-.hrdash-stat__header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
-}
-
-.hrdash-stat__label {
-    font-size: 0.8125rem;
-    color: #64748b;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin: 0;
-}
-
-.hrdash-stat__content {
-    display: flex;
-    align-items: baseline;
-    gap: 0.75rem;
-    margin-bottom: 0.5rem;
-}
-
-.hrdash-stat__value {
-    font-size: 2.25rem;
-    font-weight: 700;
-    color: #1e293b;
-    margin: 0;
-    line-height: 1;
-    letter-spacing: -0.02em;
-    /* Number rendering fix */
-    font-family: 'Segoe UI', Arial, Helvetica, sans-serif !important;
-    font-variant-numeric: tabular-nums !important;
-    font-feature-settings: 'tnum' !important;
-    -webkit-font-feature-settings: 'tnum' !important;
-    -moz-font-feature-settings: 'tnum' !important;
-    text-rendering: optimizeLegibility !important;
-    -webkit-font-smoothing: antialiased !important;
-    -moz-osx-font-smoothing: grayscale !important;
-}
-
-.hrdash-stat__trend {
-    font-size: 0.875rem;
-    font-weight: 600;
-    white-space: nowrap;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
-}
-
-.hrdash-stat__trend i {
-    font-size: 0.75rem;
-}
-
-.hrdash-stat__meta {
-    font-size: 0.8125rem;
-    color: #94a3b8;
-    display: block;
-    margin-top: 0.5rem;
-    line-height: 1.4;
-}
-
-/* Primary stat card styling */
-.hrdash-stat--primary {
-    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1e293b 100%) !important;
-    border: none !important;
-    color: #ffffff;
-}
-
-.hrdash-stat--primary .hrdash-stat__label,
-.hrdash-stat--primary .hrdash-stat__value,
-.hrdash-stat--primary .hrdash-stat__meta {
-    color: #ffffff !important;
-}
-
-.hrdash-stat--primary .hrdash-stat__trend {
-    color: rgba(255, 255, 255, 0.9) !important;
-    background: rgba(255, 255, 255, 0.25);
-    padding: 0.25rem 0.5rem;
-    border-radius: 6px;
-}
 </style>
 
 <script>
@@ -1429,23 +1289,44 @@ class EmployeeTableManager {
             });
         }
         
-        // Column header sorting
+        // Column header sorting - make entire header clickable
         document.querySelectorAll('.sortable').forEach(header => {
-            header.addEventListener('click', () => {
+            // Add visual feedback
+            header.style.cursor = 'pointer';
+            header.style.userSelect = 'none';
+            
+            header.addEventListener('click', (e) => {
+                // Prevent event from bubbling if clicking on interactive elements
+                if (e.target.closest('input, button, select, a')) {
+                    return;
+                }
+                
+                // Stop propagation to prevent any parent handlers
+                e.stopPropagation();
+                
                 const column = header.dataset.sort;
+                if (!column) {
+                    console.warn('Sortable header missing data-sort attribute');
+                    return;
+                }
+                
                 const url = new URL(window.location);
                 const currentSort = url.searchParams.get('sort_by') || 'name';
                 const currentOrder = url.searchParams.get('sort_order') || 'asc';
                 
                 let newOrder = 'asc';
                 if (currentSort === column) {
+                    // Toggle order if clicking the same column
                     newOrder = currentOrder === 'asc' ? 'desc' : 'asc';
                 }
                 
-                // Update sort controls
+                // Update sort controls if they exist
+                const sortBy = document.getElementById('sortBy');
+                const sortOrder = document.getElementById('sortOrder');
                 if (sortBy) sortBy.value = column;
                 if (sortOrder) sortOrder.value = newOrder;
                 
+                // Update URL to trigger sorting
                 this.updateURL({ sort_by: column, sort_order: newOrder });
             });
         });

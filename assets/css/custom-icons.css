@@ -1,0 +1,132 @@
+/* ============================================
+   CUSTOM ICONS FOR HR-ADMIN
+   Replaces Font Awesome icons with custom SVG icons
+   ============================================ */
+
+/* Base icon styling */
+.hr-icon {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    vertical-align: middle;
+    flex-shrink: 0;
+}
+
+/* Icon sizes */
+.hr-icon-sm {
+    width: 14px;
+    height: 14px;
+}
+
+.hr-icon-md {
+    width: 16px;
+    height: 16px;
+}
+
+.hr-icon-lg {
+    width: 20px;
+    height: 20px;
+}
+
+.hr-icon-xl {
+    width: 24px;
+    height: 24px;
+}
+
+/* Icon spacing */
+.hr-icon.me-1 {
+    margin-right: 0.25rem;
+}
+
+.hr-icon.me-2 {
+    margin-right: 0.5rem;
+}
+
+.hr-icon.ms-1 {
+    margin-left: 0.25rem;
+}
+
+.hr-icon.ms-2 {
+    margin-left: 0.5rem;
+}
+
+/* Specific icon mappings - Using SVG files */
+.hr-icon-plus {
+    background-image: url('../icons/plus-icon.svg');
+}
+
+.hr-icon-edit {
+    background-image: url('../icons/edit-icon.svg');
+}
+
+.hr-icon-view,
+.hr-icon-eye {
+    background-image: url('../icons/view-icon_eye-icon.svg');
+}
+
+.hr-icon-check {
+    background-image: url('../icons/check-icon.svg');
+}
+
+.hr-icon-double-check {
+    background-image: url('../icons/double-check-icon.svg');
+}
+
+.hr-icon-dismiss,
+.hr-icon-remove,
+.hr-icon-times {
+    background-image: url('../icons/dismiss-icon_remove-icon.svg');
+}
+
+.hr-icon-minus {
+    background-image: url('../icons/minus-icon.svg');
+}
+
+.hr-icon-notification,
+.hr-icon-bell {
+    background-image: url('../icons/notif-icon.svg');
+}
+
+.hr-icon-message {
+    background-image: url('../icons/message-icon.svg');
+}
+
+/* Button icon styling */
+.btn .hr-icon {
+    width: 14px;
+    height: 14px;
+}
+
+.btn-sm .hr-icon {
+    width: 12px;
+    height: 12px;
+}
+
+.btn-lg .hr-icon {
+    width: 18px;
+    height: 18px;
+}
+
+/* Table action button icons */
+.btn-action-modern .hr-icon {
+    width: 14px;
+    height: 14px;
+}
+
+/* Ensure icons align properly in buttons */
+.btn .hr-icon,
+.btn-action-modern .hr-icon {
+    vertical-align: middle;
+    margin-top: -2px;
+}
+
+/* Dashboard welcome icon buttons */
+.hrdash-welcome__icon-btn .hr-icon {
+    width: 18px;
+    height: 18px;
+    display: inline-block;
+    vertical-align: middle;
+}
