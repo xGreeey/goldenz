@@ -1337,6 +1337,15 @@ body.sidebar-open .main-content {
     color: var(--interface-text);
     margin-bottom: var(--spacing-xs);
     letter-spacing: -0.01em;
+    /* Number rendering fix - ensures digits display correctly on Windows 10/11 */
+    font-family: 'Segoe UI', Arial, Helvetica, sans-serif !important;
+    font-variant-numeric: tabular-nums !important;
+    font-feature-settings: 'tnum' !important;
+    -webkit-font-feature-settings: 'tnum' !important;
+    -moz-font-feature-settings: 'tnum' !important;
+    text-rendering: optimizeLegibility !important;
+    -webkit-font-smoothing: antialiased !important;
+    -moz-osx-font-smoothing: grayscale !important;
 }
 
 /* 2. HIERARCHY - Clear information structure */
@@ -1453,6 +1462,15 @@ body.sidebar-open .main-content {
     font-weight: 700;
     color: var(--interface-text);
     margin-bottom: var(--spacing-xs);
+    /* Number rendering fix - ensures digits display correctly on Windows 10/11 */
+    font-family: 'Segoe UI', Arial, Helvetica, sans-serif !important;
+    font-variant-numeric: tabular-nums !important;
+    font-feature-settings: 'tnum' !important;
+    -webkit-font-feature-settings: 'tnum' !important;
+    -moz-font-feature-settings: 'tnum' !important;
+    text-rendering: optimizeLegibility !important;
+    -webkit-font-smoothing: antialiased !important;
+    -moz-osx-font-smoothing: grayscale !important;
 }
 
 .card-trend {
@@ -3932,6 +3950,15 @@ button.btn-primary:focus {
     color: var(--gray-900);
     margin: 0;
     letter-spacing: -0.025em;
+    /* Number rendering fix - ensures digits display correctly on Windows 10/11 */
+    font-family: 'Segoe UI', Arial, Helvetica, sans-serif !important;
+    font-variant-numeric: tabular-nums !important;
+    font-feature-settings: 'tnum' !important;
+    -webkit-font-feature-settings: 'tnum' !important;
+    -moz-font-feature-settings: 'tnum' !important;
+    text-rendering: optimizeLegibility !important;
+    -webkit-font-smoothing: antialiased !important;
+    -moz-osx-font-smoothing: grayscale !important;
 }
 
 .card-label {
