@@ -21,7 +21,9 @@ if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'super_admin') 
     <div class="row">
         <!-- Left: Navigation -->
         <div class="col-md-3 mb-4">
-            <div class="list-group settings-nav" id="settingsTabs" role="tablist">
+            <div class="card card-modern">
+                <div class="card-body-modern p-0">
+                    <div class="list-group settings-nav" id="settingsTabs" role="tablist">
                 <button class="list-group-item list-group-item-action active"
                         id="account-security-tab"
                         data-bs-toggle="list"
@@ -85,6 +87,8 @@ if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'super_admin') 
                         type="button" role="tab">
                     <i class="fas fa-palette me-2"></i>UI & Preferences
                 </button>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -564,31 +568,86 @@ if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'super_admin') 
     min-height: 100vh;
 }
 
+/* Navigation Sidebar - Card Style */
+.settings-nav {
+    background: transparent;
+    border: none;
+    padding: 0.5rem;
+}
+
 .settings-nav .list-group-item {
     border: none;
-    border-radius: 0;
-    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    padding: 0.875rem 1rem;
     font-size: 0.875rem;
+    font-weight: 500;
     cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.75rem;
+    margin-bottom: 0.25rem;
+    transition: all 0.2s ease;
+    color: #64748b;
+}
+
+.settings-nav .list-group-item:hover {
+    background: #f8fafc;
+    color: #1e293b;
 }
 
 .settings-nav .list-group-item i {
     width: 1.25rem;
     text-align: center;
     color: #64748b;
+    font-size: 1rem;
 }
 
 .settings-nav .list-group-item.active {
-    background: linear-gradient(135deg, #1fb2d5 0%, #0ea5e9 100%);
+    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1e293b 100%);
     color: #fff;
-    border-radius: 0.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(30, 58, 138, 0.2);
 }
 
 .settings-nav .list-group-item.active i {
-    color: #e0f2fe;
+    color: #ffffff;
+}
+
+/* Ensure cards match HR admin style */
+.super-admin-settings .card-modern {
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+    background: #ffffff;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.super-admin-settings .card-modern:hover {
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.1);
+}
+
+.super-admin-settings .card-body-modern {
+    padding: 1.5rem;
+}
+
+.super-admin-settings .card-header-modern {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.super-admin-settings .card-title-modern {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0 0 0.25rem 0;
+}
+
+.super-admin-settings .card-subtitle {
+    font-size: 0.875rem;
+    color: #64748b;
+    margin: 0;
 }
 
 /* Password Toggle Styles */

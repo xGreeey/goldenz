@@ -395,7 +395,7 @@ $users_by_role = $stats['users_by_role'] ?? [];
                                                 </div>
                                             </td>
                                             <td>
-                                                <span class="badge badge-primary-modern"><?php echo htmlspecialchars($log['action']); ?></span>
+                                                <span class="badge badge-primary-modern audit-action-badge"><?php echo htmlspecialchars($log['action']); ?></span>
                                             </td>
                                             <td><?php echo htmlspecialchars($log['table_name']); ?></td>
                                             <td><?php echo $log['record_id'] ? '#' . $log['record_id'] : 'N/A'; ?></td>
@@ -420,6 +420,56 @@ $users_by_role = $stats['users_by_role'] ?? [];
     overflow-x: hidden;
     background: #f8fafc;
     min-height: 100vh;
+}
+
+/* Ensure cards match HR admin style */
+.super-admin-dashboard .card-modern,
+.super-admin-dashboard .stat-card-modern {
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+    background: #ffffff;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.super-admin-dashboard .card-modern:hover,
+.super-admin-dashboard .stat-card-modern:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.1);
+}
+
+.super-admin-dashboard .card-body-modern {
+    padding: 1.5rem;
+}
+
+.super-admin-dashboard .card-header-modern {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.super-admin-dashboard .card-title-modern {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0 0 0.25rem 0;
+}
+
+.super-admin-dashboard .card-subtitle {
+    font-size: 0.875rem;
+    color: #64748b;
+    margin: 0;
+}
+
+/* Audit log action badge - black text */
+.super-admin-dashboard .audit-action-badge {
+    color: #1e293b !important;
+    background: #dbeafe !important;
+    border: 1px solid #bfdbfe;
 }
 
 .role-breakdown-list,

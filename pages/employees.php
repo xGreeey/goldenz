@@ -291,7 +291,7 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
     <!-- Summary Cards -->
     <div class="row g-4">
         <div class="col-xl-4 col-md-6">
-            <div class="card hrdash-stat hrdash-stat--primary">
+            <div class="hrdash-stat hrdash-stat--primary">
                 <div class="hrdash-stat__header">
                     <div class="hrdash-stat__label">Total Employees</div>
                 </div>
@@ -307,7 +307,7 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
         </div>
 
         <div class="col-xl-4 col-md-6">
-            <div class="card hrdash-stat">
+            <div class="hrdash-stat">
                 <div class="hrdash-stat__header">
                     <div class="hrdash-stat__label">Active</div>
                 </div>
@@ -323,7 +323,7 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
         </div>
 
         <div class="col-xl-4 col-md-6">
-            <div class="card hrdash-stat">
+            <div class="hrdash-stat">
                 <div class="hrdash-stat__header">
                     <div class="hrdash-stat__label">Inactive</div>
                 </div>
@@ -1165,6 +1165,135 @@ body.portal-hr-admin .employees-modern {
     .table-container {
         overflow-x: hidden;
     }
+}
+
+/* Card styling to match HR admin dashboard */
+.card-modern,
+.card {
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+    background: #ffffff;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card-modern:hover,
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.1);
+}
+
+.card-body-modern,
+.card-body {
+    padding: 1.5rem;
+}
+
+.card-header-modern {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.card-title-modern {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0 0 0.25rem 0;
+}
+
+/* Ensure hrdash-stat cards match dashboard stat-card-modern styling exactly */
+.hrdash-stat {
+    border: none !important;
+    border-radius: 16px !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.04) !important;
+    background: #ffffff !important;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    padding: 1.5rem;
+}
+
+/* Fix text overlapping - ensure proper spacing and layout matching dashboard */
+.hrdash-stat__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.hrdash-stat__label {
+    font-size: 0.8125rem;
+    color: #64748b;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0;
+}
+
+.hrdash-stat__content {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.hrdash-stat__value {
+    font-size: 2.25rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    /* Number rendering fix */
+    font-family: 'Segoe UI', Arial, Helvetica, sans-serif !important;
+    font-variant-numeric: tabular-nums !important;
+    font-feature-settings: 'tnum' !important;
+    -webkit-font-feature-settings: 'tnum' !important;
+    -moz-font-feature-settings: 'tnum' !important;
+    text-rendering: optimizeLegibility !important;
+    -webkit-font-smoothing: antialiased !important;
+    -moz-osx-font-smoothing: grayscale !important;
+}
+
+.hrdash-stat__trend {
+    font-size: 0.875rem;
+    font-weight: 600;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.hrdash-stat__trend i {
+    font-size: 0.75rem;
+}
+
+.hrdash-stat__meta {
+    font-size: 0.8125rem;
+    color: #94a3b8;
+    display: block;
+    margin-top: 0.5rem;
+    line-height: 1.4;
+}
+
+/* Primary stat card styling */
+.hrdash-stat--primary {
+    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1e293b 100%) !important;
+    border: none !important;
+    color: #ffffff;
+}
+
+.hrdash-stat--primary .hrdash-stat__label,
+.hrdash-stat--primary .hrdash-stat__value,
+.hrdash-stat--primary .hrdash-stat__meta {
+    color: #ffffff !important;
+}
+
+.hrdash-stat--primary .hrdash-stat__trend {
+    color: rgba(255, 255, 255, 0.9) !important;
+    background: rgba(255, 255, 255, 0.25);
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
 }
 </style>
 

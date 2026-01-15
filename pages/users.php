@@ -152,9 +152,11 @@ $role_config = config('roles.roles', []);
                         <span class="input-group-text"><i class="fas fa-search"></i></span>
                         <input type="text" 
                                name="search" 
+                               id="userSearchInput"
                                class="form-control" 
                                placeholder="Search by name, username, or email..."
-                               value="<?php echo htmlspecialchars($filters['search']); ?>">
+                               value="<?php echo htmlspecialchars($filters['search']); ?>"
+                               autocomplete="off">
                     </div>
                 </div>
                 <div class="col-md-3">
@@ -990,9 +992,138 @@ body:has(#roleChangeModal.show) .modal-backdrop,
     opacity: 0 !important;
     visibility: hidden !important;
 }
+/* Card styling to match HR admin dashboard */
+.card-modern,
+.card {
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.04);
+    background: #ffffff;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    outline: none !important;
+}
+
+.card-modern:hover,
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08), 0 8px 24px rgba(0, 0, 0, 0.06);
+    border: 1px solid #e2e8f0 !important;
+    outline: none !important;
+}
+
+.card-modern:focus,
+.card:focus,
+.card-modern:focus-visible,
+.card:focus-visible {
+    outline: none !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.04);
+    border: 1px solid #e2e8f0 !important;
+}
+
+/* Make Create User button more visible */
+.btn-primary-modern {
+    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1e293b 100%) !important;
+    color: #ffffff !important;
+    border: none !important;
+    padding: 0.625rem 1.25rem !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    font-size: 0.875rem !important;
+    transition: all 0.2s ease !important;
+    box-shadow: 0 2px 8px rgba(30, 58, 138, 0.3) !important;
+    cursor: pointer !important;
+}
+
+.btn-primary-modern:hover {
+    background: linear-gradient(135deg, #1e40af 0%, #1e293b 50%, #1e3a8a 100%) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 16px rgba(30, 58, 138, 0.4) !important;
+}
+
+.btn-primary-modern:focus,
+.btn-primary-modern:focus-visible {
+    outline: none !important;
+    box-shadow: 0 2px 8px rgba(30, 58, 138, 0.3) !important;
+}
+
+.card-body-modern,
+.card-body {
+    padding: 1.5rem;
+}
+
+.card-header-modern {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.card-title-modern {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0 0 0.25rem 0;
+}
+
 </style>
 
 <script>
+// Auto-filter functionality - filter automatically as user types
+function initializeAutoFilter() {
+    let searchTimeout;
+    const searchInput = document.getElementById('userSearchInput');
+    const filterForm = document.getElementById('filterForm');
+    
+    if (searchInput && filterForm) {
+        // Remove any existing listeners by cloning the input
+        const newInput = searchInput.cloneNode(true);
+        searchInput.parentNode.replaceChild(newInput, searchInput);
+        
+        // Add event listeners to the new input
+        newInput.addEventListener('input', function() {
+            // Clear previous timeout
+            clearTimeout(searchTimeout);
+            
+            // Set a new timeout to submit after user stops typing (500ms delay)
+            searchTimeout = setTimeout(function() {
+                filterForm.submit();
+            }, 500);
+        });
+        
+        // Also trigger on Enter key for immediate search
+        newInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                clearTimeout(searchTimeout);
+                e.preventDefault();
+                filterForm.submit();
+            }
+        });
+    }
+}
+
+// Initialize on page load
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeAutoFilter);
+} else {
+    initializeAutoFilter();
+}
+
+// Re-initialize when page content is loaded via AJAX
+document.addEventListener('pageContentLoaded', function(e) {
+    const page = e.detail?.page || new URLSearchParams(window.location.search).get('page');
+    if (page === 'users') {
+        setTimeout(initializeAutoFilter, 100);
+    }
+});
+
+// Also listen for the old event name (backwards compatibility)
+document.addEventListener('pageLoaded', function(e) {
+    const page = e.detail?.page || new URLSearchParams(window.location.search).get('page');
+    if (page === 'users') {
+        setTimeout(initializeAutoFilter, 100);
+    }
+});
+
 // Remove the old initialization code and replace with this:
 
 // === GLOBAL STATE ===
