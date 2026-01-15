@@ -573,6 +573,15 @@ $users_by_role = $stats['users_by_role'] ?? [];
     font-size: 1.5rem;
     font-weight: 700;
     color: #1e293b;
+    /* Number rendering fix - ensures digits display correctly on Windows 10/11 */
+    font-family: 'Segoe UI', Arial, Helvetica, sans-serif !important;
+    font-variant-numeric: tabular-nums !important;
+    font-feature-settings: 'tnum' !important;
+    -webkit-font-feature-settings: 'tnum' !important;
+    -moz-font-feature-settings: 'tnum' !important;
+    text-rendering: optimizeLegibility !important;
+    -webkit-font-smoothing: antialiased !important;
+    -moz-osx-font-smoothing: grayscale !important;
 }
 
 .table th {
