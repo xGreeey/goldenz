@@ -1314,6 +1314,20 @@ html[data-theme="dark"] .dropdown-item:hover {
 html[data-theme="dark"] .dropdown-divider {
     border-top-color: var(--interface-border) !important;
 }
+
+html[data-theme="dark"] .page-header {
+    background-color: #1a1d23 !important;
+    border: 1px solid var(--interface-border) !important;
+    border-radius: 14px; /* Rounded rectangle */
+    padding: 1.5rem 2rem; /* Adjusted padding */
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.04); /* Added shadow */
+    color: var(--interface-text) !important;
+    margin-bottom: var(--spacing-xl) !important;
+}
+
+html[data-theme="dark"] .page-title h1 {
+    color: var(--interface-text) !important;
+}
 </style>
 
 <script>
