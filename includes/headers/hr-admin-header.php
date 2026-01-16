@@ -9,6 +9,7 @@ function getPageTitle($page) {
         'dashboard' => 'Dashboard',
         'employees' => 'Employee Management',
         'add_employee' => 'Add New Employee',
+        'add_employee_page2' => 'Add New Employee - Page 2',
         'edit_employee' => 'Edit Employee',
         'view_employee' => 'View Employee',
         'dtr' => 'Daily Time Record',
@@ -80,7 +81,7 @@ $activeSection = getActiveSection($page);
     $iconUrl = function($icon) { return asset_url('icons/' . $icon . '.svg'); };
     ?>
     .hr-icon-plus { 
-        background-image: url('<?php echo $iconUrl('plus-icon'); ?>') !important;
+        background-image: url('<?php echo asset_url('icons/plus-icon.png'); ?>') !important;
     }
     .hr-icon-edit { 
         background-image: url('<?php echo $iconUrl('edit-icon'); ?>') !important;
@@ -98,7 +99,7 @@ $activeSection = getActiveSection($page);
         background-image: url('<?php echo $iconUrl('dismiss-icon_remove-icon'); ?>') !important;
     }
     .hr-icon-minus { 
-        background-image: url('<?php echo $iconUrl('minus-icon'); ?>') !important;
+        background-image: url('<?php echo asset_url('icons/minus-icon.png'); ?>') !important;
     }
     .hr-icon-notification, .hr-icon-bell { 
         background-image: url('<?php echo $iconUrl('notif-icon'); ?>') !important;
@@ -148,6 +149,12 @@ $activeSection = getActiveSection($page);
     <!-- Enhanced Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <?php if ($page === 'add_employee'): ?>
+    <!-- Preload icon images for add employee page to prevent flashing -->
+    <link rel="preload" as="image" href="<?php echo asset_url('icons/plus-icon.png'); ?>?v=2">
+    <link rel="preload" as="image" href="<?php echo asset_url('icons/minus-icon.png'); ?>?v=2">
+    <?php endif; ?>
     
     <!-- Security Headers -->
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
@@ -410,6 +417,9 @@ $activeSection = getActiveSection($page);
                     break;
                 case 'add_employee':
                     include $pages_path . 'add_employee.php';
+                    break;
+                case 'add_employee_page2':
+                    include $pages_path . 'add_employee_page2.php';
                     break;
                 case 'edit_employee':
                     include $pages_path . 'edit_employee.php';
