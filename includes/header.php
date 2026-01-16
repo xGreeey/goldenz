@@ -13,6 +13,7 @@ function getPageTitle($page) {
         'dashboard' => 'Dashboard',
         'employees' => 'Employee Management',
         'add_employee' => 'Add New Employee',
+        'add_employee_page2' => 'Add New Employee - Page 2',
         'edit_employee' => 'Edit Employee',
         'dtr' => 'Daily Time Record',
         'timeoff' => 'Time Off Management',
@@ -101,7 +102,7 @@ if ($userRole === 'hr_admin') {
         <!-- Header -->
         <?php 
         // Pages that should not show the header
-        $pages_without_header = ['permissions', 'employees', 'dashboard', 'posts', 'post_assignments', 'alerts', 'add_employee', 'view_employee', 'tasks', 'hr-help', 'help'];
+        $pages_without_header = ['permissions', 'employees', 'dashboard', 'posts', 'post_assignments', 'alerts', 'add_employee', 'add_employee_page2', 'view_employee', 'tasks', 'hr-help', 'help'];
 
         // HR Admin: no header (moved to dashboard welcome section)
         if (($userRole ?? '') === 'hr_admin'): 
@@ -132,6 +133,9 @@ if ($userRole === 'hr_admin') {
                     break;
                 case 'add_employee':
                     include $pagesPath . 'add_employee.php';
+                    break;
+                case 'add_employee_page2':
+                    include $pagesPath . 'add_employee_page2.php';
                     break;
                 case 'edit_employee':
                     include $pagesPath . 'edit_employee.php';
