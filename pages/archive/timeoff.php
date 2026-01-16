@@ -1089,6 +1089,231 @@ $next_year = $display_month == 12 ? $display_year + 1 : $display_year;
     justify-content: space-between;
     align-items: center;
 }
+/* Dark theme support for Time Off page */
+html[data-theme="dark"] .timeoff-container {
+    background-color: transparent;
+    color: var(--interface-text);
+}
+
+html[data-theme="dark"] .page-title h1 {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .page-tabs {
+    border-bottom-color: var(--interface-border) !important;
+}
+
+html[data-theme="dark"] .tab-button {
+    color: var(--interface-text-muted) !important;
+}
+
+html[data-theme="dark"] .tab-button.active {
+    color: var(--primary-color) !important;
+    border-bottom-color: var(--primary-color) !important;
+}
+
+html[data-theme="dark"] .tab-button:hover {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .calendar-controls {
+    background: #1a1d23 !important;
+    border-color: var(--interface-border) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .current-date {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .calendar-controls .form-select {
+    background-color: #0f1114 !important;
+    border-color: var(--interface-border) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .view-btn {
+    background: #1a1d23 !important;
+    border-color: var(--interface-border) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .view-btn.active {
+    background-color: var(--primary-color) !important;
+    color: white !important;
+    border-color: var(--primary-color) !important;
+}
+
+html[data-theme="dark"] .view-btn:hover {
+    background-color: var(--interface-hover) !important;
+}
+
+html[data-theme="dark"] .calendar-grid {
+    background: #1a1d23 !important;
+    border-color: var(--interface-border) !important;
+}
+
+html[data-theme="dark"] .calendar-header {
+    background-color: #1a1d23 !important;
+    border-bottom-color: var(--interface-border) !important;
+}
+
+html[data-theme="dark"] .day-header {
+    background-color: #1a1d23 !important;
+    color: var(--interface-text) !important;
+    border-right-color: var(--interface-border) !important;
+}
+
+html[data-theme="dark"] .day-header.weekend {
+    background-color: rgba(30, 41, 59, 0.5) !important;
+    color: var(--interface-text-muted) !important;
+}
+
+html[data-theme="dark"] .calendar-day {
+    background: #1a1d23 !important;
+    border-right-color: var(--interface-border) !important;
+    border-bottom-color: var(--interface-border) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .calendar-day.other-month {
+    background-color: rgba(30, 41, 59, 0.5) !important;
+    color: var(--interface-text-muted) !important;
+}
+
+html[data-theme="dark"] .calendar-day.weekend {
+    background-color: rgba(30, 41, 59, 0.5) !important;
+    background-image: repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 2px,
+        rgba(255, 255, 255, 0.05) 2px,
+        rgba(255, 255, 255, 0.05) 4px
+    ) !important;
+}
+
+html[data-theme="dark"] .calendar-day.today {
+    border-color: #ff6b35 !important;
+    background-color: rgba(255, 107, 53, 0.1) !important;
+}
+
+html[data-theme="dark"] .day-number {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .summary-card {
+    background: #1a1d23 !important;
+    border-color: var(--interface-border) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .summary-card .card-label {
+    color: var(--interface-text-muted) !important;
+}
+
+html[data-theme="dark"] .summary-card .card-number {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .table-controls {
+    background: transparent !important;
+}
+
+html[data-theme="dark"] .search-input {
+    background-color: #0f1114 !important;
+    border-color: var(--interface-border) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .search-input input {
+    background-color: transparent !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .search-input i {
+    color: var(--interface-text-muted) !important;
+}
+
+html[data-theme="dark"] .table-container {
+    background: #1a1d23 !important;
+    border-color: var(--interface-border) !important;
+}
+
+html[data-theme="dark"] .requests-table {
+    background: #1a1d23 !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .requests-table thead {
+    background-color: #1a1d23 !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .requests-table th {
+    background-color: #1a1d23 !important;
+    color: var(--interface-text) !important;
+    border-bottom-color: var(--interface-border) !important;
+}
+
+html[data-theme="dark"] .requests-table tbody {
+    background-color: #1a1d23 !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .requests-table tbody tr {
+    background-color: #1a1d23 !important;
+    color: var(--interface-text) !important;
+    border-bottom-color: var(--interface-border) !important;
+}
+
+html[data-theme="dark"] .requests-table tbody tr:hover {
+    background-color: var(--interface-hover) !important;
+}
+
+html[data-theme="dark"] .requests-table td {
+    background-color: transparent !important;
+    color: var(--interface-text) !important;
+    border-bottom-color: var(--interface-border) !important;
+}
+
+html[data-theme="dark"] .employee-name {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .employee-team {
+    color: var(--interface-text-muted) !important;
+}
+
+html[data-theme="dark"] .period-dates {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .period-days {
+    color: var(--interface-text-muted) !important;
+}
+
+html[data-theme="dark"] .reason-text {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .dropdown-menu {
+    background-color: #1a1d23 !important;
+    border-color: var(--interface-border) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .dropdown-item {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .dropdown-item:hover {
+    background-color: var(--interface-hover) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .dropdown-divider {
+    border-top-color: var(--interface-border) !important;
+}
 </style>
 
 <script>

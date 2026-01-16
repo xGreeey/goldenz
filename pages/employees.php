@@ -641,6 +641,11 @@ body.portal-hr-admin .employees-modern {
     margin-bottom: 1.5rem;
     margin-top: 0;
     padding-top: 0;
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 14px;
+    padding: 1.5rem 2rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.04);
 }
 
 .page-title-modern {
@@ -650,14 +655,14 @@ body.portal-hr-admin .employees-modern {
 .page-title-main {
     font-size: 2rem;
     font-weight: 700;
-    color: #1e293b;
+    color: #ffffff;
     margin: 0 0 0.5rem 0;
     line-height: 1.2;
     letter-spacing: -0.02em;
 }
 
 .page-subtitle-modern {
-    color: #64748b;
+    color: #cbd5e1;
     font-size: 0.875rem;
     margin: 0;
     line-height: 1.5;
@@ -1174,6 +1179,98 @@ body.portal-hr-admin .employees-modern {
         overflow-x: hidden;
     }
 }
+/* Dark theme support for Employees Table */
+html[data-theme="dark"] .table-container {
+    background: #1a1d23 !important;
+    border-color: var(--interface-border) !important;
+}
+
+html[data-theme="dark"] .employees-table {
+    background: #1a1d23 !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .employees-table thead {
+    background: #1a1d23 !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .employees-table thead th {
+    background: #1a1d23 !important;
+    color: var(--interface-text) !important;
+    border-bottom-color: var(--interface-border) !important;
+}
+
+html[data-theme="dark"] .employees-table thead th.sortable:hover {
+    color: #1fb2d5 !important;
+    background-color: var(--interface-hover) !important;
+}
+
+html[data-theme="dark"] .employees-table tbody {
+    background: #1a1d23 !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .employees-table tbody tr {
+    background-color: #1a1d23 !important;
+    border-bottom-color: var(--interface-border) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .employees-table tbody tr:hover {
+    background-color: var(--interface-hover) !important;
+}
+
+html[data-theme="dark"] .employees-table tbody tr:nth-child(even) {
+    background-color: rgba(30, 41, 59, 0.5) !important;
+}
+
+html[data-theme="dark"] .employees-table tbody tr:nth-child(even):hover {
+    background-color: var(--interface-hover) !important;
+}
+
+html[data-theme="dark"] .employees-table tbody tr:nth-child(even) td {
+    background-color: rgba(30, 41, 59, 0.5) !important;
+}
+
+html[data-theme="dark"] .employees-table tbody tr:hover td {
+    background-color: var(--interface-hover) !important;
+}
+
+html[data-theme="dark"] .employees-table tbody td {
+    background-color: transparent !important;
+    color: var(--interface-text) !important;
+    border-bottom-color: var(--interface-border) !important;
+}
+
+html[data-theme="dark"] .employees-table .employee-name {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .employees-table .employee-email {
+    color: var(--interface-text-muted) !important;
+}
+
+html[data-theme="dark"] .employees-table .employee-row:hover {
+    background-color: var(--interface-hover) !important;
+}
+
+html[data-theme="dark"] .license-info small {
+    color: var(--interface-text-muted) !important;
+}
+
+html[data-theme="dark"] .license-info strong {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .employment-details small {
+    color: var(--interface-text-muted) !important;
+}
+
+html[data-theme="dark"] .employment-details span:not(.badge) {
+    color: var(--interface-text) !important;
+}
+
 </style>
 
 <script>
