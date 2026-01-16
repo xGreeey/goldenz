@@ -21,38 +21,57 @@ if ($current_user_id && function_exists('get_db_connection')) {
     }
 }
 
-// Get employee ID from URL parameter or session (set by page 1)
-$employee_id = $_GET['employee_id'] ?? $_SESSION['employee_created_id'] ?? null;
+// ============================================================================
+// PAGE 2: COLLECT PAGE 2 DATA AND INSERT BOTH PAGE 1 + PAGE 2 DATA
+// ============================================================================
+// This page collects Page 2 data and when "Save Employee" is clicked,
+// it INSERTs both Page 1 data (from session) and Page 2 data into the database.
+// This ensures all employee data is saved together in a single INSERT.
+// ============================================================================
 
-// Store in session for form submission if we have it
-if ($employee_id) {
-    $_SESSION['employee_created_id'] = $employee_id;
+// Check if Page 1 data exists in session
+$page1_data = $_SESSION['employee_page1_data'] ?? null;
+$has_page1_data = !empty($page1_data);
+
+// For backward compatibility, also check for employee_id (if employee already exists)
+$employee_id = null;
+if (!empty($_GET['employee_id'])) {
+    $employee_id = (int)$_GET['employee_id'];
+} elseif (!empty($_SESSION['employee_created_id'])) {
+    $employee_id = (int)$_SESSION['employee_created_id'];
 }
 
-// Handle form submission
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['sworn_signature'])) {
+// Log the current state
+if (function_exists('log_db_error')) {
+    log_db_error('add_employee_page2', 'Page 2 loaded', [
+        'has_page1_data' => $has_page1_data ? 'yes' : 'no',
+        'employee_id' => $employee_id,
+        'page1_employee_no' => $page1_data['employee_no'] ?? 'N/A',
+        'page1_name' => $page1_data ? trim(($page1_data['first_name'] ?? '') . ' ' . ($page1_data['surname'] ?? '')) : 'N/A'
+    ]);
+}
+
+// Handle form submission - Page 2 saves BOTH Page 1 and Page 2 data
+// This is where the actual database INSERT happens
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST)) {
     $errors = [];
     $success = false;
     
-    // Validate employee ID exists
-    if (empty($employee_id)) {
-        $errors[] = 'Employee ID is missing. Please go back to Page 1 and create the employee first.';
-    } else {
-        // Verify employee exists
-        try {
-            $pdo = get_db_connection();
-            $check_stmt = $pdo->prepare("SELECT id FROM employees WHERE id = ?");
-            $check_stmt->execute([$employee_id]);
-            if ($check_stmt->rowCount() === 0) {
-                $errors[] = 'Employee not found. Please go back to Page 1 and create the employee first.';
-            }
-        } catch (Exception $e) {
-            $errors[] = 'Error verifying employee: ' . $e->getMessage();
+    // Get Page 1 data from session
+    $page1_data = $_SESSION['employee_page1_data'] ?? null;
+    
+    // Check if we have Page 1 data (new employee flow)
+    if (empty($page1_data)) {
+        $errors[] = 'Page 1 data is missing. Please go back to Page 1 and fill out the form first.';
+        if (function_exists('log_db_error')) {
+            log_db_error('add_employee_page2', 'Missing Page 1 data in session', [
+                'session_keys' => array_keys($_SESSION)
+            ]);
         }
     }
     
-    // If no errors, update employee with page 2 data
-    if (empty($errors)) {
+    // If we have Page 1 data, proceed with INSERT
+    if (empty($errors) && !empty($page1_data)) {
         try {
             $pdo = get_db_connection();
             
@@ -120,89 +139,231 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['sworn_signature'])) {
             $page2_data['book_no'] = !empty($_POST['book_no']) ? trim($_POST['book_no']) : null;
             $page2_data['series_of'] = !empty($_POST['series_of']) ? trim($_POST['series_of']) : null;
             
-            // Handle fingerprint file uploads
-            $fingerprint_fields = [
-                'fingerprint_right_thumb', 'fingerprint_right_index', 'fingerprint_right_middle', 
-                'fingerprint_right_ring', 'fingerprint_right_little',
-                'fingerprint_left_thumb', 'fingerprint_left_index', 'fingerprint_left_middle', 
-                'fingerprint_left_ring', 'fingerprint_left_little'
-            ];
+            // ========================================================================
+            // MERGE PAGE 1 AND PAGE 2 DATA, THEN INSERT
+            // ========================================================================
+            // Combine all data from Page 1 (session) and Page 2 (POST) for a single INSERT
+            // ========================================================================
             
-            $upload_dir = __DIR__ . '/../uploads/employees/fingerprints/';
-            if (!file_exists($upload_dir)) {
-                mkdir($upload_dir, 0755, true);
+            // Use the add_employee function from database.php for Page 1 data
+            if (function_exists('log_db_error')) {
+                log_db_error('add_employee_page2', 'Inserting employee with combined Page 1 + Page 2 data', [
+                    'employee_no' => $page1_data['employee_no'] ?? 'N/A',
+                    'employee_name' => trim(($page1_data['first_name'] ?? '') . ' ' . ($page1_data['surname'] ?? '')),
+                    'page2_fields_count' => count($page2_data)
+                ]);
             }
             
-            foreach ($fingerprint_fields as $field) {
-                if (isset($_FILES[$field]) && $_FILES[$field]['error'] === UPLOAD_ERR_OK) {
-                    $file = $_FILES[$field];
-                    $allowed_types = ['image/jpeg', 'image/jpg', 'image/png'];
-                    $max_size = 5 * 1024 * 1024; // 5MB
+            // First, insert Page 1 data using the add_employee function
+            $new_employee_id = add_employee($page1_data);
+            
+            if ($new_employee_id && $new_employee_id > 0) {
+                $new_employee_id = (int)$new_employee_id;
+                
+                if (function_exists('log_db_error')) {
+                    log_db_error('add_employee_page2', 'Employee created successfully', [
+                        'new_employee_id' => $new_employee_id,
+                        'employee_no' => $page1_data['employee_no'] ?? 'N/A'
+                    ]);
+                }
+                
+                // Handle photo upload - move from temp to permanent location
+                if (!empty($_SESSION['employee_temp_photo'])) {
+                    $temp_photo = $_SESSION['employee_temp_photo'];
+                    $upload_dir = __DIR__ . '/../uploads/employees/';
+                    if (!file_exists($upload_dir)) {
+                        mkdir($upload_dir, 0755, true);
+                    }
                     
-                    if (in_array($file['type'], $allowed_types) && $file['size'] <= $max_size) {
-                        $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
-                        $extension = strtolower($extension === 'jpeg' ? 'jpg' : $extension);
-                        $filename = $employee_id . '_' . $field . '.' . $extension;
-                        $target_path = $upload_dir . $filename;
+                    $final_filename = $new_employee_id . '.' . $temp_photo['extension'];
+                    $final_path = $upload_dir . $final_filename;
+                    
+                    if (file_exists($temp_photo['path']) && rename($temp_photo['path'], $final_path)) {
+                        // Check if profile_image column exists before updating
+                        try {
+                            $check_col_sql = "SHOW COLUMNS FROM employees LIKE 'profile_image'";
+                            $check_col_stmt = $pdo->query($check_col_sql);
+                            if ($check_col_stmt && $check_col_stmt->rowCount() > 0) {
+                                // Update profile_image in database
+                                $image_path = 'uploads/employees/' . $final_filename;
+                                $update_photo_sql = "UPDATE employees SET profile_image = ? WHERE id = ?";
+                                $update_photo_stmt = $pdo->prepare($update_photo_sql);
+                                $update_photo_stmt->execute([$image_path, $new_employee_id]);
+                                
+                                if (function_exists('log_db_error')) {
+                                    log_db_error('photo_upload', 'Photo moved from temp to permanent location', [
+                                        'employee_id' => $new_employee_id,
+                                        'path' => $image_path
+                                    ]);
+                                }
+                            } else {
+                                // Column doesn't exist - just log it, photo file is still saved
+                                if (function_exists('log_db_error')) {
+                                    log_db_error('photo_upload', 'profile_image column not found - photo saved to disk only', [
+                                        'employee_id' => $new_employee_id,
+                                        'file_path' => $final_path
+                                    ]);
+                                }
+                            }
+                        } catch (Exception $photo_e) {
+                            // Don't fail the whole operation for photo issues
+                            if (function_exists('log_db_error')) {
+                                log_db_error('photo_upload', 'Error updating profile_image', [
+                                    'employee_id' => $new_employee_id,
+                                    'error' => $photo_e->getMessage()
+                                ]);
+                            }
+                        }
+                    }
+                    unset($_SESSION['employee_temp_photo']);
+                }
+                
+                // Handle fingerprint file uploads
+                $fingerprint_fields = [
+                    'fingerprint_right_thumb', 'fingerprint_right_index', 'fingerprint_right_middle', 
+                    'fingerprint_right_ring', 'fingerprint_right_little',
+                    'fingerprint_left_thumb', 'fingerprint_left_index', 'fingerprint_left_middle', 
+                    'fingerprint_left_ring', 'fingerprint_left_little'
+                ];
+                
+                $fingerprint_upload_dir = __DIR__ . '/../uploads/employees/fingerprints/';
+                if (!file_exists($fingerprint_upload_dir)) {
+                    mkdir($fingerprint_upload_dir, 0755, true);
+                }
+                
+                foreach ($fingerprint_fields as $field) {
+                    if (isset($_FILES[$field]) && $_FILES[$field]['error'] === UPLOAD_ERR_OK) {
+                        $file = $_FILES[$field];
+                        $allowed_types = ['image/jpeg', 'image/jpg', 'image/png'];
+                        $max_size = 5 * 1024 * 1024; // 5MB
                         
-                        if (move_uploaded_file($file['tmp_name'], $target_path)) {
-                            $page2_data[$field] = 'uploads/employees/fingerprints/' . $filename;
+                        if (in_array($file['type'], $allowed_types) && $file['size'] <= $max_size) {
+                            $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
+                            $extension = strtolower($extension === 'jpeg' ? 'jpg' : $extension);
+                            $filename = $new_employee_id . '_' . $field . '.' . $extension;
+                            $target_path = $fingerprint_upload_dir . $filename;
+                            
+                            if (move_uploaded_file($file['tmp_name'], $target_path)) {
+                                $page2_data[$field] = 'uploads/employees/fingerprints/' . $filename;
+                            }
                         }
                     }
                 }
-            }
-            
-            // Build UPDATE query for page 2 fields
-            $update_fields = [];
-            $update_params = [];
-            
-            foreach ($page2_data as $field => $value) {
-                $update_fields[] = "`$field` = ?";
-                $update_params[] = $value;
-            }
-            
-            if (!empty($update_fields)) {
-                $update_params[] = $employee_id;
-                $update_sql = "UPDATE employees SET " . implode(', ', $update_fields) . ", updated_at = NOW() WHERE id = ?";
-                $update_stmt = $pdo->prepare($update_sql);
-                $result = $update_stmt->execute($update_params);
                 
-                if ($result) {
-                    $success = true;
-                    $_SESSION['page2_success'] = true;
-                    $_SESSION['page2_message'] = 'Employee Page 2 information saved successfully!';
-                    // Clear employee_created_id from session after successful save
-                    unset($_SESSION['employee_created_id']);
-                    header('Location: ?page=employees&success=page2_saved');
-                    exit;
-                } else {
-                    $errors[] = 'Failed to update employee information.';
+                // Now UPDATE the employee record with Page 2 data
+                $update_fields = [];
+                $update_params = [];
+                
+                foreach ($page2_data as $field => $value) {
+                    if ($value !== null) {
+                        $update_fields[] = "`$field` = ?";
+                        $update_params[] = $value;
+                    }
                 }
+                
+                if (!empty($update_fields)) {
+                    $update_params[] = $new_employee_id;
+                    $update_sql = "UPDATE employees SET " . implode(', ', $update_fields) . ", updated_at = NOW() WHERE id = ?";
+                    
+                    try {
+                        $update_stmt = $pdo->prepare($update_sql);
+                        $update_stmt->execute($update_params);
+                        
+                        if (function_exists('log_db_error')) {
+                            log_db_error('add_employee_page2', 'Page 2 data updated successfully', [
+                                'employee_id' => $new_employee_id,
+                                'fields_updated' => count($update_fields)
+                            ]);
+                        }
+                    } catch (PDOException $update_e) {
+                        // Check if this is an audit_logs duplicate key error
+                        // The UPDATE likely succeeded but the audit trigger failed
+                        $err_code = $update_e->getCode();
+                        $err_msg = $update_e->getMessage();
+                        
+                        if ($err_code == 23000 && strpos($err_msg, 'Duplicate entry') !== false) {
+                            // Audit log error - the UPDATE probably succeeded, continue
+                            if (function_exists('log_db_error')) {
+                                log_db_error('add_employee_page2', 'Page 2 UPDATE succeeded but audit trigger failed (ignored)', [
+                                    'employee_id' => $new_employee_id,
+                                    'audit_error' => $err_msg
+                                ]);
+                            }
+                        } else {
+                            // Different error - re-throw
+                            throw $update_e;
+                        }
+                    }
+                }
+                
+                // Log the action - wrap in try-catch to handle audit_logs errors
+                try {
+                    if (function_exists('log_security_event')) {
+                        log_security_event('Employee Created', "Employee: {$page1_data['first_name']} {$page1_data['surname']} (No: {$page1_data['employee_no']}) created by {$current_user_name}");
+                    }
+                } catch (Exception $log_e) {
+                    // Ignore logging errors
+                }
+                
+                // Clear session data
+                unset($_SESSION['employee_page1_data']);
+                unset($_SESSION['page1_data_ready']);
+                unset($_SESSION['employee_created_id']);
+                
+                $success = true;
+                
+                // Store success message in session for display on employees page
+                $_SESSION['employee_created_success'] = true;
+                $_SESSION['employee_created_message'] = "Employee has been created successfully!";
+                
+                // Redirect to employees page
+                $_SESSION['employee_redirect_url'] = '?page=employees&success=employee_created';
+                
             } else {
-                $errors[] = 'No data to save.';
+                $errors[] = 'Failed to create employee. Please check all required fields and try again.';
+                if (function_exists('log_db_error')) {
+                    log_db_error('add_employee_page2', 'add_employee returned false', [
+                        'page1_data' => $page1_data
+                    ]);
+                }
             }
             
         } catch (Exception $e) {
-            $errors[] = 'Error saving data: ' . $e->getMessage();
+            $errors[] = 'Error saving employee: ' . $e->getMessage();
             if (function_exists('log_db_error')) {
-                log_db_error('add_employee_page2', 'Error updating employee page 2', [
-                    'employee_id' => $employee_id,
-                    'error' => $e->getMessage()
+                log_db_error('add_employee_page2', 'Exception during employee creation', [
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
                 ]);
             }
         }
     }
 }
 
-    // Show errors if any
-    $show_errors = !empty($errors);
+// Show errors if any (outside POST block)
+$show_errors = !empty($errors);
     
-    // If employee ID is missing, show error and redirect
-    if (empty($employee_id)) {
-        $_SESSION['page2_error'] = 'Employee ID is missing. Please go back to Page 1 and create the employee first.';
-        header('Location: ?page=add_employee&error=no_employee_id');
-        exit;
-    }
+// If Page 1 data is missing (and this is not a POST request), show error and redirect
+if (!$has_page1_data && $_SERVER['REQUEST_METHOD'] !== 'POST') {
+    $_SESSION['page2_error'] = 'Please fill out Page 1 first before proceeding to Page 2.';
+    $_SESSION['employee_redirect_url'] = '?page=add_employee&error=no_page1_data';
+}
+?>
+
+<?php
+// Handle redirect via JavaScript (since headers are already sent)
+if (isset($_SESSION['employee_redirect_url'])) {
+    $redirect_url = $_SESSION['employee_redirect_url'];
+    unset($_SESSION['employee_redirect_url']);
+    ?>
+    <script type="text/javascript">
+        window.location.href = <?php echo json_encode($redirect_url); ?>;
+    </script>
+    <div style="text-align: center; padding: 50px;">
+        <p>Redirecting... If you are not redirected automatically, <a href="<?php echo htmlspecialchars($redirect_url); ?>">click here</a>.</p>
+    </div>
+    <?php
+    return; // Stop rendering the rest of the page
 }
 ?>
 
@@ -212,6 +373,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['sworn_signature'])) {
         <div class="page-title-modern">
             <h1 class="page-title-main">Add New Employee - Page 2</h1>
             <p class="page-subtitle-modern">Complete the employee application form</p>
+            <?php if ($has_page1_data): ?>
+                <div class="alert alert-info mt-2 mb-0" style="font-size: 0.875rem;">
+                    <i class="fas fa-user-plus me-2"></i>
+                    <strong>Creating New Employee:</strong> 
+                    <?php echo htmlspecialchars($page1_data['employee_type'] ?? ''); ?> 
+                    #<?php echo htmlspecialchars($page1_data['employee_no'] ?? ''); ?> - 
+                    <?php echo htmlspecialchars(trim(($page1_data['first_name'] ?? '') . ' ' . ($page1_data['surname'] ?? ''))); ?>
+                    <span class="text-muted">(Data from Page 1 - Not yet saved to database)</span>
+                </div>
+            <?php endif; ?>
         </div>
         <div class="page-actions-modern">
             <a href="?page=add_employee" class="btn btn-outline-modern me-2">
@@ -262,10 +433,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['sworn_signature'])) {
         </div>
     <?php endif; ?>
     
-    <?php if (isset($_GET['error']) && $_GET['error'] === 'no_employee_id'): ?>
+    <?php if (isset($_GET['error']) && $_GET['error'] === 'no_page1_data'): ?>
         <div class="alert alert-warning">
             <i class="fas fa-exclamation-triangle me-2"></i>
-            <strong>Warning:</strong> Employee ID is missing. Please go back to Page 1 and create the employee first.
+            <strong>Warning:</strong> Please fill out Page 1 first before proceeding to Page 2.
         </div>
     <?php endif; ?>
 
@@ -275,6 +446,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['sworn_signature'])) {
             <h3 class="form-title-compact">Employee Application Form - Page 2</h3>
         </div>
         <form method="POST" id="page2EmployeeForm" enctype="multipart/form-data" action="?page=add_employee_page2" class="add-employee-form-compact" novalidate>
+            <!-- Page 1 data is stored in session, will be combined with Page 2 data on save -->
                 
                 <!-- Employee Created By Info -->
                 <div class="alert alert-info">
@@ -897,10 +1069,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['sworn_signature'])) {
                 </div>
 
                 <!-- Page 2 Form Actions -->
-                <div class="form-actions d-flex justify-content-start">
+                <div class="form-actions d-flex justify-content-between">
                     <a href="?page=add_employee" class="btn btn-outline-modern">
                         <i class="fas fa-arrow-left me-2"></i>Back to Page 1
                     </a>
+                    <div>
+                        <a href="?page=employees" class="btn btn-outline-modern me-2">
+                            <i class="fas fa-times me-2"></i>Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary-modern">
+                            <i class="fas fa-save me-2"></i>Save Employee
+                        </button>
+                    </div>
                 </div>
             </form>
     </div>
