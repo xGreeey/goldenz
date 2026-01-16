@@ -1432,6 +1432,295 @@ body.portal-hr-admin .alerts-modern {
     }
 }
 
+/* Dark theme support for Employee Alerts page */
+html[data-theme="dark"] .hrdash {
+    background: var(--interface-bg) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .page-title-main {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .page-subtitle-modern {
+    color: var(--interface-text-muted) !important;
+}
+
+html[data-theme="dark"] .hrdash-stat {
+    background: #1a1d23 !important;
+    border-color: var(--interface-border) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .hrdash-stat__label {
+    color: var(--interface-text-muted) !important;
+}
+
+html[data-theme="dark"] .hrdash-stat__value {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .hrdash-stat__meta {
+    color: var(--interface-text-muted) !important;
+}
+
+html[data-theme="dark"] .alerts-card-modern {
+    background: #1a1d23 !important;
+    border-color: var(--interface-border) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .card-header-modern {
+    background: #1a1d23 !important;
+    border-bottom-color: var(--interface-border) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .card-title-modern {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .card-body {
+    background: #1a1d23 !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .filter-section {
+    background: #1a1d23 !important;
+    border: 1px solid var(--interface-border) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .filter-section .form-label {
+    color: var(--interface-text-muted) !important;
+}
+
+html[data-theme="dark"] .filter-section .form-select,
+html[data-theme="dark"] .filter-section .form-control {
+    background-color: #0f1114 !important;
+    border-color: var(--interface-border) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .filter-section .form-select option {
+    background-color: #1a1d23 !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .filter-section .form-select:focus,
+html[data-theme="dark"] .filter-section .form-control:focus {
+    background-color: #0f1114 !important;
+    border-color: var(--primary-color) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .filter-section .btn-outline-secondary {
+    background-color: #1a1d23 !important;
+    border-color: var(--interface-border) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .filter-section .btn-outline-secondary:hover {
+    background-color: var(--interface-hover) !important;
+    border-color: var(--interface-border) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .table {
+    background: #1a1d23 !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .table thead {
+    background: #1a1d23 !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .table thead th {
+    background: #1a1d23 !important;
+    color: var(--interface-text) !important;
+    border-bottom-color: var(--interface-border) !important;
+}
+
+html[data-theme="dark"] .table tbody {
+    background: #1a1d23 !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .table tbody tr {
+    background-color: #1a1d23 !important;
+    color: var(--interface-text) !important;
+    border-bottom-color: var(--interface-border) !important;
+}
+
+html[data-theme="dark"] .table tbody tr:hover {
+    background-color: var(--interface-hover) !important;
+}
+
+html[data-theme="dark"] .table td {
+    background-color: transparent !important;
+    color: var(--interface-text) !important;
+    border-color: var(--interface-border) !important;
+}
+
+html[data-theme="dark"] .table td strong {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .text-muted {
+    color: var(--interface-text-muted) !important;
+}
+
+html[data-theme="dark"] .priority-badge {
+    border: 1px solid var(--interface-border) !important;
+}
+
+html[data-theme="dark"] .priority-badge.urgent {
+    background-color: rgba(239, 68, 68, 0.2) !important;
+    color: #ef4444 !important;
+    border-color: #ef4444 !important;
+}
+
+html[data-theme="dark"] .priority-badge.high {
+    background-color: rgba(245, 158, 11, 0.2) !important;
+    color: #f59e0b !important;
+    border-color: #f59e0b !important;
+}
+
+html[data-theme="dark"] .priority-badge.medium {
+    background-color: rgba(59, 130, 246, 0.2) !important;
+    color: #3b82f6 !important;
+    border-color: #3b82f6 !important;
+}
+
+html[data-theme="dark"] .priority-badge.low {
+    background-color: rgba(100, 116, 139, 0.2) !important;
+    color: #64748b !important;
+    border-color: #64748b !important;
+}
+
+html[data-theme="dark"] .badge {
+    border: 1px solid var(--interface-border) !important;
+}
+
+html[data-theme="dark"] .badge.bg-info {
+    background-color: rgba(59, 130, 246, 0.2) !important;
+    color: #3b82f6 !important;
+    border-color: #3b82f6 !important;
+}
+
+html[data-theme="dark"] .alert-badge.active {
+    background-color: rgba(236, 72, 153, 0.2) !important;
+    color: #ec4899 !important;
+    border-color: #ec4899 !important;
+}
+
+html[data-theme="dark"] .alert-badge.acknowledged {
+    background-color: rgba(34, 197, 94, 0.2) !important;
+    color: #22c55e !important;
+    border-color: #22c55e !important;
+}
+
+html[data-theme="dark"] .alert-badge.resolved {
+    background-color: rgba(34, 197, 94, 0.2) !important;
+    color: #22c55e !important;
+    border-color: #22c55e !important;
+}
+
+html[data-theme="dark"] .alert-badge.dismissed {
+    background-color: rgba(100, 116, 139, 0.2) !important;
+    color: #64748b !important;
+    border-color: #64748b !important;
+}
+
+html[data-theme="dark"] .text-danger {
+    color: #ef4444 !important;
+}
+
+html[data-theme="dark"] .text-success {
+    color: #22c55e !important;
+}
+
+html[data-theme="dark"] .text-warning {
+    color: #f59e0b !important;
+}
+
+html[data-theme="dark"] .alert-actions .btn {
+    background: #1a1d23 !important;
+    border-color: var(--interface-border) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .alert-actions .btn:hover {
+    background: var(--interface-hover) !important;
+    border-color: var(--primary-color) !important;
+}
+
+html[data-theme="dark"] .alert-actions .btn.btn-success:hover {
+    background-color: rgba(34, 197, 94, 0.2) !important;
+    border-color: #22c55e !important;
+    color: #22c55e !important;
+}
+
+html[data-theme="dark"] .alert-actions .btn.btn-danger:hover {
+    background-color: rgba(239, 68, 68, 0.2) !important;
+    border-color: #ef4444 !important;
+    color: #ef4444 !important;
+}
+
+html[data-theme="dark"] .alert-actions .btn.btn-info:hover {
+    background-color: rgba(59, 130, 246, 0.2) !important;
+    border-color: #3b82f6 !important;
+    color: #3b82f6 !important;
+}
+
+html[data-theme="dark"] .form-check-input {
+    background-color: #0f1114 !important;
+    border-color: var(--interface-border) !important;
+}
+
+html[data-theme="dark"] .form-check-input:checked {
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+}
+
+html[data-theme="dark"] .modal-content {
+    background-color: #1a1d23 !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .modal-header {
+    border-bottom-color: var(--interface-border) !important;
+}
+
+html[data-theme="dark"] .modal-title {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .modal-footer {
+    border-top-color: var(--interface-border) !important;
+}
+
+html[data-theme="dark"] .modal-body {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .modal-body strong {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .alert {
+    background-color: rgba(30, 41, 59, 0.8) !important;
+    border-color: var(--interface-border) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .alert-info {
+    background-color: rgba(31, 178, 213, 0.1) !important;
+    border-color: var(--primary-color) !important;
+    color: var(--interface-text) !important;
+}
+
 </style>
 
 <!-- View Alert Modal -->
