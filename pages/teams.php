@@ -297,4 +297,118 @@ if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'super_admin') 
     color: #64748b;
     margin: 0;
 }
+
+/* Dark theme support for Super Admin Teams */
+html[data-theme="dark"] .super-admin-teams {
+    background: var(--interface-bg) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .super-admin-teams .page-header-modern {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .super-admin-teams .page-title-main {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .super-admin-teams .page-subtitle {
+    color: var(--interface-text-muted) !important;
+}
+
+html[data-theme="dark"] .super-admin-teams .card-modern {
+    background: #1a1d23 !important;
+    border-color: var(--interface-border) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .super-admin-teams .card-body-modern {
+    background: #1a1d23 !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .super-admin-teams .card-header-modern {
+    border-bottom-color: var(--interface-border) !important;
+}
+
+html[data-theme="dark"] .super-admin-teams .card-title-modern {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .super-admin-teams .card-subtitle {
+    color: var(--interface-text-muted) !important;
+}
+
+html[data-theme="dark"] .super-admin-teams .form-label {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .super-admin-teams .form-control,
+html[data-theme="dark"] .super-admin-teams .form-select {
+    background-color: #0f1114 !important;
+    border-color: var(--interface-border) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .super-admin-teams .input-group-text {
+    background-color: #1a1d23 !important;
+    border-color: var(--interface-border) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .super-admin-teams .table,
+html[data-theme="dark"] .super-admin-teams .table.table-sm,
+html[data-theme="dark"] .super-admin-teams .table.align-middle {
+    background-color: #1a1d23 !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .super-admin-teams .table thead {
+    background-color: #1a1d23 !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .super-admin-teams .table thead.table-light {
+    background-color: #1a1d23 !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .super-admin-teams .table thead th {
+    background-color: #1a1d23 !important;
+    color: var(--interface-text) !important;
+    border-color: var(--interface-border) !important;
+}
+
+html[data-theme="dark"] .super-admin-teams .table tbody {
+    background-color: #1a1d23 !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .super-admin-teams .table tbody tr {
+    background-color: #1a1d23 !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .super-admin-teams .table tbody tr:hover {
+    background-color: var(--interface-hover) !important;
+}
+
+html[data-theme="dark"] .super-admin-teams .table td,
+html[data-theme="dark"] .super-admin-teams .table th {
+    background-color: transparent !important;
+    border-color: var(--interface-border) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .super-admin-teams .table td strong {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .super-admin-teams .text-muted {
+    color: var(--interface-text-muted) !important;
+}
+
+html[data-theme="dark"] .super-admin-teams .badge {
+    color: #fff !important;
+}
 </style>
