@@ -317,6 +317,9 @@ $activeSection = getActiveSection($page);
 
     <!-- Main Content -->
     <div class="main-content" id="mainContent">
+        <!-- Header Section with Icons -->
+        <?php include __DIR__ . '/../super-admin-header-section.php'; ?>
+        
         <!-- Content -->
         <main class="content">
             <?php display_message(); ?>
