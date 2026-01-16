@@ -425,7 +425,7 @@ $display_employees = array_slice($all_employees, 0, 10); // Show first 10 employ
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end">
                     <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#profileSettingsModal" data-tab="profile"><i class="fas fa-user me-2"></i>Profile</a></li>
-                    <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#profileSettingsModal" data-tab="settings"><i class="fas fa-cog me-2"></i>Settings</a></li>
+                    <li><a class="dropdown-item" href="?page=settings"><i class="fas fa-cog me-2"></i>Settings</a></li>
                     <li><hr class="dropdown-divider"></li>
                     <li>
                         <a class="dropdown-item text-danger" href="<?php echo base_url(); ?>/index.php?logout=1" data-no-transition="true">
