@@ -41,7 +41,219 @@ $employees_by_status = $stats['employees_by_status'] ?? [];
 $users_by_role = $stats['users_by_role'] ?? [];
 ?>
 
-<div class="container-fluid dashboard-modern super-admin-dashboard">
+<div class="container-fluid dashboard-modern">
+    <!-- Welcome Header Section -->
+    <div class="hrdash-welcome">
+        <div class="hrdash-welcome__left">
+            <h2 class="hrdash-welcome__title">Welcome, <?php echo htmlspecialchars($_SESSION['name'] ?? 'Super Administrator'); ?></h2>
+            <p class="hrdash-welcome__subtitle">Ready to manage your system today?</p>
+        </div>
+        <div class="hrdash-welcome__actions">
+            <span id="current-time" class="hrdash-welcome__time"><?php echo strtolower(date('h:i A')); ?></span>
+            
+            <!-- Messages Dropdown -->
+            <?php
+            // Get recent messages/alerts (last 5 active alerts)
+            $recentMessages = [];
+            if (function_exists('get_employee_alerts')) {
+                try {
+                    $recentMessages = get_employee_alerts('active', null);
+                    $recentMessages = array_slice($recentMessages, 0, 5);
+                } catch (Exception $e) {
+                    $recentMessages = [];
+                }
+            }
+            $messageCount = count($recentMessages);
+            ?>
+            <div class="dropdown">
+                <button class="hrdash-welcome__icon-btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Messages" aria-label="Messages">
+                    <i class="fas fa-envelope"></i>
+                    <?php if ($messageCount > 0): ?>
+                        <span class="hrdash-welcome__badge"><?php echo $messageCount > 99 ? '99+' : $messageCount; ?></span>
+                    <?php endif; ?>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end hrdash-notification-dropdown">
+                    <li class="dropdown-header">
+                        <strong>Messages</strong>
+                        <a href="?page=alerts" class="text-decoration-none ms-auto">View All</a>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <?php if (empty($recentMessages)): ?>
+                        <li class="dropdown-item-text text-muted text-center py-3">
+                            <i class="far fa-envelope-open fa-2x mb-2 d-block"></i>
+                            <small>No new messages</small>
+                        </li>
+                    <?php else: ?>
+                        <?php foreach ($recentMessages as $msg): 
+                            $priorityClass = '';
+                            $priorityIcon = 'fa-info-circle';
+                            switch(strtolower($msg['priority'] ?? '')) {
+                                case 'urgent':
+                                    $priorityClass = 'text-danger';
+                                    $priorityIcon = 'fa-exclamation-triangle';
+                                    break;
+                                case 'high':
+                                    $priorityClass = 'text-warning';
+                                    $priorityIcon = 'fa-exclamation-circle';
+                                    break;
+                                default:
+                                    $priorityClass = 'text-info';
+                            }
+                            $employeeName = trim(($msg['surname'] ?? '') . ', ' . ($msg['first_name'] ?? '') . ' ' . ($msg['middle_name'] ?? ''));
+                            $timeAgo = '';
+                            if (!empty($msg['created_at'])) {
+                                $created = new DateTime($msg['created_at']);
+                                $now = new DateTime();
+                                $diff = $now->diff($created);
+                                if ($diff->days > 0) {
+                                    $timeAgo = $diff->days . 'd ago';
+                                } elseif ($diff->h > 0) {
+                                    $timeAgo = $diff->h . 'h ago';
+                                } else {
+                                    $timeAgo = $diff->i . 'm ago';
+                                }
+                            }
+                        ?>
+                            <li>
+                                <a class="dropdown-item hrdash-notification-item" href="?page=alerts">
+                                    <div class="d-flex align-items-start">
+                                        <i class="fas <?php echo $priorityIcon; ?> <?php echo $priorityClass; ?> me-2 mt-1"></i>
+                                        <div class="flex-grow-1">
+                                            <div class="fw-semibold small"><?php echo htmlspecialchars($msg['title'] ?? 'Alert'); ?></div>
+                                            <div class="text-muted small"><?php echo htmlspecialchars($employeeName); ?></div>
+                                            <?php if ($timeAgo): ?>
+                                                <div class="text-muted" style="font-size: 0.7rem;"><?php echo $timeAgo; ?></div>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                </a>
+                            </li>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </ul>
+            </div>
+            
+            <!-- Notifications Dropdown -->
+            <?php
+            // Get recent notifications (pending tasks)
+            $recentNotifications = [];
+            $pendingTasks = 0;
+            if (function_exists('get_all_tasks')) {
+                try {
+                    $recentNotifications = get_all_tasks('pending', null, null);
+                    $recentNotifications = array_slice($recentNotifications, 0, 5);
+                    $pendingTasks = count($recentNotifications);
+                } catch (Exception $e) {
+                    $recentNotifications = [];
+                }
+            }
+            if (function_exists('get_pending_task_count')) {
+                try {
+                    $pendingTasks = (int) get_pending_task_count();
+                } catch (Exception $e) {
+                    $pendingTasks = 0;
+                }
+            }
+            ?>
+            <div class="dropdown">
+                <button class="hrdash-welcome__icon-btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Notifications" aria-label="Notifications">
+                    <i class="fas fa-bell"></i>
+                    <?php if ($pendingTasks > 0): ?>
+                        <span class="hrdash-welcome__badge"><?php echo $pendingTasks > 99 ? '99+' : $pendingTasks; ?></span>
+                    <?php endif; ?>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end hrdash-notification-dropdown">
+                    <li class="dropdown-header">
+                        <strong>Notifications</strong>
+                        <a href="?page=tasks" class="text-decoration-none ms-auto">View All</a>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <?php if (empty($recentNotifications)): ?>
+                        <li class="dropdown-item-text text-muted text-center py-3">
+                            <i class="far fa-bell-slash fa-2x mb-2 d-block"></i>
+                            <small>No new notifications</small>
+                        </li>
+                    <?php else: ?>
+                        <?php foreach ($recentNotifications as $notif): 
+                            $priorityClass = '';
+                            $priorityIcon = 'fa-circle';
+                            switch(strtolower($notif['priority'] ?? '')) {
+                                case 'urgent':
+                                    $priorityClass = 'text-danger';
+                                    $priorityIcon = 'fa-exclamation-triangle';
+                                    break;
+                                case 'high':
+                                    $priorityClass = 'text-warning';
+                                    $priorityIcon = 'fa-exclamation-circle';
+                                    break;
+                                case 'medium':
+                                    $priorityClass = 'text-info';
+                                    $priorityIcon = 'fa-info-circle';
+                                    break;
+                                default:
+                                    $priorityClass = 'text-muted';
+                            }
+                            $timeAgo = '';
+                            if (!empty($notif['created_at'])) {
+                                $created = new DateTime($notif['created_at']);
+                                $now = new DateTime();
+                                $diff = $now->diff($created);
+                                if ($diff->days > 0) {
+                                    $timeAgo = $diff->days . 'd ago';
+                                } elseif ($diff->h > 0) {
+                                    $timeAgo = $diff->h . 'h ago';
+                                } else {
+                                    $timeAgo = $diff->i . 'm ago';
+                                }
+                            }
+                        ?>
+                            <li>
+                                <a class="dropdown-item hrdash-notification-item" href="?page=tasks">
+                                    <div class="d-flex align-items-start">
+                                        <i class="fas <?php echo $priorityIcon; ?> <?php echo $priorityClass; ?> me-2 mt-1"></i>
+                                        <div class="flex-grow-1">
+                                            <div class="fw-semibold small"><?php echo htmlspecialchars($notif['title'] ?? 'Task'); ?></div>
+                                            <div class="text-muted small"><?php echo htmlspecialchars($notif['category'] ?? 'Task'); ?></div>
+                                            <?php if ($timeAgo): ?>
+                                                <div class="text-muted" style="font-size: 0.7rem;"><?php echo $timeAgo; ?></div>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                </a>
+                            </li>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </ul>
+            </div>
+            <div class="dropdown">
+                <button class="hrdash-welcome__profile-btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Profile menu">
+                    <?php
+                    $displayName = trim((string)($_SESSION['name'] ?? ($_SESSION['username'] ?? 'Super Admin')));
+                    $initials = 'SA';
+                    if ($displayName) {
+                        $parts = preg_split('/\s+/', $displayName);
+                        $first = $parts[0][0] ?? 'S';
+                        $last = (count($parts) > 1) ? ($parts[count($parts) - 1][0] ?? 'A') : ($parts[0][1] ?? 'A');
+                        $initials = strtoupper($first . $last);
+                    }
+                    ?>
+                    <span class="hrdash-welcome__avatar"><?php echo htmlspecialchars($initials); ?></span>
+                    <i class="fas fa-chevron-down hrdash-welcome__chevron"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#profileSettingsModal" data-tab="profile"><i class="fas fa-user me-2"></i>Profile</a></li>
+                    <li><a class="dropdown-item" href="?page=settings"><i class="fas fa-cog me-2"></i>Settings</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <a class="dropdown-item text-danger" href="<?php echo base_url(); ?>/index.php?logout=1" data-no-transition="true">
+                            <i class="fas fa-right-from-bracket me-2"></i>Logout
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
     <!-- Page Header -->
     <div class="page-header-modern mb-5">
         <div class="page-title-modern">
@@ -412,356 +624,40 @@ $users_by_role = $stats['users_by_role'] ?? [];
     </div>
 </div>
 
-<style>
-/* Super Admin Dashboard Specific Styles */
-.super-admin-dashboard {
-    padding: 2rem 2.5rem;
-    max-width: 100%;
-    overflow-x: hidden;
-    background: #f8fafc;
-    min-height: 100vh;
-}
-
-/* Ensure cards match HR admin style */
-.super-admin-dashboard .card-modern,
-.super-admin-dashboard .stat-card-modern {
-    border: 1px solid #e2e8f0;
-    border-radius: 14px;
-    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
-    background: #ffffff;
-    overflow: hidden;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.super-admin-dashboard .card-modern:hover,
-.super-admin-dashboard .stat-card-modern:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.1);
-}
-
-.super-admin-dashboard .card-body-modern {
-    padding: 1.5rem;
-}
-
-.super-admin-dashboard .card-header-modern {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 1.5rem;
-    padding-bottom: 1rem;
-    border-bottom: 1px solid #e2e8f0;
-}
-
-.super-admin-dashboard .card-title-modern {
-    font-size: 1.125rem;
-    font-weight: 700;
-    color: #0f172a;
-    margin: 0 0 0.25rem 0;
-}
-
-.super-admin-dashboard .card-subtitle {
-    font-size: 0.875rem;
-    color: #64748b;
-    margin: 0;
-}
-
-/* Audit log action badge - black text */
-.super-admin-dashboard .audit-action-badge {
-    color: #1e293b !important;
-    background: #dbeafe !important;
-    border: 1px solid #bfdbfe;
-}
-
-.role-breakdown-list,
-.status-breakdown-list {
-    display: flex;
-    flex-direction: column;
-    gap: 1.25rem;
-}
-
-.role-breakdown-item,
-.status-breakdown-item {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-}
-
-.role-breakdown-header,
-.status-breakdown-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.role-breakdown-label,
-.status-breakdown-label {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: #475569;
-}
-
-.role-badge,
-.status-badge {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    display: inline-block;
-    flex-shrink: 0;
-}
-
-.role-badge-danger,
-.status-badge-danger {
-    background: #ef4444;
-}
-
-.role-badge-primary,
-.status-badge-primary {
-    background: #1fb2d5;
-}
-
-.role-badge-info {
-    background: #06b6d4;
-}
-
-.role-badge-success,
-.status-badge-success {
-    background: #22c55e;
-}
-
-.role-badge-warning,
-.status-badge-warning {
-    background: #f59e0b;
-}
-
-.role-badge-secondary,
-.status-badge-secondary {
-    background: #64748b;
-}
-
-.role-name,
-.status-name {
-    font-weight: 500;
-}
-
-.role-breakdown-value,
-.status-breakdown-value {
-    font-size: 0.875rem;
-    color: #1e293b;
-}
-
-.role-breakdown-value strong,
-.status-breakdown-value strong {
-    font-size: 1rem;
-    font-weight: 700;
-}
-
-.role-breakdown-progress,
-.status-breakdown-progress {
-    width: 100%;
-}
-
-.progress-bar-success {
-    background: linear-gradient(90deg, #22c55e 0%, #16a34a 100%);
-}
-
-.progress-bar-secondary {
-    background: linear-gradient(90deg, #64748b 0%, #475569 100%);
-}
-
-.progress-bar-danger {
-    background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%);
-}
-
-.progress-bar-warning {
-    background: linear-gradient(90deg, #f59e0b 0%, #d97706 100%);
-}
-
-.progress-bar-primary {
-    background: linear-gradient(90deg, #1fb2d5 0%, #0ea5e9 100%);
-}
-
-.progress-bar-info {
-    background: linear-gradient(90deg, #06b6d4 0%, #0891b2 100%);
-}
-
-.quick-stats-list {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
-
-.quick-stat-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem;
-    background: #f8fafc;
-    border-radius: 8px;
-    border: 1px solid #e2e8f0;
-    transition: all 0.2s ease;
-}
-
-.quick-stat-item:hover {
-    background: #f1f5f9;
-    border-color: #cbd5e1;
-    transform: translateX(2px);
-}
-
-.quick-stat-label {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    font-size: 0.875rem;
-    color: #64748b;
-    font-weight: 500;
-}
-
-.quick-stat-value {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #1e293b;
-    /* Number rendering fix - ensures digits display correctly on Windows 10/11 */
-    font-family: 'Segoe UI', Arial, Helvetica, sans-serif !important;
-    font-variant-numeric: tabular-nums !important;
-    font-feature-settings: 'tnum' !important;
-    -webkit-font-feature-settings: 'tnum' !important;
-    -moz-font-feature-settings: 'tnum' !important;
-    text-rendering: optimizeLegibility !important;
-    -webkit-font-smoothing: antialiased !important;
-    -moz-osx-font-smoothing: grayscale !important;
-}
-
-.table th {
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    font-weight: 600;
-    color: #64748b;
-    padding: 1rem;
-}
-
-.table td {
-    padding: 1rem;
-    font-size: 0.875rem;
-    color: #475569;
-    vertical-align: middle;
-}
-
-/* Dark theme support for Super Admin Dashboard */
-html[data-theme="dark"] .super-admin-dashboard {
-    background: var(--interface-bg) !important;
-}
-
-html[data-theme="dark"] .super-admin-dashboard .card-modern,
-html[data-theme="dark"] .super-admin-dashboard .stat-card-modern {
-    background: #1a1d23 !important;
-    border-color: var(--interface-border) !important;
-    color: var(--interface-text) !important;
-}
-
-html[data-theme="dark"] .super-admin-dashboard .card-header-modern {
-    border-bottom-color: var(--interface-border) !important;
-}
-
-html[data-theme="dark"] .super-admin-dashboard .card-title-modern {
-    color: var(--interface-text) !important;
-}
-
-html[data-theme="dark"] .super-admin-dashboard .card-subtitle {
-    color: var(--interface-text-muted) !important;
-}
-
-html[data-theme="dark"] .super-admin-dashboard .audit-action-badge {
-    color: var(--interface-text) !important;
-    background: #1e3a5f !important;
-    border-color: #2563eb !important;
-}
-
-html[data-theme="dark"] .super-admin-dashboard .role-breakdown-label,
-html[data-theme="dark"] .super-admin-dashboard .status-breakdown-label {
-    color: var(--interface-text-light) !important;
-}
-
-html[data-theme="dark"] .super-admin-dashboard .role-breakdown-value,
-html[data-theme="dark"] .super-admin-dashboard .status-breakdown-value {
-    color: var(--interface-text) !important;
-}
-
-html[data-theme="dark"] .super-admin-dashboard .quick-stat-item {
-    background: #1a1d23 !important;
-    border-color: var(--interface-border) !important;
-}
-
-html[data-theme="dark"] .super-admin-dashboard .quick-stat-item:hover {
-    background: #1e293b !important;
-    border-color: var(--interface-border-light) !important;
-}
-
-html[data-theme="dark"] .super-admin-dashboard .quick-stat-label {
-    color: var(--interface-text-muted) !important;
-}
-
-html[data-theme="dark"] .super-admin-dashboard .quick-stat-value {
-    color: var(--interface-text) !important;
-}
-
-html[data-theme="dark"] .super-admin-dashboard .table thead {
-    background: #1e293b !important;
-}
-
-html[data-theme="dark"] .super-admin-dashboard .table thead.table-light {
-    background: #1e293b !important;
-}
-
-html[data-theme="dark"] .super-admin-dashboard .table th {
-    background: #1e293b !important;
-    color: var(--interface-text-muted) !important;
-    border-color: var(--interface-border) !important;
-}
-
-html[data-theme="dark"] .super-admin-dashboard .table tbody tr {
-    background: #1a1d23 !important;
-    border-color: var(--interface-border) !important;
-}
-
-html[data-theme="dark"] .super-admin-dashboard .table tbody tr:hover {
-    background: #1e293b !important;
-}
-
-html[data-theme="dark"] .super-admin-dashboard .table td {
-    background: transparent !important;
-    color: var(--interface-text-light) !important;
-    border-color: var(--interface-border) !important;
-}
-
-html[data-theme="dark"] .super-admin-dashboard .btn-link-modern {
-    color: var(--interface-text-light) !important;
-}
-
-html[data-theme="dark"] .super-admin-dashboard .btn-link-modern:hover {
-    color: var(--interface-text) !important;
-    background: #1e293b !important;
-}
-
-html[data-theme="dark"] .super-admin-dashboard .page-header-modern {
-    background-color: #1a1d23 !important;
-    border: 1px solid var(--interface-border) !important;
-    border-radius: 14px; /* Rounded rectangle */
-    padding: 1.5rem 2rem; /* Adjusted padding */
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.04); /* Added shadow */
-    color: var(--interface-text) !important;
-}
-
-@media (max-width: 768px) {
-    .super-admin-dashboard {
-        padding: 1.5rem 1rem;
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Update current time display
+    function initTimeDisplay() {
+        const timeEl = document.getElementById('current-time');
+        if (timeEl) {
+            function updateTime() {
+                const now = new Date();
+                let hours = now.getHours();
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                const ampm = hours >= 12 ? 'pm' : 'am';
+                hours = hours % 12;
+                hours = hours ? hours : 12; // the hour '0' should be '12'
+                hours = String(hours).padStart(2, '0');
+                timeEl.textContent = `${hours}:${minutes} ${ampm}`;
+            }
+            updateTime(); // Set initial time
+            setInterval(updateTime, 60000); // Update every minute
+        }
     }
     
-    .stat-number {
-        font-size: 1.75rem;
-    }
-}
-</style>
+    initTimeDisplay();
+    
+    // Ensure dropdowns are properly positioned
+    const dropdowns = document.querySelectorAll('.dropdown');
+    dropdowns.forEach(function(dropdown) {
+        const toggle = dropdown.querySelector('.dropdown-toggle');
+        const menu = dropdown.querySelector('.dropdown-menu');
+        if (toggle && menu) {
+            toggle.addEventListener('shown.bs.dropdown', function() {
+                // Ensure dropdown is properly aligned
+                menu.style.display = 'block';
+            });
+        }
+    });
+});
+</script>
