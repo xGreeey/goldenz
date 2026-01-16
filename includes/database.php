@@ -1258,8 +1258,8 @@ if (!function_exists('get_audit_logs')) {
             $params = [];
             
             if (!empty($filters['action'])) {
-                $sql .= " AND al.action LIKE ?";
-                $params[] = '%' . $filters['action'] . '%';
+                $sql .= " AND al.action = ?";
+                $params[] = $filters['action'];
             }
             
             if (!empty($filters['table_name'])) {
@@ -1270,6 +1270,14 @@ if (!function_exists('get_audit_logs')) {
             if (!empty($filters['user_id'])) {
                 $sql .= " AND al.user_id = ?";
                 $params[] = $filters['user_id'];
+            }
+            
+            if (!empty($filters['user_search'])) {
+                $sql .= " AND (u.name LIKE ? OR u.username LIKE ? OR u.email LIKE ?)";
+                $search_term = '%' . $filters['user_search'] . '%';
+                $params[] = $search_term;
+                $params[] = $search_term;
+                $params[] = $search_term;
             }
             
             if (!empty($filters['date_from'])) {
@@ -1375,8 +1383,8 @@ if (!function_exists('get_audit_logs_count')) {
             $params = [];
             
             if (!empty($filters['action'])) {
-                $sql .= " AND al.action LIKE ?";
-                $params[] = '%' . $filters['action'] . '%';
+                $sql .= " AND al.action = ?";
+                $params[] = $filters['action'];
             }
             
             if (!empty($filters['table_name'])) {
@@ -1387,6 +1395,14 @@ if (!function_exists('get_audit_logs_count')) {
             if (!empty($filters['user_id'])) {
                 $sql .= " AND al.user_id = ?";
                 $params[] = $filters['user_id'];
+            }
+            
+            if (!empty($filters['user_search'])) {
+                $sql .= " AND EXISTS (SELECT 1 FROM users u WHERE u.id = al.user_id AND (u.name LIKE ? OR u.username LIKE ? OR u.email LIKE ?))";
+                $search_term = '%' . $filters['user_search'] . '%';
+                $params[] = $search_term;
+                $params[] = $search_term;
+                $params[] = $search_term;
             }
             
             if (!empty($filters['date_from'])) {
