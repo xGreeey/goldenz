@@ -22,3 +22,23 @@
 2026-01-16 12:50:20 - Audit Log Error - Database error: SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry '0' for key 'PRIMARY' - IP: 192.168.1.7
 2026-01-16 12:50:28 - Audit Log Error - Database error: SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry '0' for key 'PRIMARY' - IP: 192.168.1.7
 2026-01-16 12:54:16 - Audit Log Error - Database error: SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry '0' for key 'PRIMARY' - IP: 192.168.1.7
+<<<<<<< HEAD
+2026-01-16 15:34:38 - 2FA Success - User: ChristianAmor (christian amor) - Role: super_admin - IP: ::1 - IP: ::1
+2026-01-16 15:51:13 - 2FA Success - User: ChristianAmor (christian amor) - Role: super_admin - IP: ::1 - IP: ::1
+2026-01-16 15:59:30 - 2FA Success - User: ChristianAmor (christian amor) - Role: super_admin - IP: ::1 - IP: ::1
+=======
+2026-01-16 14:31:33 - Employee Created - Employee: ASFSADFASDF SADFF (ID: 12) created by HR Administrator - IP: 192.168.1.7
+2026-01-16 14:31:33 - Audit Log Error - Database error: SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry '0' for key 'PRIMARY' - IP: 192.168.1.7
+2026-01-16 15:22:10 - Employee Created - Employee: ASDFSADF ASDFASDF (ID: 24434) created by HR Administrator - IP: 192.168.1.7
+2026-01-16 15:22:10 - Audit Log Error - Database error: SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry '0' for key 'PRIMARY' - IP: 192.168.1.7
+2026-01-16 15:39:04 - Employee Created - Employee: TEMP USER (ID: 23423) created by HR Administrator - IP: 192.168.1.7
+2026-01-16 15:39:04 - Audit Log Error - Database error: SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry '0' for key 'PRIMARY' - IP: 192.168.1.7
+2026-01-16 16:12:54 - Employee Created - Employee: TEMP USER (No: 32432) created by HR Administrator - IP: 192.168.1.7
+2026-01-16 16:14:52 - Employee Created - Employee: TEMP USER (No: 24324) created by HR Administrator - IP: 192.168.1.7
+2026-01-16 16:17:15 - Employee Created - Employee: TEMP USER (No: 0) created by HR Administrator - IP: 192.168.1.7
+2026-01-16 16:19:27 - Employee Created - Employee: TEMP USER (No: 24325) created by HR Administrator - IP: 192.168.1.7
+2026-01-16 16:27:15 - Employee Created - Employee: ASDFASDF ASDFASDF (No: 23423) created by HR Administrator - IP: 192.168.1.7
+2026-01-16 16:28:13 - Employee Created - Employee: TEMP USER (No: 23432) created by HR Administrator - IP: 192.168.1.7
+2026-01-16 16:31:30 - Employee Created - Employee: TEMP USER (No: 24326) created by HR Administrator - IP: 192.168.1.7
+2026-01-16 16:33:42 - Employee Created - Employee: TEMP USER (No: 24327) created by HR Administrator - IP: 192.168.1.7
+>>>>>>> 48160e9e4edbe3f2bddb465cb571c5347c023ff9

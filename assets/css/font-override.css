@@ -2204,3 +2204,902 @@ body.portal-hr-admin .hrdash-welcome__time {
     color: #64748b;
     margin-right: 0.25rem;
 }
+
+/* ============================================
+   SUPER-ADMIN: APPLY HR-ADMIN STYLING
+   Match HR Admin dashboard design exactly
+   ============================================ */
+
+/* Super Admin: Use same spacing system as HR Admin */
+body.portal-super-admin {
+    /* Page padding (outer whitespace). Keep smaller so grey background doesn't waste space. */
+    --hr-page-px: 1.5rem;
+    --hr-page-py: 1.5rem;
+
+    /* Default grid spacing between sections/cards - reduced for better visual balance */
+    --hr-gutter: 1.5rem;
+    
+    /* Section spacing - consistent spacing between major sections */
+    --hr-section-spacing: 2rem;
+}
+
+/* Super Admin: Ensure main-content starts after sidebar and uses remaining width */
+body.portal-super-admin .main-content {
+    margin-left: var(--sidebar-width) !important;
+    margin-right: 0 !important;
+    padding: 0 !important;
+    width: calc(100% - var(--sidebar-width)) !important;
+    max-width: calc(100% - var(--sidebar-width)) !important;
+    overflow-x: hidden !important;
+    box-sizing: border-box !important;
+    position: relative !important;
+}
+
+/* Prevent dashboard content from overflowing beyond main-content boundaries */
+body.portal-super-admin .main-content .content,
+body.portal-super-admin .main-content .container-fluid,
+body.portal-super-admin .main-content .dashboard-modern {
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+/* Remove base .content padding; control spacing via page containers */
+body.portal-super-admin .content {
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+    box-sizing: border-box !important;
+}
+
+/* Standardize top-level page container spacing across Super Admin views */
+body.portal-super-admin .content > .container,
+body.portal-super-admin .content > .container-fluid {
+    padding-top: 0 !important;
+    padding-bottom: var(--hr-page-py) !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+/* Dashboard container - full width within content, sections handle their own padding */
+body.portal-super-admin .hrdash,
+body.portal-super-admin .dashboard-modern {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+    box-sizing: border-box !important;
+}
+
+/* Super Admin Dashboard: Remove background color */
+body.portal-super-admin .dashboard-modern {
+    background: transparent !important;
+}
+
+/* Super Admin: Ensure all direct child sections inside dashboard align properly */
+body.portal-super-admin .dashboard-modern > .row,
+body.portal-super-admin .dashboard-modern > .collapse {
+    margin-left: var(--hr-page-px) !important;
+    margin-right: var(--hr-page-px) !important;
+    width: calc(100% - (2 * var(--hr-page-px))) !important;
+    max-width: calc(100% - (2 * var(--hr-page-px))) !important;
+    box-sizing: border-box !important;
+}
+
+/* Super Admin: Ensure nested rows maintain Bootstrap grid behavior */
+body.portal-super-admin .dashboard-modern .row {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+/* Super Admin: Ensure Bootstrap columns work properly */
+body.portal-super-admin .dashboard-modern .row [class*="col-"] {
+    padding-left: calc(var(--bs-gutter-x, 1.5rem) / 2) !important;
+    padding-right: calc(var(--bs-gutter-x, 1.5rem) / 2) !important;
+    box-sizing: border-box !important;
+}
+
+/* Super Admin: Apply same card styling as HR Admin */
+body.portal-super-admin .card-modern,
+body.portal-super-admin .stat-card-modern {
+    border: none !important;
+    border-radius: 16px !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.04) !important;
+    background: #ffffff !important;
+    overflow: hidden !important;
+    transition: all 0.3s ease !important;
+}
+
+body.portal-super-admin .card-modern:hover,
+body.portal-super-admin .stat-card-modern:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08), 0 8px 24px rgba(0, 0, 0, 0.06) !important;
+}
+
+body.portal-super-admin .card-body-modern {
+    padding: 1.5rem !important;
+}
+
+body.portal-super-admin .card-header-modern {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: flex-start !important;
+}
+
+body.portal-super-admin .card-title-modern {
+    font-size: 1.25rem !important;
+    font-weight: 600 !important;
+    color: #1e293b !important;
+    margin: 0 0 0.25rem 0 !important;
+    letter-spacing: -0.01em !important;
+}
+
+body.portal-super-admin .card-subtitle {
+    font-size: 0.8125rem !important;
+    color: #64748b !important;
+    margin: 0 !important;
+}
+
+/* Super Admin: Match page header styling */
+body.portal-super-admin .page-header-modern {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: flex-start !important;
+    margin-left: var(--hr-page-px) !important;
+    margin-right: var(--hr-page-px) !important;
+    margin-bottom: 2rem !important;
+    padding: 0 !important;
+    width: calc(100% - (2 * var(--hr-page-px))) !important;
+    max-width: calc(100% - (2 * var(--hr-page-px))) !important;
+    box-sizing: border-box !important;
+}
+
+body.portal-super-admin .page-title-modern {
+    flex: 1 !important;
+}
+
+body.portal-super-admin .page-title-main {
+    font-size: 2rem !important;
+    font-weight: 700 !important;
+    color: #1e293b !important;
+    margin: 0 0 0.5rem 0 !important;
+    letter-spacing: -0.02em !important;
+}
+
+body.portal-super-admin .page-subtitle {
+    font-size: 0.9375rem !important;
+    color: #64748b !important;
+    margin: 0 !important;
+    font-weight: 400 !important;
+}
+
+body.portal-super-admin .page-actions-modern {
+    display: flex !important;
+    gap: 0.75rem !important;
+    align-items: center !important;
+}
+
+/* Super Admin: Match stat card styling */
+body.portal-super-admin .stat-card-modern {
+    border: none !important;
+    border-radius: 16px !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.04) !important;
+    background: #ffffff !important;
+    transition: all 0.3s ease !important;
+    overflow: hidden !important;
+}
+
+body.portal-super-admin .stat-header {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    margin-bottom: 1rem !important;
+}
+
+body.portal-super-admin .stat-label {
+    font-size: 0.8125rem !important;
+    color: #64748b !important;
+    font-weight: 500 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+}
+
+body.portal-super-admin .stat-icon {
+    font-size: 1.125rem !important;
+    color: #cbd5e1 !important;
+    opacity: 0.6 !important;
+}
+
+body.portal-super-admin .stat-content {
+    display: flex !important;
+    align-items: baseline !important;
+    gap: 0.75rem !important;
+    margin-bottom: 0.5rem !important;
+}
+
+body.portal-super-admin .stat-number {
+    font-size: 2.25rem !important;
+    font-weight: 700 !important;
+    color: #1e293b !important;
+    margin: 0 !important;
+    line-height: 1 !important;
+    letter-spacing: -0.02em !important;
+    font-family: 'Segoe UI', Arial, Helvetica, sans-serif !important;
+    font-variant-numeric: tabular-nums !important;
+    font-feature-settings: 'tnum' !important;
+    -webkit-font-feature-settings: 'tnum' !important;
+    -moz-font-feature-settings: 'tnum' !important;
+    text-rendering: optimizeLegibility !important;
+    -webkit-font-smoothing: antialiased !important;
+    -moz-osx-font-smoothing: grayscale !important;
+}
+
+body.portal-super-admin .stat-footer {
+    font-size: 0.8125rem !important;
+    color: #94a3b8 !important;
+    display: block !important;
+    margin-top: 0.5rem !important;
+}
+
+/* Super Admin: Match badge styling */
+body.portal-super-admin .badge-success-modern {
+    background: #dcfce7 !important;
+    color: #16a34a !important;
+    font-size: 0.75rem !important;
+    font-weight: 600 !important;
+    padding: 0.375rem 0.75rem !important;
+    border-radius: 6px !important;
+    letter-spacing: 0.01em !important;
+}
+
+body.portal-super-admin .badge-primary-modern {
+    background: #dbeafe !important;
+    color: #2563eb !important;
+    font-size: 0.75rem !important;
+    font-weight: 600 !important;
+    padding: 0.375rem 0.75rem !important;
+    border-radius: 6px !important;
+    letter-spacing: 0.01em !important;
+}
+
+body.portal-super-admin .badge-warning-modern {
+    background: #fef3c7 !important;
+    color: #d97706 !important;
+    font-size: 0.75rem !important;
+    font-weight: 600 !important;
+    padding: 0.375rem 0.75rem !important;
+    border-radius: 6px !important;
+    letter-spacing: 0.01em !important;
+}
+
+body.portal-super-admin .badge-danger-modern {
+    background: #fee2e2 !important;
+    color: #dc2626 !important;
+    font-size: 0.75rem !important;
+    font-weight: 600 !important;
+    padding: 0.375rem 0.75rem !important;
+    border-radius: 6px !important;
+    letter-spacing: 0.01em !important;
+}
+
+/* Super Admin: Match button styling */
+body.portal-super-admin .btn-outline-modern {
+    border: 1.5px solid #e2e8f0 !important;
+    color: #475569 !important;
+    background: #ffffff !important;
+    padding: 0.5rem 1rem !important;
+    border-radius: 8px !important;
+    font-weight: 500 !important;
+    font-size: 0.875rem !important;
+    transition: all 0.2s ease !important;
+}
+
+body.portal-super-admin .btn-outline-modern:hover {
+    background: #f1f5f9 !important;
+    border-color: #cbd5e1 !important;
+    color: #334155 !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+}
+
+body.portal-super-admin .btn-primary-modern {
+    background: linear-gradient(135deg, #1fb2d5 0%, #0ea5e9 100%) !important;
+    color: #ffffff !important;
+    border: none !important;
+    padding: 0.5rem 1rem !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    font-size: 0.875rem !important;
+    transition: all 0.2s ease !important;
+    box-shadow: 0 2px 8px rgba(31, 178, 213, 0.25) !important;
+}
+
+body.portal-super-admin .btn-primary-modern:hover {
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(31, 178, 213, 0.35) !important;
+    background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%) !important;
+}
+
+body.portal-super-admin .btn-link-modern {
+    color: #1fb2d5 !important;
+    text-decoration: none !important;
+    font-size: 0.875rem !important;
+    font-weight: 500 !important;
+    transition: all 0.2s ease !important;
+    padding: 0.25rem 0.5rem !important;
+    border-radius: 6px !important;
+}
+
+body.portal-super-admin .btn-link-modern:hover {
+    color: #0ea5e9 !important;
+    background: #f0f9ff !important;
+}
+
+/* Super Admin: Match table styling */
+body.portal-super-admin .table-responsive {
+    border-radius: 12px !important;
+    border: 1px solid #e2e8f0 !important;
+    overflow: hidden !important;
+    background: #ffffff !important;
+}
+
+body.portal-super-admin .table thead th {
+    border-bottom: 2px solid #e2e8f0 !important;
+    font-weight: 600 !important;
+    font-size: 0.75rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    padding: 1rem !important;
+    background-color: #ffffff !important;
+    color: #64748b !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 10 !important;
+    text-align: center !important;
+}
+
+body.portal-super-admin .table tbody td {
+    padding: 1rem !important;
+    font-size: 0.875rem !important;
+    color: #475569 !important;
+    vertical-align: middle !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+}
+
+body.portal-super-admin .table tbody tr:hover {
+    background: #f8fafc !important;
+}
+
+body.portal-super-admin .table thead.table-light {
+    background-color: #ffffff !important;
+}
+
+/* Super Admin: Match progress bar styling */
+body.portal-super-admin .progress-modern {
+    height: 8px !important;
+    background: #e2e8f0 !important;
+    border-radius: 6px !important;
+    overflow: hidden !important;
+}
+
+body.portal-super-admin .progress-bar-primary {
+    background: linear-gradient(90deg, #1fb2d5 0%, #0ea5e9 100%) !important;
+    border-radius: 6px !important;
+}
+
+body.portal-super-admin .progress-bar-info {
+    background: linear-gradient(90deg, #06b6d4 0%, #0891b2 100%) !important;
+    border-radius: 6px !important;
+}
+
+body.portal-super-admin .progress-bar-success {
+    background: linear-gradient(90deg, #22c55e 0%, #16a34a 100%) !important;
+    border-radius: 6px !important;
+}
+
+body.portal-super-admin .progress-bar-secondary {
+    background: linear-gradient(90deg, #64748b 0%, #475569 100%) !important;
+    border-radius: 6px !important;
+}
+
+body.portal-super-admin .progress-bar-danger {
+    background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%) !important;
+    border-radius: 6px !important;
+}
+
+body.portal-super-admin .progress-bar-warning {
+    background: linear-gradient(90deg, #f59e0b 0%, #d97706 100%) !important;
+    border-radius: 6px !important;
+}
+
+/* Super Admin: Match breakdown list styling */
+body.portal-super-admin .role-breakdown-list,
+body.portal-super-admin .status-breakdown-list {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 1.25rem !important;
+}
+
+body.portal-super-admin .role-breakdown-item,
+body.portal-super-admin .status-breakdown-item {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.75rem !important;
+}
+
+body.portal-super-admin .role-breakdown-header,
+body.portal-super-admin .status-breakdown-header {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+}
+
+body.portal-super-admin .role-breakdown-label,
+body.portal-super-admin .status-breakdown-label {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.75rem !important;
+    font-size: 0.875rem !important;
+    font-weight: 500 !important;
+    color: #475569 !important;
+}
+
+body.portal-super-admin .role-badge,
+body.portal-super-admin .status-badge {
+    width: 12px !important;
+    height: 12px !important;
+    border-radius: 50% !important;
+    display: inline-block !important;
+    flex-shrink: 0 !important;
+}
+
+body.portal-super-admin .role-badge-danger,
+body.portal-super-admin .status-badge-danger {
+    background: #ef4444 !important;
+}
+
+body.portal-super-admin .role-badge-primary,
+body.portal-super-admin .status-badge-primary {
+    background: #1fb2d5 !important;
+}
+
+body.portal-super-admin .role-badge-info {
+    background: #06b6d4 !important;
+}
+
+body.portal-super-admin .role-badge-success,
+body.portal-super-admin .status-badge-success {
+    background: #22c55e !important;
+}
+
+body.portal-super-admin .role-badge-warning,
+body.portal-super-admin .status-badge-warning {
+    background: #f59e0b !important;
+}
+
+body.portal-super-admin .role-badge-secondary,
+body.portal-super-admin .status-badge-secondary {
+    background: #64748b !important;
+}
+
+body.portal-super-admin .role-name,
+body.portal-super-admin .status-name {
+    font-weight: 500 !important;
+}
+
+body.portal-super-admin .role-breakdown-value,
+body.portal-super-admin .status-breakdown-value {
+    font-size: 0.875rem !important;
+    color: #1e293b !important;
+}
+
+body.portal-super-admin .role-breakdown-value strong,
+body.portal-super-admin .status-breakdown-value strong {
+    font-size: 1rem !important;
+    font-weight: 700 !important;
+}
+
+/* Super Admin: Match quick stat styling */
+body.portal-super-admin .quick-stat-item {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 1rem !important;
+    background: #f8fafc !important;
+    border-radius: 8px !important;
+    border: 1px solid #e2e8f0 !important;
+    transition: all 0.2s ease !important;
+}
+
+body.portal-super-admin .quick-stat-item:hover {
+    background: #f1f5f9 !important;
+    border-color: #cbd5e1 !important;
+    transform: translateX(2px) !important;
+}
+
+body.portal-super-admin .quick-stat-label {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.75rem !important;
+    font-size: 0.875rem !important;
+    color: #64748b !important;
+    font-weight: 500 !important;
+}
+
+body.portal-super-admin .quick-stat-value {
+    font-size: 1.5rem !important;
+    font-weight: 700 !important;
+    color: #1e293b !important;
+    font-family: 'Segoe UI', Arial, Helvetica, sans-serif !important;
+    font-variant-numeric: tabular-nums !important;
+    font-feature-settings: 'tnum' !important;
+    -webkit-font-feature-settings: 'tnum' !important;
+    -moz-font-feature-settings: 'tnum' !important;
+    text-rendering: optimizeLegibility !important;
+    -webkit-font-smoothing: antialiased !important;
+    -moz-osx-font-smoothing: grayscale !important;
+}
+
+/* Super Admin: Match audit action badge */
+body.portal-super-admin .audit-action-badge {
+    color: #1e293b !important;
+    background: #dbeafe !important;
+    border: 1px solid #bfdbfe !important;
+    font-size: 0.75rem !important;
+    font-weight: 600 !important;
+    padding: 0.375rem 0.75rem !important;
+    border-radius: 6px !important;
+    letter-spacing: 0.01em !important;
+}
+
+/* Super Admin: Match hrdash-welcome section styling exactly - full width */
+body.portal-super-admin .hrdash-welcome {
+    position: relative !important;
+    background: #f1f5f9 !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    margin-top: 0 !important;
+    margin-bottom: var(--hr-section-spacing) !important;
+    padding-left: var(--hr-page-px) !important;
+    padding-right: var(--hr-page-px) !important;
+    padding-top: 1.5rem !important;
+    padding-bottom: 1.5rem !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+body.portal-super-admin .hrdash-welcome::before {
+    display: none !important;
+}
+
+body.portal-super-admin .hrdash-welcome__left {
+    flex: 1 !important;
+}
+
+body.portal-super-admin .hrdash-welcome__title {
+    font-size: 1.75rem !important;
+    font-weight: 800 !important;
+    letter-spacing: -0.03em !important;
+    margin: 0 0 0.25rem 0 !important;
+    color: #0f172a !important;
+    line-height: 1.2 !important;
+}
+
+body.portal-super-admin .hrdash-welcome__time {
+    font-size: 0.9375rem !important;
+    font-weight: 600 !important;
+    color: #64748b !important;
+    margin-right: 0.25rem !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    padding: 0.5rem 0 !important;
+}
+
+body.portal-super-admin .hrdash-welcome__subtitle {
+    margin: 0 !important;
+    color: #64748b !important;
+    font-size: 0.9375rem !important;
+}
+
+body.portal-super-admin .hrdash-welcome__actions {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.75rem !important;
+    flex-shrink: 0 !important;
+}
+
+body.portal-super-admin .hrdash-welcome__icon-btn {
+    position: relative !important;
+    width: 40px !important;
+    height: 40px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border: none !important;
+    background: #f0f2f5 !important;
+    color: #64748b !important;
+    border-radius: 8px !important;
+    transition: all 0.2s ease !important;
+    cursor: pointer !important;
+    padding: 0 !important;
+    text-decoration: none !important;
+}
+
+body.portal-super-admin .hrdash-welcome__icon-btn:hover {
+    background: #e4e6eb !important;
+    color: #1e293b !important;
+}
+
+body.portal-super-admin .hrdash-welcome__icon-btn:focus,
+body.portal-super-admin .hrdash-welcome__icon-btn:active,
+body.portal-super-admin .hrdash-welcome__icon-btn:focus-visible,
+body.portal-super-admin .hrdash-welcome__icon-btn.show,
+body.portal-super-admin .hrdash-welcome__icon-btn[aria-expanded="true"] {
+    outline: none !important;
+    box-shadow: none !important;
+    border: none !important;
+    background: #e4e6eb !important;
+    color: #1e293b !important;
+}
+
+body.portal-super-admin .hrdash-welcome__icon-btn i {
+    font-size: 1.125rem !important;
+    color: #64748b !important;
+    display: inline-block !important;
+    line-height: 1 !important;
+}
+
+body.portal-super-admin .hrdash-welcome__icon-btn:hover i {
+    color: #1e293b !important;
+}
+
+body.portal-super-admin .hrdash-welcome__icon-btn.dropdown-toggle::after {
+    display: none !important; /* Hide Bootstrap dropdown arrow for icon buttons */
+}
+
+body.portal-super-admin .hrdash-welcome__badge {
+    position: absolute !important;
+    top: -4px !important;
+    right: -4px !important;
+    background: #ef4444 !important;
+    color: #ffffff !important;
+    font-size: 0.625rem !important;
+    font-weight: 700 !important;
+    padding: 0.125rem 0.375rem !important;
+    border-radius: 10px !important;
+    min-width: 18px !important;
+    text-align: center !important;
+    line-height: 1.2 !important;
+    box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3) !important;
+}
+
+body.portal-super-admin .hrdash-welcome__profile-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+    padding: 0 !important;
+    border: none !important;
+    background: transparent !important;
+    cursor: pointer !important;
+    transition: opacity 0.2s ease !important;
+}
+
+body.portal-super-admin .hrdash-welcome__profile-btn:hover {
+    opacity: 0.8 !important;
+}
+
+body.portal-super-admin .hrdash-welcome__avatar {
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 8px !important;
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
+    color: #ffffff !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-weight: 700 !important;
+    font-size: 0.875rem !important;
+}
+
+body.portal-super-admin .hrdash-welcome__chevron {
+    font-size: 0.75rem !important;
+    color: #64748b !important;
+    margin-left: 0.25rem !important;
+}
+
+/* Super Admin: Notification dropdown menu - match HR Admin exactly */
+body.portal-super-admin .hrdash-notification-dropdown {
+    min-width: 320px !important;
+    max-width: 400px !important;
+    max-height: 500px !important;
+    overflow-y: auto !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 12px !important;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15) !important;
+    padding: 0.5rem 0 !important;
+    margin-top: 0.5rem !important;
+}
+
+body.portal-super-admin .hrdash-notification-dropdown .dropdown-header {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 0.75rem 1rem !important;
+    font-size: 0.875rem !important;
+    font-weight: 700 !important;
+    color: #0f172a !important;
+    background: #f8fafc !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    margin: 0 !important;
+}
+
+body.portal-super-admin .hrdash-notification-dropdown .dropdown-header a {
+    font-size: 0.75rem !important;
+    font-weight: 600 !important;
+    color: #1e40af !important;
+}
+
+body.portal-super-admin .hrdash-notification-dropdown .dropdown-header a:hover {
+    color: #1e3a8a !important;
+    text-decoration: underline !important;
+}
+
+body.portal-super-admin .hrdash-notification-dropdown .dropdown-item {
+    padding: 0.75rem 1rem !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+    transition: background 0.15s ease !important;
+}
+
+body.portal-super-admin .hrdash-notification-dropdown .dropdown-item:last-child {
+    border-bottom: none !important;
+}
+
+body.portal-super-admin .hrdash-notification-dropdown .dropdown-item:hover {
+    background: #f8fafc !important;
+}
+
+body.portal-super-admin .hrdash-notification-item {
+    text-decoration: none !important;
+    color: inherit !important;
+}
+
+body.portal-super-admin .hrdash-notification-item:hover {
+    text-decoration: none !important;
+}
+
+body.portal-super-admin .hrdash-notification-item .fw-semibold {
+    font-weight: 600 !important;
+    color: #0f172a !important;
+    margin-bottom: 0.25rem !important;
+}
+
+body.portal-super-admin .hrdash-notification-item .text-muted {
+    color: #64748b !important;
+    font-size: 0.8125rem !important;
+}
+
+/* Super Admin: Profile dropdown menu */
+body.portal-super-admin .hrdash-welcome__profile-btn + .dropdown-menu {
+    margin-top: 0.5rem !important;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15) !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 8px !important;
+    padding: 0.5rem 0 !important;
+    min-width: 200px !important;
+}
+
+/* Super Admin: Responsive adjustments */
+@media (max-width: 768px) {
+    /* On mobile, sidebar is hidden/collapsed, so main-content takes full width */
+    body.portal-super-admin .main-content {
+        margin-left: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+    
+    body.portal-super-admin {
+        --hr-page-px: 1rem;
+        --hr-page-py: 1.25rem;
+        --hr-gutter: 1rem;
+        --hr-section-spacing: 1.25rem;
+    }
+    
+    body.portal-super-admin .hrdash-welcome {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 1rem !important;
+    }
+    
+    body.portal-super-admin .hrdash-welcome__actions {
+        width: 100% !important;
+        flex-wrap: wrap !important;
+    }
+    
+    /* Ensure sections still align properly on mobile */
+    body.portal-super-admin .dashboard-modern > .row,
+    body.portal-super-admin .dashboard-modern > .collapse,
+    body.portal-super-admin .dashboard-modern > .page-header-modern {
+        margin-left: var(--hr-page-px) !important;
+        margin-right: var(--hr-page-px) !important;
+        width: calc(100% - (2 * var(--hr-page-px))) !important;
+        max-width: calc(100% - (2 * var(--hr-page-px))) !important;
+    }
+}
+
+/* Super Admin: Match form control styling */
+body.portal-super-admin .form-control,
+body.portal-super-admin .form-select {
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 6px !important;
+    padding: 0.5rem 0.75rem !important;
+    font-size: 0.875rem !important;
+    color: #1e293b !important;
+    background-color: #ffffff !important;
+    transition: all 0.2s ease !important;
+}
+
+body.portal-super-admin .form-control:focus,
+body.portal-super-admin .form-select:focus {
+    border-color: #1fb2d5 !important;
+    outline: 0 !important;
+    box-shadow: 0 0 0 3px rgba(31, 178, 213, 0.1) !important;
+    background-color: #fff !important;
+}
+
+body.portal-super-admin .form-label {
+    font-size: 0.875rem !important;
+    font-weight: 500 !important;
+    color: #334155 !important;
+    margin-bottom: 0.5rem !important;
+}
+
+/* Super Admin: Match table header background */
+body.portal-super-admin .table thead th {
+    background-color: #f8fafc !important;
+}
+
+body.portal-super-admin .table thead.table-light {
+    background-color: #f8fafc !important;
+}
+
+body.portal-super-admin .table tbody tr:hover {
+    background-color: #f8fafc !important;
+}
+
+/* Super Admin: Match scrollbar styling */
+body.portal-super-admin .table-responsive::-webkit-scrollbar {
+    height: 8px !important;
+    width: 8px !important;
+}
+
+body.portal-super-admin .table-responsive::-webkit-scrollbar-track {
+    background: #f1f5f9 !important;
+}
+
+body.portal-super-admin .table-responsive::-webkit-scrollbar-thumb {
+    background: #cbd5e1 !important;
+    border-radius: 4px !important;
+}
+
+body.portal-super-admin .table-responsive::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8 !important;
+}
