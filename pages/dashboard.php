@@ -228,11 +228,11 @@ $display_employees = array_slice($all_employees, 0, 10); // Show first 10 employ
 <div class="container-fluid hrdash">
     <div class="hrdash-welcome">
         <div class="hrdash-welcome__left">
-            <h2 class="hrdash-welcome__title">Welcome, <?php echo htmlspecialchars($_SESSION['name'] ?? 'HR Administrator'); ?></h2>
-            <p class="hrdash-welcome__subtitle">Ready to manage your HR tasks today?</p>
+            <h2 class="hrdash-welcome__title">Dashboard</h2>
+            <p class="hrdash-welcome__subtitle">Overview of your HR management system</p>
         </div>
         <div class="hrdash-welcome__actions">
-            <span id="current-time" class="hrdash-welcome__time"><?php echo strtolower(date('h:i A')); ?></span>
+            <span id="current-time-dashboard" class="hrdash-welcome__time"><?php echo strtolower(date('h:i A')); ?></span>
             
             <!-- Messages Dropdown -->
             <?php
@@ -1507,7 +1507,7 @@ $display_employees = array_slice($all_employees, 0, 10); // Show first 10 employ
         
         // Update current time display
         function initTimeDisplay() {
-            const timeEl = document.getElementById('current-time');
+            const timeEl = document.getElementById('current-time-dashboard');
             if (timeEl) {
                 function updateTime() {
                     const now = new Date();
