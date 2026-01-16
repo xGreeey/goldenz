@@ -60,13 +60,22 @@ function normalizeNumericText(root = document) {
 document.documentElement.classList.add('no-animations');
 
 // THEME MANAGEMENT (Light / Dark / Auto)
-const THEME_STORAGE_KEY = 'goldenz-theme';
+// Use user-scoped storage key to prevent theme bleeding between different users
+function getThemeStorageKey() {
+    const userId = window.GOLDENZ_USER_ID;
+    if (userId) {
+        return `goldenz-theme-user-${userId}`;
+    }
+    // Fallback to global key if user ID not available (e.g., on login page)
+    return 'goldenz-theme';
+}
 
 // Apply theme immediately to prevent flash of unstyled content
 (function() {
     let savedTheme = 'light';
     try {
-        const stored = localStorage.getItem(THEME_STORAGE_KEY);
+        const storageKey = getThemeStorageKey();
+        const stored = localStorage.getItem(storageKey);
         if (stored === 'light' || stored === 'dark' || stored === 'auto') {
             savedTheme = stored;
         }
@@ -108,7 +117,8 @@ function applyTheme(theme) {
     }
 
     try {
-        localStorage.setItem(THEME_STORAGE_KEY, theme);
+        const storageKey = getThemeStorageKey();
+        localStorage.setItem(storageKey, theme);
     } catch (e) {
         // Ignore storage errors (private mode, etc.)
     }
@@ -131,7 +141,8 @@ function applyTheme(theme) {
 function initThemeControls() {
     let savedTheme = 'light';
     try {
-        const stored = localStorage.getItem(THEME_STORAGE_KEY);
+        const storageKey = getThemeStorageKey();
+        const stored = localStorage.getItem(storageKey);
         if (stored === 'light' || stored === 'dark' || stored === 'auto') {
             savedTheme = stored;
         }
@@ -180,7 +191,8 @@ function initThemeControls() {
             mediaQuery.addEventListener('change', () => {
                 let current = 'light';
                 try {
-                    current = localStorage.getItem(THEME_STORAGE_KEY) || 'light';
+                    const storageKey = getThemeStorageKey();
+                    current = localStorage.getItem(storageKey) || 'light';
                 } catch (e) {}
                 if (current === 'auto') {
                     applyTheme('auto');

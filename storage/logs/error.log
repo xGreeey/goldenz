@@ -4560,3 +4560,289 @@ Data: Array
 
 File: /landing/index.php
 --------------------------------------------------------------------------------
+[2026-01-16 08:10:19] [execute_query] User: Unknown (ID: Unknown) | IP: 192.168.1.7
+Error: PDO Error [23000]: SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry '0' for key 'PRIMARY'
+Data: Array
+(
+    [sql] => INSERT INTO audit_logs (user_id, action, table_name, record_id, old_values, new_values, ip_address, user_agent, created_at) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())
+    [params] => Array
+        (
+            [0] => 25
+            [1] => LOGIN_ATTEMPT
+            [2] => users
+            [3] => 25
+            [4] => 
+            [5] => {"login_time":"2026-01-16 08:10:19"}
+            [6] => 192.168.1.7
+            [7] => Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36
+        )
+
+    [trace] => #0 C:\xampp\htdocs\goldenz\includes\database.php(87): PDOStatement->execute(Array)
+#1 C:\xampp\htdocs\goldenz\includes\database.php(1446): execute_query('INSERT INTO aud...', Array)
+#2 C:\xampp\htdocs\goldenz\landing\index.php(270): log_audit_event('LOGIN_ATTEMPT', 'users', 25, NULL, '{"login_time":"...', 25)
+#3 {main}
+)
+
+File: /landing/index.php
+--------------------------------------------------------------------------------
+[2026-01-16 08:10:35] [execute_query] User: Unknown (ID: Unknown) | IP: 192.168.1.7
+Error: PDO Error [23000]: SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry '0' for key 'PRIMARY'
+Data: Array
+(
+    [sql] => INSERT INTO audit_logs (user_id, action, table_name, record_id, old_values, new_values, ip_address, user_agent, created_at) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())
+    [params] => Array
+        (
+            [0] => 30
+            [1] => LOGIN_ATTEMPT
+            [2] => users
+            [3] => 30
+            [4] => 
+            [5] => {"login_time":"2026-01-16 08:10:35"}
+            [6] => 192.168.1.7
+            [7] => Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36
+        )
+
+    [trace] => #0 C:\xampp\htdocs\goldenz\includes\database.php(87): PDOStatement->execute(Array)
+#1 C:\xampp\htdocs\goldenz\includes\database.php(1446): execute_query('INSERT INTO aud...', Array)
+#2 C:\xampp\htdocs\goldenz\landing\index.php(270): log_audit_event('LOGIN_ATTEMPT', 'users', 30, NULL, '{"login_time":"...', 30)
+#3 {main}
+)
+
+File: /landing/index.php
+--------------------------------------------------------------------------------
+[2026-01-16 08:11:03] [execute_query] User: Unknown (ID: Unknown) | IP: 192.168.1.7
+Error: PDO Error [23000]: SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry '0' for key 'PRIMARY'
+Data: Array
+(
+    [sql] => INSERT INTO audit_logs (user_id, action, table_name, record_id, old_values, new_values, ip_address, user_agent, created_at) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())
+    [params] => Array
+        (
+            [0] => 25
+            [1] => LOGIN_ATTEMPT
+            [2] => users
+            [3] => 25
+            [4] => 
+            [5] => {"login_time":"2026-01-16 08:11:03"}
+            [6] => 192.168.1.7
+            [7] => Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36
+        )
+
+    [trace] => #0 C:\xampp\htdocs\goldenz\includes\database.php(87): PDOStatement->execute(Array)
+#1 C:\xampp\htdocs\goldenz\includes\database.php(1446): execute_query('INSERT INTO aud...', Array)
+#2 C:\xampp\htdocs\goldenz\landing\index.php(270): log_audit_event('LOGIN_ATTEMPT', 'users', 25, NULL, '{"login_time":"...', 25)
+#3 {main}
+)
+
+File: /landing/index.php
+--------------------------------------------------------------------------------
+[2026-01-16 08:11:47] [execute_query] User: Unknown (ID: Unknown) | IP: 192.168.1.7
+Error: PDO Error [23000]: SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry '0' for key 'PRIMARY'
+Data: Array
+(
+    [sql] => INSERT INTO audit_logs (user_id, action, table_name, record_id, old_values, new_values, ip_address, user_agent, created_at) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())
+    [params] => Array
+        (
+            [0] => 30
+            [1] => LOGIN_ATTEMPT
+            [2] => users
+            [3] => 30
+            [4] => 
+            [5] => {"login_time":"2026-01-16 08:11:47"}
+            [6] => 192.168.1.7
+            [7] => Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36
+        )
+
+    [trace] => #0 C:\xampp\htdocs\goldenz\includes\database.php(87): PDOStatement->execute(Array)
+#1 C:\xampp\htdocs\goldenz\includes\database.php(1446): execute_query('INSERT INTO aud...', Array)
+#2 C:\xampp\htdocs\goldenz\landing\index.php(270): log_audit_event('LOGIN_ATTEMPT', 'users', 30, NULL, '{"login_time":"...', 30)
+#3 {main}
+)
+
+File: /landing/index.php
+--------------------------------------------------------------------------------
+[2026-01-16 08:12:26] [execute_query] User: Unknown (ID: Unknown) | IP: 192.168.1.7
+Error: PDO Error [23000]: SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry '0' for key 'PRIMARY'
+Data: Array
+(
+    [sql] => INSERT INTO audit_logs (user_id, action, table_name, record_id, old_values, new_values, ip_address, user_agent, created_at) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())
+    [params] => Array
+        (
+            [0] => 25
+            [1] => LOGIN_ATTEMPT
+            [2] => users
+            [3] => 25
+            [4] => 
+            [5] => {"login_time":"2026-01-16 08:12:26"}
+            [6] => 192.168.1.7
+            [7] => Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36
+        )
+
+    [trace] => #0 C:\xampp\htdocs\goldenz\includes\database.php(87): PDOStatement->execute(Array)
+#1 C:\xampp\htdocs\goldenz\includes\database.php(1446): execute_query('INSERT INTO aud...', Array)
+#2 C:\xampp\htdocs\goldenz\landing\index.php(270): log_audit_event('LOGIN_ATTEMPT', 'users', 25, NULL, '{"login_time":"...', 25)
+#3 {main}
+)
+
+File: /landing/index.php
+--------------------------------------------------------------------------------
+[2026-01-16 08:12:56] [execute_query] User: Unknown (ID: Unknown) | IP: 192.168.1.7
+Error: PDO Error [23000]: SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry '0' for key 'PRIMARY'
+Data: Array
+(
+    [sql] => INSERT INTO audit_logs (user_id, action, table_name, record_id, old_values, new_values, ip_address, user_agent, created_at) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())
+    [params] => Array
+        (
+            [0] => 30
+            [1] => LOGIN_ATTEMPT
+            [2] => users
+            [3] => 30
+            [4] => 
+            [5] => {"login_time":"2026-01-16 08:12:56"}
+            [6] => 192.168.1.7
+            [7] => Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36
+        )
+
+    [trace] => #0 C:\xampp\htdocs\goldenz\includes\database.php(87): PDOStatement->execute(Array)
+#1 C:\xampp\htdocs\goldenz\includes\database.php(1446): execute_query('INSERT INTO aud...', Array)
+#2 C:\xampp\htdocs\goldenz\landing\index.php(270): log_audit_event('LOGIN_ATTEMPT', 'users', 30, NULL, '{"login_time":"...', 30)
+#3 {main}
+)
+
+File: /landing/index.php
+--------------------------------------------------------------------------------
+[2026-01-16 08:12:59] [execute_query] User: Unknown (ID: Unknown) | IP: 192.168.1.7
+Error: PDO Error [23000]: SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry '0' for key 'PRIMARY'
+Data: Array
+(
+    [sql] => INSERT INTO audit_logs (user_id, action, table_name, record_id, old_values, new_values, ip_address, user_agent, created_at) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())
+    [params] => Array
+        (
+            [0] => 25
+            [1] => LOGIN_ATTEMPT
+            [2] => users
+            [3] => 25
+            [4] => 
+            [5] => {"login_time":"2026-01-16 08:12:59"}
+            [6] => 192.168.1.7
+            [7] => Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36
+        )
+
+    [trace] => #0 C:\xampp\htdocs\goldenz\includes\database.php(87): PDOStatement->execute(Array)
+#1 C:\xampp\htdocs\goldenz\includes\database.php(1446): execute_query('INSERT INTO aud...', Array)
+#2 C:\xampp\htdocs\goldenz\landing\index.php(270): log_audit_event('LOGIN_ATTEMPT', 'users', 25, NULL, '{"login_time":"...', 25)
+#3 {main}
+)
+
+File: /landing/index.php
+--------------------------------------------------------------------------------
+[2026-01-16 08:13:21] [execute_query] User: Unknown (ID: Unknown) | IP: 192.168.1.7
+Error: PDO Error [23000]: SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry '0' for key 'PRIMARY'
+Data: Array
+(
+    [sql] => INSERT INTO audit_logs (user_id, action, table_name, record_id, old_values, new_values, ip_address, user_agent, created_at) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())
+    [params] => Array
+        (
+            [0] => 25
+            [1] => LOGIN_ATTEMPT
+            [2] => users
+            [3] => 25
+            [4] => 
+            [5] => {"login_time":"2026-01-16 08:13:21"}
+            [6] => 192.168.1.7
+            [7] => Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36
+        )
+
+    [trace] => #0 C:\xampp\htdocs\goldenz\includes\database.php(87): PDOStatement->execute(Array)
+#1 C:\xampp\htdocs\goldenz\includes\database.php(1446): execute_query('INSERT INTO aud...', Array)
+#2 C:\xampp\htdocs\goldenz\landing\index.php(270): log_audit_event('LOGIN_ATTEMPT', 'users', 25, NULL, '{"login_time":"...', 25)
+#3 {main}
+)
+
+File: /landing/index.php
+--------------------------------------------------------------------------------
+[2026-01-16 08:13:35] [execute_query] User: Unknown (ID: Unknown) | IP: 192.168.1.7
+Error: PDO Error [23000]: SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry '0' for key 'PRIMARY'
+Data: Array
+(
+    [sql] => INSERT INTO audit_logs (user_id, action, table_name, record_id, old_values, new_values, ip_address, user_agent, created_at) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())
+    [params] => Array
+        (
+            [0] => 30
+            [1] => LOGIN_ATTEMPT
+            [2] => users
+            [3] => 30
+            [4] => 
+            [5] => {"login_time":"2026-01-16 08:13:35"}
+            [6] => 192.168.1.7
+            [7] => Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36
+        )
+
+    [trace] => #0 C:\xampp\htdocs\goldenz\includes\database.php(87): PDOStatement->execute(Array)
+#1 C:\xampp\htdocs\goldenz\includes\database.php(1446): execute_query('INSERT INTO aud...', Array)
+#2 C:\xampp\htdocs\goldenz\landing\index.php(270): log_audit_event('LOGIN_ATTEMPT', 'users', 30, NULL, '{"login_time":"...', 30)
+#3 {main}
+)
+
+File: /landing/index.php
+--------------------------------------------------------------------------------
+[2026-01-16 08:18:51] [execute_query] User: Unknown (ID: Unknown) | IP: 192.168.1.7
+Error: PDO Error [23000]: SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry '0' for key 'PRIMARY'
+Data: Array
+(
+    [sql] => INSERT INTO audit_logs (user_id, action, table_name, record_id, old_values, new_values, ip_address, user_agent, created_at) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())
+    [params] => Array
+        (
+            [0] => 30
+            [1] => LOGIN_ATTEMPT
+            [2] => users
+            [3] => 30
+            [4] => 
+            [5] => {"login_time":"2026-01-16 08:18:51"}
+            [6] => 192.168.1.7
+            [7] => Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36
+        )
+
+    [trace] => #0 C:\xampp\htdocs\goldenz\includes\database.php(87): PDOStatement->execute(Array)
+#1 C:\xampp\htdocs\goldenz\includes\database.php(1446): execute_query('INSERT INTO aud...', Array)
+#2 C:\xampp\htdocs\goldenz\landing\index.php(270): log_audit_event('LOGIN_ATTEMPT', 'users', 30, NULL, '{"login_time":"...', 30)
+#3 {main}
+)
+
+File: /landing/index.php
+--------------------------------------------------------------------------------
+[2026-01-16 08:19:07] [execute_query] User: Unknown (ID: Unknown) | IP: 192.168.1.7
+Error: PDO Error [23000]: SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry '0' for key 'PRIMARY'
+Data: Array
+(
+    [sql] => INSERT INTO audit_logs (user_id, action, table_name, record_id, old_values, new_values, ip_address, user_agent, created_at) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())
+    [params] => Array
+        (
+            [0] => 25
+            [1] => LOGIN_ATTEMPT
+            [2] => users
+            [3] => 25
+            [4] => 
+            [5] => {"login_time":"2026-01-16 08:19:07"}
+            [6] => 192.168.1.7
+            [7] => Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36
+        )
+
+    [trace] => #0 C:\xampp\htdocs\goldenz\includes\database.php(87): PDOStatement->execute(Array)
+#1 C:\xampp\htdocs\goldenz\includes\database.php(1446): execute_query('INSERT INTO aud...', Array)
+#2 C:\xampp\htdocs\goldenz\landing\index.php(270): log_audit_event('LOGIN_ATTEMPT', 'users', 25, NULL, '{"login_time":"...', 25)
+#3 {main}
+)
+
+File: /landing/index.php
+--------------------------------------------------------------------------------
