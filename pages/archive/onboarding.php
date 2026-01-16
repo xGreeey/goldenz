@@ -401,6 +401,135 @@ $onboarding_steps = [
     margin: 0 0 0.25rem 0;
 }
 
+/* Dark theme support for onboarding page */
+html[data-theme="dark"] .onboarding-container {
+    background-color: transparent;
+    color: var(--interface-text);
+}
+
+html[data-theme="dark"] .onboarding-step {
+    background: #1a1d23 !important;
+    border-color: var(--interface-border) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .onboarding-step .step-title {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .onboarding-step .text-muted {
+    color: var(--interface-text-muted) !important;
+}
+
+html[data-theme="dark"] .checklist-section h6 {
+    color: var(--interface-text) !important;
+    border-bottom-color: var(--interface-border) !important;
+}
+
+html[data-theme="dark"] .checklist-item {
+    border-bottom-color: var(--interface-border) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .checklist-item label {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .checklist-item.completed label {
+    color: var(--interface-text-muted) !important;
+}
+
+html[data-theme="dark"] .card-title {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .card-header {
+    border-bottom-color: var(--interface-border) !important;
+}
+
+html[data-theme="dark"] .card-body {
+    background-color: #1a1d23 !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .summary-card {
+    background-color: #1a1d23 !important;
+    border-color: var(--interface-border) !important;
+}
+
+html[data-theme="dark"] .summary-card .card-body {
+    background-color: #1a1d23 !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .summary-card .text-muted {
+    color: var(--interface-text-muted) !important;
+}
+
+html[data-theme="dark"] .table {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .table thead {
+    background-color: #1a1d23 !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .table thead th {
+    background-color: #1a1d23 !important;
+    color: var(--interface-text) !important;
+    border-color: var(--interface-border) !important;
+}
+
+html[data-theme="dark"] .table thead tr {
+    background-color: #1a1d23 !important;
+}
+
+html[data-theme="dark"] .table.table-hover thead th {
+    background-color: #1a1d23 !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .table tbody tr {
+    background-color: #1a1d23 !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .table tbody tr:hover {
+    background-color: var(--interface-hover) !important;
+}
+
+html[data-theme="dark"] .table td,
+html[data-theme="dark"] .table th {
+    border-color: var(--interface-border) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .modal-content {
+    background-color: #1a1d23 !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .modal-header {
+    border-bottom-color: var(--interface-border) !important;
+}
+
+html[data-theme="dark"] .modal-footer {
+    border-top-color: var(--interface-border) !important;
+}
+
+html[data-theme="dark"] .modal-title {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .employee-info h6 {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .employee-info .text-muted {
+    color: var(--interface-text-muted) !important;
+}
+
 </style>
 
 <script>
