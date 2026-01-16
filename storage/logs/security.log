@@ -22,3 +22,6 @@
 2026-01-16 12:50:20 - Audit Log Error - Database error: SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry '0' for key 'PRIMARY' - IP: 192.168.1.7
 2026-01-16 12:50:28 - Audit Log Error - Database error: SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry '0' for key 'PRIMARY' - IP: 192.168.1.7
 2026-01-16 12:54:16 - Audit Log Error - Database error: SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry '0' for key 'PRIMARY' - IP: 192.168.1.7
+2026-01-16 15:34:38 - 2FA Success - User: ChristianAmor (christian amor) - Role: super_admin - IP: ::1 - IP: ::1
+2026-01-16 15:51:13 - 2FA Success - User: ChristianAmor (christian amor) - Role: super_admin - IP: ::1 - IP: ::1
+2026-01-16 15:59:30 - 2FA Success - User: ChristianAmor (christian amor) - Role: super_admin - IP: ::1 - IP: ::1
