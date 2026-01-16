@@ -210,10 +210,15 @@ html[data-theme="dark"] .main-content {
     background-color: var(--interface-bg) !important;
 }
 
-html[data-theme="dark"] .page-header-modern {
-    background: #1a1d23 !important;
+html[data-theme="dark"] .page-header-modern,
+html[data-theme="dark"] .card-header-modern {
+    background-color: #1a1d23 !important;
+    border: 1px solid var(--interface-border) !important;
     border-color: var(--interface-border) !important;
     color: var(--interface-text) !important;
+    border-radius: 14px; /* Rounded rectangle */
+    padding: 1.5rem 2rem; /* Adjusted padding */
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.04); /* Added shadow */
 }
 
 html[data-theme="dark"] .card-header-modern {
