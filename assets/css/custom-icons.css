@@ -55,7 +55,7 @@
 
 /* Specific icon mappings - Using SVG files as background-image */
 .hr-icon-plus {
-    background-image: url('../icons/plus-icon.svg');
+    background-image: url('../icons/plus-icon.png');
 }
 
 .hr-icon-edit {
@@ -82,7 +82,7 @@
 }
 
 .hr-icon-minus {
-    background-image: url('../icons/minus-icon.svg');
+    background-image: url('../icons/minus-icon.png');
 }
 
 .hr-icon-notification,

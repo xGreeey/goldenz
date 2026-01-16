@@ -1336,14 +1336,14 @@ if (empty($posts)) {
                                         data-training-index="<?php echo (int)$i; ?>"
                                         aria-label="Remove training">
                                     <span class="btn-icon-circle">
-                                        <img src="<?php echo asset_url('icons/minus-icon.svg'); ?>" alt="Remove" class="btn-icon-img">
+                                        <img src="<?php echo asset_url('icons/minus-icon.png'); ?>?v=2" alt="Remove" class="btn-icon-img" loading="eager">
                                     </span>
                                 </button>
                                 <?php endforeach; ?>
                             </div>
                             <button type="button" class="btn btn-add-modern btn-sm" id="addTrainingBtn">
                                 <span class="btn-icon-circle">
-                                    <img src="<?php echo asset_url('icons/plus-icon.svg'); ?>" alt="Add" class="btn-icon-img">
+                                    <img src="<?php echo asset_url('icons/plus-icon.png'); ?>?v=2" alt="Add" class="btn-icon-img" loading="eager">
                                 </span>
                             </button>
                         </div>
@@ -1442,14 +1442,14 @@ if (empty($posts)) {
                                         data-employment-index="<?php echo (int)$i; ?>"
                                         aria-label="Remove employment record">
                                     <span class="btn-icon-circle">
-                                        <img src="<?php echo asset_url('icons/minus-icon.svg'); ?>" alt="Remove" class="btn-icon-img">
+                                        <img src="<?php echo asset_url('icons/minus-icon.png'); ?>?v=2" alt="Remove" class="btn-icon-img" loading="eager">
                                     </span>
                                 </button>
                                 <?php endforeach; ?>
                             </div>
                             <button type="button" class="btn btn-add-modern btn-sm" id="addEmploymentBtn">
                                 <span class="btn-icon-circle">
-                                    <img src="<?php echo asset_url('icons/plus-icon.svg'); ?>" alt="Add" class="btn-icon-img">
+                                    <img src="<?php echo asset_url('icons/plus-icon.png'); ?>?v=2" alt="Add" class="btn-icon-img" loading="eager">
                                 </span>
                             </button>
                         </div>
@@ -1529,14 +1529,14 @@ if (empty($posts)) {
                                         data-reference-index="<?php echo (int)$i; ?>"
                                         aria-label="Remove character reference">
                                     <span class="btn-icon-circle">
-                                        <img src="<?php echo asset_url('icons/minus-icon.svg'); ?>" alt="Remove" class="btn-icon-img">
+                                        <img src="<?php echo asset_url('icons/minus-icon.png'); ?>?v=2" alt="Remove" class="btn-icon-img" loading="eager">
                                     </span>
                                 </button>
                                 <?php endforeach; ?>
                             </div>
                             <button type="button" class="btn btn-add-modern btn-sm" id="addCharacterReferenceBtn">
                                 <span class="btn-icon-circle">
-                                    <img src="<?php echo asset_url('icons/plus-icon.svg'); ?>" alt="Add" class="btn-icon-img">
+                                    <img src="<?php echo asset_url('icons/plus-icon.png'); ?>?v=2" alt="Add" class="btn-icon-img" loading="eager">
                                 </span>
                             </button>
                         </div>
@@ -1943,11 +1943,26 @@ if (empty($posts)) {
         </div>
         </div>
     </div>
+
+    <!-- Navigation Button to Page 2 -->
+    <div class="text-center my-4">
+        <a href="?page=add_employee_page2" class="btn btn-primary-modern">
+            <i class="fas fa-arrow-right me-2"></i>Click here to proceed to Page 2
+        </a>
+    </div>
 </div>
 
 <!-- Google Maps API - Optional, only loads if API key is configured -->
 <!-- <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places"></script> -->
 <script>
+// Preload icons immediately to prevent flashing
+(function() {
+    const plusIcon = new Image();
+    plusIcon.src = '<?php echo asset_url("icons/plus-icon.png"); ?>?v=2';
+    const minusIcon = new Image();
+    minusIcon.src = '<?php echo asset_url("icons/minus-icon.png"); ?>?v=2';
+})();
+
 document.addEventListener('DOMContentLoaded', function() {
     // Employee Number is generated on the server (chronological).
     const employeeTypeSelect = document.getElementById('employee_type');
@@ -2013,7 +2028,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Update remove buttons - ensure count matches rows
         if (removeButtonsContainer) {
             const removeButtons = Array.from(removeButtonsContainer.querySelectorAll('.training-remove-btn'));
-            const minusIconUrl = '<?php echo asset_url("icons/minus-icon.svg"); ?>';
+            const minusIconUrl = '<?php echo asset_url("icons/minus-icon.png"); ?>?v=2';
             
             // Remove extra buttons if there are more buttons than rows
             while (removeButtons.length > rows.length) {
@@ -2097,7 +2112,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     removeBtn.className = 'btn btn-sm btn-remove-modern training-remove-btn';
                     removeBtn.setAttribute('data-training-index', idx);
                     removeBtn.setAttribute('aria-label', 'Remove training');
-                    const minusIconUrl = '<?php echo asset_url("icons/minus-icon.svg"); ?>';
+                    const minusIconUrl = '<?php echo asset_url("icons/minus-icon.png"); ?>?v=2';
                     removeBtn.innerHTML = `<span class="btn-icon-circle"><img src="${minusIconUrl}" alt="Remove" class="btn-icon-img"></span>`;
                     removeButtonsContainer.appendChild(removeBtn);
                 }
@@ -2239,7 +2254,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     removeBtn.className = 'btn btn-sm btn-remove-modern employment-remove-btn';
                     removeBtn.setAttribute('data-employment-index', idx);
                     removeBtn.setAttribute('aria-label', 'Remove employment record');
-                    const minusIconUrl = '<?php echo asset_url("icons/minus-icon.svg"); ?>';
+                    const minusIconUrl = '<?php echo asset_url("icons/minus-icon.png"); ?>?v=2';
                     removeBtn.innerHTML = `<span class="btn-icon-circle"><img src="${minusIconUrl}" alt="Remove" class="btn-icon-img"></span>`;
                     removeButtonsContainer.insertBefore(removeBtn, removeButtonsContainer.firstChild);
                 }
@@ -2283,7 +2298,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 removeBtn.className = 'btn btn-sm btn-remove-modern character-reference-remove-btn';
                 removeBtn.setAttribute('data-reference-index', idx);
                 removeBtn.setAttribute('aria-label', 'Remove character reference');
-                const minusIconUrl = '<?php echo asset_url("icons/minus-icon.svg"); ?>';
+                const minusIconUrl = '<?php echo asset_url("icons/minus-icon.png"); ?>?v=2';
                 removeBtn.innerHTML = `<span class="btn-icon-circle"><img src="${minusIconUrl}" alt="Remove" class="btn-icon-img"></span>`;
                 removeButtonsContainer.appendChild(removeBtn);
             });
