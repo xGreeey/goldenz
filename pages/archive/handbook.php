@@ -256,6 +256,85 @@ $handbook_content = [
     margin: 0 0 0.25rem 0;
 }
 
+/* Dark theme support for handbook page */
+html[data-theme="dark"] .handbook-container {
+    background-color: transparent;
+    color: var(--interface-text);
+}
+
+html[data-theme="dark"] .handbook-section-card {
+    background: #1a1d23 !important;
+    border-color: var(--interface-border) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .handbook-section-card .section-title {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .handbook-section-card .text-muted {
+    color: var(--interface-text-muted) !important;
+}
+
+html[data-theme="dark"] .handbook-section-card .section-icon {
+    color: var(--primary-color) !important;
+}
+
+html[data-theme="dark"] .handbook-section-card:hover {
+    background: var(--primary-color) !important;
+    color: white !important;
+}
+
+html[data-theme="dark"] .handbook-section-card:hover .section-icon {
+    color: white !important;
+}
+
+html[data-theme="dark"] .handbook-section-card:hover .text-muted {
+    color: rgba(255, 255, 255, 0.8) !important;
+}
+
+html[data-theme="dark"] .content-section {
+    border-bottom-color: var(--interface-border) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .content-section h6 {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .content-section p {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .card-title {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .card-header {
+    border-bottom-color: var(--interface-border) !important;
+}
+
+html[data-theme="dark"] .card-body {
+    background-color: #1a1d23 !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .handbook-content {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .handbook-content ul {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .handbook-content li {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .handbook-content strong {
+    color: var(--interface-text) !important;
+}
+
 </style>
 
 <script>

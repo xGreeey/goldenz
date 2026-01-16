@@ -2444,4 +2444,170 @@ document.addEventListener('DOMContentLoaded', function() {
     color: #0f172a;
     margin: 0 0 0.25rem 0;
 }
+
+/* Dark theme support for DTR page */
+html[data-theme="dark"] .dtr-container {
+    background-color: transparent;
+    color: var(--interface-text);
+}
+
+html[data-theme="dark"] .status-card {
+    background: #1a1d23 !important;
+    border-color: var(--interface-border) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .status-count {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .status-label {
+    color: var(--interface-text-muted) !important;
+}
+
+html[data-theme="dark"] .date-selector {
+    background: #1a1d23 !important;
+    border-color: var(--interface-border) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .date-selector .form-control {
+    background-color: #0f1114 !important;
+    border-color: var(--interface-border) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .view-buttons {
+    background: #1a1d23 !important;
+    border-color: var(--interface-border) !important;
+}
+
+html[data-theme="dark"] .view-btn {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .view-btn:hover {
+    background: var(--interface-hover) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .calendar-container {
+    background: #1a1d23 !important;
+    border-color: var(--interface-border) !important;
+}
+
+html[data-theme="dark"] .calendar-time-cell {
+    background: #1a1d23 !important;
+    border-color: var(--interface-border) !important;
+}
+
+html[data-theme="dark"] .calendar-employee-cell {
+    background: #1a1d23 !important;
+}
+
+html[data-theme="dark"] .employee-card {
+    background: #1a1d23 !important;
+    border-color: var(--interface-border) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .requested-container {
+    background: #1a1d23 !important;
+    border-color: var(--interface-border) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .requested-header {
+    border-bottom-color: var(--interface-border) !important;
+}
+
+html[data-theme="dark"] .requested-header h3 {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .requested-filters .form-label {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .requested-filters .form-select {
+    background-color: #0f1114 !important;
+    border-color: var(--interface-border) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .requested-table-container .table {
+    background: #1a1d23 !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .requested-table-container .table thead {
+    background: #1a1d23 !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .requested-table-container .table thead th {
+    background: #1a1d23 !important;
+    color: var(--interface-text) !important;
+    border-bottom-color: var(--interface-border) !important;
+}
+
+html[data-theme="dark"] .requested-table-container .table tbody {
+    background: #1a1d23 !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .requested-table-container .table tbody tr {
+    background: #1a1d23 !important;
+    color: var(--interface-text) !important;
+    border-bottom-color: var(--interface-border) !important;
+}
+
+html[data-theme="dark"] .requested-table-container .table tbody tr:hover {
+    background: var(--interface-hover) !important;
+}
+
+html[data-theme="dark"] .requested-table-container .table td {
+    background: transparent !important;
+    color: var(--interface-text) !important;
+    border-color: var(--interface-border) !important;
+}
+
+html[data-theme="dark"] .balances-container {
+    background: #1a1d23 !important;
+    border-color: var(--interface-border) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .balances-header {
+    border-bottom-color: var(--interface-border) !important;
+}
+
+html[data-theme="dark"] .balances-header h3 {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .balance-card {
+    background: #1a1d23 !important;
+    border-color: var(--interface-border) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .dtr-tabs .tab-button {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .dtr-tabs .tab-button:hover {
+    background: var(--interface-hover) !important;
+}
+
+html[data-theme="dark"] .dtr-tabs .tab-button.active {
+    background: var(--primary-500) !important;
+    color: #fff !important;
+}
+
+html[data-theme="dark"] .notification {
+    background: #1a1d23 !important;
+    border-color: var(--interface-border) !important;
+    color: var(--interface-text) !important;
+}
 </style>

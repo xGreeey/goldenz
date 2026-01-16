@@ -430,6 +430,149 @@ function get_checklist_progress($employee_id) {
     color: #0f172a;
     margin: 0 0 0.25rem 0;
 }
+
+/* Dark theme support for Checklist page */
+html[data-theme="dark"] .checklist-container {
+    background-color: transparent;
+    color: var(--interface-text);
+}
+
+html[data-theme="dark"] .page-header h1 {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .page-header .text-muted {
+    color: var(--interface-text-muted) !important;
+}
+
+html[data-theme="dark"] .summary-card {
+    background-color: #1a1d23 !important;
+    border-color: var(--interface-border) !important;
+}
+
+html[data-theme="dark"] .summary-card .card-body {
+    background-color: #1a1d23 !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .summary-card .text-muted {
+    color: var(--interface-text-muted) !important;
+}
+
+html[data-theme="dark"] .card {
+    background-color: #1a1d23 !important;
+    border-color: var(--interface-border) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .card-header {
+    background-color: #1a1d23 !important;
+    border-bottom-color: var(--interface-border) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .card-header h5 {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .card-body {
+    background-color: #1a1d23 !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .form-control,
+html[data-theme="dark"] .form-select {
+    background-color: #0f1114 !important;
+    border-color: var(--interface-border) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .table {
+    background-color: #1a1d23 !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .table thead {
+    background-color: #1a1d23 !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .table thead th {
+    background-color: #1a1d23 !important;
+    color: var(--interface-text) !important;
+    border-bottom-color: var(--interface-border) !important;
+}
+
+html[data-theme="dark"] .table tbody {
+    background-color: #1a1d23 !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .table tbody tr {
+    background-color: #1a1d23 !important;
+    color: var(--interface-text) !important;
+    border-bottom-color: var(--interface-border) !important;
+}
+
+html[data-theme="dark"] .table tbody tr:hover {
+    background-color: var(--interface-hover) !important;
+}
+
+html[data-theme="dark"] .table td {
+    background-color: transparent !important;
+    color: var(--interface-text) !important;
+    border-color: var(--interface-border) !important;
+}
+
+html[data-theme="dark"] .table td h6 {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .table td .text-muted {
+    color: var(--interface-text-muted) !important;
+}
+
+html[data-theme="dark"] .table td small {
+    color: var(--interface-text-muted) !important;
+}
+
+html[data-theme="dark"] .checklist-category {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .checklist-category small {
+    color: var(--interface-text-muted) !important;
+}
+
+html[data-theme="dark"] .modal-content {
+    background-color: #1a1d23 !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .modal-header {
+    border-bottom-color: var(--interface-border) !important;
+}
+
+html[data-theme="dark"] .modal-title {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .modal-footer {
+    border-top-color: var(--interface-border) !important;
+}
+
+html[data-theme="dark"] .checklist-item {
+    border-bottom-color: var(--interface-border) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .checklist-item label {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .checklist-item.completed label {
+    color: var(--interface-text-muted) !important;
+}
 </style>
 
 <script>
