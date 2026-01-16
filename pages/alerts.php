@@ -74,6 +74,11 @@ $audit_table = $_GET['audit_table'] ?? '';
 $audit_date_from = $_GET['audit_date_from'] ?? '';
 $audit_date_to = $_GET['audit_date_to'] ?? '';
 
+// Pagination for audit trail
+$audit_page = max(1, (int)($_GET['audit_p'] ?? 1));
+$audit_per_page = 10;
+$audit_offset = ($audit_page - 1) * $audit_per_page;
+
 // Get alerts based on filters
 try {
     $alerts = get_employee_alerts($status, $priority ?: null);
@@ -502,15 +507,14 @@ try {
                     <table class="table table-hover table-sm">
                         <thead>
                             <tr>
-                                <th style="width: 5%;"></th>
                                 <th style="width: 12%;">Timestamp</th>
                                 <th style="width: 12%;">User</th>
-                                <th style="width: 8%;">Action</th>
+                                <th style="width: 10%;">Action</th>
                                 <th style="width: 10%;">Table</th>
-                                <th style="width: 15%;">Record</th>
-                                <th style="width: 25%;">Changes</th>
-                                <th style="width: 8%;">IP Address</th>
-                                <th style="width: 5%;">Details</th>
+                                <th style="width: 12%;">Record</th>
+                                <th style="width: 28%;">Changes</th>
+                                <th style="width: 10%;">IP Address</th>
+                                <th style="width: 6%;">Details</th>
                             </tr>
                         </thead>
                         <tbody id="auditTrailBody">
@@ -525,9 +529,15 @@ try {
                             
                             // Get audit logs (check if function exists and table exists)
                             $audit_logs = [];
-                            if (function_exists('get_audit_logs')) {
+                            $audit_total_count = 0;
+                            $audit_total_pages = 1;
+                            
+                            if (function_exists('get_audit_logs') && function_exists('get_audit_logs_count')) {
                                 try {
-                                    $audit_logs = get_audit_logs($audit_filters, 50, 0);
+                                    $audit_logs = get_audit_logs($audit_filters, $audit_per_page, $audit_offset);
+                                    $audit_total_count = get_audit_logs_count($audit_filters);
+                                    $audit_total_pages = max(1, (int)ceil($audit_total_count / $audit_per_page));
+                                    $audit_page = min($audit_page, $audit_total_pages);
                                 } catch (Exception $e) {
                                     // Table might not exist yet
                                     error_log("Audit logs error: " . $e->getMessage());
@@ -537,7 +547,7 @@ try {
                             if (empty($audit_logs)):
                             ?>
                             <tr>
-                                <td colspan="7" class="text-center py-4">
+                                <td colspan="8" class="text-center py-4">
                                     <div class="text-muted">
                                         <i class="fas fa-inbox fa-2x mb-2"></i>
                                         <p class="mb-0">No audit logs found</p>
@@ -628,12 +638,15 @@ try {
                                                 </div>
                                                 <?php endif; ?>
                                             <?php else: ?>
-                                                <small class="text-muted"><?php echo htmlspecialchars($log['action']); ?></small>
+                                                <small class="text-muted">-</small>
                                             <?php endif; ?>
                                         </div>
                                     </td>
                                     <td>
                                         <small class="text-muted"><?php echo htmlspecialchars($log['ip_address'] ?? 'N/A'); ?></small>
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">-</small>
                                     </td>
                                 </tr>
                                 <?php endforeach; ?>
@@ -643,17 +656,57 @@ try {
                 </div>
                 
                 <!-- Audit Trail Pagination -->
-                <?php if (!empty($audit_logs)): ?>
-                <div class="d-flex justify-content-between align-items-center mt-3">
-                    <div>
-                        <small class="text-muted">Showing <?php echo count($audit_logs); ?> recent audit logs</small>
+                <?php if (!empty($audit_logs) && $audit_total_pages > 1): ?>
+                    <nav class="mt-3" aria-label="Audit trail pagination">
+                        <ul class="pagination justify-content-center mb-0">
+                            <?php
+                            $audit_base_query = array_merge(
+                                ['page' => 'alerts'],
+                                array_filter([
+                                    'audit_action' => $audit_action,
+                                    'audit_table' => $audit_table,
+                                    'audit_date_from' => $audit_date_from,
+                                    'audit_date_to' => $audit_date_to,
+                                ])
+                            );
+                            ?>
+                            <li class="page-item <?php echo $audit_page <= 1 ? 'disabled' : ''; ?>">
+                                <a class="page-link" href="?<?php echo http_build_query(array_merge($audit_base_query, ['audit_p' => max(1, $audit_page - 1)])); ?>">
+                                    &laquo;
+                                </a>
+                            </li>
+                            <?php
+                            $start = max(1, $audit_page - 2);
+                            $end   = min($audit_total_pages, $audit_page + 2);
+                            for ($i = $start; $i <= $end; $i++):
+                            ?>
+                                <li class="page-item <?php echo $i === $audit_page ? 'active' : ''; ?>">
+                                    <a class="page-link" href="?<?php echo http_build_query(array_merge($audit_base_query, ['audit_p' => $i])); ?>">
+                                        <?php echo $i; ?>
+                                    </a>
+                                </li>
+                            <?php endfor; ?>
+                            <li class="page-item <?php echo $audit_page >= $audit_total_pages ? 'disabled' : ''; ?>">
+                                <a class="page-link" href="?<?php echo http_build_query(array_merge($audit_base_query, ['audit_p' => min($audit_total_pages, $audit_page + 1)])); ?>">
+                                    &raquo;
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                    <div class="text-center mt-2">
+                        <small class="text-muted">
+                            Showing <?php echo number_format(count($audit_logs)); ?> of <?php echo number_format($audit_total_count); ?> events
+                            <?php if (!empty(array_filter($audit_filters))): ?>
+                                <span class="text-muted">(filtered)</span>
+                            <?php endif; ?>
+                        </small>
                     </div>
-                    <div>
-                        <button class="btn btn-sm btn-outline-primary" onclick="loadMoreAuditLogs()">
-                            <i class="fas fa-chevron-down me-1"></i>Load More
-                        </button>
+                <?php elseif (!empty($audit_logs)): ?>
+                    <div class="text-center mt-3">
+                        <small class="text-muted">
+                            Showing <?php echo number_format(count($audit_logs)); ?> of <?php echo number_format($audit_total_count); ?> events
+                        </small>
                     </div>
-                </div>
                 <?php endif; ?>
             </div>
         </div>
@@ -837,32 +890,35 @@ function filterAuditTrail() {
     const table = document.getElementById('auditTableFilter').value;
     const dateFrom = document.getElementById('auditDateFrom').value;
     const dateTo = document.getElementById('auditDateTo').value;
-    
+
     let url = '?page=alerts';
     const params = [];
-    
+
     // Keep existing alert filters
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('status')) params.push('status=' + urlParams.get('status'));
     if (urlParams.get('priority')) params.push('priority=' + urlParams.get('priority'));
     if (urlParams.get('alert_type')) params.push('alert_type=' + urlParams.get('alert_type'));
-    
+
     // Add audit filters
     if (action) params.push('audit_action=' + action);
     if (table) params.push('audit_table=' + table);
     if (dateFrom) params.push('audit_date_from=' + dateFrom);
     if (dateTo) params.push('audit_date_to=' + dateTo);
-    
+
+    // Reset to page 1 when filters change
+    params.push('audit_p=1');
+
     if (params.length > 0) {
         url += '&' + params.join('&');
     }
-    
+
     window.location.href = url;
 }
 
 function clearAuditFilters() {
     const urlParams = new URLSearchParams(window.location.search);
-    let url = '?page=alerts';
+    let url = '?page=alerts&audit_p=1';
     
     // Keep alert filters, remove audit filters
     if (urlParams.get('status')) url += '&status=' + urlParams.get('status');
@@ -883,21 +939,22 @@ function refreshAuditTrail() {
 function exportAuditTrail() {
     // Export audit trail to CSV
     const table = document.querySelector('#auditTrailBody').closest('table');
-    let csv = 'Timestamp,User,Action,Table,Record ID,Details,IP Address\n';
+    let csv = 'Timestamp,User,Action,Table,Record,Changes,IP Address,Details\n';
     
     const rows = table.querySelectorAll('tbody tr');
     rows.forEach(row => {
         const cells = row.querySelectorAll('td');
-        if (cells.length >= 7) {
+        if (cells.length >= 8) {
             const timestamp = cells[0].textContent.trim().replace(/\n/g, ' ');
             const user = cells[1].textContent.trim().replace(/\n/g, ' ');
             const action = cells[2].textContent.trim();
             const tableName = cells[3].textContent.trim();
-            const recordId = cells[4].textContent.trim();
-            const details = cells[5].textContent.trim();
+            const record = cells[4].textContent.trim();
+            const changes = cells[5].textContent.trim();
             const ip = cells[6].textContent.trim();
+            const details = cells[7].textContent.trim();
             
-            csv += `"${timestamp}","${user}","${action}","${tableName}","${recordId}","${details}","${ip}"\n`;
+            csv += `"${timestamp}","${user}","${action}","${tableName}","${record}","${changes}","${ip}","${details}"\n`;
         }
     });
     
@@ -1166,6 +1223,29 @@ body.portal-hr-admin .alerts-modern {
 .table-sm td {
     padding: 0.5rem;
     vertical-align: middle;
+}
+
+/* Fix audit trail table alignment */
+.table-responsive table {
+    table-layout: fixed;
+    width: 100%;
+}
+
+.table-responsive table th,
+.table-responsive table td {
+    vertical-align: middle;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+.table-responsive table th {
+    white-space: nowrap;
+    text-align: left;
+    font-weight: 600;
+}
+
+.table-responsive table td {
+    text-align: left;
 }
 
 /* Alerts Table Styling */
