@@ -323,15 +323,6 @@ $activeSection = getActiveSection($page);
             </li>
             
             <li class="nav-item">
-                <a href="?page=integrations" 
-                   class="nav-link <?php echo ($page === 'integrations') ? 'active' : ''; ?>"
-                   data-page="integrations">
-                    <i class="fas fa-cloud" aria-hidden="true"></i>
-                    <span>Integrations</span>
-                </a>
-            </li>
-            
-            <li class="nav-item">
                 <a href="?page=help" 
                    class="nav-link <?php echo ($page === 'help') ? 'active' : ''; ?>"
                    data-page="help">
@@ -414,9 +405,6 @@ $activeSection = getActiveSection($page);
                     break;
                 case 'handbook':
                     include $pages_path . 'handbook.php';
-                    break;
-                case 'integrations':
-                    include $pages_path . 'integrations.php';
                     break;
                 case 'help':
                     include $pages_path . 'help.php';

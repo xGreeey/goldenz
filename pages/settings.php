@@ -1255,6 +1255,81 @@ html[data-theme="dark"] .super-admin-settings .password-match-indicator {
     border-color: var(--interface-border) !important;
 }
 
+/* Dark theme support for Role & Permission Defaults table */
+html[data-theme="dark"] .super-admin-settings .table,
+html[data-theme="dark"] .super-admin-settings .table.table-sm,
+html[data-theme="dark"] .super-admin-settings .table.align-middle {
+    color: var(--interface-text) !important;
+    background-color: #1a1d23 !important;
+}
+
+html[data-theme="dark"] .super-admin-settings .table thead {
+    background-color: #1a1d23 !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .super-admin-settings .table thead.table-light {
+    background-color: #1a1d23 !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .super-admin-settings .table thead th {
+    background-color: #1a1d23 !important;
+    color: var(--interface-text) !important;
+    border-color: var(--interface-border) !important;
+}
+
+html[data-theme="dark"] .super-admin-settings .table thead tr {
+    background-color: #1a1d23 !important;
+}
+
+html[data-theme="dark"] .super-admin-settings .table tbody {
+    background-color: #1a1d23 !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .super-admin-settings .table tbody tr {
+    background-color: #1a1d23 !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .super-admin-settings .table tbody tr:hover {
+    background-color: var(--interface-hover) !important;
+}
+
+html[data-theme="dark"] .super-admin-settings .table td,
+html[data-theme="dark"] .super-admin-settings .table th {
+    background-color: transparent !important;
+    border-color: var(--interface-border) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .super-admin-settings .table td strong {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .super-admin-settings .table td.text-muted {
+    color: var(--interface-text-muted) !important;
+}
+
+html[data-theme="dark"] .super-admin-settings #roles-permissions .table,
+html[data-theme="dark"] .super-admin-settings #roles-permissions .table.table-sm,
+html[data-theme="dark"] .super-admin-settings #roles-permissions .table.align-middle {
+    background-color: #1a1d23 !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .super-admin-settings #roles-permissions .table thead.table-light {
+    background-color: #1a1d23 !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .super-admin-settings #roles-permissions .table thead.table-light th {
+    background-color: #1a1d23 !important;
+    color: var(--interface-text) !important;
+    border-color: var(--interface-border) !important;
+}
+
 .match-text {
     font-weight: 500;
 }
