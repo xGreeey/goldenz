@@ -84,7 +84,7 @@ $activeSection = getActiveSection($page);
     <!-- Note: X-Frame-Options should be set via HTTP header, not meta tag -->
     <meta http-equiv="X-XSS-Protection" content="1; mode=block">
 </head>
-<body>
+<body class="portal-super-admin">
     <!-- Sidebar -->
     <nav class="sidebar" id="sidebar" role="navigation" aria-label="Main navigation">
         <div class="sidebar-header">
@@ -307,36 +307,6 @@ $activeSection = getActiveSection($page);
                         echo '<span class="nav-badge" aria-label="' . $alert_stats['total_active'] . ' active alerts">' . $alert_stats['total_active'] . '</span>';
                     }
                     ?>
-                </a>
-            </li>
-        </ul>
-        
-        <!-- Bottom Navigation Section -->
-        <ul class="sidebar-menu sidebar-bottom" role="menubar">
-            <li class="nav-item">
-                <a href="?page=settings" 
-                   class="nav-link <?php echo ($page === 'settings') ? 'active' : ''; ?>"
-                   data-page="settings">
-                    <i class="fas fa-cog" aria-hidden="true"></i>
-                    <span>Settings</span>
-                </a>
-            </li>
-            
-            <li class="nav-item">
-                <a href="?page=help" 
-                   class="nav-link <?php echo ($page === 'help') ? 'active' : ''; ?>"
-                   data-page="help">
-                    <i class="fas fa-headset" aria-hidden="true"></i>
-                    <span>Help and support</span>
-                </a>
-            </li>
-            
-            <li class="nav-item">
-<a href="?logout=1"
-                   class="nav-link"
-                   data-no-transition="true">
-                    <i class="fas fa-sign-out-alt" aria-hidden="true"></i>
-                    <span>Logout</span>
                 </a>
             </li>
         </ul>

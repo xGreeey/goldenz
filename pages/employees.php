@@ -306,6 +306,38 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
         </div>
     <?php endif; ?>
     
+    <?php if (isset($_GET['success']) && $_GET['success'] === 'employee_created'): ?>
+        <div class="alert alert-success alert-dismissible fade show" style="border-left: 4px solid #28a745;">
+            <i class="fas fa-check-circle me-2 text-success"></i>
+            <?php 
+            if (isset($_SESSION['employee_created_message'])) {
+                echo $_SESSION['employee_created_message']; // Already contains HTML formatting
+                unset($_SESSION['employee_created_message']);
+            } else {
+                echo 'New employee has been created successfully!';
+            }
+            ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        <?php unset($_SESSION['employee_created_success']); ?>
+    <?php endif; ?>
+    
+    <?php if (isset($_SESSION['employee_created_success']) && $_SESSION['employee_created_success']): ?>
+        <div class="alert alert-success alert-dismissible fade show" style="border-left: 4px solid #28a745;">
+            <i class="fas fa-check-circle me-2 text-success"></i>
+            <?php 
+            if (isset($_SESSION['employee_created_message'])) {
+                echo $_SESSION['employee_created_message'];
+                unset($_SESSION['employee_created_message']);
+            } else {
+                echo 'New employee has been created successfully!';
+            }
+            ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        <?php unset($_SESSION['employee_created_success']); ?>
+    <?php endif; ?>
+    
     <?php if (isset($_GET['success']) && $_GET['success'] === 'page2_saved'): ?>
         <div class="alert alert-success-modern alert-dismissible fade show">
             <i class="fas fa-circle-check me-2"></i>
