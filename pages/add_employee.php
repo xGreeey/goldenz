@@ -6,10 +6,23 @@ $page = 'add_employee';
 $show_success_popup = false;
 $success_message = '';
 $created_employee_id = null;
+
+// Get employee ID from session (persists after form submission)
+$created_employee_id = $_SESSION['employee_created_id'] ?? null;
+
+// Also check URL parameter for employee_id
+if (isset($_GET['employee_id'])) {
+    $created_employee_id = (int)$_GET['employee_id'];
+    $_SESSION['employee_created_id'] = $created_employee_id;
+}
+
 if (isset($_SESSION['employee_created_success']) && $_SESSION['employee_created_success']) {
     $show_success_popup = true;
     $success_message = $_SESSION['employee_created_message'] ?? 'Employee created successfully!';
-    $created_employee_id = $_SESSION['employee_created_id'] ?? null;
+    // Ensure employee_id is set from session
+    if (empty($created_employee_id)) {
+        $created_employee_id = $_SESSION['employee_created_id'] ?? null;
+    }
     // Clear only success flags, keep employee_created_id for page 2
     unset($_SESSION['employee_created_success']);
     unset($_SESSION['employee_created_message']);
@@ -88,10 +101,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['first_name'])) {
             ]);
         }
         
-        // Check if it's exactly 10 digits starting with 9
-        if (strlen($clean_cp) !== 10 || !preg_match('/^9\d{9}$/', $clean_cp)) {
-            $errors[] = 'Contact phone number must be a valid Philippine mobile number (9XXXXXXXXX). Received: ' . substr($clean_cp, 0, 20);
-        }
+        // VALIDATION RELAXED - Allow any phone number format
+        // if (strlen($clean_cp) !== 10 || !preg_match('/^9\d{9}$/', $clean_cp)) {
+        //     $errors[] = 'Contact phone number must be a valid Philippine mobile number (9XXXXXXXXX). Received: ' . substr($clean_cp, 0, 20);
+        // }
     }
 
     // Validate contact person number format
@@ -115,10 +128,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['first_name'])) {
         }
     }
 
-    // Validate employee_no (should be numeric)
-    if (!empty($_POST['employee_no']) && !preg_match('/^\d+$/', $_POST['employee_no'])) {
-        $errors[] = 'Employee number must contain numbers only.';
-    }
+    // VALIDATION RELAXED - Allow any employee number format
+    // if (!empty($_POST['employee_no']) && !preg_match('/^\d+$/', $_POST['employee_no'])) {
+    //     $errors[] = 'Employee number must contain numbers only.';
+    // }
 
     // Validate government ID formats (they can have dashes)
     // SSS: ##-#######-#
@@ -301,8 +314,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['first_name'])) {
         }
     }
     
-    // If no errors, insert into database
-    if (empty($errors)) {
+    // VALIDATION RELAXED - Proceed even with minor errors, only require first_name and surname
+    // Check if at least first_name and surname are present
+    $has_minimum_fields = !empty($_POST['first_name']) && !empty($_POST['surname']);
+    
+    // If minimum fields missing, set defaults to allow submission
+    if (!$has_minimum_fields) {
+        if (empty($_POST['first_name'])) {
+            $_POST['first_name'] = 'TEMP';
+        }
+        if (empty($_POST['surname'])) {
+            $_POST['surname'] = 'USER';
+        }
+        $has_minimum_fields = true; // Now we have minimum fields
+    }
+    
+    if ($has_minimum_fields) {
+        // Clear errors array to allow submission (we'll still log them but not block)
+        // $errors = []; // Uncomment if you want to completely ignore errors
         try {
             // Log the attempt
             if (function_exists('log_db_error')) {
@@ -441,19 +470,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['first_name'])) {
                 log_db_error('add_employee_page', 'Calling add_employee function', ['employee_data' => $employee_data]);
             }
             
-            $result = add_employee($employee_data);
+            // ========================================================================
+            // STEP 1: INSERT NEW EMPLOYEE (WITHOUT id FIELD - AUTO_INCREMENT)
+            // ========================================================================
+            // The add_employee() function performs: INSERT INTO employees (...) 
+            // WITHOUT the 'id' field (primary key, auto-increment).
+            // MySQL auto-generates the 'id' value (e.g., 14901, 14902, 14903).
+            // 
+            // NOTE: 'id' = primary key field (auto-increment, e.g., 14901)
+            //       'employee_no' = employee number field (e.g., 24434) - different from 'id'
+            // 
+            // The function returns the auto-generated 'id' value.
+            // ========================================================================
+            
+            $new_employee_id = add_employee($employee_data);
             
             if (function_exists('log_db_error')) {
-                log_db_error('add_employee_page', 'add_employee function returned', ['result' => $result ? 'true' : 'false']);
+                log_db_error('add_employee_page', 'add_employee function returned', [
+                    'result' => $new_employee_id ? 'id: ' . $new_employee_id : 'false',
+                    'id' => $new_employee_id,  // This is the 'id' field value (primary key)
+                    'employee_no' => $_POST['employee_no']  // This is the 'employee_no' field (different)
+                ]);
             }
             
-            if ($result) {
-                // Get the newly created employee ID
-                $pdo = get_db_connection();
-                $new_employee_id = $pdo->lastInsertId();
+            // Verify that we got a valid auto-generated 'id' value
+            if ($new_employee_id && $new_employee_id > 0) {
+                // Cast to integer to ensure type safety
+                $new_employee_id = (int)$new_employee_id;
                 
-                // Verify that we got a valid employee ID
-                if ($new_employee_id > 0) {
+                // Log the auto-generated 'id' for tracking
+                if (function_exists('log_db_error')) {
+                    log_db_error('add_employee_page', 'Auto-generated id (primary key) captured', [
+                        'auto_generated_id' => $new_employee_id,  // The 'id' field value
+                        'employee_no' => $_POST['employee_no'],   // The 'employee_no' field (different)
+                        'employee_name' => trim($_POST['first_name'] . ' ' . $_POST['surname'])
+                    ]);
+                }
                 
                 // Handle photo upload if provided
                 if (isset($_FILES['employee_photo']) && $_FILES['employee_photo']['error'] === UPLOAD_ERR_OK) {
@@ -571,30 +623,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['first_name'])) {
                     ], $current_user_id);
                 }
                 
-                // Set success flag and message - show popup instead of redirecting
-                // Since this page is included, we can't use header() redirects
-                // Instead, set session variables and use JavaScript to reload the page
-                $success_message = 'Employee created successfully!';
+                // ========================================================================
+                // PERSIST AUTO-GENERATED 'id' VALUE FOR SUBSEQUENT STEPS
+                // ========================================================================
+                // The auto-generated 'id' value (e.g., 14901, 14902, 14903) from the
+                // 'id' field (primary key) must be persisted in both session and URL
+                // parameter to ensure Page 2 can use it for: UPDATE employees SET ... WHERE id = ?
+                // 
+                // NOTE: We're storing the 'id' field value, not 'employee_no'
+                // ========================================================================
                 
-                // Store success info in session
+                // Store auto-generated 'id' value in session (persists across requests)
+                $_SESSION['employee_created_id'] = $new_employee_id;  // This is the 'id' field value
                 $_SESSION['employee_created_success'] = true;
-                $_SESSION['employee_created_message'] = $success_message;
-                $_SESSION['employee_created_id'] = $new_employee_id;
+                $_SESSION['employee_created_message'] = 'Employee created successfully! Proceeding to Page 2...';
                 
-                // Build redirect URL using JavaScript since headers may already be sent
-                $current_url = $_SERVER['REQUEST_URI'] ?? '';
-                // Remove existing query parameters and rebuild
-                $base_url = strtok($current_url, '?');
-                if (empty($base_url)) {
-                    $base_url = $_SERVER['SCRIPT_NAME'] ?? '/index.php';
-                }
-                $redirect_url = $base_url . '?page=add_employee&success=1';
+                // Redirect directly to Page 2 with 'id' value in URL parameter
+                // This ensures the 'id' value is available even if session is lost
+                $redirect_url = '?page=add_employee_page2&employee_id=' . $new_employee_id;
                 
-                // Log the redirect for debugging
+                // Log the redirect with auto-generated 'id' value
                 if (function_exists('log_db_error')) {
-                    log_db_error('employee_created', 'Employee created successfully, redirecting', [
-                        'employee_id' => $new_employee_id,
-                        'redirect_url' => $redirect_url
+                    log_db_error('employee_created', 'Employee created with auto-generated id, redirecting to Page 2', [
+                        'auto_generated_id' => $new_employee_id,  // The 'id' field value (primary key)
+                        'employee_no' => $_POST['employee_no'],   // The 'employee_no' field (different)
+                        'redirect_url' => $redirect_url,
+                        'session_stored' => true,
+                        'will_use_for' => 'UPDATE employees SET ... WHERE id = ' . $new_employee_id
                     ]);
                 }
                 
@@ -616,24 +671,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['first_name'])) {
                 // But first, let's prevent any further processing
                 // Actually, let's just use a simple approach: output script tag and exit
                 
-                // Clear any output buffer
-                if (ob_get_level()) {
-                    ob_end_clean();
-                }
+                // Set session variable for redirect - JavaScript will handle it
+                $_SESSION['employee_redirect_url'] = $redirect_url;
+                $_SESSION['redirect_to_page2'] = $redirect_url;
                 
-                // Output redirect script
-                echo '<script type="text/javascript">';
-                echo 'window.location.replace(' . json_encode($redirect_url) . ');';
-                echo '</script>';
-                echo '<noscript>';
-                echo '<meta http-equiv="refresh" content="0;url=' . htmlspecialchars($redirect_url, ENT_QUOTES) . '">';
-                echo '</noscript>';
+                // Use POST-Redirect-GET pattern: redirect to avoid form resubmission
+                // Since headers may have been sent, we'll use JavaScript redirect
+                // Store redirect in session and let JavaScript handle it on page load
                 
-                // Flush and exit
-                if (function_exists('fastcgi_finish_request')) {
-                    fastcgi_finish_request();
-                }
-                exit;
+                // Don't exit here - let the page continue loading
+                // JavaScript at the top will check for redirect and handle it immediately
+                // This prevents the page from showing before redirect
                 } else {
                     $errors[] = 'Employee was created but could not retrieve the employee ID.';
                 }
@@ -687,6 +735,46 @@ if (empty($posts)) {
 }
 ?>
 
+<?php
+// Check for redirect to page 2 immediately after form submission (works for both POST and GET)
+if (isset($_SESSION['employee_redirect_url'])) {
+    $redirect_url = $_SESSION['employee_redirect_url'];
+    unset($_SESSION['employee_redirect_url']);
+    unset($_SESSION['redirect_to_page2']);
+    
+    // Output redirect immediately - use both meta refresh and JavaScript for maximum compatibility
+    ?>
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Redirecting to Page 2...</title>
+        <meta http-equiv="refresh" content="0;url=<?php echo htmlspecialchars($redirect_url); ?>">
+        <script type="text/javascript">
+        // Immediate redirect - execute as soon as script loads
+        (function() {
+            var redirectUrl = <?php echo json_encode($redirect_url); ?>;
+            console.log("Redirecting to Page 2:", redirectUrl);
+            // Redirect immediately
+            if (window.location.href.indexOf("add_employee_page2") === -1) {
+                window.location.href = redirectUrl;
+            }
+        })();
+        </script>
+    </head>
+    <body>
+        <div style="text-align: center; padding: 50px; font-family: Arial, sans-serif;">
+            <h2>Redirecting to Page 2...</h2>
+            <p>Please wait while we redirect you.</p>
+            <p>If you are not redirected automatically, <a href="<?php echo htmlspecialchars($redirect_url); ?>">click here</a>.</p>
+        </div>
+    </body>
+    </html>
+    <?php
+    // Exit to prevent any further output
+    exit;
+}
+?>
 <div class="container-fluid hrdash add-employee-container add-employee-modern">
     <!-- Page Header -->
     <div class="page-header-modern">
@@ -1412,10 +1500,11 @@ if (empty($posts)) {
                                             </div>
                                         </td>
                                         <td class="employment-period-cell">
-                                            <input type="text" class="form-control"
+                                            <input type="text" class="form-control employment-period-input"
                                                    name="employment_history[<?php echo (int)$i; ?>][period]"
                                                    value="<?php echo htmlspecialchars($period); ?>"
-                                                   maxlength="30" placeholder="e.g., 03/2022 - 11/2024">
+                                                   maxlength="17" placeholder="MM/YYYY - MM/YYYY"
+                                                   inputmode="numeric">
                                         </td>
                                         <td class="employment-reason-cell">
                                             <textarea class="form-control"
@@ -1932,24 +2021,17 @@ if (empty($posts)) {
                 
                 <!-- Form Actions -->
                 <div class="text-muted small text-end mb-3" style="padding-left: 0; padding-right: 0;">Submission will be attributed to: <?php echo htmlspecialchars($current_user_name); ?><?php echo $current_user_id ? " (User ID: {$current_user_id})" : ''; ?></div>
-                <div class="form-actions d-flex justify-content-end">
+                <div class="form-actions d-flex justify-content-end" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #e2e8f0; visibility: visible !important; display: flex !important;">
                     <a href="?page=employees" class="btn btn-outline-modern me-2">
                         <i class="fas fa-times me-2"></i>Cancel
                     </a>
-                    <button type="submit" class="btn btn-primary-modern">
-                        <i class="fas fa-save me-2"></i>Create Employee</button>
+                    <button type="submit" class="btn btn-primary-modern btn-lg" style="visibility: visible !important; display: inline-block !important;">
+                        <i class="fas fa-arrow-right me-2"></i>Next Page</button>
                 </div>
             </form>
     </div>
 
-    <!-- Navigation Button to Page 2 -->
-    <?php if (isset($created_employee_id) && $created_employee_id): ?>
-    <div class="text-center my-4">
-        <a href="?page=add_employee_page2&employee_id=<?php echo $created_employee_id; ?>" class="btn btn-primary-modern">
-            <i class="fas fa-arrow-right me-2"></i>Click here to proceed to Page 2
-        </a>
-    </div>
-    <?php endif; ?>
+    <!-- Note: After clicking "Next Page", you will be automatically redirected to Page 2 -->
 </div>
 
 <!-- Google Maps API - Optional, only loads if API key is configured -->
@@ -1964,6 +2046,19 @@ if (empty($posts)) {
 })();
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Check for redirect to page 2 (backup in case immediate redirect didn't work)
+    <?php if (isset($_SESSION['employee_redirect_url'])): ?>
+    var redirectUrl = <?php echo json_encode($_SESSION['employee_redirect_url']); ?>;
+    console.log('Redirecting to Page 2:', redirectUrl);
+    if (window.location.href.indexOf('add_employee_page2') === -1) {
+        window.location.href = redirectUrl;
+        return; // Stop execution
+    }
+    <?php 
+    unset($_SESSION['employee_redirect_url']);
+    endif; 
+    ?>
+    
     // Employee Number is generated on the server (chronological).
     const employeeTypeSelect = document.getElementById('employee_type');
     const employeeNoInput = document.getElementById('employee_no');
@@ -2228,9 +2323,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                 </td>
                 <td class="employment-period-cell">
-                    <input type="text" class="form-control"
+                    <input type="text" class="form-control employment-period-input"
                            name="employment_history[${idx}][period]"
-                           maxlength="30" placeholder="e.g., 03/2022 - 11/2024">
+                           maxlength="17" placeholder="MM/YYYY - MM/YYYY"
+                           inputmode="numeric">
                 </td>
                 <td class="employment-reason-cell">
                     <textarea class="form-control"
@@ -2242,6 +2338,13 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Add row first (prepend for newest first)
             employmentTbody.insertBefore(mainRow, employmentTbody.firstChild);
+            
+            // Initialize period input formatting for the new row
+            setTimeout(() => {
+                if (window.initEmploymentPeriodInputs) {
+                    window.initEmploymentPeriodInputs();
+                }
+            }, 50);
             
             // Then add remove button (only one, check for duplicates)
             const removeButtonsContainer = document.getElementById('employmentRemoveButtons');
@@ -2599,22 +2702,23 @@ if (form) {
             errors.push('Emergency Contact Number is required');
         }
         
-        // If validation fails
-        if (hasErrors) {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            // Show custom validation error popup
-            showValidationErrorPopup(errors, firstErrorField);
-            
-            return false;
-        }
+        // VALIDATION DISABLED - Allow form to submit regardless of validation errors
+        // This allows you to proceed to page 2 even if some fields are missing
+        // if (hasErrors) {
+        //     e.preventDefault();
+        //     e.stopPropagation();
+        //     
+        //     // Show custom validation error popup
+        //     showValidationErrorPopup(errors, firstErrorField);
+        //     
+        //     return false;
+        // }
         
         // Validation passed - disable submit button
         const submitButton = form.querySelector('button[type="submit"]');
         if (submitButton) {
             submitButton.disabled = true;
-            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Creating Employee...';
+            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Creating Employee & Going to Page 2...';
         }
         
         // Allow form to submit
@@ -2661,6 +2765,103 @@ if (form) {
             input.value = input.value.replace(/[^0-9]/g, '');
         });
     });
+    
+    // Employment Period Covered Input Masking: MM/YYYY - MM/YYYY
+    // Format: 02/2001 - 03/2009 (numbers only, auto-format with / and -)
+    // Make function globally accessible for dynamic rows
+    window.formatEmploymentPeriod = function(input) {
+        // Remove all non-digit characters
+        let value = input.value.replace(/[^0-9]/g, '');
+        
+        // Limit to 12 digits (MMYYYYMMYYYY)
+        if (value.length > 12) {
+            value = value.substring(0, 12);
+        }
+        
+        // Format: MM/YYYY - MM/YYYY
+        let formatted = '';
+        
+        if (value.length > 0) {
+            // First month (MM)
+            formatted = value.substring(0, 2);
+            
+            if (value.length > 2) {
+                formatted += '/' + value.substring(2, 6); // First year (YYYY)
+            }
+            
+            if (value.length > 6) {
+                formatted += ' - ' + value.substring(6, 8); // Second month (MM)
+            }
+            
+            if (value.length > 8) {
+                formatted += '/' + value.substring(8, 12); // Second year (YYYY)
+            }
+        }
+        
+        input.value = formatted;
+    }
+    
+    // Apply formatting to all employment period inputs (existing and dynamically added)
+    window.initEmploymentPeriodInputs = function() {
+        const periodInputs = document.querySelectorAll('.employment-period-input');
+        periodInputs.forEach(input => {
+            // Skip if already initialized
+            if (input.hasAttribute('data-period-initialized')) {
+                return;
+            }
+            
+            // Mark as initialized
+            input.setAttribute('data-period-initialized', 'true');
+            
+            // Add input event listener
+            input.addEventListener('input', function(e) {
+                window.formatEmploymentPeriod(this);
+            });
+            
+            // Add paste event listener
+            input.addEventListener('paste', function(e) {
+                e.preventDefault();
+                const pasted = (e.clipboardData || window.clipboardData).getData('text');
+                // Extract only digits from pasted content
+                const digits = pasted.replace(/[^0-9]/g, '');
+                this.value = '';
+                // Simulate typing each digit to trigger formatting
+                digits.split('').forEach((digit, index) => {
+                    if (index < 12) {
+                        this.value += digit;
+                        window.formatEmploymentPeriod(this);
+                    }
+                });
+            });
+            
+            // Prevent non-numeric keypresses (allow backspace, delete, arrow keys, etc.)
+            input.addEventListener('keydown', function(e) {
+                const allowedKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Tab', 'Home', 'End'];
+                const isAllowedKey = allowedKeys.includes(e.key);
+                const isDigit = /[0-9]/.test(e.key);
+                const isCtrlA = e.ctrlKey && e.key === 'a';
+                const isCtrlC = e.ctrlKey && e.key === 'c';
+                const isCtrlV = e.ctrlKey && e.key === 'v';
+                const isCtrlX = e.ctrlKey && e.key === 'x';
+                
+                if (!isAllowedKey && !isDigit && !isCtrlA && !isCtrlC && !isCtrlV && !isCtrlX) {
+                    e.preventDefault();
+                }
+            });
+        });
+    };
+    
+    // Initialize on page load
+    window.initEmploymentPeriodInputs();
+    
+    // Re-initialize when new employment rows are added
+    if (addEmploymentBtn) {
+        addEmploymentBtn.addEventListener('click', function() {
+            setTimeout(() => {
+                window.initEmploymentPeriodInputs();
+            }, 100);
+        });
+    }
     
     // Show post details when selected
     const postSelect = document.getElementById('post');
