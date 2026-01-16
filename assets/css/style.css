@@ -210,11 +210,22 @@ html[data-theme="dark"] .main-content {
     background-color: var(--interface-bg) !important;
 }
 
-html[data-theme="dark"] .page-header-modern,
-html[data-theme="dark"] .card-header-modern {
-    background-color: #1a1d23 !important;
+html[data-theme="dark"] .page-header-modern {
+    background: #1a1d23 !important;
     border-color: var(--interface-border) !important;
     color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .card-header-modern {
+    border-bottom-color: var(--interface-border) !important;
+}
+
+html[data-theme="dark"] .page-title-main {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .page-subtitle-modern {
+    color: var(--interface-text-muted) !important;
 }
 
 /* Dark theme support for sidebar submenu */
@@ -992,6 +1003,55 @@ html[data-theme="dark"] .sidebar .nav-submenu .nav-link.active,
 html[data-theme="dark"] .sidebar .nav-submenu.expanded .nav-link.active {
     background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1e293b 100%) !important;
     color: #ffffff !important;
+}
+
+/* Dark theme support for Employees Table */
+html[data-theme="dark"] .employees-table {
+    background: #1a1d23 !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .employees-table thead {
+    background: #1a1d23 !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .employees-table th {
+    background: #1a1d23 !important;
+    color: var(--interface-text) !important;
+    border-bottom-color: var(--interface-border) !important;
+}
+
+html[data-theme="dark"] .employees-table tbody tr {
+    background-color: #1a1d23 !important;
+    border-bottom-color: var(--interface-border) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .employees-table tbody tr:hover {
+    background-color: var(--interface-hover) !important;
+}
+
+html[data-theme="dark"] .employees-table tbody tr:nth-child(even) {
+    background-color: rgba(30, 41, 59, 0.5) !important;
+}
+
+html[data-theme="dark"] .employees-table tbody tr:nth-child(even):hover {
+    background-color: var(--interface-hover) !important;
+}
+
+html[data-theme="dark"] .employees-table tbody tr:nth-child(even) td {
+    background-color: rgba(30, 41, 59, 0.5) !important;
+}
+
+html[data-theme="dark"] .employees-table tbody tr:hover td {
+    background-color: var(--interface-hover) !important;
+}
+
+html[data-theme="dark"] .employees-table td {
+    background-color: transparent !important;
+    color: var(--interface-text) !important;
+    border-bottom-color: var(--interface-border) !important;
 }
 
 .nav-submenu .nav-link i {
