@@ -20,6 +20,190 @@ if ($current_user_id && function_exists('get_db_connection')) {
         // Use default if database query fails
     }
 }
+
+// Get employee ID from URL parameter or session (set by page 1)
+$employee_id = $_GET['employee_id'] ?? $_SESSION['employee_created_id'] ?? null;
+
+// Store in session for form submission if we have it
+if ($employee_id) {
+    $_SESSION['employee_created_id'] = $employee_id;
+}
+
+// Handle form submission
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['sworn_signature'])) {
+    $errors = [];
+    $success = false;
+    
+    // Validate employee ID exists
+    if (empty($employee_id)) {
+        $errors[] = 'Employee ID is missing. Please go back to Page 1 and create the employee first.';
+    } else {
+        // Verify employee exists
+        try {
+            $pdo = get_db_connection();
+            $check_stmt = $pdo->prepare("SELECT id FROM employees WHERE id = ?");
+            $check_stmt->execute([$employee_id]);
+            if ($check_stmt->rowCount() === 0) {
+                $errors[] = 'Employee not found. Please go back to Page 1 and create the employee first.';
+            }
+        } catch (Exception $e) {
+            $errors[] = 'Error verifying employee: ' . $e->getMessage();
+        }
+    }
+    
+    // If no errors, update employee with page 2 data
+    if (empty($errors)) {
+        try {
+            $pdo = get_db_connection();
+            
+            // Prepare page 2 data
+            $page2_data = [];
+            
+            // General Information
+            $page2_data['vacancy_source'] = !empty($_POST['vacancy_source']) ? json_encode($_POST['vacancy_source']) : null;
+            $page2_data['referral_name'] = !empty($_POST['referral_name']) ? trim($_POST['referral_name']) : null;
+            $page2_data['knows_agency_person'] = !empty($_POST['knows_agency_person']) ? $_POST['knows_agency_person'] : null;
+            $page2_data['agency_person_name'] = !empty($_POST['agency_person_name']) ? trim($_POST['agency_person_name']) : null;
+            $page2_data['physical_defect'] = !empty($_POST['physical_defect']) ? $_POST['physical_defect'] : null;
+            $page2_data['physical_defect_specify'] = !empty($_POST['physical_defect_specify']) ? trim($_POST['physical_defect_specify']) : null;
+            $page2_data['drives'] = !empty($_POST['drives']) ? $_POST['drives'] : null;
+            $page2_data['drivers_license_no'] = !empty($_POST['drivers_license_no']) ? trim($_POST['drivers_license_no']) : null;
+            $page2_data['drivers_license_exp'] = !empty($_POST['drivers_license_exp']) ? trim($_POST['drivers_license_exp']) : null;
+            $page2_data['drinks_alcohol'] = !empty($_POST['drinks_alcohol']) ? $_POST['drinks_alcohol'] : null;
+            $page2_data['alcohol_frequency'] = !empty($_POST['alcohol_frequency']) ? trim($_POST['alcohol_frequency']) : null;
+            $page2_data['prohibited_drugs'] = !empty($_POST['prohibited_drugs']) ? $_POST['prohibited_drugs'] : null;
+            $page2_data['security_guard_experience'] = !empty($_POST['security_guard_experience']) ? trim($_POST['security_guard_experience']) : null;
+            $page2_data['convicted'] = !empty($_POST['convicted']) ? $_POST['convicted'] : null;
+            $page2_data['conviction_details'] = !empty($_POST['conviction_details']) ? trim($_POST['conviction_details']) : null;
+            $page2_data['filed_case'] = !empty($_POST['filed_case']) ? $_POST['filed_case'] : null;
+            $page2_data['case_specify'] = !empty($_POST['case_specify']) ? trim($_POST['case_specify']) : null;
+            $page2_data['action_after_termination'] = !empty($_POST['action_after_termination']) ? trim($_POST['action_after_termination']) : null;
+            
+            // Specimen Signature and Initial
+            $page2_data['signature_1'] = !empty($_POST['signature_1']) ? trim($_POST['signature_1']) : null;
+            $page2_data['signature_2'] = !empty($_POST['signature_2']) ? trim($_POST['signature_2']) : null;
+            $page2_data['signature_3'] = !empty($_POST['signature_3']) ? trim($_POST['signature_3']) : null;
+            $page2_data['initial_1'] = !empty($_POST['initial_1']) ? trim($_POST['initial_1']) : null;
+            $page2_data['initial_2'] = !empty($_POST['initial_2']) ? trim($_POST['initial_2']) : null;
+            $page2_data['initial_3'] = !empty($_POST['initial_3']) ? trim($_POST['initial_3']) : null;
+            
+            // Basic Requirements
+            $page2_data['requirements_signature'] = !empty($_POST['requirements_signature']) ? trim($_POST['requirements_signature']) : null;
+            $page2_data['req_2x2'] = !empty($_POST['req_2x2']) ? $_POST['req_2x2'] : null;
+            $page2_data['req_birth_cert'] = !empty($_POST['req_birth_cert']) ? $_POST['req_birth_cert'] : null;
+            $page2_data['req_barangay'] = !empty($_POST['req_barangay']) ? $_POST['req_barangay'] : null;
+            $page2_data['req_police'] = !empty($_POST['req_police']) ? $_POST['req_police'] : null;
+            $page2_data['req_nbi'] = !empty($_POST['req_nbi']) ? $_POST['req_nbi'] : null;
+            $page2_data['req_di'] = !empty($_POST['req_di']) ? $_POST['req_di'] : null;
+            $page2_data['req_diploma'] = !empty($_POST['req_diploma']) ? $_POST['req_diploma'] : null;
+            $page2_data['req_neuro_drug'] = !empty($_POST['req_neuro_drug']) ? $_POST['req_neuro_drug'] : null;
+            $page2_data['req_sec_license'] = !empty($_POST['req_sec_license']) ? $_POST['req_sec_license'] : null;
+            $page2_data['sec_lic_no'] = !empty($_POST['sec_lic_no']) ? trim($_POST['sec_lic_no']) : null;
+            $page2_data['req_sec_lic_no'] = !empty($_POST['req_sec_lic_no']) ? $_POST['req_sec_lic_no'] : null;
+            $page2_data['req_sss'] = !empty($_POST['req_sss']) ? $_POST['req_sss'] : null;
+            $page2_data['req_pagibig'] = !empty($_POST['req_pagibig']) ? $_POST['req_pagibig'] : null;
+            $page2_data['req_philhealth'] = !empty($_POST['req_philhealth']) ? $_POST['req_philhealth'] : null;
+            $page2_data['req_tin'] = !empty($_POST['req_tin']) ? $_POST['req_tin'] : null;
+            
+            // Sworn Statement
+            $page2_data['sworn_day'] = !empty($_POST['sworn_day']) ? trim($_POST['sworn_day']) : null;
+            $page2_data['sworn_month'] = !empty($_POST['sworn_month']) ? trim($_POST['sworn_month']) : null;
+            $page2_data['sworn_year'] = !empty($_POST['sworn_year']) ? trim($_POST['sworn_year']) : null;
+            $page2_data['tax_cert_no'] = !empty($_POST['tax_cert_no']) ? trim($_POST['tax_cert_no']) : null;
+            $page2_data['tax_cert_issued_at'] = !empty($_POST['tax_cert_issued_at']) ? trim($_POST['tax_cert_issued_at']) : null;
+            $page2_data['sworn_signature'] = !empty($_POST['sworn_signature']) ? trim($_POST['sworn_signature']) : null;
+            $page2_data['affiant_community'] = !empty($_POST['affiant_community']) ? trim($_POST['affiant_community']) : null;
+            
+            // Form Footer
+            $page2_data['doc_no'] = !empty($_POST['doc_no']) ? trim($_POST['doc_no']) : null;
+            $page2_data['page_no'] = !empty($_POST['page_no']) ? trim($_POST['page_no']) : null;
+            $page2_data['book_no'] = !empty($_POST['book_no']) ? trim($_POST['book_no']) : null;
+            $page2_data['series_of'] = !empty($_POST['series_of']) ? trim($_POST['series_of']) : null;
+            
+            // Handle fingerprint file uploads
+            $fingerprint_fields = [
+                'fingerprint_right_thumb', 'fingerprint_right_index', 'fingerprint_right_middle', 
+                'fingerprint_right_ring', 'fingerprint_right_little',
+                'fingerprint_left_thumb', 'fingerprint_left_index', 'fingerprint_left_middle', 
+                'fingerprint_left_ring', 'fingerprint_left_little'
+            ];
+            
+            $upload_dir = __DIR__ . '/../uploads/employees/fingerprints/';
+            if (!file_exists($upload_dir)) {
+                mkdir($upload_dir, 0755, true);
+            }
+            
+            foreach ($fingerprint_fields as $field) {
+                if (isset($_FILES[$field]) && $_FILES[$field]['error'] === UPLOAD_ERR_OK) {
+                    $file = $_FILES[$field];
+                    $allowed_types = ['image/jpeg', 'image/jpg', 'image/png'];
+                    $max_size = 5 * 1024 * 1024; // 5MB
+                    
+                    if (in_array($file['type'], $allowed_types) && $file['size'] <= $max_size) {
+                        $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
+                        $extension = strtolower($extension === 'jpeg' ? 'jpg' : $extension);
+                        $filename = $employee_id . '_' . $field . '.' . $extension;
+                        $target_path = $upload_dir . $filename;
+                        
+                        if (move_uploaded_file($file['tmp_name'], $target_path)) {
+                            $page2_data[$field] = 'uploads/employees/fingerprints/' . $filename;
+                        }
+                    }
+                }
+            }
+            
+            // Build UPDATE query for page 2 fields
+            $update_fields = [];
+            $update_params = [];
+            
+            foreach ($page2_data as $field => $value) {
+                $update_fields[] = "`$field` = ?";
+                $update_params[] = $value;
+            }
+            
+            if (!empty($update_fields)) {
+                $update_params[] = $employee_id;
+                $update_sql = "UPDATE employees SET " . implode(', ', $update_fields) . ", updated_at = NOW() WHERE id = ?";
+                $update_stmt = $pdo->prepare($update_sql);
+                $result = $update_stmt->execute($update_params);
+                
+                if ($result) {
+                    $success = true;
+                    $_SESSION['page2_success'] = true;
+                    $_SESSION['page2_message'] = 'Employee Page 2 information saved successfully!';
+                    // Clear employee_created_id from session after successful save
+                    unset($_SESSION['employee_created_id']);
+                    header('Location: ?page=employees&success=page2_saved');
+                    exit;
+                } else {
+                    $errors[] = 'Failed to update employee information.';
+                }
+            } else {
+                $errors[] = 'No data to save.';
+            }
+            
+        } catch (Exception $e) {
+            $errors[] = 'Error saving data: ' . $e->getMessage();
+            if (function_exists('log_db_error')) {
+                log_db_error('add_employee_page2', 'Error updating employee page 2', [
+                    'employee_id' => $employee_id,
+                    'error' => $e->getMessage()
+                ]);
+            }
+        }
+    }
+}
+
+    // Show errors if any
+    $show_errors = !empty($errors);
+    
+    // If employee ID is missing, show error and redirect
+    if (empty($employee_id)) {
+        $_SESSION['page2_error'] = 'Employee ID is missing. Please go back to Page 1 and create the employee first.';
+        header('Location: ?page=add_employee&error=no_employee_id');
+        exit;
+    }
+}
 ?>
 
 <div class="container-fluid hrdash add-employee-container add-employee-modern">
@@ -57,13 +241,40 @@ if ($current_user_id && function_exists('get_db_connection')) {
         </ol>
     </nav>
 
-    <!-- Page 2 Form -->
-    <div class="card card-modern">
-        <div class="card-header card-header-modern">
-            <h3 class="card-title-modern">Employee Application Form - Page 2</h3>
+    <!-- Error Messages -->
+    <?php if (!empty($errors)): ?>
+        <div class="alert alert-danger">
+            <i class="fas fa-exclamation-circle me-2"></i>
+            <strong>Error:</strong>
+            <ul class="mb-0 mt-2">
+                <?php foreach ($errors as $error): ?>
+                    <li><?php echo htmlspecialchars($error); ?></li>
+                <?php endforeach; ?>
+            </ul>
         </div>
-        <div class="card-body card-body-modern">
-            <form method="POST" id="page2EmployeeForm" enctype="multipart/form-data" action="?page=add_employee_page2" novalidate>
+    <?php endif; ?>
+    
+    <?php if (isset($_SESSION['page2_error'])): ?>
+        <div class="alert alert-danger">
+            <i class="fas fa-exclamation-circle me-2"></i>
+            <?php echo htmlspecialchars($_SESSION['page2_error']); ?>
+            <?php unset($_SESSION['page2_error']); ?>
+        </div>
+    <?php endif; ?>
+    
+    <?php if (isset($_GET['error']) && $_GET['error'] === 'no_employee_id'): ?>
+        <div class="alert alert-warning">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            <strong>Warning:</strong> Employee ID is missing. Please go back to Page 1 and create the employee first.
+        </div>
+    <?php endif; ?>
+
+    <!-- Page 2 Form -->
+    <div class="add-employee-form-wrapper">
+        <div class="form-header-compact">
+            <h3 class="form-title-compact">Employee Application Form - Page 2</h3>
+        </div>
+        <form method="POST" id="page2EmployeeForm" enctype="multipart/form-data" action="?page=add_employee_page2" class="add-employee-form-compact" novalidate>
                 
                 <!-- Employee Created By Info -->
                 <div class="alert alert-info">
@@ -75,7 +286,7 @@ if ($current_user_id && function_exists('get_db_connection')) {
                 </div>
 
                 <!-- General Information Section -->
-                <div class="row g-3 mb-4">
+                <div class="row g-3 mb-2">
                     <div class="col-12">
                         <h4 class="form-section-title">GENERAL INFORMATION</h4>
                     </div>
@@ -235,7 +446,7 @@ if ($current_user_id && function_exists('get_db_connection')) {
                 </div>
 
                 <!-- Specimen Signature and Initial Section -->
-                <div class="row g-3 mb-4">
+                <div class="row g-3 mb-2">
                     <div class="col-12">
                         <h4 class="form-section-title">SPECIMEN SIGNATURE AND INITIAL</h4>
                     </div>
@@ -284,7 +495,7 @@ if ($current_user_id && function_exists('get_db_connection')) {
                 </div>
 
                 <!-- Fingerprints Section -->
-                <div class="row g-3 mb-4">
+                <div class="row g-3 mb-2">
                     <div class="col-12">
                         <h4 class="form-section-title">FINGERPRINTS</h4>
                     </div>
@@ -358,7 +569,7 @@ if ($current_user_id && function_exists('get_db_connection')) {
                 </div>
 
                 <!-- Basic Requirements Section -->
-                <div class="row g-3 mb-4">
+                <div class="row g-3 mb-2">
                     <div class="col-12">
                         <h4 class="form-section-title">BASIC REQUIREMENTS</h4>
                     </div>
@@ -601,7 +812,7 @@ if ($current_user_id && function_exists('get_db_connection')) {
                 </div>
 
                 <!-- Sworn Statement Section -->
-                <div class="row g-3 mb-4">
+                <div class="row g-3 mb-2">
                     <div class="col-12">
                         <h4 class="form-section-title">SWORN STATEMENT</h4>
                     </div>
@@ -662,7 +873,7 @@ if ($current_user_id && function_exists('get_db_connection')) {
                 </div>
 
                 <!-- Form Footer -->
-                <div class="row g-3 mb-4">
+                <div class="row g-3 mb-2">
                     <div class="col-12">
                         <div class="d-flex flex-wrap gap-4">
                             <div class="form-group">
@@ -692,7 +903,6 @@ if ($current_user_id && function_exists('get_db_connection')) {
                     </a>
                 </div>
             </form>
-        </div>
     </div>
 </div>
 

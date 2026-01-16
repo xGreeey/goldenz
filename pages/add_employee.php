@@ -5,14 +5,15 @@ $page = 'add_employee';
 // Check for success message from session
 $show_success_popup = false;
 $success_message = '';
+$created_employee_id = null;
 if (isset($_SESSION['employee_created_success']) && $_SESSION['employee_created_success']) {
     $show_success_popup = true;
     $success_message = $_SESSION['employee_created_message'] ?? 'Employee created successfully!';
     $created_employee_id = $_SESSION['employee_created_id'] ?? null;
-    // Clear the session variables
+    // Clear only success flags, keep employee_created_id for page 2
     unset($_SESSION['employee_created_success']);
     unset($_SESSION['employee_created_message']);
-    unset($_SESSION['employee_created_id']);
+    // Keep employee_created_id in session for page 2
 }
 
 // Get logged-in user information
@@ -807,12 +808,11 @@ if (empty($posts)) {
     <?php endif; ?>
 
     <!-- Add Employee Form -->
-    <div class="card card-modern">
-        <div class="card-header card-header-modern">
-            <h3 class="card-title-modern">Employee Information</h3>
+    <div class="add-employee-form-wrapper">
+        <div class="form-header-compact">
+            <h3 class="form-title-compact">Employee Information</h3>
         </div>
-        <div class="card-body card-body-modern">
-        <form method="POST" id="addEmployeeForm" enctype="multipart/form-data" action="?page=add_employee" novalidate>
+        <form method="POST" id="addEmployeeForm" enctype="multipart/form-data" action="?page=add_employee" class="add-employee-form-compact" novalidate>
                 <!-- Employee Created By Info -->
                 <div class="alert alert-info">
                     <span class="hr-icon hr-icon-message me-2"></span>
@@ -823,7 +823,7 @@ if (empty($posts)) {
                 </div>
 
                 <!-- Basic Information Section -->
-                <div class="row g-3 mb-4">
+                <div class="row g-3 mb-2">
                     <div class="col-12">
                         <h4 class="form-section-title">Basic Information</h4>
                     </div>
@@ -894,7 +894,7 @@ if (empty($posts)) {
                 </div>
 
                 <!-- Personal Information Section -->
-                <div class="row g-3 mb-4">
+                <div class="row g-3 mb-2">
                     <div class="col-12">
                         <h4 class="form-section-title">Personal Information</h4>
                     </div>
@@ -1143,7 +1143,7 @@ if (empty($posts)) {
                 </div>
 
                 <!-- Education Section -->
-                <div class="row g-3 mb-4">
+                <div class="row g-3 mb-2">
                     <div class="col-12">
                         <h4 class="form-section-title">Education</h4>
                     </div>
@@ -1274,7 +1274,7 @@ if (empty($posts)) {
                 </div>
 
                 <!-- Trainings / Seminars Section -->
-                <div class="row g-3 mb-4">
+                <div class="row g-3 mb-2">
                     <div class="col-12">
                         <h4 class="form-section-title">Trainings / Seminars</h4>
                     </div>
@@ -1351,7 +1351,7 @@ if (empty($posts)) {
                 </div>
 
                 <!-- Employment History Section -->
-                <div class="row g-3 mb-4">
+                <div class="row g-3 mb-2">
                     <div class="col-12">
                         <h4 class="form-section-title">EMPLOYMENT HISTORY <span class="text-muted fw-normal">(Last employment should be listed first)</span></h4>
                     </div>
@@ -1457,7 +1457,7 @@ if (empty($posts)) {
                 </div>
 
                 <!-- Character References Section -->
-                <div class="row g-3 mb-4">
+                <div class="row g-3 mb-2">
                     <div class="col-12">
                         <h4 class="form-section-title">CHARACTER REFERENCES</h4>
                         <p class="text-muted small mb-3">(If previously employed, reference/s should be from your previous employment)</p>
@@ -1544,7 +1544,7 @@ if (empty($posts)) {
                 </div>
 
                 <!-- Government Examination Section -->
-                <div class="row g-3 mb-4 gov-exam-section">
+                <div class="row g-3 mb-2 gov-exam-section">
                     <div class="col-12">
                         <h4 class="form-section-title">Government Examination</h4>
                     </div>
@@ -1618,7 +1618,7 @@ if (empty($posts)) {
                 </div>
 
                 <!-- Contact Information Section -->
-                <div class="row g-3 mb-4 contact-info-section">
+                <div class="row g-3 mb-2 contact-info-section">
                     <div class="col-12">
                         <h4 class="form-section-title">Contact Information</h4>
                     </div>
@@ -1640,8 +1640,9 @@ if (empty($posts)) {
                         </div>
                     </div>
                 </div>
+                
                 <!-- Emergency Contact Fields - All on same row -->
-                <div class="row g-3 mb-4">
+                <div class="row g-3 mb-2">
                     <div class="col-md-4">
                         <div class="form-group">
                             <label for="contact_person" class="form-label">In Case of Emergency – Contact Name <span class="text-danger">*</span></label>
@@ -1699,7 +1700,7 @@ if (empty($posts)) {
                 </div>
 
                 <!-- Secondary Contact (optional) -->
-                <div class="row g-3 mb-4 d-none" id="secondaryContact">
+                <div class="row g-3 mb-2 d-none" id="secondaryContact">
                     <div class="col-12">
                         <h5 class="form-section-title">Additional Contact (Optional)</h5>
                     </div>
@@ -1756,10 +1757,9 @@ if (empty($posts)) {
                         <button type="button" class="btn btn-outline-danger btn-sm" id="removeContactBtn">Remove this contact</button>
                     </div>
                 </div>
-                </div>
 
                 <!-- Employment Information Section -->
-                <div class="row g-3 mb-4">
+                <div class="row g-3 mb-2 employment-info-section">
                     <div class="col-12">
                         <h4 class="form-section-title">Employment Information</h4>
                     </div>
@@ -1788,7 +1788,7 @@ if (empty($posts)) {
                 </div>
 
                 <!-- License Information Section -->
-                <div class="row g-3 mb-4 license-section">
+                <div class="row g-3 mb-2 license-section">
                     <div class="col-12">
                         <h4 class="form-section-title">License Information</h4>
                     </div>
@@ -1834,7 +1834,7 @@ if (empty($posts)) {
                 </div>
 
                 <!-- Government IDs Section -->
-                <div class="row g-3 mb-4 gov-ids-section">
+                <div class="row g-3 mb-2 gov-ids-section">
                     <div class="col-12">
                         <h4 class="form-section-title">Government Identification Numbers</h4>
                     </div>
@@ -1906,7 +1906,7 @@ if (empty($posts)) {
 
 
                 <!-- HR Final Remarks -->
-                <div class="row g-3 mb-4 hr-remarks-section">
+                <div class="row g-3 mb-2 hr-remarks-section">
                     <div class="col-12">
                         <h4 class="form-section-title">HR Final Remarks</h4>
                     </div>
@@ -1940,16 +1940,16 @@ if (empty($posts)) {
                         <i class="fas fa-save me-2"></i>Create Employee</button>
                 </div>
             </form>
-        </div>
-        </div>
     </div>
 
     <!-- Navigation Button to Page 2 -->
+    <?php if (isset($created_employee_id) && $created_employee_id): ?>
     <div class="text-center my-4">
-        <a href="?page=add_employee_page2" class="btn btn-primary-modern">
+        <a href="?page=add_employee_page2&employee_id=<?php echo $created_employee_id; ?>" class="btn btn-primary-modern">
             <i class="fas fa-arrow-right me-2"></i>Click here to proceed to Page 2
         </a>
     </div>
+    <?php endif; ?>
 </div>
 
 <!-- Google Maps API - Optional, only loads if API key is configured -->

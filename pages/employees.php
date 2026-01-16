@@ -174,7 +174,7 @@ function getEmployeeTypeLabel($type) {
     return $types[$type] ?? $type;
 }
 
-// Get all employees
+// Get all employees directly from database - no filtering, all records included
 $all_employees = get_employees();
 
 // Apply filters
@@ -297,13 +297,31 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
     <!-- Employee List (single view) -->
     <div class="tab-content">
         <div class="tab-pane active" id="employee-list">
-    <!-- Success Message -->
+    <!-- Success Messages -->
     <?php if (isset($_GET['success']) && $_GET['success'] == '1'): ?>
         <div class="alert alert-success-modern alert-dismissible fade show">
             <i class="fas fa-circle-check me-2"></i>
             Employee created successfully!
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
+    <?php endif; ?>
+    
+    <?php if (isset($_GET['success']) && $_GET['success'] === 'page2_saved'): ?>
+        <div class="alert alert-success-modern alert-dismissible fade show">
+            <i class="fas fa-circle-check me-2"></i>
+            <?php echo isset($_SESSION['page2_message']) ? htmlspecialchars($_SESSION['page2_message']) : 'Employee Page 2 information saved successfully!'; ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        <?php unset($_SESSION['page2_message'], $_SESSION['page2_success']); ?>
+    <?php endif; ?>
+    
+    <?php if (isset($_SESSION['page2_success']) && $_SESSION['page2_success']): ?>
+        <div class="alert alert-success-modern alert-dismissible fade show">
+            <i class="fas fa-circle-check me-2"></i>
+            <?php echo isset($_SESSION['page2_message']) ? htmlspecialchars($_SESSION['page2_message']) : 'Employee Page 2 information saved successfully!'; ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        <?php unset($_SESSION['page2_message'], $_SESSION['page2_success']); ?>
     <?php endif; ?>
 
     <!-- Summary Cards -->
