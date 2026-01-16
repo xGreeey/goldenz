@@ -22,3 +22,9 @@
 2026-01-16 12:50:20 - Audit Log Error - Database error: SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry '0' for key 'PRIMARY' - IP: 192.168.1.7
 2026-01-16 12:50:28 - Audit Log Error - Database error: SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry '0' for key 'PRIMARY' - IP: 192.168.1.7
 2026-01-16 12:54:16 - Audit Log Error - Database error: SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry '0' for key 'PRIMARY' - IP: 192.168.1.7
+2026-01-16 14:31:33 - Employee Created - Employee: ASFSADFASDF SADFF (ID: 12) created by HR Administrator - IP: 192.168.1.7
+2026-01-16 14:31:33 - Audit Log Error - Database error: SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry '0' for key 'PRIMARY' - IP: 192.168.1.7
+2026-01-16 15:22:10 - Employee Created - Employee: ASDFSADF ASDFASDF (ID: 24434) created by HR Administrator - IP: 192.168.1.7
+2026-01-16 15:22:10 - Audit Log Error - Database error: SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry '0' for key 'PRIMARY' - IP: 192.168.1.7
+2026-01-16 15:39:04 - Employee Created - Employee: TEMP USER (ID: 23423) created by HR Administrator - IP: 192.168.1.7
+2026-01-16 15:39:04 - Audit Log Error - Database error: SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry '0' for key 'PRIMARY' - IP: 192.168.1.7
