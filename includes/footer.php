@@ -4,6 +4,11 @@
     <!-- JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <?php include_once __DIR__ . '/paths.php'; ?>
+    <!-- Pass user ID to JavaScript for user-scoped theme storage -->
+    <script>
+        // Set current user ID for theme preference scoping
+        window.GOLDENZ_USER_ID = <?php echo json_encode($_SESSION['user_id'] ?? null); ?>;
+    </script>
     <script src="<?php echo asset_url('js/app.js'); ?>"></script>
     <script src="<?php echo asset_url('js/page-transitions.js'); ?>"></script>
     <script src="<?php echo asset_url('js/comprehensive-functionality.js'); ?>"></script>
