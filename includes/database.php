@@ -106,38 +106,57 @@ if (!function_exists('execute_query')) {
     }
 }
 
-// Get all employees
+// Get all employees - fetches all records from database
 if (!function_exists('get_employees')) {
     function get_employees() {
-        // Check if created_by_name column exists, if not just select all
         try {
-            $check_sql = "SHOW COLUMNS FROM employees LIKE 'created_by_name'";
-            $check_stmt = execute_query($check_sql);
-            $has_created_by = $check_stmt->rowCount() > 0;
+            $pdo = get_db_connection();
             
+            // Check if created_by_name column exists, if not just select all
+            try {
+                $check_sql = "SHOW COLUMNS FROM employees LIKE 'created_by_name'";
+                $check_stmt = $pdo->prepare($check_sql);
+                $check_stmt->execute();
+                $has_created_by = $check_stmt->rowCount() > 0;
+            } catch (Exception $e) {
+                $has_created_by = false;
+            }
+            
+            // Always fetch ALL employees from database - no filtering
             if ($has_created_by) {
                 $sql = "SELECT e.*, u.name as creator_name 
                         FROM employees e 
                         LEFT JOIN users u ON e.created_by = u.id 
                         ORDER BY e.created_at DESC";
             } else {
+                // Get all columns and all records from employees table
                 $sql = "SELECT * FROM employees ORDER BY created_at DESC";
             }
-        } catch (Exception $e) {
-            $sql = "SELECT * FROM employees ORDER BY created_at DESC";
-        }
-        
-        $stmt = execute_query($sql);
-        $employees = $stmt->fetchAll();
-        
-        // Add created_by_name if it doesn't exist in result
-        foreach ($employees as &$emp) {
-            if (!isset($emp['created_by_name']) && isset($emp['creator_name'])) {
-                $emp['created_by_name'] = $emp['creator_name'];
+            
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute();
+            
+            // Fetch all records as associative array
+            $employees = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            // Add created_by_name if it doesn't exist in result
+            foreach ($employees as &$emp) {
+                if (!isset($emp['created_by_name']) && isset($emp['creator_name'])) {
+                    $emp['created_by_name'] = $emp['creator_name'];
+                }
             }
+            
+            return $employees;
+        } catch (Exception $e) {
+            // Log error but return empty array instead of failing
+            if (function_exists('log_db_error')) {
+                log_db_error('get_employees', 'Error fetching employees', [
+                    'error' => $e->getMessage()
+                ]);
+            }
+            error_log('Error in get_employees: ' . $e->getMessage());
+            return [];
         }
-        
-        return $employees;
     }
 }
 
@@ -179,7 +198,7 @@ if (!function_exists('ensure_employee_columns')) {
 // Update employee
 if (!function_exists('update_employee')) {
     function update_employee($id, $data) {
-        // Optional extended profile fields
+        // Optional extended profile fields - including Page 2 fields
         ensure_employee_columns([
             'gender' => 'VARCHAR(10) NULL',
             'civil_status' => 'VARCHAR(20) NULL',
@@ -219,6 +238,73 @@ if (!function_exists('update_employee')) {
             'gov_exam_json' => 'TEXT NULL',
             // Employment History (stored as JSON)
             'employment_history_json' => 'TEXT NULL',
+            // Page 2 Fields - General Information
+            'vacancy_source' => 'TEXT NULL',
+            'referral_name' => 'VARCHAR(150) NULL',
+            'knows_agency_person' => 'ENUM(\'Yes\', \'No\') NULL',
+            'agency_person_name' => 'VARCHAR(200) NULL',
+            'physical_defect' => 'ENUM(\'Yes\', \'No\') NULL',
+            'physical_defect_specify' => 'TEXT NULL',
+            'drives' => 'ENUM(\'Yes\', \'No\') NULL',
+            'drivers_license_no' => 'VARCHAR(50) NULL',
+            'drivers_license_exp' => 'VARCHAR(50) NULL',
+            'drinks_alcohol' => 'ENUM(\'Yes\', \'No\') NULL',
+            'alcohol_frequency' => 'VARCHAR(100) NULL',
+            'prohibited_drugs' => 'ENUM(\'Yes\', \'No\') NULL',
+            'security_guard_experience' => 'VARCHAR(100) NULL',
+            'convicted' => 'ENUM(\'Yes\', \'No\') NULL',
+            'conviction_details' => 'TEXT NULL',
+            'filed_case' => 'ENUM(\'Yes\', \'No\') NULL',
+            'case_specify' => 'TEXT NULL',
+            'action_after_termination' => 'TEXT NULL',
+            // Page 2 Fields - Specimen Signature and Initial
+            'signature_1' => 'VARCHAR(200) NULL',
+            'signature_2' => 'VARCHAR(200) NULL',
+            'signature_3' => 'VARCHAR(200) NULL',
+            'initial_1' => 'VARCHAR(100) NULL',
+            'initial_2' => 'VARCHAR(100) NULL',
+            'initial_3' => 'VARCHAR(100) NULL',
+            // Page 2 Fields - Fingerprints
+            'fingerprint_right_thumb' => 'VARCHAR(255) NULL',
+            'fingerprint_right_index' => 'VARCHAR(255) NULL',
+            'fingerprint_right_middle' => 'VARCHAR(255) NULL',
+            'fingerprint_right_ring' => 'VARCHAR(255) NULL',
+            'fingerprint_right_little' => 'VARCHAR(255) NULL',
+            'fingerprint_left_thumb' => 'VARCHAR(255) NULL',
+            'fingerprint_left_index' => 'VARCHAR(255) NULL',
+            'fingerprint_left_middle' => 'VARCHAR(255) NULL',
+            'fingerprint_left_ring' => 'VARCHAR(255) NULL',
+            'fingerprint_left_little' => 'VARCHAR(255) NULL',
+            // Page 2 Fields - Basic Requirements
+            'requirements_signature' => 'VARCHAR(200) NULL',
+            'req_2x2' => 'ENUM(\'YO\', \'NO\') NULL',
+            'req_birth_cert' => 'ENUM(\'YO\', \'NO\') NULL',
+            'req_barangay' => 'ENUM(\'YO\', \'NO\') NULL',
+            'req_police' => 'ENUM(\'YO\', \'NO\') NULL',
+            'req_nbi' => 'ENUM(\'YO\', \'NO\') NULL',
+            'req_di' => 'ENUM(\'YO\', \'NO\') NULL',
+            'req_diploma' => 'ENUM(\'YO\', \'NO\') NULL',
+            'req_neuro_drug' => 'ENUM(\'YO\', \'NO\') NULL',
+            'req_sec_license' => 'ENUM(\'YO\', \'NO\') NULL',
+            'sec_lic_no' => 'VARCHAR(50) NULL',
+            'req_sec_lic_no' => 'ENUM(\'YO\', \'NO\') NULL',
+            'req_sss' => 'ENUM(\'YO\', \'NO\') NULL',
+            'req_pagibig' => 'ENUM(\'YO\', \'NO\') NULL',
+            'req_philhealth' => 'ENUM(\'YO\', \'NO\') NULL',
+            'req_tin' => 'ENUM(\'YO\', \'NO\') NULL',
+            // Page 2 Fields - Sworn Statement
+            'sworn_day' => 'VARCHAR(10) NULL',
+            'sworn_month' => 'VARCHAR(50) NULL',
+            'sworn_year' => 'VARCHAR(10) NULL',
+            'tax_cert_no' => 'VARCHAR(100) NULL',
+            'tax_cert_issued_at' => 'VARCHAR(200) NULL',
+            'sworn_signature' => 'VARCHAR(200) NULL',
+            'affiant_community' => 'VARCHAR(200) NULL',
+            // Page 2 Fields - Form Footer
+            'doc_no' => 'VARCHAR(50) NULL',
+            'page_no' => 'VARCHAR(10) NULL',
+            'book_no' => 'VARCHAR(50) NULL',
+            'series_of' => 'VARCHAR(50) NULL',
         ]);
 
         $sql = "UPDATE employees SET 
@@ -683,19 +769,8 @@ if (!function_exists('create_tables')) {
         
         execute_query($sql);
         
-        // Insert sample data (Philippine format)
-        $sample_employees = [
-            [1, 'SG', 'ABAD', 'JOHN MARK', 'DANIEL', 'BENAVIDES', 'R4B-202309000367', '2028-09-14', '2025-10-05', '2023-09-28', '0926-6917781', '04-4417766-7', '1213-0723-0701', '623-432-731-000', '09-202633701-3', '1999-10-05', null, null, null, null, null, null, null, null, null, 'Active'],
-            [2, 'LG', 'ABADILLA', 'NORA', 'CABALQUINTO', 'SAPPORO', 'NCR-202411000339', '2029-11-07', '2025-12-27', '2024-11-13', '0967-9952106', '03-9677548-9', '1210-1313-3667', '905-112-708-000', '02-200206334-6', '1970-12-27', null, null, null, null, null, null, null, null, null, 'Active'],
-            [3, 'LG', 'ABANILLA', 'VILMA', 'ABEDAÑO', 'MCMC', 'R05-202412001808', '2029-12-20', '2025-04-05', '2022-03-30', '0928-5781417', '33-0816833-7', '1211-3233-7121', '236-835-638-000', '19-090526559-1', '1974-06-10', null, null, null, null, null, null, null, null, null, 'Active'],
-            [4, 'SG', 'ABDULMAN', 'ALMAN', 'JAINUDDIN', 'MCMC', 'BAR-202504000186', '2030-04-07', 'NO SEMINAR', '2025-06-26', '0905-1844366', '10-1537326-8', '1213-4444-8273', '676-724-973-000', '14-050287358-6', '2002-12-04', '5\'7', '62 KG', 'BLOCK 27, ADDITION HILLS, MANDALUYONG CITY', 'ALNISAR SAID', 'COUSIN', 'BLOCK 27, ADDITION HILLS, MANDALUYONG CITY', '0912-9440814', null, 'MUSLIM', 'Active']
-        ];
-        
-        $sql = "INSERT IGNORE INTO employees (employee_no, employee_type, surname, first_name, middle_name, post, license_no, license_exp_date, rlm_exp, date_hired, cp_number, sss_no, pagibig_no, tin_number, philhealth_no, birth_date, height, weight, address, contact_person, relationship, contact_person_address, contact_person_number, blood_type, religion, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        
-        foreach ($sample_employees as $employee) {
-            execute_query($sql, $employee);
-        }
+        // Sample data insertion removed - users should manage their own employee data
+        // If you need to insert sample data for testing, use the goldenz_hr.sql file or run it manually
         
         // Create dtr_entries table
         $sql = "CREATE TABLE IF NOT EXISTS dtr_entries (

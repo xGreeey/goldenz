@@ -536,40 +536,6 @@ $role_config = config('roles.roles', []);
 </div>
 
 <!-- Role Change Confirmation Modal -->
-<div class="modal fade" id="roleChangeModal" tabindex="-1" aria-labelledby="roleChangeModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-scrollable" style="margin-top: 1rem;">
-        <div class="modal-content">
-            <div class="modal-header bg-warning text-dark">
-                <h5 class="modal-title" id="roleChangeModalLabel">
-                    <i class="fas fa-user-cog me-2"></i>Confirm Role Change
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="d-flex align-items-center mb-3">
-                    <div class="flex-shrink-0">
-                        <i class="fas fa-exclamation-triangle text-warning" style="font-size: 2rem;"></i>
-                    </div>
-                    <div class="flex-grow-1 ms-3">
-                        <p class="mb-0" id="roleChangeMessage">Are you sure you want to change the user's role?</p>
-                    </div>
-                </div>
-                <div class="alert alert-info mb-0">
-                    <i class="fas fa-info-circle me-2"></i>
-                    <strong>Note:</strong> This action will immediately update the user's role and permissions.
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-outline-modern" data-bs-dismiss="modal">
-                    <i class="fas fa-times me-2"></i>Cancel
-                </button>
-                <button type="button" class="btn btn-primary-modern" id="confirmRoleChangeBtn">
-                    <i class="fas fa-check me-2"></i>Confirm Change
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
 
 <style>
 .user-role-select,
@@ -700,58 +666,6 @@ $role_config = config('roles.roles', []);
     }
 }
 
-/* Role Change Confirmation Modal - Positioned at Top, Smaller Size */
-#roleChangeModal.modal {
-    align-items: flex-start !important;
-    padding-top: 1rem !important;
-    padding-bottom: 1rem !important;
-}
-
-#roleChangeModal .modal-dialog {
-    max-width: 500px;
-    width: 90%;
-    margin: 1rem auto !important;
-    margin-top: 1rem !important;
-    align-self: flex-start !important;
-}
-
-#roleChangeModal .modal-header {
-    background: linear-gradient(135deg, #f59e0b 0%, #f97316 50%, #ea580c 100%);
-    color: #1e293b;
-    border-bottom: none;
-    padding: 1rem 1.25rem;
-    flex-shrink: 0;
-}
-
-#roleChangeModal .modal-content {
-    border: none;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-    border-radius: 12px;
-    overflow: hidden;
-    max-height: calc(100vh - 2rem);
-    display: flex;
-    flex-direction: column;
-}
-
-#roleChangeModal .modal-body {
-    padding: 1.25rem;
-    overflow-y: auto;
-    flex: 1 1 auto;
-}
-
-#roleChangeModal .modal-footer {
-    padding: 1rem 1.25rem;
-    flex-shrink: 0;
-    border-top: 1px solid #e2e8f0;
-}
-
-@media (max-width: 768px) {
-    #roleChangeModal .modal-dialog {
-        margin: 1rem;
-        max-width: calc(100% - 2rem);
-        width: calc(100% - 2rem);
-    }
-}
 /* Card styling to match HR admin dashboard */
 .card-modern,
 .card {
@@ -1146,8 +1060,7 @@ document.addEventListener('pageLoaded', function(e) {
 
 // === GLOBAL STATE ===
 window.usersPageState = window.usersPageState || {
-    initialized: false,
-    pendingRoleChange: null
+    initialized: false
 };
 
 // === MAIN INITIALIZATION FUNCTION ===
@@ -1375,68 +1288,6 @@ function initializeUsersPage() {
     }
     
     // === ROLE CHANGE FUNCTIONALITY ===
-    // Initialize role change modal
-    const roleChangeModal = document.getElementById('roleChangeModal');
-    if (roleChangeModal && !roleChangeModal.hasAttribute('data-initialized')) {
-        roleChangeModal.setAttribute('data-initialized', 'true');
-        
-        // Initialize Bootstrap modal for role change
-        let roleModalInstance = bootstrap.Modal.getInstance(roleChangeModal);
-        if (roleModalInstance) {
-            roleModalInstance.dispose();
-        }
-        roleModalInstance = new bootstrap.Modal(roleChangeModal, {
-            backdrop: true,
-            keyboard: true,
-            focus: true
-        });
-        
-        // Handle confirmation button
-        const confirmRoleChangeBtn = document.getElementById('confirmRoleChangeBtn');
-        if (confirmRoleChangeBtn && !confirmRoleChangeBtn.hasAttribute('data-handler-attached')) {
-            confirmRoleChangeBtn.setAttribute('data-handler-attached', 'true');
-            confirmRoleChangeBtn.addEventListener('click', function() {
-                if (window.usersPageState.pendingRoleChange) {
-                    const { userId, newRole, selectElement } = window.usersPageState.pendingRoleChange;
-                    
-                    // Close modal
-                    const modal = bootstrap.Modal.getInstance(roleChangeModal);
-                    if (modal) {
-                        modal.hide();
-                    }
-                    
-                    // Proceed with role update
-                    updateUserRole(userId, newRole, selectElement);
-                    
-                    // Clear pending change
-                    window.usersPageState.pendingRoleChange = null;
-                }
-            });
-        }
-        
-        // Handle modal cancel - revert selection
-        roleChangeModal.addEventListener('hidden.bs.modal', function() {
-            if (window.usersPageState.pendingRoleChange) {
-                // Revert selection if modal was closed without confirming
-                window.usersPageState.pendingRoleChange.selectElement.value = 
-                    window.usersPageState.pendingRoleChange.originalValue;
-                window.usersPageState.pendingRoleChange.selectElement.classList.remove('changed');
-                window.usersPageState.pendingRoleChange = null;
-            }
-        });
-        
-        // Modal event handlers - no positioning needed, uses standard Bootstrap behavior
-        roleChangeModal.addEventListener('show.bs.modal', function() {
-            // Modal will appear at top automatically via CSS
-        });
-        
-        roleChangeModal.addEventListener('shown.bs.modal', function() {
-            // Modal is now visible at top
-        });
-        
-        console.log('✅ Role change modal initialized');
-    }
-    
     // Attach role change handlers to all role selects (use event delegation for dynamic content)
     document.querySelectorAll('.user-role-select').forEach(select => {
         if (!select.hasAttribute('data-role-handler-attached')) {
@@ -1444,8 +1295,6 @@ function initializeUsersPage() {
             
             select.addEventListener('change', function() {
                 const userId = this.dataset.userId;
-                const username = this.dataset.username || 'User';
-                const userName = this.dataset.userName || username;
                 const newRole = this.value;
                 const newRoleText = this.options[this.selectedIndex].text;
                 const originalValue = this.getAttribute('data-original-value') || this.value;
@@ -1456,19 +1305,14 @@ function initializeUsersPage() {
                 
                 this.classList.add('changed');
                 
-                // Store pending change data
-                window.usersPageState.pendingRoleChange = {
-                    userId: userId,
-                    username: username,
-                    userName: userName,
-                    newRole: newRole,
-                    newRoleText: newRoleText,
-                    selectElement: this,
-                    originalValue: originalValue
-                };
-                
-                // Show confirmation modal
-                showRoleChangeModal(userName, newRoleText);
+                // Show confirmation
+                if (confirm(`Change user role to "${newRoleText}"?`)) {
+                    updateUserRole(userId, newRole, this);
+                } else {
+                    // Revert selection
+                    this.value = this.getAttribute('data-original-value');
+                    this.classList.remove('changed');
+                }
             });
         }
     });
@@ -1530,27 +1374,6 @@ function initializeUsersPage() {
     console.log('✅ Users page fully initialized');
 }
 
-// === ROLE CHANGE HELPER FUNCTIONS ===
-function showRoleChangeModal(userName, newRoleText) {
-    const modalElement = document.getElementById('roleChangeModal');
-    if (!modalElement) {
-        console.error('Role change modal not found');
-        return;
-    }
-    
-    const modal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement, {
-        backdrop: true,
-        keyboard: true,
-        focus: true
-    });
-    
-    const messageEl = document.getElementById('roleChangeMessage');
-    if (messageEl && window.usersPageState.pendingRoleChange) {
-        messageEl.innerHTML = `Are you sure you want to change <strong>${userName}</strong>'s role to <strong>"${newRoleText}"</strong>?`;
-    }
-    
-    modal.show();
-}
 
 /**
  * Position modal - Fixed viewport-centered positioning
@@ -1818,7 +1641,6 @@ function showNotification(message, type) {
 if (!window.usersPageState) {
     window.usersPageState = { 
         initialized: false,
-        pendingRoleChange: null
     };
 }
 
@@ -1873,12 +1695,6 @@ document.addEventListener('pageContentLoaded', function(e) {
             el.removeAttribute('data-view-handler-attached');
         });
         
-        // Reset role change modal
-        const roleChangeModal = document.getElementById('roleChangeModal');
-        if (roleChangeModal) {
-            roleChangeModal.removeAttribute('data-initialized');
-        }
-        
         setTimeout(tryInit, 100);
     }
 });
@@ -1902,12 +1718,6 @@ document.addEventListener('pageLoaded', function(e) {
         document.querySelectorAll('[data-view-handler-attached]').forEach(el => {
             el.removeAttribute('data-view-handler-attached');
         });
-        
-        // Reset role change modal
-        const roleChangeModal = document.getElementById('roleChangeModal');
-        if (roleChangeModal) {
-            roleChangeModal.removeAttribute('data-initialized');
-        }
         
         setTimeout(tryInit, 100);
     }
