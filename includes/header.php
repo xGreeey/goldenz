@@ -167,6 +167,9 @@ if ($userRole === 'hr_admin') {
                 case 'post_assignments':
                     include $pagesPath . 'post_assignments.php';
                     break;
+                case 'settings':
+                    include $pagesPath . 'hr-admin-settings.php';
+                    break;
                 default:
                     include $pagesPath . 'dashboard.php';
                     break;
