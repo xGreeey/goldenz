@@ -7,15 +7,18 @@ if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'super_admin') 
 
 // Filters from query
 $filters = [
-    'action'     => $_GET['action']     ?? '',
-    'table_name' => $_GET['table']      ?? '',
-    'user_id'    => $_GET['user_id']    ?? '',
-    'date_from'  => $_GET['date_from']  ?? '',
-    'date_to'    => $_GET['date_to']    ?? '',
+    'action'      => trim($_GET['action'] ?? ''),
+    'table_name'  => trim($_GET['table'] ?? ''),
+    'user_id'     => trim($_GET['user_id'] ?? ''),
+    'user_search' => trim($_GET['user_search'] ?? ''),
+    'date_from'   => trim($_GET['date_from'] ?? ''),
+    'date_to'     => trim($_GET['date_to'] ?? ''),
 ];
 
-$pageNum = max(1, (int)($_GET['p'] ?? 1));
-$perPage = 25;
+// Reset to page 1 if filters are being applied (check if this is a filter submission)
+$isFilterSubmission = isset($_GET['action']) || isset($_GET['table']) || isset($_GET['date_from']) || isset($_GET['date_to']);
+$pageNum = $isFilterSubmission && !isset($_GET['p']) ? 1 : max(1, (int)($_GET['p'] ?? 1));
+$perPage = 10;
 $offset = ($pageNum - 1) * $perPage;
 
 // Fetch logs + count using existing helpers
@@ -50,12 +53,22 @@ function h($v) { return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8'); }
     <!-- Filters -->
     <div class="card card-modern mb-4">
         <div class="card-body-modern">
-            <form class="row g-3" method="GET" action="">
+            <form class="row g-3" method="GET" action="" id="auditFilterForm">
                 <input type="hidden" name="page" value="audit_trail">
+
+                <div class="col-md-12 mb-3">
+                    <label class="form-label"><i class="fas fa-search me-2"></i>Search User</label>
+                    <input type="text" 
+                           name="user_search" 
+                           value="<?php echo h($filters['user_search']); ?>" 
+                           class="form-control" 
+                           placeholder="Search by user name, username, or email..."
+                           id="userSearchInput">
+                </div>
 
                 <div class="col-md-3">
                     <label class="form-label">Action</label>
-                    <select name="action" class="form-select">
+                    <select name="action" class="form-select auto-filter">
                         <option value="">All actions</option>
                         <?php foreach ($allActions as $action): ?>
                             <option value="<?php echo h($action); ?>" <?php echo $filters['action'] === $action ? 'selected' : ''; ?>>
@@ -67,7 +80,7 @@ function h($v) { return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8'); }
 
                 <div class="col-md-3">
                     <label class="form-label">Table</label>
-                    <select name="table" class="form-select">
+                    <select name="table" class="form-select auto-filter">
                         <option value="">All tables</option>
                         <?php foreach ($allTables as $tbl): ?>
                             <option value="<?php echo h($tbl); ?>" <?php echo $filters['table_name'] === $tbl ? 'selected' : ''; ?>>
@@ -78,25 +91,25 @@ function h($v) { return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8'); }
                 </div>
 
                 <div class="col-md-2">
-                    <label class="form-label">From</label>
-                    <input type="date" name="date_from" value="<?php echo h($filters['date_from']); ?>" class="form-control">
+                    <label class="form-label">From Date</label>
+                    <input type="date" name="date_from" value="<?php echo h($filters['date_from']); ?>" class="form-control auto-filter">
                 </div>
 
                 <div class="col-md-2">
-                    <label class="form-label">To</label>
-                    <input type="date" name="date_to" value="<?php echo h($filters['date_to']); ?>" class="form-control">
+                    <label class="form-label">To Date</label>
+                    <input type="date" name="date_to" value="<?php echo h($filters['date_to']); ?>" class="form-control auto-filter">
                 </div>
 
                 <div class="col-md-2 d-flex align-items-end gap-2">
-                    <button type="submit" class="btn btn-primary-modern w-100">
-                        <i class="fas fa-filter me-2"></i>Filter
+                    <button type="button" class="btn btn-outline-modern w-100" onclick="clearFilters()">
+                        <i class="fas fa-times me-2"></i>Clear
                     </button>
                 </div>
             </form>
 
             <?php if (!empty(array_filter($filters))): ?>
                 <div class="mt-3">
-                    <a href="?page=audit_trail" class="btn btn-outline-modern btn-sm">
+                    <a href="?page=audit_trail&p=1" class="btn btn-outline-modern btn-sm">
                         <i class="fas fa-times me-1"></i>Clear filters
                     </a>
                 </div>
@@ -110,7 +123,12 @@ function h($v) { return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8'); }
             <div class="card-header-modern mb-3 d-flex justify-content-between align-items-center">
                 <div>
                     <h5 class="card-title-modern mb-0">Activity Log</h5>
-                    <small class="card-subtitle">Showing <?php echo number_format(min($perPage, $totalCount)); ?> of <?php echo number_format($totalCount); ?> events</small>
+                    <small class="card-subtitle">
+                        Showing <?php echo number_format(count($logs)); ?> of <?php echo number_format($totalCount); ?> events
+                        <?php if (!empty(array_filter($filters))): ?>
+                            <span class="text-muted">(filtered)</span>
+                        <?php endif; ?>
+                    </small>
                 </div>
             </div>
 
@@ -214,11 +232,12 @@ function h($v) { return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8'); }
                             $baseQuery = array_merge(
                                 ['page' => 'audit_trail'],
                                 array_filter([
-                                    'action'    => $filters['action'],
-                                    'table'     => $filters['table_name'],
-                                    'user_id'   => $filters['user_id'],
-                                    'date_from' => $filters['date_from'],
-                                    'date_to'   => $filters['date_to'],
+                                    'action'      => $filters['action'],
+                                    'table'       => $filters['table_name'],
+                                    'user_id'     => $filters['user_id'],
+                                    'user_search' => $filters['user_search'],
+                                    'date_from'   => $filters['date_from'],
+                                    'date_to'     => $filters['date_to'],
                                 ])
                             );
                             ?>
@@ -475,5 +494,95 @@ html[data-theme="dark"] .page-item.disabled .page-link {
     cursor: not-allowed;
 }
 
+/* User search input styling */
+#userSearchInput {
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    font-size: 0.95rem;
+}
+
+#userSearchInput:focus {
+    border-color: var(--primary-color, #3b82f6);
+    box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
+}
+
+html[data-theme="dark"] #userSearchInput {
+    background-color: #0f1114 !important;
+    border-color: var(--interface-border) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] #userSearchInput:focus {
+    background-color: #0f1114 !important;
+    border-color: var(--primary-color) !important;
+    color: var(--interface-text) !important;
+}
+
+/* Loading indicator for auto-filter */
+.auto-filtering {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
 </style>
+
+<script>
+// Auto-filter functionality - submit form automatically when filters change
+document.addEventListener('DOMContentLoaded', function() {
+    const filterForm = document.getElementById('auditFilterForm');
+    const userSearchInput = document.getElementById('userSearchInput');
+    let searchTimeout = null;
+    let isSubmitting = false;
+    
+    if (filterForm) {
+        // Add a hidden input to reset page to 1 when form is submitted
+        const pageInput = document.createElement('input');
+        pageInput.type = 'hidden';
+        pageInput.name = 'p';
+        pageInput.value = '1';
+        filterForm.appendChild(pageInput);
+        
+        // Function to submit form with loading state
+        function submitForm() {
+            if (isSubmitting) return;
+            isSubmitting = true;
+            pageInput.value = '1'; // Reset to page 1
+            filterForm.classList.add('auto-filtering');
+            filterForm.submit();
+        }
+        
+        // Auto-submit on select/date changes
+        const autoFilterElements = filterForm.querySelectorAll('.auto-filter');
+        autoFilterElements.forEach(function(element) {
+            element.addEventListener('change', function() {
+                submitForm();
+            });
+        });
+        
+        // Auto-submit on user search with debounce (wait 500ms after user stops typing)
+        if (userSearchInput) {
+            userSearchInput.addEventListener('input', function() {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(function() {
+                    submitForm();
+                }, 500); // Wait 500ms after user stops typing
+            });
+            
+            // Also submit on Enter key
+            userSearchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    clearTimeout(searchTimeout);
+                    submitForm();
+                }
+            });
+        }
+    }
+});
+
+// Clear all filters function
+function clearFilters() {
+    window.location.href = '?page=audit_trail&p=1';
+}
+</script>
 

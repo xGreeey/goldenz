@@ -2610,4 +2610,23 @@ html[data-theme="dark"] .notification {
     border-color: var(--interface-border) !important;
     color: var(--interface-text) !important;
 }
+
+html[data-theme="dark"] .dtr-header {
+    background-color: #1a1d23 !important;
+    border: 1px solid var(--interface-border) !important;
+    border-radius: 14px; /* Rounded rectangle */
+    padding: 1.5rem 2rem; /* Adjusted padding */
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.04); /* Added shadow */
+    color: var(--interface-text) !important;
+    border-bottom: 1px solid var(--interface-border) !important;
+    margin-bottom: var(--spacing-2xl) !important;
+}
+
+html[data-theme="dark"] .dtr-title h2 {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .dtr-title .text-muted {
+    color: var(--interface-text-muted) !important;
+}
 </style>
