@@ -1299,7 +1299,7 @@ if (empty($posts)) {
                                         $by = is_array($t) ? ($t['by'] ?? '') : '';
                                         $date = is_array($t) ? ($t['date'] ?? '') : '';
                                     ?>
-                                    <tr class="training-row">
+                                    <tr class="training-row" data-training-index="<?php echo (int)$i; ?>">
                                         <td>
                                             <input type="text" class="form-control text-uppercase"
                                                    name="trainings[<?php echo (int)$i; ?>][title]"
@@ -1313,17 +1313,9 @@ if (empty($posts)) {
                                                    placeholder="Conducted By" maxlength="200">
                                         </td>
                                         <td>
-                                            <div class="d-flex align-items-center gap-2">
-                                                <input type="date" class="form-control flex-grow-1"
-                                                       name="trainings[<?php echo (int)$i; ?>][date]"
-                                                       value="<?php echo htmlspecialchars($date); ?>">
-                                                <button type="button"
-                                                        class="btn btn-sm p-0 training-remove"
-                                                        aria-label="Remove training"
-                                                        style="min-width: 32px; line-height: 1;">
-                                                    <span class="text-danger fw-bold" aria-hidden="true" style="font-size: 1.35rem; line-height: 1;">&minus;</span>
-                                                </button>
-                                            </div>
+                                            <input type="date" class="form-control"
+                                                   name="trainings[<?php echo (int)$i; ?>][date]"
+                                                   value="<?php echo htmlspecialchars($date); ?>">
                                         </td>
                                     </tr>
                                     <?php endforeach; ?>
@@ -1331,9 +1323,28 @@ if (empty($posts)) {
                             </table>
                         </div>
 
-                        <div class="d-flex justify-content-end">
-                            <button type="button" class="btn btn-outline-primary btn-sm" id="addTrainingBtn">
-                                <i class="fas fa-plus me-2"></i>Add Training
+                        <div class="d-flex justify-content-end align-items-start gap-2">
+                            <div class="training-remove-buttons d-flex flex-column gap-1" id="trainingRemoveButtons">
+                                <?php
+                                $trainings = $_POST['trainings'] ?? [];
+                                if (!is_array($trainings)) $trainings = [];
+                                if (count($trainings) === 0) $trainings = [[]];
+                                foreach ($trainings as $i => $t):
+                                ?>
+                                <button type="button"
+                                        class="btn btn-sm btn-remove-modern training-remove-btn"
+                                        data-training-index="<?php echo (int)$i; ?>"
+                                        aria-label="Remove training">
+                                    <span class="btn-icon-circle">
+                                        <img src="<?php echo asset_url('icons/minus-icon.svg'); ?>" alt="Remove" class="btn-icon-img">
+                                    </span>
+                                </button>
+                                <?php endforeach; ?>
+                            </div>
+                            <button type="button" class="btn btn-add-modern btn-sm" id="addTrainingBtn">
+                                <span class="btn-icon-circle">
+                                    <img src="<?php echo asset_url('icons/plus-icon.svg'); ?>" alt="Add" class="btn-icon-img">
+                                </span>
                             </button>
                         </div>
                     </div>
@@ -1350,10 +1361,10 @@ if (empty($posts)) {
                             <table class="table table-sm align-middle mb-2" id="employmentTable">
                                 <thead>
                                     <tr class="text-muted small">
-                                        <th style="min-width: 180px;">Position</th>
-                                        <th style="min-width: 320px;">Company</th>
-                                        <th style="min-width: 190px;">Period Covered</th>
-                                        <th style="min-width: 260px;">Reasons for Leaving</th>
+                                        <th style="min-width: 180px;">POSITION</th>
+                                        <th style="min-width: 320px;">COMPANY</th>
+                                        <th style="min-width: 190px;">PERIOD COVERED</th>
+                                        <th style="min-width: 260px;">REASON/S FOR LEAVING</th>
                                     </tr>
                                 </thead>
                                 <tbody id="employmentTbody">
@@ -1369,77 +1380,48 @@ if (empty($posts)) {
                                         $period = is_array($j) ? ($j['period'] ?? '') : '';
                                         $reason = is_array($j) ? ($j['reason'] ?? '') : '';
                                     ?>
-                                    <tr class="employment-row">
-                                        <td>
+                                    <tr class="employment-row" data-employment-index="<?php echo (int)$i; ?>">
+                                        <td class="employment-position-cell">
                                             <input type="text" class="form-control text-uppercase"
                                                    name="employment_history[<?php echo (int)$i; ?>][position]"
                                                    value="<?php echo htmlspecialchars($position); ?>"
                                                    maxlength="120" placeholder="Position">
                                         </td>
-                                        <td>
-                                            <button type="button"
-                                                    class="btn btn-link p-0 employment-toggle"
-                                                    aria-expanded="false">
-                                                <span class="fw-semibold">Company Details</span>
-                                                <span class="employment-company-summary text-muted">
-                                                    <?php echo !empty($company_name) ? ('— ' . htmlspecialchars($company_name)) : ''; ?>
-                                                </span>
-                                            </button>
-                                            <div class="text-muted small employment-toggle-hint">Click to expand</div>
-                                        </td>
-                                        <td>
-                                            <div class="d-flex align-items-center gap-2">
-                                                <input type="text" class="form-control flex-grow-1"
-                                                       name="employment_history[<?php echo (int)$i; ?>][period]"
-                                                       value="<?php echo htmlspecialchars($period); ?>"
-                                                       maxlength="30" placeholder="e.g., 03/2022 - 11/2024">
-                                                <button type="button"
-                                                        class="btn btn-sm p-0 employment-remove"
-                                                        aria-label="Remove employment record"
-                                                        style="min-width: 32px; line-height: 1;">
-                                                    <span class="text-danger fw-bold" aria-hidden="true" style="font-size: 1.35rem; line-height: 1;">&minus;</span>
-                                                </button>
+                                        <td class="employment-company-cell">
+                                            <div class="employment-company-fields">
+                                                <div class="employment-company-field">
+                                                    <label class="employment-field-label">NAME:</label>
+                                                    <input type="text" class="form-control text-uppercase employment-company-name"
+                                                           name="employment_history[<?php echo (int)$i; ?>][company_name]"
+                                                           value="<?php echo htmlspecialchars($company_name); ?>"
+                                                           maxlength="200" placeholder="">
+                                                </div>
+                                                <div class="employment-company-field">
+                                                    <label class="employment-field-label">ADDRESS:</label>
+                                                    <textarea class="form-control text-uppercase employment-company-address"
+                                                              name="employment_history[<?php echo (int)$i; ?>][company_address]"
+                                                              rows="1" maxlength="255" placeholder=""><?php echo htmlspecialchars($company_address); ?></textarea>
+                                                </div>
+                                                <div class="employment-company-field">
+                                                    <label class="employment-field-label">PHONE NO.</label>
+                                                    <input type="tel" class="form-control employment-company-phone"
+                                                           name="employment_history[<?php echo (int)$i; ?>][company_phone]"
+                                                           value="<?php echo htmlspecialchars($company_phone); ?>"
+                                                           maxlength="30" placeholder="">
+                                                </div>
                                             </div>
                                         </td>
-                                        <td>
+                                        <td class="employment-period-cell">
+                                            <input type="text" class="form-control"
+                                                   name="employment_history[<?php echo (int)$i; ?>][period]"
+                                                   value="<?php echo htmlspecialchars($period); ?>"
+                                                   maxlength="30" placeholder="e.g., 03/2022 - 11/2024">
+                                        </td>
+                                        <td class="employment-reason-cell">
                                             <textarea class="form-control"
                                                       name="employment_history[<?php echo (int)$i; ?>][reason]"
                                                       rows="2" maxlength="300"
                                                       placeholder="Reason for leaving"><?php echo htmlspecialchars($reason); ?></textarea>
-                                        </td>
-                                    </tr>
-                                    <tr class="employment-details-row d-none">
-                                        <td colspan="4" class="pt-0">
-                                            <div class="p-3 mt-2">
-                                                <div class="row g-3">
-                                                    <div class="col-md-6">
-                                                        <div class="form-group mb-0">
-                                                            <label class="form-label">Company Name</label>
-                                                            <input type="text" class="form-control text-uppercase employment-company-name"
-                                                                   name="employment_history[<?php echo (int)$i; ?>][company_name]"
-                                                                   value="<?php echo htmlspecialchars($company_name); ?>"
-                                                                   maxlength="200">
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <div class="form-group mb-0">
-                                                            <label class="form-label">Company Phone Number</label>
-                                                            <input type="tel" class="form-control"
-                                                                   name="employment_history[<?php echo (int)$i; ?>][company_phone]"
-                                                                   value="<?php echo htmlspecialchars($company_phone); ?>"
-                                                                   maxlength="30">
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-12">
-                                                        <div class="form-group mb-0">
-                                                            <label class="form-label">Company Address</label>
-                                                            <textarea class="form-control text-uppercase"
-                                                                      name="employment_history[<?php echo (int)$i; ?>][company_address]"
-                                                                      rows="2" maxlength="255"><?php echo htmlspecialchars($company_address); ?></textarea>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
                                         </td>
                                     </tr>
                                     <?php endforeach; ?>
@@ -1447,9 +1429,115 @@ if (empty($posts)) {
                             </table>
                         </div>
 
-                        <div class="d-flex justify-content-end">
-                            <button type="button" class="btn btn-outline-primary btn-sm" id="addEmploymentBtn">
-                                <i class="fas fa-plus me-2"></i>Add Employment
+                        <div class="d-flex justify-content-end align-items-start gap-2">
+                            <div class="employment-remove-buttons d-flex flex-column gap-1" id="employmentRemoveButtons">
+                                <?php
+                                $jobs = $_POST['employment_history'] ?? [];
+                                if (!is_array($jobs)) $jobs = [];
+                                if (count($jobs) === 0) $jobs = [[]];
+                                foreach ($jobs as $i => $j):
+                                ?>
+                                <button type="button"
+                                        class="btn btn-sm btn-remove-modern employment-remove-btn"
+                                        data-employment-index="<?php echo (int)$i; ?>"
+                                        aria-label="Remove employment record">
+                                    <span class="btn-icon-circle">
+                                        <img src="<?php echo asset_url('icons/minus-icon.svg'); ?>" alt="Remove" class="btn-icon-img">
+                                    </span>
+                                </button>
+                                <?php endforeach; ?>
+                            </div>
+                            <button type="button" class="btn btn-add-modern btn-sm" id="addEmploymentBtn">
+                                <span class="btn-icon-circle">
+                                    <img src="<?php echo asset_url('icons/plus-icon.svg'); ?>" alt="Add" class="btn-icon-img">
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Character References Section -->
+                <div class="row g-3 mb-4">
+                    <div class="col-12">
+                        <h4 class="form-section-title">CHARACTER REFERENCES</h4>
+                        <p class="text-muted small mb-3">(If previously employed, reference/s should be from your previous employment)</p>
+                    </div>
+
+                    <div class="col-12">
+                        <div class="table-responsive">
+                            <table class="table table-sm align-middle mb-2" id="characterReferencesTable">
+                                <thead>
+                                    <tr class="text-muted small">
+                                        <th style="min-width: 200px;">NAME</th>
+                                        <th style="min-width: 180px;">OCCUPATION</th>
+                                        <th style="min-width: 200px;">COMPANY</th>
+                                        <th style="min-width: 200px;">CONTACT NO./S</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="characterReferencesTbody">
+                                    <?php
+                                    $references = $_POST['character_references'] ?? [];
+                                    if (!is_array($references)) $references = [];
+                                    if (count($references) === 0) $references = [[], [], []]; // Three blank records by default
+                                    foreach ($references as $i => $ref):
+                                        $ref_name = is_array($ref) ? ($ref['name'] ?? '') : '';
+                                        $ref_occupation = is_array($ref) ? ($ref['occupation'] ?? '') : '';
+                                        $ref_company = is_array($ref) ? ($ref['company'] ?? '') : '';
+                                        $ref_contact = is_array($ref) ? ($ref['contact'] ?? '') : '';
+                                    ?>
+                                    <tr class="character-reference-row" data-reference-index="<?php echo (int)$i; ?>">
+                                        <td>
+                                            <input type="text" class="form-control text-uppercase"
+                                                   name="character_references[<?php echo (int)$i; ?>][name]"
+                                                   value="<?php echo htmlspecialchars($ref_name); ?>"
+                                                   maxlength="150" placeholder="Full Name">
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control text-uppercase"
+                                                   name="character_references[<?php echo (int)$i; ?>][occupation]"
+                                                   value="<?php echo htmlspecialchars($ref_occupation); ?>"
+                                                   maxlength="100" placeholder="Occupation">
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control text-uppercase"
+                                                   name="character_references[<?php echo (int)$i; ?>][company]"
+                                                   value="<?php echo htmlspecialchars($ref_company); ?>"
+                                                   maxlength="200" placeholder="Company Name">
+                                        </td>
+                                        <td>
+                                            <input type="tel" class="form-control"
+                                                   name="character_references[<?php echo (int)$i; ?>][contact]"
+                                                   value="<?php echo htmlspecialchars($ref_contact); ?>"
+                                                   maxlength="30" placeholder="Contact Number">
+                                        </td>
+                                    </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="d-flex justify-content-end align-items-start gap-2">
+                            <div class="character-reference-remove-buttons d-flex flex-column gap-1" id="characterReferenceRemoveButtons">
+                                <?php
+                                $references = $_POST['character_references'] ?? [];
+                                if (!is_array($references)) $references = [];
+                                if (count($references) === 0) $references = [[], [], []];
+                                foreach ($references as $i => $ref):
+                                ?>
+                                <button type="button"
+                                        class="btn btn-sm btn-remove-modern character-reference-remove-btn"
+                                        data-reference-index="<?php echo (int)$i; ?>"
+                                        aria-label="Remove character reference">
+                                    <span class="btn-icon-circle">
+                                        <img src="<?php echo asset_url('icons/minus-icon.svg'); ?>" alt="Remove" class="btn-icon-img">
+                                    </span>
+                                </button>
+                                <?php endforeach; ?>
+                            </div>
+                            <button type="button" class="btn btn-add-modern btn-sm" id="addCharacterReferenceBtn">
+                                <span class="btn-icon-circle">
+                                    <img src="<?php echo asset_url('icons/plus-icon.svg'); ?>" alt="Add" class="btn-icon-img">
+                                </span>
                             </button>
                         </div>
                     </div>
@@ -1816,9 +1904,6 @@ if (empty($posts)) {
                     </div>
                 </div>
 
-                <div class="alert alert-info add-employee-note">
-                    Category 5 (Exit requirements), Category 6 (Clearances), and Category 7 (Cash bond) will be recorded later inside each employee profile. You can update these after the employee is created.
-                </div>
 
                 <!-- HR Final Remarks -->
                 <div class="row g-3 mb-4 hr-remarks-section">
@@ -1907,45 +1992,80 @@ document.addEventListener('DOMContentLoaded', function() {
     const trainingsTbody = document.getElementById('trainingsTbody');
     const addTrainingBtn = document.getElementById('addTrainingBtn');
 
-    const reindexRows = (tbody, rowClass, baseName) => {
-        if (!tbody) return;
-        const rows = Array.from(tbody.querySelectorAll(rowClass));
+    const reindexTrainingRows = () => {
+        if (!trainingsTbody) return;
+        const rows = Array.from(trainingsTbody.querySelectorAll('.training-row'));
+        const removeButtonsContainer = document.getElementById('trainingRemoveButtons');
+        
         rows.forEach((row, idx) => {
+            // Update data attribute
+            row.setAttribute('data-training-index', idx);
+            
+            // Update form field names
             row.querySelectorAll('input').forEach((inp) => {
                 const name = inp.getAttribute('name') || '';
-                // Replace trainings[OLD] with trainings[idx]
-                const updated = name.replace(new RegExp(`^${baseName}\\[\\d+\\]`), `${baseName}[${idx}]`);
+                if (!name) return;
+                const updated = name.replace(/^trainings\[\d+\]/, `trainings[${idx}]`);
                 inp.setAttribute('name', updated);
             });
         });
-    };
-
-    const removeRowOrClear = (tbody, row, rowSelector, baseName) => {
-        const rows = tbody.querySelectorAll(rowSelector);
-        if (rows.length <= 1) {
-            // Clear instead of removing last row
-            row.querySelectorAll('input').forEach(i => i.value = '');
-            return;
+        
+        // Update remove buttons - ensure count matches rows
+        if (removeButtonsContainer) {
+            const removeButtons = Array.from(removeButtonsContainer.querySelectorAll('.training-remove-btn'));
+            const minusIconUrl = '<?php echo asset_url("icons/minus-icon.svg"); ?>';
+            
+            // Remove extra buttons if there are more buttons than rows
+            while (removeButtons.length > rows.length) {
+                removeButtons[removeButtons.length - 1].remove();
+                removeButtons.pop();
+            }
+            
+            // Update existing buttons' data attributes
+            removeButtons.forEach((btn, idx) => {
+                if (idx < rows.length) {
+                    btn.setAttribute('data-training-index', idx);
+                }
+            });
         }
-        row.remove();
-        reindexRows(tbody, rowSelector, baseName);
     };
 
     if (trainingsTbody) {
-        trainingsTbody.addEventListener('click', (e) => {
-            const btn = e.target.closest('.training-remove');
-            if (!btn) return;
-            const row = btn.closest('tr');
-            if (!row) return;
-            removeRowOrClear(trainingsTbody, row, '.training-row', 'trainings');
-        });
+        // Handle remove buttons beside "Add Training"
+        const removeButtonsContainer = document.getElementById('trainingRemoveButtons');
+        if (removeButtonsContainer) {
+            removeButtonsContainer.addEventListener('click', (e) => {
+                const removeBtn = e.target.closest('.training-remove-btn');
+                if (removeBtn) {
+                    const index = parseInt(removeBtn.getAttribute('data-training-index'));
+                    const row = trainingsTbody.querySelector(`tr.training-row[data-training-index="${index}"]`);
+                    if (!row) return;
+                    
+                    const allRows = trainingsTbody.querySelectorAll('.training-row');
+                    if (allRows.length <= 1) {
+                        // Clear last record instead of removing
+                        row.querySelectorAll('input').forEach(el => el.value = '');
+                        return;
+                    }
+                    
+                    row.remove();
+                    removeBtn.remove();
+                    reindexTrainingRows();
+                    return;
+                }
+            });
+        }
     }
 
     if (addTrainingBtn && trainingsTbody) {
         addTrainingBtn.addEventListener('click', () => {
-            const idx = trainingsTbody.querySelectorAll('.training-row').length;
+            const currentRowCount = trainingsTbody.querySelectorAll('.training-row').length;
+            const idx = currentRowCount;
+            
+            // Create new row
             const tr = document.createElement('tr');
             tr.className = 'training-row';
+            tr.setAttribute('data-training-index', idx);
             tr.innerHTML = `
                 <td>
                     <input type="text" class="form-control text-uppercase"
@@ -1958,19 +2078,33 @@ document.addEventListener('DOMContentLoaded', function() {
                            placeholder="Conducted By" maxlength="200">
                 </td>
                 <td>
-                    <div class="d-flex align-items-center gap-2">
-                        <input type="date" class="form-control flex-grow-1"
-                               name="trainings[${idx}][date]">
-                        <button type="button"
-                                class="btn btn-sm p-0 training-remove"
-                                aria-label="Remove training"
-                                style="min-width: 32px; line-height: 1;">
-                            <span class="text-danger fw-bold" aria-hidden="true" style="font-size: 1.35rem; line-height: 1;">&minus;</span>
-                        </button>
-                    </div>
+                    <input type="date" class="form-control"
+                           name="trainings[${idx}][date]">
                 </td>
             `;
+            
+            // Add row first
             trainingsTbody.appendChild(tr);
+            
+            // Then add remove button (only one)
+            const removeButtonsContainer = document.getElementById('trainingRemoveButtons');
+            if (removeButtonsContainer) {
+                // Check if button already exists for this index
+                const existingBtn = removeButtonsContainer.querySelector(`.training-remove-btn[data-training-index="${idx}"]`);
+                if (!existingBtn) {
+                    const removeBtn = document.createElement('button');
+                    removeBtn.type = 'button';
+                    removeBtn.className = 'btn btn-sm btn-remove-modern training-remove-btn';
+                    removeBtn.setAttribute('data-training-index', idx);
+                    removeBtn.setAttribute('aria-label', 'Remove training');
+                    const minusIconUrl = '<?php echo asset_url("icons/minus-icon.svg"); ?>';
+                    removeBtn.innerHTML = `<span class="btn-icon-circle"><img src="${minusIconUrl}" alt="Remove" class="btn-icon-img"></span>`;
+                    removeButtonsContainer.appendChild(removeBtn);
+                }
+            }
+            
+            // Reindex after everything is added
+            reindexTrainingRows();
         });
     }
 
@@ -1981,191 +2115,244 @@ document.addEventListener('DOMContentLoaded', function() {
     const reindexEmployment = () => {
         if (!employmentTbody) return;
         const mainRows = Array.from(employmentTbody.querySelectorAll('tr.employment-row'));
+        const removeButtonsContainer = document.getElementById('employmentRemoveButtons');
+        
         mainRows.forEach((mainRow, idx) => {
+            // Update data attribute
+            mainRow.setAttribute('data-employment-index', idx);
+            
+            // Update form field names
             mainRow.querySelectorAll('input, textarea').forEach((el) => {
                 const name = el.getAttribute('name') || '';
                 if (!name) return;
                 el.setAttribute('name', name.replace(/^employment_history\[\d+\]/, `employment_history[${idx}]`));
             });
-
-            const detailsRow = mainRow.nextElementSibling;
-            if (detailsRow && detailsRow.classList.contains('employment-details-row')) {
-                detailsRow.querySelectorAll('input, textarea').forEach((el) => {
-                    const name = el.getAttribute('name') || '';
-                    if (!name) return;
-                    el.setAttribute('name', name.replace(/^employment_history\[\d+\]/, `employment_history[${idx}]`));
-                });
-            }
         });
-    };
-
-    const setEmploymentExpanded = (mainRow, expanded) => {
-        const detailsRow = mainRow?.nextElementSibling;
-        if (!detailsRow || !detailsRow.classList.contains('employment-details-row')) return;
-        const toggle = mainRow.querySelector('.employment-toggle');
-        const hint = mainRow.querySelector('.employment-toggle-hint');
-        if (expanded) {
-            detailsRow.classList.remove('d-none');
-            if (toggle) toggle.setAttribute('aria-expanded', 'true');
-            if (hint) hint.textContent = 'Click to collapse';
-        } else {
-            detailsRow.classList.add('d-none');
-            if (toggle) toggle.setAttribute('aria-expanded', 'false');
-            if (hint) hint.textContent = 'Click to expand';
+        
+        // Update remove buttons - ensure count matches rows
+        if (removeButtonsContainer) {
+            const removeButtons = Array.from(removeButtonsContainer.querySelectorAll('.employment-remove-btn'));
+            
+            // Remove extra buttons if there are more buttons than rows
+            while (removeButtons.length > mainRows.length) {
+                removeButtons[removeButtons.length - 1].remove();
+                removeButtons.pop();
+            }
+            
+            // Update existing buttons' data attributes
+            removeButtons.forEach((btn, idx) => {
+                if (idx < mainRows.length) {
+                    btn.setAttribute('data-employment-index', idx);
+                }
+            });
         }
     };
 
-    const getEmploymentRowPair = (target) => {
-        const mainRow = target.closest('tr.employment-row');
-        if (!mainRow) return { mainRow: null, detailsRow: null };
-        const detailsRow = mainRow.nextElementSibling && mainRow.nextElementSibling.classList.contains('employment-details-row')
-            ? mainRow.nextElementSibling
-            : null;
-        return { mainRow, detailsRow };
-    };
-
     if (employmentTbody) {
-        const updateEmploymentSummary = (detailsRow) => {
-            if (!detailsRow || !detailsRow.classList?.contains('employment-details-row')) return;
-            const mainRow = detailsRow.previousElementSibling && detailsRow.previousElementSibling.classList.contains('employment-row')
-                ? detailsRow.previousElementSibling
-                : null;
-            if (!mainRow) return;
-            const inp = detailsRow.querySelector('.employment-company-name');
-            const summary = mainRow.querySelector('.employment-company-summary');
-            if (!inp || !summary) return;
-            const v = (inp.value || '').trim();
-            summary.textContent = v ? `— ${v.toUpperCase()}` : '';
-        };
-
-        employmentTbody.addEventListener('click', (e) => {
-            const removeBtn = e.target.closest('.employment-remove');
-            if (removeBtn) {
-                const { mainRow, detailsRow } = getEmploymentRowPair(removeBtn);
-                if (!mainRow) return;
-                const allMain = employmentTbody.querySelectorAll('tr.employment-row');
-                if (allMain.length <= 1) {
-                    // Clear last record instead of removing
-                    mainRow.querySelectorAll('input, textarea').forEach(el => el.value = '');
-                    if (detailsRow) detailsRow.querySelectorAll('input, textarea').forEach(el => el.value = '');
-                    const summary = mainRow.querySelector('.employment-company-summary');
-                    if (summary) summary.textContent = '';
-                    setEmploymentExpanded(mainRow, false);
+        // Handle remove buttons beside "Add Employment"
+        const removeButtonsContainer = document.getElementById('employmentRemoveButtons');
+        if (removeButtonsContainer) {
+            removeButtonsContainer.addEventListener('click', (e) => {
+                const removeBtn = e.target.closest('.employment-remove-btn');
+                if (removeBtn) {
+                    const index = parseInt(removeBtn.getAttribute('data-employment-index'));
+                    const mainRow = employmentTbody.querySelector(`tr.employment-row[data-employment-index="${index}"]`);
+                    if (!mainRow) return;
+                    
+                    const allMain = employmentTbody.querySelectorAll('tr.employment-row');
+                    if (allMain.length <= 1) {
+                        // Clear last record instead of removing
+                        mainRow.querySelectorAll('input, textarea').forEach(el => el.value = '');
+                        return;
+                    }
+                    
+                    mainRow.remove();
+                    removeBtn.remove();
+                    reindexEmployment();
                     return;
                 }
-                if (detailsRow) detailsRow.remove();
-                mainRow.remove();
-                reindexEmployment();
-                return;
-            }
-
-            const toggleBtn = e.target.closest('.employment-toggle');
-            if (toggleBtn) {
-                const { mainRow, detailsRow } = getEmploymentRowPair(toggleBtn);
-                if (!mainRow || !detailsRow) return;
-                const isHidden = detailsRow.classList.contains('d-none');
-                setEmploymentExpanded(mainRow, isHidden);
-                updateEmploymentSummary(detailsRow);
-            }
-        });
-
-        const onCompanyNameChange = (e) => {
-            const t = e.target;
-            if (!t || !(t instanceof HTMLElement)) return;
-            if (!t.classList.contains('employment-company-name')) return;
-            const detailsRow = t.closest('tr.employment-details-row');
-            updateEmploymentSummary(detailsRow);
-        };
-        employmentTbody.addEventListener('input', onCompanyNameChange);
-        employmentTbody.addEventListener('change', onCompanyNameChange);
-        employmentTbody.addEventListener('keyup', onCompanyNameChange);
-
-        // Initialize summaries on load (for prefilled POST values)
-        employmentTbody.querySelectorAll('tr.employment-details-row').forEach((dr) => updateEmploymentSummary(dr));
+            });
+        }
     }
 
     if (addEmploymentBtn && employmentTbody) {
         addEmploymentBtn.addEventListener('click', () => {
-            const idx = 0; // will be reindexed after prepend
+            const currentRowCount = employmentTbody.querySelectorAll('.employment-row').length;
+            const idx = currentRowCount;
 
+            // Create new row
             const mainRow = document.createElement('tr');
             mainRow.className = 'employment-row';
+            mainRow.setAttribute('data-employment-index', idx);
             mainRow.innerHTML = `
-                <td>
+                <td class="employment-position-cell">
                     <input type="text" class="form-control text-uppercase"
                            name="employment_history[${idx}][position]"
                            maxlength="120" placeholder="Position">
                 </td>
-                <td>
-                    <button type="button"
-                            class="btn btn-link p-0 employment-toggle"
-                            aria-expanded="true">
-                        <span class="fw-semibold">Company Details</span>
-                        <span class="employment-company-summary text-muted"></span>
-                    </button>
-                    <div class="text-muted small employment-toggle-hint">Click to collapse</div>
-                </td>
-                <td>
-                    <div class="d-flex align-items-center gap-2">
-                        <input type="text" class="form-control flex-grow-1"
-                               name="employment_history[${idx}][period]"
-                               maxlength="30" placeholder="e.g., 03/2022 - 11/2024">
-                        <button type="button"
-                                class="btn btn-sm p-0 employment-remove"
-                                aria-label="Remove employment record"
-                                style="min-width: 32px; line-height: 1;">
-                            <span class="text-danger fw-bold" aria-hidden="true" style="font-size: 1.35rem; line-height: 1;">&minus;</span>
-                        </button>
+                <td class="employment-company-cell">
+                    <div class="employment-company-fields">
+                        <div class="employment-company-field">
+                            <label class="employment-field-label">NAME:</label>
+                            <input type="text" class="form-control text-uppercase employment-company-name"
+                                   name="employment_history[${idx}][company_name]"
+                                   maxlength="200" placeholder="">
+                        </div>
+                        <div class="employment-company-field">
+                            <label class="employment-field-label">ADDRESS:</label>
+                            <textarea class="form-control text-uppercase employment-company-address"
+                                      name="employment_history[${idx}][company_address]"
+                                      rows="1" maxlength="255" placeholder=""></textarea>
+                        </div>
+                        <div class="employment-company-field">
+                            <label class="employment-field-label">PHONE NO.</label>
+                            <input type="tel" class="form-control employment-company-phone"
+                                   name="employment_history[${idx}][company_phone]"
+                                   maxlength="30" placeholder="">
+                        </div>
                     </div>
                 </td>
-                <td>
+                <td class="employment-period-cell">
+                    <input type="text" class="form-control"
+                           name="employment_history[${idx}][period]"
+                           maxlength="30" placeholder="e.g., 03/2022 - 11/2024">
+                </td>
+                <td class="employment-reason-cell">
                     <textarea class="form-control"
                               name="employment_history[${idx}][reason]"
                               rows="2" maxlength="300"
                               placeholder="Reason for leaving"></textarea>
                 </td>
             `;
+            
+            // Add row first (prepend for newest first)
+            employmentTbody.insertBefore(mainRow, employmentTbody.firstChild);
+            
+            // Then add remove button (only one, check for duplicates)
+            const removeButtonsContainer = document.getElementById('employmentRemoveButtons');
+            if (removeButtonsContainer) {
+                // Check if button already exists for this index
+                const existingBtn = removeButtonsContainer.querySelector(`.employment-remove-btn[data-employment-index="${idx}"]`);
+                if (!existingBtn) {
+                    const removeBtn = document.createElement('button');
+                    removeBtn.type = 'button';
+                    removeBtn.className = 'btn btn-sm btn-remove-modern employment-remove-btn';
+                    removeBtn.setAttribute('data-employment-index', idx);
+                    removeBtn.setAttribute('aria-label', 'Remove employment record');
+                    const minusIconUrl = '<?php echo asset_url("icons/minus-icon.svg"); ?>';
+                    removeBtn.innerHTML = `<span class="btn-icon-circle"><img src="${minusIconUrl}" alt="Remove" class="btn-icon-img"></span>`;
+                    removeButtonsContainer.insertBefore(removeBtn, removeButtonsContainer.firstChild);
+                }
+            }
+            
+            // Reindex after everything is added
+            reindexEmployment();
+        });
+    }
 
-            const detailsRow = document.createElement('tr');
-            detailsRow.className = 'employment-details-row';
-            detailsRow.innerHTML = `
-                <td colspan="4" class="pt-0">
-                    <div class="p-3 mt-2">
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <div class="form-group mb-0">
-                                    <label class="form-label">Company Name</label>
-                                    <input type="text" class="form-control text-uppercase employment-company-name"
-                                           name="employment_history[${idx}][company_name]"
-                                           maxlength="200">
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group mb-0">
-                                    <label class="form-label">Company Phone Number</label>
-                                    <input type="tel" class="form-control"
-                                           name="employment_history[${idx}][company_phone]"
-                                           maxlength="30">
-                                </div>
-                            </div>
-                            <div class="col-12">
-                                <div class="form-group mb-0">
-                                    <label class="form-label">Company Address</label>
-                                    <textarea class="form-control text-uppercase"
-                                              name="employment_history[${idx}][company_address]"
-                                              rows="2" maxlength="255"></textarea>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+    // Character References (repeatable rows)
+    const characterReferencesTbody = document.getElementById('characterReferencesTbody');
+    const addCharacterReferenceBtn = document.getElementById('addCharacterReferenceBtn');
+
+    const reindexCharacterReferences = () => {
+        if (!characterReferencesTbody) return;
+        const mainRows = Array.from(characterReferencesTbody.querySelectorAll('tr.character-reference-row'));
+        const removeButtonsContainer = document.getElementById('characterReferenceRemoveButtons');
+        
+        mainRows.forEach((mainRow, idx) => {
+            // Update data attribute
+            mainRow.setAttribute('data-reference-index', idx);
+            
+            // Update form field names
+            mainRow.querySelectorAll('input').forEach((el) => {
+                const name = el.getAttribute('name') || '';
+                if (!name) return;
+                el.setAttribute('name', name.replace(/^character_references\[\d+\]/, `character_references[${idx}]`));
+            });
+        });
+        
+        // Update remove buttons - ensure count matches rows
+        if (removeButtonsContainer) {
+            // Remove all existing buttons first
+            removeButtonsContainer.innerHTML = '';
+            
+            // Create new buttons for each row
+            mainRows.forEach((row, idx) => {
+                const removeBtn = document.createElement('button');
+                removeBtn.type = 'button';
+                removeBtn.className = 'btn btn-sm btn-remove-modern character-reference-remove-btn';
+                removeBtn.setAttribute('data-reference-index', idx);
+                removeBtn.setAttribute('aria-label', 'Remove character reference');
+                const minusIconUrl = '<?php echo asset_url("icons/minus-icon.svg"); ?>';
+                removeBtn.innerHTML = `<span class="btn-icon-circle"><img src="${minusIconUrl}" alt="Remove" class="btn-icon-img"></span>`;
+                removeButtonsContainer.appendChild(removeBtn);
+            });
+        }
+    };
+
+    if (characterReferencesTbody) {
+        // Handle remove buttons beside "Add Character Reference"
+        const removeButtonsContainer = document.getElementById('characterReferenceRemoveButtons');
+        if (removeButtonsContainer) {
+            removeButtonsContainer.addEventListener('click', (e) => {
+                const removeBtn = e.target.closest('.character-reference-remove-btn');
+                if (removeBtn) {
+                    const index = parseInt(removeBtn.getAttribute('data-reference-index'));
+                    const mainRow = characterReferencesTbody.querySelector(`tr.character-reference-row[data-reference-index="${index}"]`);
+                    if (!mainRow) return;
+                    
+                    const allMain = characterReferencesTbody.querySelectorAll('tr.character-reference-row');
+                    if (allMain.length <= 1) {
+                        // Clear last record instead of removing
+                        mainRow.querySelectorAll('input').forEach(el => el.value = '');
+                        return;
+                    }
+                    
+                    mainRow.remove();
+                    reindexCharacterReferences();
+                    return;
+                }
+            });
+        }
+    }
+
+    if (addCharacterReferenceBtn && characterReferencesTbody) {
+        addCharacterReferenceBtn.addEventListener('click', () => {
+            const currentRowCount = characterReferencesTbody.querySelectorAll('.character-reference-row').length;
+            const idx = currentRowCount;
+
+            // Create new row
+            const mainRow = document.createElement('tr');
+            mainRow.className = 'character-reference-row';
+            mainRow.setAttribute('data-reference-index', idx);
+            mainRow.innerHTML = `
+                <td>
+                    <input type="text" class="form-control text-uppercase"
+                           name="character_references[${idx}][name]"
+                           maxlength="150" placeholder="Full Name">
+                </td>
+                <td>
+                    <input type="text" class="form-control text-uppercase"
+                           name="character_references[${idx}][occupation]"
+                           maxlength="100" placeholder="Occupation">
+                </td>
+                <td>
+                    <input type="text" class="form-control text-uppercase"
+                           name="character_references[${idx}][company]"
+                           maxlength="200" placeholder="Company Name">
+                </td>
+                <td>
+                    <input type="tel" class="form-control"
+                           name="character_references[${idx}][contact]"
+                           maxlength="30" placeholder="Contact Number">
                 </td>
             `;
-
-            // Prepend newest first (details must follow its main row)
-            employmentTbody.prepend(detailsRow);
-            employmentTbody.prepend(mainRow);
-            reindexEmployment();
-            setEmploymentExpanded(mainRow, true);
+            
+            // Add row to tbody
+            characterReferencesTbody.appendChild(mainRow);
+            
+            // Reindex after everything is added
+            reindexCharacterReferences();
         });
     }
 
