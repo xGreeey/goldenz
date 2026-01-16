@@ -746,6 +746,15 @@ html[data-theme="dark"] .super-admin-dashboard .btn-link-modern:hover {
     background: #1e293b !important;
 }
 
+html[data-theme="dark"] .super-admin-dashboard .page-header-modern {
+    background-color: #1a1d23 !important;
+    border: 1px solid var(--interface-border) !important;
+    border-radius: 14px; /* Rounded rectangle */
+    padding: 1.5rem 2rem; /* Adjusted padding */
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.04); /* Added shadow */
+    color: var(--interface-text) !important;
+}
+
 @media (max-width: 768px) {
     .super-admin-dashboard {
         padding: 1.5rem 1rem;
