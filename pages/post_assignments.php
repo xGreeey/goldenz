@@ -716,6 +716,172 @@ body.portal-hr-admin .post-assignments-modern {
         gap: 0.25rem;
     }
 }
+
+/* Dark theme support for Post Assignments page */
+html[data-theme="dark"] .hrdash {
+    background: var(--interface-bg) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .page-title-main {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .page-subtitle-modern {
+    color: var(--interface-text-muted) !important;
+}
+
+html[data-theme="dark"] .btn-outline-modern {
+    background-color: #1a1d23 !important;
+    border-color: var(--interface-border) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .btn-outline-modern:hover {
+    background-color: var(--interface-hover) !important;
+    border-color: var(--interface-border) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .card-modern {
+    background: #1a1d23 !important;
+    border-color: var(--interface-border) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .card-header-modern {
+    background: #1a1d23 !important;
+    border-bottom-color: var(--interface-border) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .card-title-modern {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .card-body-modern {
+    background: #1a1d23 !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .form-label-modern {
+    color: var(--interface-text-muted) !important;
+}
+
+html[data-theme="dark"] .form-select-modern {
+    background-color: #0f1114 !important;
+    border-color: var(--interface-border) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .form-select-modern option {
+    background-color: #1a1d23 !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .search-input-modern {
+    background: transparent !important;
+}
+
+html[data-theme="dark"] .search-field {
+    background-color: #0f1114 !important;
+    border-color: var(--interface-border) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .search-field::placeholder {
+    color: var(--interface-text-muted) !important;
+}
+
+html[data-theme="dark"] .search-icon {
+    color: var(--interface-text-muted) !important;
+}
+
+html[data-theme="dark"] .post-title-main {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .post-info-item {
+    color: var(--interface-text-muted) !important;
+}
+
+html[data-theme="dark"] .post-info-item i {
+    color: var(--interface-text-muted) !important;
+}
+
+html[data-theme="dark"] .info-row {
+    border-bottom-color: var(--interface-border) !important;
+}
+
+html[data-theme="dark"] .info-label {
+    color: var(--interface-text-muted) !important;
+}
+
+html[data-theme="dark"] .info-value {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .employee-assignment-item,
+html[data-theme="dark"] .employee-item {
+    background: #1a1d23 !important;
+    border-color: var(--interface-border) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .employee-assignment-item:hover,
+html[data-theme="dark"] .employee-item:hover {
+    background: var(--interface-hover) !important;
+    border-color: var(--primary-color) !important;
+}
+
+html[data-theme="dark"] .employee-assignment-item h6,
+html[data-theme="dark"] .employee-item h6 {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .employee-assignment-item small,
+html[data-theme="dark"] .employee-item small {
+    color: var(--interface-text-muted) !important;
+}
+
+html[data-theme="dark"] .assignment-actions .btn-outline-danger {
+    background: #1a1d23 !important;
+    border-color: #ef4444 !important;
+    color: #ef4444 !important;
+}
+
+html[data-theme="dark"] .assignment-actions .btn-outline-danger:hover {
+    background: rgba(239, 68, 68, 0.2) !important;
+    border-color: #ef4444 !important;
+    color: #ef4444 !important;
+}
+
+html[data-theme="dark"] .empty-state-title {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .empty-state-text {
+    color: var(--interface-text-muted) !important;
+}
+
+html[data-theme="dark"] .text-muted {
+    color: var(--interface-text-muted) !important;
+}
+
+html[data-theme="dark"] .assigned-employees-list::-webkit-scrollbar-track,
+html[data-theme="dark"] .available-employees-list::-webkit-scrollbar-track {
+    background: #0f1114 !important;
+}
+
+html[data-theme="dark"] .assigned-employees-list::-webkit-scrollbar-thumb,
+html[data-theme="dark"] .available-employees-list::-webkit-scrollbar-thumb {
+    background: var(--interface-border) !important;
+}
+
+html[data-theme="dark"] .assigned-employees-list::-webkit-scrollbar-thumb:hover,
+html[data-theme="dark"] .available-employees-list::-webkit-scrollbar-thumb:hover {
+    background: var(--interface-text-muted) !important;
+}
 </style>
 
 <script>
