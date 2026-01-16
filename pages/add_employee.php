@@ -2,6 +2,14 @@
 $page_title = 'Add New Employee - Golden Z-5 HR System';
 $page = 'add_employee';
 
+// ============================================================================
+// PAGE 1: COLLECT DATA AND STORE IN SESSION (NO DATABASE INSERT YET)
+// ============================================================================
+// This page collects employee data and stores it in session.
+// The actual database INSERT happens on Page 2 when the user clicks "Save Employee".
+// This ensures both Page 1 and Page 2 data are saved together.
+// ============================================================================
+
 // Check for success message from session
 $show_success_popup = false;
 $success_message = '';
@@ -28,6 +36,9 @@ if (isset($_SESSION['employee_created_success']) && $_SESSION['employee_created_
     unset($_SESSION['employee_created_message']);
     // Keep employee_created_id in session for page 2
 }
+
+// Check if returning from Page 2 to edit Page 1 data
+$page1_session_data = $_SESSION['employee_page1_data'] ?? null;
 
 // Get logged-in user information
 // Try to get from session, or use default system user
@@ -330,392 +341,207 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['first_name'])) {
     }
     
     if ($has_minimum_fields) {
-        // Clear errors array to allow submission (we'll still log them but not block)
-        // $errors = []; // Uncomment if you want to completely ignore errors
-        try {
-            // Log the attempt
-            if (function_exists('log_db_error')) {
-                log_db_error('add_employee_page', 'Starting employee creation from form', [
-                    'post_data' => $_POST,
-                    'files' => isset($_FILES['employee_photo']) ? ['employee_photo' => ['name' => $_FILES['employee_photo']['name'], 'size' => $_FILES['employee_photo']['size'], 'error' => $_FILES['employee_photo']['error']]] : []
-                ]);
-            }
-            
-            // Prepare employee data with all fields from database
-            $employee_data = [
-                'employee_no' => (int)$_POST['employee_no'], // Cast to integer as per database structure
-                'employee_type' => strtoupper(trim($_POST['employee_type'])), // Ensure uppercase
-                'surname' => strtoupper(trim($_POST['surname'])), // Ensure uppercase
-                'first_name' => strtoupper(trim($_POST['first_name'])), // Ensure uppercase
-                'middle_name' => !empty($_POST['middle_name']) ? strtoupper(trim($_POST['middle_name'])) : null,
-                'post' => strtoupper(trim($_POST['post'])), // Ensure uppercase
-                'license_no' => !empty($_POST['license_no']) ? strtoupper(trim($_POST['license_no'])) : null,
-                'license_exp_date' => !empty($_POST['license_exp_date']) ? $_POST['license_exp_date'] : null,
-                'rlm_exp' => !empty($_POST['rlm_exp']) ? trim($_POST['rlm_exp']) : null,
-                'date_hired' => $_POST['date_hired'],
-                'cp_number' => !empty($_POST['cp_number']) ? preg_replace('/[^0-9]/', '', $_POST['cp_number']) : null,
-                'sss_no' => !empty($_POST['sss_no']) ? trim($_POST['sss_no']) : null,
-                'pagibig_no' => !empty($_POST['pagibig_no']) ? trim($_POST['pagibig_no']) : null,
-                'tin_number' => !empty($_POST['tin_number']) ? trim($_POST['tin_number']) : null,
-                'philhealth_no' => !empty($_POST['philhealth_no']) ? trim($_POST['philhealth_no']) : null,
-                'birth_date' => !empty($_POST['birth_date']) ? $_POST['birth_date'] : null,
-                'gender' => (!empty($_POST['gender']) && in_array($_POST['gender'], $allowed_genders, true)) ? $_POST['gender'] : null,
-                'civil_status' => (!empty($_POST['civil_status']) && in_array($_POST['civil_status'], $allowed_civil_status, true)) ? $_POST['civil_status'] : null,
-                'age' => (isset($_POST['age']) && $_POST['age'] !== '' && preg_match('/^\d{1,3}$/', (string)$_POST['age'])) ? (int)$_POST['age'] : null,
-                'birthplace' => !empty($_POST['birthplace']) ? strtoupper(trim($_POST['birthplace'])) : null,
-                'citizenship' => !empty($_POST['citizenship']) ? strtoupper(trim($_POST['citizenship'])) : null,
-                'provincial_address' => !empty($_POST['provincial_address']) ? strtoupper(trim($_POST['provincial_address'])) : null,
-                'special_skills' => !empty($_POST['special_skills']) ? trim($_POST['special_skills']) : null,
-                'spouse_name' => !empty($_POST['spouse_name']) ? strtoupper(trim($_POST['spouse_name'])) : null,
-                'spouse_age' => (isset($_POST['spouse_age']) && $_POST['spouse_age'] !== '' && preg_match('/^\d{1,3}$/', (string)$_POST['spouse_age'])) ? (int)$_POST['spouse_age'] : null,
-                'spouse_occupation' => !empty($_POST['spouse_occupation']) ? strtoupper(trim($_POST['spouse_occupation'])) : null,
-                'father_name' => !empty($_POST['father_name']) ? strtoupper(trim($_POST['father_name'])) : null,
-                'father_age' => (isset($_POST['father_age']) && $_POST['father_age'] !== '' && preg_match('/^\d{1,3}$/', (string)$_POST['father_age'])) ? (int)$_POST['father_age'] : null,
-                'father_occupation' => !empty($_POST['father_occupation']) ? strtoupper(trim($_POST['father_occupation'])) : null,
-                'mother_name' => !empty($_POST['mother_name']) ? strtoupper(trim($_POST['mother_name'])) : null,
-                'mother_age' => (isset($_POST['mother_age']) && $_POST['mother_age'] !== '' && preg_match('/^\d{1,3}$/', (string)$_POST['mother_age'])) ? (int)$_POST['mother_age'] : null,
-                'mother_occupation' => !empty($_POST['mother_occupation']) ? strtoupper(trim($_POST['mother_occupation'])) : null,
-                'children_names' => !empty($_POST['children_names']) ? trim($_POST['children_names']) : null,
-                'college_course' => !empty($_POST['college_course']) ? strtoupper(trim($_POST['college_course'])) : null,
-                'college_school_name' => !empty($_POST['college_school_name']) ? strtoupper(trim($_POST['college_school_name'])) : null,
-                'college_school_address' => !empty($_POST['college_school_address']) ? strtoupper(trim($_POST['college_school_address'])) : null,
-                'college_years' => !empty($_POST['college_years']) ? trim(str_replace('–', '-', $_POST['college_years'])) : null,
-                'vocational_course' => !empty($_POST['vocational_course']) ? strtoupper(trim($_POST['vocational_course'])) : null,
-                'vocational_school_name' => !empty($_POST['vocational_school_name']) ? strtoupper(trim($_POST['vocational_school_name'])) : null,
-                'vocational_school_address' => !empty($_POST['vocational_school_address']) ? strtoupper(trim($_POST['vocational_school_address'])) : null,
-                'vocational_years' => !empty($_POST['vocational_years']) ? trim(str_replace('–', '-', $_POST['vocational_years'])) : null,
-                'highschool_school_name' => !empty($_POST['highschool_school_name']) ? strtoupper(trim($_POST['highschool_school_name'])) : null,
-                'highschool_school_address' => !empty($_POST['highschool_school_address']) ? strtoupper(trim($_POST['highschool_school_address'])) : null,
-                'highschool_years' => !empty($_POST['highschool_years']) ? trim(str_replace('–', '-', $_POST['highschool_years'])) : null,
-                'elementary_school_name' => !empty($_POST['elementary_school_name']) ? strtoupper(trim($_POST['elementary_school_name'])) : null,
-                'elementary_school_address' => !empty($_POST['elementary_school_address']) ? strtoupper(trim($_POST['elementary_school_address'])) : null,
-                'elementary_years' => !empty($_POST['elementary_years']) ? trim(str_replace('–', '-', $_POST['elementary_years'])) : null,
-                // Trainings / Exams (stored as JSON)
-                'trainings_json' => (function () {
-                    $trainings = $_POST['trainings'] ?? [];
-                    if (!is_array($trainings)) return null;
-                    $out = [];
-                    foreach ($trainings as $t) {
-                        if (!is_array($t)) continue;
-                        $title = trim((string)($t['title'] ?? ''));
-                        $by = trim((string)($t['by'] ?? ''));
-                        $date = trim((string)($t['date'] ?? ''));
-                        if ($title === '' && $by === '' && $date === '') continue;
-                        $out[] = [
-                            'title' => strtoupper($title),
-                            'by' => strtoupper($by),
-                            'date' => $date
-                        ];
-                    }
-                    return empty($out) ? null : json_encode($out, JSON_UNESCAPED_UNICODE);
-                })(),
-                'gov_exam_taken' => (($_POST['gov_exam_taken'] ?? 'No') === 'Yes') ? 1 : 0,
-                'gov_exam_json' => (function () {
-                    if (($_POST['gov_exam_taken'] ?? 'No') !== 'Yes') return null;
-                    $exams = $_POST['gov_exams'] ?? [];
-                    if (!is_array($exams)) return null;
-                    $out = [];
-                    foreach ($exams as $e) {
-                        if (!is_array($e)) continue;
-                        $type = trim((string)($e['type'] ?? ''));
-                        $score = trim((string)($e['score'] ?? ''));
-                        if ($type === '' && $score === '') continue;
-                        $out[] = [
-                            'type' => strtoupper($type),
-                            'score' => $score
-                        ];
-                    }
-                    return empty($out) ? null : json_encode($out, JSON_UNESCAPED_UNICODE);
-                })(),
-                'employment_history_json' => (function () {
-                    $jobs = $_POST['employment_history'] ?? [];
-                    if (!is_array($jobs)) return null;
-                    $out = [];
-                    foreach ($jobs as $j) {
-                        if (!is_array($j)) continue;
-                        $position = trim((string)($j['position'] ?? ''));
-                        $company_name = trim((string)($j['company_name'] ?? ''));
-                        $company_address = trim((string)($j['company_address'] ?? ''));
-                        $company_phone = trim((string)($j['company_phone'] ?? ''));
-                        $period = trim((string)($j['period'] ?? ''));
-                        $reason = trim((string)($j['reason'] ?? ''));
-                        if ($position === '' && $company_name === '' && $company_address === '' && $company_phone === '' && $period === '' && $reason === '') continue;
-                        $out[] = [
-                            'position' => strtoupper($position),
-                            'company_name' => strtoupper($company_name),
-                            'company_address' => strtoupper($company_address),
-                            'company_phone' => $company_phone,
-                            'period' => str_replace('–', '-', $period),
-                            'reason' => $reason,
-                        ];
-                    }
-                    return empty($out) ? null : json_encode($out, JSON_UNESCAPED_UNICODE);
-                })(),
-                'height' => !empty($_POST['height']) ? trim($_POST['height']) : null,
-                'weight' => !empty($_POST['weight']) ? trim($_POST['weight']) : null,
-                'address' => !empty($_POST['address']) ? strtoupper(trim($_POST['address'])) : null,
-                'contact_person' => !empty($_POST['contact_person']) ? strtoupper(trim($_POST['contact_person'])) : null,
-                'relationship' => !empty($_POST['relationship']) ? trim($_POST['relationship']) : null,
-                'contact_person_address' => !empty($_POST['contact_person_address']) ? strtoupper(trim($_POST['contact_person_address'])) : null,
-                'contact_person_number' => !empty($_POST['contact_person_number']) ? preg_replace('/[^0-9]/', '', $_POST['contact_person_number']) : null,
-                'blood_type' => !empty($_POST['blood_type']) ? trim($_POST['blood_type']) : null,
-                'religion' => !empty($_POST['religion']) ? trim($_POST['religion']) : null,
-                'status' => $_POST['status'],
-                'created_by' => $current_user_id,
-                'created_by_name' => $current_user_name
-            ];
-            
-            // Use the add_employee function from database.php
-            if (function_exists('log_db_error')) {
-                log_db_error('add_employee_page', 'Calling add_employee function', ['employee_data' => $employee_data]);
-            }
-            
-            // ========================================================================
-            // STEP 1: INSERT NEW EMPLOYEE (WITHOUT id FIELD - AUTO_INCREMENT)
-            // ========================================================================
-            // The add_employee() function performs: INSERT INTO employees (...) 
-            // WITHOUT the 'id' field (primary key, auto-increment).
-            // MySQL auto-generates the 'id' value (e.g., 14901, 14902, 14903).
-            // 
-            // NOTE: 'id' = primary key field (auto-increment, e.g., 14901)
-            //       'employee_no' = employee number field (e.g., 24434) - different from 'id'
-            // 
-            // The function returns the auto-generated 'id' value.
-            // ========================================================================
-            
-            $new_employee_id = add_employee($employee_data);
-            
-            if (function_exists('log_db_error')) {
-                log_db_error('add_employee_page', 'add_employee function returned', [
-                    'result' => $new_employee_id ? 'id: ' . $new_employee_id : 'false',
-                    'id' => $new_employee_id,  // This is the 'id' field value (primary key)
-                    'employee_no' => $_POST['employee_no']  // This is the 'employee_no' field (different)
-                ]);
-            }
-            
-            // Verify that we got a valid auto-generated 'id' value
-            if ($new_employee_id && $new_employee_id > 0) {
-                // Cast to integer to ensure type safety
-                $new_employee_id = (int)$new_employee_id;
-                
-                // Log the auto-generated 'id' for tracking
-                if (function_exists('log_db_error')) {
-                    log_db_error('add_employee_page', 'Auto-generated id (primary key) captured', [
-                        'auto_generated_id' => $new_employee_id,  // The 'id' field value
-                        'employee_no' => $_POST['employee_no'],   // The 'employee_no' field (different)
-                        'employee_name' => trim($_POST['first_name'] . ' ' . $_POST['surname'])
-                    ]);
-                }
-                
-                // Handle photo upload if provided
-                if (isset($_FILES['employee_photo']) && $_FILES['employee_photo']['error'] === UPLOAD_ERR_OK) {
-                    $upload_dir = __DIR__ . '/../uploads/employees/';
-                    if (!file_exists($upload_dir)) {
-                        mkdir($upload_dir, 0755, true);
-                    }
-                    
-                    $file = $_FILES['employee_photo'];
-                    $allowed_types = ['image/jpeg', 'image/jpg', 'image/png'];
-                    $max_size = 2 * 1024 * 1024; // 2MB
-                    
-                    if (in_array($file['type'], $allowed_types) && $file['size'] <= $max_size) {
-                        $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
-                        // Use .jpg for jpeg files, .png for png files
-                        $extension = strtolower($extension);
-                        if ($extension === 'jpeg') {
-                            $extension = 'jpg';
-                        }
-                        $filename = $new_employee_id . '.' . $extension;
-                        $target_path = $upload_dir . $filename;
-                        
-                        if (move_uploaded_file($file['tmp_name'], $target_path)) {
-                            // Update profile_image path in database
-                            try {
-                                // Check if profile_image column exists
-                                $check_sql = "SHOW COLUMNS FROM employees LIKE 'profile_image'";
-                                $check_stmt = $pdo->query($check_sql);
-                                if ($check_stmt->rowCount() > 0) {
-                                    // Store relative path from project root
-                                    $image_path = 'uploads/employees/' . $filename;
-                                    $update_sql = "UPDATE employees SET profile_image = ? WHERE id = ?";
-                                    $update_stmt = $pdo->prepare($update_sql);
-                                    $update_stmt->execute([$image_path, $new_employee_id]);
-                                    
-                                    // Log success
-                                    if (function_exists('log_db_error')) {
-                                        log_db_error('photo_upload', 'Profile image uploaded successfully', [
-                                            'employee_id' => $new_employee_id,
-                                            'filename' => $filename,
-                                            'path' => $image_path
-                                        ]);
-                                    }
-                                } else {
-                                    // Log if column doesn't exist
-                                    if (function_exists('log_db_error')) {
-                                        log_db_error('photo_upload', 'profile_image column not found in employees table', [
-                                            'employee_id' => $new_employee_id,
-                                            'filename' => $filename
-                                        ]);
-                                    }
-                                }
-                            } catch (Exception $e) {
-                                // Log error
-                                if (function_exists('log_db_error')) {
-                                    log_db_error('photo_upload', 'Error updating profile_image in database', [
-                                        'employee_id' => $new_employee_id,
-                                        'error' => $e->getMessage(),
-                                        'trace' => $e->getTraceAsString()
-                                    ]);
-                                }
-                                error_log('Error updating profile_image: ' . $e->getMessage());
-                            }
-                        } else {
-                            // Log file move error
-                            if (function_exists('log_db_error')) {
-                                log_db_error('photo_upload', 'Failed to move uploaded file', [
-                                    'employee_id' => $new_employee_id,
-                                    'tmp_name' => $file['tmp_name'],
-                                    'target_path' => $target_path
-                                ]);
-                            }
-                        }
-                    } else {
-                        // Log validation error
-                        if (function_exists('log_db_error')) {
-                            log_db_error('photo_upload', 'File validation failed', [
-                                'employee_id' => $new_employee_id,
-                                'file_type' => $file['type'],
-                                'file_size' => $file['size'],
-                                'allowed_types' => $allowed_types,
-                                'max_size' => $max_size
-                            ]);
-                        }
-                    }
-                } else {
-                    // Log if no file or upload error
-                    if (isset($_FILES['employee_photo'])) {
-                        $upload_error = $_FILES['employee_photo']['error'];
-                        if (function_exists('log_db_error')) {
-                            log_db_error('photo_upload', 'File upload error', [
-                                'employee_id' => $new_employee_id,
-                                'error_code' => $upload_error,
-                                'error_message' => $upload_error === UPLOAD_ERR_OK ? 'No error' : 'Upload error occurred'
-                            ]);
-                        }
-                    }
-                }
-                
-                // Log the action
-                if (function_exists('log_security_event')) {
-                    log_security_event('Employee Created', "Employee: {$_POST['first_name']} {$_POST['surname']} (ID: {$_POST['employee_no']}) created by {$current_user_name}");
-                }
-                
-                // Log to audit trail
-                if (function_exists('log_audit_event')) {
-                    log_audit_event('INSERT', 'employees', $new_employee_id, null, [
-                        'employee_no' => $_POST['employee_no'],
-                        'first_name' => $_POST['first_name'],
-                        'surname' => $_POST['surname'],
-                        'employee_type' => $_POST['employee_type'],
-                        'post' => $_POST['post'],
-                        'status' => $_POST['status'],
-                        'created_by' => $current_user_name
-                    ], $current_user_id);
-                }
-                
-                // ========================================================================
-                // PERSIST AUTO-GENERATED 'id' VALUE FOR SUBSEQUENT STEPS
-                // ========================================================================
-                // The auto-generated 'id' value (e.g., 14901, 14902, 14903) from the
-                // 'id' field (primary key) must be persisted in both session and URL
-                // parameter to ensure Page 2 can use it for: UPDATE employees SET ... WHERE id = ?
-                // 
-                // NOTE: We're storing the 'id' field value, not 'employee_no'
-                // ========================================================================
-                
-                // Store auto-generated 'id' value in session (persists across requests)
-                $_SESSION['employee_created_id'] = $new_employee_id;  // This is the 'id' field value
-                $_SESSION['employee_created_success'] = true;
-                $_SESSION['employee_created_message'] = 'Employee created successfully! Proceeding to Page 2...';
-                
-                // Redirect directly to Page 2 with 'id' value in URL parameter
-                // This ensures the 'id' value is available even if session is lost
-                $redirect_url = '?page=add_employee_page2&employee_id=' . $new_employee_id;
-                
-                // Log the redirect with auto-generated 'id' value
-                if (function_exists('log_db_error')) {
-                    log_db_error('employee_created', 'Employee created with auto-generated id, redirecting to Page 2', [
-                        'auto_generated_id' => $new_employee_id,  // The 'id' field value (primary key)
-                        'employee_no' => $_POST['employee_no'],   // The 'employee_no' field (different)
-                        'redirect_url' => $redirect_url,
-                        'session_stored' => true,
-                        'will_use_for' => 'UPDATE employees SET ... WHERE id = ' . $new_employee_id
-                    ]);
-                }
-                
-                // Since this page is included after HTML headers are sent,
-                // we need to use JavaScript redirect
-                // Store redirect URL in a way that can be accessed by JavaScript
-                $_SESSION['redirect_after_employee'] = $redirect_url;
-                
-                // Output minimal redirect script
-                // This will be output before the page content, so we need to handle it carefully
-                // The best approach is to set a flag and handle redirect in the page itself
-                
-                // Instead of redirecting here, we'll set a flag and let the page handle it
-                // This prevents breaking the page structure
-                $needs_redirect = true;
-                $redirect_url_final = $redirect_url;
-                
-                // We'll output the redirect script at the very beginning of the page output
-                // But first, let's prevent any further processing
-                // Actually, let's just use a simple approach: output script tag and exit
-                
-                // Set session variable for redirect - JavaScript will handle it
-                $_SESSION['employee_redirect_url'] = $redirect_url;
-                $_SESSION['redirect_to_page2'] = $redirect_url;
-                
-                // Use POST-Redirect-GET pattern: redirect to avoid form resubmission
-                // Since headers may have been sent, we'll use JavaScript redirect
-                // Store redirect in session and let JavaScript handle it on page load
-                
-                // Don't exit here - let the page continue loading
-                // JavaScript at the top will check for redirect and handle it immediately
-                // This prevents the page from showing before redirect
-                } else {
-                    $errors[] = 'Employee was created but could not retrieve the employee ID.';
-                }
-            } else {
-                // Log the failure
-                if (function_exists('log_db_error')) {
-                    log_db_error('add_employee_page', 'add_employee returned false - employee creation failed', [
-                        'employee_data' => $employee_data,
-                        'employee_no' => $employee_data['employee_no'] ?? 'unknown'
-                    ]);
-                }
-                $errors[] = 'Failed to create employee. Please check all required fields and try again. Check error.log for details.';
-            }
-        } catch (Exception $e) {
-            // Log the exception
-            if (function_exists('log_db_error')) {
-                log_db_error('add_employee_page', 'Exception caught in add_employee page', [
-                    'error' => $e->getMessage(),
-                    'code' => $e->getCode(),
-                    'file' => $e->getFile(),
-                    'line' => $e->getLine(),
-                    'trace' => $e->getTraceAsString(),
-                    'employee_data' => $employee_data ?? []
-                ]);
-            }
-            
-            $error_message = 'Database error: ' . $e->getMessage();
-            // In development, show more details
-            if (defined('DEBUG') && DEBUG) {
-                $error_message .= ' | File: ' . $e->getFile() . ' | Line: ' . $e->getLine();
-            }
-            $errors[] = $error_message . ' Check error.log for details.';
-            error_log('Add Employee Error: ' . $e->getMessage() . ' | Trace: ' . $e->getTraceAsString());
+        // ========================================================================
+        // STORE PAGE 1 DATA IN SESSION (NO DATABASE INSERT YET)
+        // ========================================================================
+        // Instead of inserting to database immediately, we store all data in session.
+        // The actual INSERT happens on Page 2 when user clicks "Save Employee".
+        // This ensures both Page 1 and Page 2 data are saved together.
+        // ========================================================================
+        
+        // Log the attempt
+        if (function_exists('log_db_error')) {
+            log_db_error('add_employee_page', 'Storing employee data in session (deferred save)', [
+                'post_data' => $_POST,
+                'files' => isset($_FILES['employee_photo']) ? ['employee_photo' => ['name' => $_FILES['employee_photo']['name'], 'size' => $_FILES['employee_photo']['size'], 'error' => $_FILES['employee_photo']['error']]] : []
+            ]);
         }
+        
+        // Prepare employee data with all fields from database
+        $employee_data = [
+            'employee_no' => (int)$_POST['employee_no'], // Cast to integer as per database structure
+            'employee_type' => strtoupper(trim($_POST['employee_type'])), // Ensure uppercase
+            'surname' => strtoupper(trim($_POST['surname'])), // Ensure uppercase
+            'first_name' => strtoupper(trim($_POST['first_name'])), // Ensure uppercase
+            'middle_name' => !empty($_POST['middle_name']) ? strtoupper(trim($_POST['middle_name'])) : null,
+            'post' => strtoupper(trim($_POST['post'])), // Ensure uppercase
+            'license_no' => !empty($_POST['license_no']) ? strtoupper(trim($_POST['license_no'])) : null,
+            'license_exp_date' => !empty($_POST['license_exp_date']) ? $_POST['license_exp_date'] : null,
+            'rlm_exp' => !empty($_POST['rlm_exp']) ? trim($_POST['rlm_exp']) : null,
+            'date_hired' => $_POST['date_hired'],
+            'cp_number' => !empty($_POST['cp_number']) ? preg_replace('/[^0-9]/', '', $_POST['cp_number']) : null,
+            'sss_no' => !empty($_POST['sss_no']) ? trim($_POST['sss_no']) : null,
+            'pagibig_no' => !empty($_POST['pagibig_no']) ? trim($_POST['pagibig_no']) : null,
+            'tin_number' => !empty($_POST['tin_number']) ? trim($_POST['tin_number']) : null,
+            'philhealth_no' => !empty($_POST['philhealth_no']) ? trim($_POST['philhealth_no']) : null,
+            'birth_date' => !empty($_POST['birth_date']) ? $_POST['birth_date'] : null,
+            'gender' => (!empty($_POST['gender']) && in_array($_POST['gender'], $allowed_genders, true)) ? $_POST['gender'] : null,
+            'civil_status' => (!empty($_POST['civil_status']) && in_array($_POST['civil_status'], $allowed_civil_status, true)) ? $_POST['civil_status'] : null,
+            'age' => (isset($_POST['age']) && $_POST['age'] !== '' && preg_match('/^\d{1,3}$/', (string)$_POST['age'])) ? (int)$_POST['age'] : null,
+            'birthplace' => !empty($_POST['birthplace']) ? strtoupper(trim($_POST['birthplace'])) : null,
+            'citizenship' => !empty($_POST['citizenship']) ? strtoupper(trim($_POST['citizenship'])) : null,
+            'provincial_address' => !empty($_POST['provincial_address']) ? strtoupper(trim($_POST['provincial_address'])) : null,
+            'special_skills' => !empty($_POST['special_skills']) ? trim($_POST['special_skills']) : null,
+            'spouse_name' => !empty($_POST['spouse_name']) ? strtoupper(trim($_POST['spouse_name'])) : null,
+            'spouse_age' => (isset($_POST['spouse_age']) && $_POST['spouse_age'] !== '' && preg_match('/^\d{1,3}$/', (string)$_POST['spouse_age'])) ? (int)$_POST['spouse_age'] : null,
+            'spouse_occupation' => !empty($_POST['spouse_occupation']) ? strtoupper(trim($_POST['spouse_occupation'])) : null,
+            'father_name' => !empty($_POST['father_name']) ? strtoupper(trim($_POST['father_name'])) : null,
+            'father_age' => (isset($_POST['father_age']) && $_POST['father_age'] !== '' && preg_match('/^\d{1,3}$/', (string)$_POST['father_age'])) ? (int)$_POST['father_age'] : null,
+            'father_occupation' => !empty($_POST['father_occupation']) ? strtoupper(trim($_POST['father_occupation'])) : null,
+            'mother_name' => !empty($_POST['mother_name']) ? strtoupper(trim($_POST['mother_name'])) : null,
+            'mother_age' => (isset($_POST['mother_age']) && $_POST['mother_age'] !== '' && preg_match('/^\d{1,3}$/', (string)$_POST['mother_age'])) ? (int)$_POST['mother_age'] : null,
+            'mother_occupation' => !empty($_POST['mother_occupation']) ? strtoupper(trim($_POST['mother_occupation'])) : null,
+            'children_names' => !empty($_POST['children_names']) ? trim($_POST['children_names']) : null,
+            'college_course' => !empty($_POST['college_course']) ? strtoupper(trim($_POST['college_course'])) : null,
+            'college_school_name' => !empty($_POST['college_school_name']) ? strtoupper(trim($_POST['college_school_name'])) : null,
+            'college_school_address' => !empty($_POST['college_school_address']) ? strtoupper(trim($_POST['college_school_address'])) : null,
+            'college_years' => !empty($_POST['college_years']) ? trim(str_replace('–', '-', $_POST['college_years'])) : null,
+            'vocational_course' => !empty($_POST['vocational_course']) ? strtoupper(trim($_POST['vocational_course'])) : null,
+            'vocational_school_name' => !empty($_POST['vocational_school_name']) ? strtoupper(trim($_POST['vocational_school_name'])) : null,
+            'vocational_school_address' => !empty($_POST['vocational_school_address']) ? strtoupper(trim($_POST['vocational_school_address'])) : null,
+            'vocational_years' => !empty($_POST['vocational_years']) ? trim(str_replace('–', '-', $_POST['vocational_years'])) : null,
+            'highschool_school_name' => !empty($_POST['highschool_school_name']) ? strtoupper(trim($_POST['highschool_school_name'])) : null,
+            'highschool_school_address' => !empty($_POST['highschool_school_address']) ? strtoupper(trim($_POST['highschool_school_address'])) : null,
+            'highschool_years' => !empty($_POST['highschool_years']) ? trim(str_replace('–', '-', $_POST['highschool_years'])) : null,
+            'elementary_school_name' => !empty($_POST['elementary_school_name']) ? strtoupper(trim($_POST['elementary_school_name'])) : null,
+            'elementary_school_address' => !empty($_POST['elementary_school_address']) ? strtoupper(trim($_POST['elementary_school_address'])) : null,
+            'elementary_years' => !empty($_POST['elementary_years']) ? trim(str_replace('–', '-', $_POST['elementary_years'])) : null,
+            // Trainings / Exams (stored as JSON)
+            'trainings_json' => (function () {
+                $trainings = $_POST['trainings'] ?? [];
+                if (!is_array($trainings)) return null;
+                $out = [];
+                foreach ($trainings as $t) {
+                    if (!is_array($t)) continue;
+                    $title = trim((string)($t['title'] ?? ''));
+                    $by = trim((string)($t['by'] ?? ''));
+                    $date = trim((string)($t['date'] ?? ''));
+                    if ($title === '' && $by === '' && $date === '') continue;
+                    $out[] = [
+                        'title' => strtoupper($title),
+                        'by' => strtoupper($by),
+                        'date' => $date
+                    ];
+                }
+                return empty($out) ? null : json_encode($out, JSON_UNESCAPED_UNICODE);
+            })(),
+            'gov_exam_taken' => (($_POST['gov_exam_taken'] ?? 'No') === 'Yes') ? 1 : 0,
+            'gov_exam_json' => (function () {
+                if (($_POST['gov_exam_taken'] ?? 'No') !== 'Yes') return null;
+                $exams = $_POST['gov_exams'] ?? [];
+                if (!is_array($exams)) return null;
+                $out = [];
+                foreach ($exams as $e) {
+                    if (!is_array($e)) continue;
+                    $type = trim((string)($e['type'] ?? ''));
+                    $score = trim((string)($e['score'] ?? ''));
+                    if ($type === '' && $score === '') continue;
+                    $out[] = [
+                        'type' => strtoupper($type),
+                        'score' => $score
+                    ];
+                }
+                return empty($out) ? null : json_encode($out, JSON_UNESCAPED_UNICODE);
+            })(),
+            'employment_history_json' => (function () {
+                $jobs = $_POST['employment_history'] ?? [];
+                if (!is_array($jobs)) return null;
+                $out = [];
+                foreach ($jobs as $j) {
+                    if (!is_array($j)) continue;
+                    $position = trim((string)($j['position'] ?? ''));
+                    $company_name = trim((string)($j['company_name'] ?? ''));
+                    $company_address = trim((string)($j['company_address'] ?? ''));
+                    $company_phone = trim((string)($j['company_phone'] ?? ''));
+                    $period = trim((string)($j['period'] ?? ''));
+                    $reason = trim((string)($j['reason'] ?? ''));
+                    if ($position === '' && $company_name === '' && $company_address === '' && $company_phone === '' && $period === '' && $reason === '') continue;
+                    $out[] = [
+                        'position' => strtoupper($position),
+                        'company_name' => strtoupper($company_name),
+                        'company_address' => strtoupper($company_address),
+                        'company_phone' => $company_phone,
+                        'period' => str_replace('–', '-', $period),
+                        'reason' => $reason,
+                    ];
+                }
+                return empty($out) ? null : json_encode($out, JSON_UNESCAPED_UNICODE);
+            })(),
+            'height' => !empty($_POST['height']) ? trim($_POST['height']) : null,
+            'weight' => !empty($_POST['weight']) ? trim($_POST['weight']) : null,
+            'address' => !empty($_POST['address']) ? strtoupper(trim($_POST['address'])) : null,
+            'contact_person' => !empty($_POST['contact_person']) ? strtoupper(trim($_POST['contact_person'])) : null,
+            'relationship' => !empty($_POST['relationship']) ? trim($_POST['relationship']) : null,
+            'contact_person_address' => !empty($_POST['contact_person_address']) ? strtoupper(trim($_POST['contact_person_address'])) : null,
+            'contact_person_number' => !empty($_POST['contact_person_number']) ? preg_replace('/[^0-9]/', '', $_POST['contact_person_number']) : null,
+            'blood_type' => !empty($_POST['blood_type']) ? trim($_POST['blood_type']) : null,
+            'religion' => !empty($_POST['religion']) ? trim($_POST['religion']) : null,
+            'status' => $_POST['status'],
+            'created_by' => $current_user_id,
+            'created_by_name' => $current_user_name
+        ];
+        
+        // ========================================================================
+        // STORE DATA IN SESSION FOR PAGE 2 (DEFERRED DATABASE SAVE)
+        // ========================================================================
+        // Instead of calling add_employee() here, we store all data in session.
+        // Page 2 will INSERT both Page 1 and Page 2 data when user clicks "Save Employee".
+        // ========================================================================
+        
+        // Store Page 1 data in session
+        $_SESSION['employee_page1_data'] = $employee_data;
+        
+        // Handle photo upload - store temporarily
+        if (isset($_FILES['employee_photo']) && $_FILES['employee_photo']['error'] === UPLOAD_ERR_OK) {
+            $file = $_FILES['employee_photo'];
+            $allowed_types = ['image/jpeg', 'image/jpg', 'image/png'];
+            $max_size = 2 * 1024 * 1024; // 2MB
+            
+            if (in_array($file['type'], $allowed_types) && $file['size'] <= $max_size) {
+                // Create temp directory for pending uploads
+                $temp_upload_dir = __DIR__ . '/../uploads/employees/temp/';
+                if (!file_exists($temp_upload_dir)) {
+                    mkdir($temp_upload_dir, 0755, true);
+                }
+                
+                $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
+                $extension = strtolower($extension === 'jpeg' ? 'jpg' : $extension);
+                // Use session ID + timestamp for temp filename
+                $temp_filename = session_id() . '_' . time() . '.' . $extension;
+                $temp_target_path = $temp_upload_dir . $temp_filename;
+                
+                if (move_uploaded_file($file['tmp_name'], $temp_target_path)) {
+                    // Store temp file info in session
+                    $_SESSION['employee_temp_photo'] = [
+                        'path' => $temp_target_path,
+                        'filename' => $temp_filename,
+                        'extension' => $extension,
+                        'original_name' => $file['name']
+                    ];
+                    
+                    if (function_exists('log_db_error')) {
+                        log_db_error('photo_upload', 'Photo uploaded to temp location', [
+                            'temp_path' => $temp_target_path,
+                            'filename' => $temp_filename
+                        ]);
+                    }
+                }
+            }
+        }
+        
+        // Log session storage
+        if (function_exists('log_db_error')) {
+            log_db_error('add_employee_page', 'Page 1 data stored in session, redirecting to Page 2', [
+                'employee_no' => $employee_data['employee_no'],
+                'employee_name' => trim($employee_data['first_name'] . ' ' . $employee_data['surname']),
+                'has_photo' => isset($_SESSION['employee_temp_photo']) ? 'yes' : 'no'
+            ]);
+        }
+        
+        // Set session variables for redirect to Page 2
+        $_SESSION['page1_data_ready'] = true;
+        $_SESSION['employee_redirect_url'] = '?page=add_employee_page2';
+        $_SESSION['redirect_to_page2'] = '?page=add_employee_page2';
     }
 }
 
