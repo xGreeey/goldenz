@@ -2517,29 +2517,52 @@ if (!function_exists('get_all_users')) {
             
             // Role filter
             if (!empty($filters['role'])) {
-                $where .= " AND role = ?";
+                $where .= " AND u.role = ?";
                 $params[] = $filters['role'];
             }
             
             // Status filter
             if (!empty($filters['status'])) {
-                $where .= " AND status = ?";
+                $where .= " AND u.status = ?";
                 $params[] = $filters['status'];
             }
             
-            // Search filter
+            // Search filter (case-insensitive)
             if (!empty($filters['search'])) {
-                $where .= " AND (name LIKE ? OR username LIKE ? OR email LIKE ?)";
+                $where .= " AND (LOWER(u.name) LIKE LOWER(?) OR LOWER(u.username) LIKE LOWER(?) OR LOWER(u.email) LIKE LOWER(?))";
                 $search_term = '%' . $filters['search'] . '%';
                 $params[] = $search_term;
                 $params[] = $search_term;
                 $params[] = $search_term;
             }
             
-            // Get total count
-            $count_sql = "SELECT COUNT(*) FROM users $where";
+            // Get total count - need to use same table alias structure
+            $count_sql = "SELECT COUNT(*) FROM users u WHERE 1=1";
+            $count_params = [];
+            
+            // Role filter for count
+            if (!empty($filters['role'])) {
+                $count_sql .= " AND u.role = ?";
+                $count_params[] = $filters['role'];
+            }
+            
+            // Status filter for count
+            if (!empty($filters['status'])) {
+                $count_sql .= " AND u.status = ?";
+                $count_params[] = $filters['status'];
+            }
+            
+            // Search filter for count (case-insensitive)
+            if (!empty($filters['search'])) {
+                $count_sql .= " AND (LOWER(u.name) LIKE LOWER(?) OR LOWER(u.username) LIKE LOWER(?) OR LOWER(u.email) LIKE LOWER(?))";
+                $search_term = '%' . $filters['search'] . '%';
+                $count_params[] = $search_term;
+                $count_params[] = $search_term;
+                $count_params[] = $search_term;
+            }
+            
             $count_stmt = $pdo->prepare($count_sql);
-            $count_stmt->execute($params);
+            $count_stmt->execute($count_params);
             $total = (int)$count_stmt->fetchColumn();
             
             // Get users

@@ -17,3 +17,5 @@
 2026-01-16 08:24:47 - 2FA Success - User: grey (aldrin) - Role: super_admin - IP: 192.168.1.7 - IP: 192.168.1.7
 2026-01-16 08:25:03 - 2FA Success - User: grey (aldrin) - Role: super_admin - IP: 192.168.1.7 - IP: 192.168.1.7
 2026-01-16 08:25:26 - 2FA Success - User: grey (aldrin) - Role: super_admin - IP: 192.168.1.7 - IP: 192.168.1.7
+2026-01-16 12:34:07 - User Created - New user created: sssss (ssssss) - Role: hr_admin - Created by: 30 - IP: 192.168.1.7
+2026-01-16 12:37:10 - Audit Log Error - Database error: SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry '0' for key 'PRIMARY' - IP: 192.168.1.7

@@ -113,13 +113,13 @@ if (isset($_GET['action']) && $_GET['action'] === 'get_details' && isset($_GET['
 
 // Get filters from request
 $filters = [
-    'role' => $_GET['role'] ?? '',
-    'status' => $_GET['status'] ?? '',
-    'search' => $_GET['search'] ?? '',
+    'role' => trim($_GET['role'] ?? ''),
+    'status' => trim($_GET['status'] ?? ''),
+    'search' => trim($_GET['search'] ?? ''),
 ];
 
-$page_num = max(1, (int)($_GET['page'] ?? 1));
-$per_page = 20;
+$page_num = max(1, (int)($_GET['p'] ?? 1));
+$per_page = 10;
 $offset = ($page_num - 1) * $per_page;
 
 // Get users
@@ -145,7 +145,7 @@ $role_config = config('roles.roles', []);
     <div class="card card-modern mb-4">
         <div class="card-body-modern">
             <form method="GET" action="" id="filterForm" class="row g-3">
-                <input type="hidden" name="page" value="users">
+                <input type="hidden" name="page" value="users" id="pageNameInput">
                 <div class="col-md-4">
                     <label class="form-label">Search Users</label>
                     <div class="input-group">
@@ -161,7 +161,7 @@ $role_config = config('roles.roles', []);
                 </div>
                 <div class="col-md-3">
                     <label class="form-label">Filter by Role</label>
-                    <select name="role" class="form-select">
+                    <select name="role" class="form-select auto-filter">
                         <option value="">All Roles</option>
                         <?php foreach ($role_config as $role_key => $role_data): ?>
                             <option value="<?php echo $role_key; ?>" <?php echo $filters['role'] === $role_key ? 'selected' : ''; ?>>
@@ -172,7 +172,7 @@ $role_config = config('roles.roles', []);
                 </div>
                 <div class="col-md-3">
                     <label class="form-label">Filter by Status</label>
-                    <select name="status" class="form-select">
+                    <select name="status" class="form-select auto-filter">
                         <option value="">All Statuses</option>
                         <option value="active" <?php echo $filters['status'] === 'active' ? 'selected' : ''; ?>>Active</option>
                         <option value="inactive" <?php echo $filters['status'] === 'inactive' ? 'selected' : ''; ?>>Inactive</option>
@@ -180,8 +180,8 @@ $role_config = config('roles.roles', []);
                     </select>
                 </div>
                 <div class="col-md-2 d-flex align-items-end">
-                    <button type="submit" class="btn btn-primary-modern w-100">
-                        <i class="fas fa-filter me-2"></i>Filter
+                    <button type="button" class="btn btn-outline-modern w-100" onclick="clearFilters()">
+                        <i class="fas fa-times me-2"></i>Clear
                     </button>
                 </div>
             </form>
@@ -331,7 +331,7 @@ $role_config = config('roles.roles', []);
                     <ul class="pagination justify-content-center">
                         <?php if ($page_num > 1): ?>
                             <li class="page-item">
-                                <a class="page-link" href="?page=users&<?php echo http_build_query(array_merge($filters, ['page' => $page_num - 1])); ?>">
+                                <a class="page-link" href="?page=users&<?php echo http_build_query(array_merge($filters, ['p' => $page_num - 1])); ?>">
                                     <i class="fas fa-chevron-left"></i>
                                 </a>
                             </li>
@@ -344,7 +344,7 @@ $role_config = config('roles.roles', []);
                         for ($i = $start_page; $i <= $end_page; $i++):
                         ?>
                             <li class="page-item <?php echo $i === $page_num ? 'active' : ''; ?>">
-                                <a class="page-link" href="?page=users&<?php echo http_build_query(array_merge($filters, ['page' => $i])); ?>">
+                                <a class="page-link" href="?page=users&<?php echo http_build_query(array_merge($filters, ['p' => $i])); ?>">
                                     <?php echo $i; ?>
                                 </a>
                             </li>
@@ -352,7 +352,7 @@ $role_config = config('roles.roles', []);
                         
                         <?php if ($page_num < $total_pages): ?>
                             <li class="page-item">
-                                <a class="page-link" href="?page=users&<?php echo http_build_query(array_merge($filters, ['page' => $page_num + 1])); ?>">
+                                <a class="page-link" href="?page=users&<?php echo http_build_query(array_merge($filters, ['p' => $page_num + 1])); ?>">
                                     <i class="fas fa-chevron-right"></i>
                                 </a>
                             </li>
@@ -384,21 +384,23 @@ $role_config = config('roles.roles', []);
 </div>
 
 <!-- Create User Modal -->
-<div class="modal fade" id="createUserModal" tabindex="-1" aria-labelledby="createUserModalLabel" aria-hidden="true" data-bs-backdrop="true" data-bs-keyboard="true">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+<div class="modal fade" id="createUserModal" tabindex="-1" aria-labelledby="createUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable" style="margin-top: 1rem;">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="createUserModalLabel">Create New User</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="createUserModalLabel">
+                    <i class="fas fa-user-plus me-2"></i>Create New User
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form id="createUserForm" novalidate>
                 <div class="modal-body">
                     <div id="createUserAlert"></div>
                     
-                    <div class="row g-3">
+                    <div class="row g-2">
                         <!-- Required Fields -->
                         <div class="col-12">
-                            <h6 class="text-muted mb-3 border-bottom pb-2">Required Information</h6>
+                            <h6 class="text-muted mb-2 border-bottom pb-1" style="font-size: 0.9rem;">Required Information</h6>
                         </div>
                         
                         <div class="col-md-6">
@@ -453,8 +455,8 @@ $role_config = config('roles.roles', []);
                         </div>
                         
                         <!-- Role & Status -->
-                        <div class="col-12 mt-3">
-                            <h6 class="text-muted mb-3 border-bottom pb-2">Role & Status</h6>
+                        <div class="col-12 mt-2">
+                            <h6 class="text-muted mb-2 border-bottom pb-1" style="font-size: 0.9rem;">Role & Status</h6>
                         </div>
                         
                         <div class="col-md-6">
@@ -483,8 +485,8 @@ $role_config = config('roles.roles', []);
                         </div>
                         
                         <!-- Additional Fields -->
-                        <div class="col-12 mt-3">
-                            <h6 class="text-muted mb-3 border-bottom pb-2">Additional Information</h6>
+                        <div class="col-12 mt-2">
+                            <h6 class="text-muted mb-2 border-bottom pb-1" style="font-size: 0.9rem;">Additional Information</h6>
                         </div>
                         
                         <div class="col-md-6">
@@ -534,10 +536,10 @@ $role_config = config('roles.roles', []);
 </div>
 
 <!-- Role Change Confirmation Modal -->
-<div class="modal fade" id="roleChangeModal" tabindex="-1" aria-labelledby="roleChangeModalLabel" aria-hidden="true" data-bs-backdrop="false">
-    <div class="modal-dialog">
+<div class="modal fade" id="roleChangeModal" tabindex="-1" aria-labelledby="roleChangeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable" style="margin-top: 1rem;">
         <div class="modal-content">
-            <div class="modal-header">
+            <div class="modal-header bg-warning text-dark">
                 <h5 class="modal-title" id="roleChangeModalLabel">
                     <i class="fas fa-user-cog me-2"></i>Confirm Role Change
                 </h5>
@@ -546,7 +548,7 @@ $role_config = config('roles.roles', []);
             <div class="modal-body">
                 <div class="d-flex align-items-center mb-3">
                     <div class="flex-shrink-0">
-                        <i class="fas fa-exclamation-triangle text-warning" style="font-size: 2.5rem;"></i>
+                        <i class="fas fa-exclamation-triangle text-warning" style="font-size: 2rem;"></i>
                     </div>
                     <div class="flex-grow-1 ms-3">
                         <p class="mb-0" id="roleChangeMessage">Are you sure you want to change the user's role?</p>
@@ -633,364 +635,122 @@ $role_config = config('roles.roles', []);
 }
 
 /* Fix modal z-index - Must be above header (1100) and sidebar (1000) */
-/* Create User Modal - Flexible and Responsive */
-#createUserModal {
-    z-index: 1200 !important;
+/* Create User Modal - Positioned at Top, Smaller Size */
+#createUserModal.modal {
+    align-items: flex-start !important;
+    padding-top: 1rem !important;
+    padding-bottom: 1rem !important;
 }
 
 #createUserModal .modal-dialog {
-    z-index: 1201 !important;
+    max-width: 700px;
+    width: 90%;
     margin: 1rem auto !important;
-    max-width: 900px;
-    width: 95%;
-    display: flex;
-    flex-direction: column;
-    pointer-events: auto !important;
-    position: relative;
+    margin-top: 1rem !important;
+    align-self: flex-start !important;
 }
 
-/* Responsive breakpoints for modal width */
-@media (min-width: 1400px) {
-    #createUserModal .modal-dialog {
-        max-width: 1000px;
-        width: 90%;
-    }
+#createUserModal .modal-header {
+    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1e293b 100%);
+    color: white;
+    border-bottom: none;
 }
 
-@media (min-width: 1200px) and (max-width: 1399px) {
-    #createUserModal .modal-dialog {
-        max-width: 900px;
-        width: 92%;
-    }
-}
-
-@media (min-width: 992px) and (max-width: 1199px) {
-    #createUserModal .modal-dialog {
-        max-width: 850px;
-        width: 95%;
-    }
-}
-
-@media (min-width: 768px) and (max-width: 991px) {
-    #createUserModal .modal-dialog {
-        max-width: 750px;
-        width: 95%;
-    }
-}
-
-@media (min-width: 576px) and (max-width: 767px) {
-    #createUserModal .modal-dialog {
-        max-width: 90%;
-        width: 90%;
-        margin: 0.75rem auto !important;
-    }
-}
-
-/* Mobile responsive */
-@media (max-width: 575px) {
-    #createUserModal .modal-dialog {
-        width: calc(100% - 1rem) !important;
-        max-width: 100%;
-        margin: 0.5rem auto !important;
-    }
+#createUserModal .modal-header .btn-close-white {
+    filter: invert(1) grayscale(100%) brightness(200%);
 }
 
 #createUserModal .modal-content {
-    z-index: 1202 !important;
-    position: relative;
-    /* Clear, non-blurred background */
-    background: #ffffff !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
+    border: none;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    border-radius: 12px;
+    overflow: hidden;
     max-height: calc(100vh - 2rem);
     display: flex;
     flex-direction: column;
-    border-radius: 12px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
-    overflow: hidden;
 }
 
-/* Responsive modal content height */
-@media (min-width: 992px) {
-    #createUserModal .modal-content {
-        max-height: calc(100vh - 3rem);
-    }
+#createUserModal .modal-header {
+    padding: 1rem 1.25rem;
+    flex-shrink: 0;
 }
 
-@media (min-width: 768px) and (max-width: 991px) {
-    #createUserModal .modal-content {
-        max-height: calc(100vh - 2rem);
-    }
-}
-
-@media (max-width: 767px) {
-    #createUserModal .modal-content {
-        max-height: calc(100vh - 1rem);
-        border-radius: 8px;
-    }
-}
-
-/* Responsive modal body padding */
 #createUserModal .modal-body {
-    padding: 1.5rem;
     overflow-y: auto;
     flex: 1 1 auto;
+    padding: 1.25rem;
 }
 
-@media (min-width: 992px) {
-    #createUserModal .modal-body {
-        padding: 2rem;
-    }
+#createUserModal .modal-footer {
+    padding: 1rem 1.25rem;
+    flex-shrink: 0;
+    border-top: 1px solid #e2e8f0;
 }
 
-@media (max-width: 575px) {
-    #createUserModal .modal-body {
-        padding: 1rem;
-    }
-}
-
-/* Responsive form layout */
-#createUserModal .row {
-    margin-left: -0.75rem;
-    margin-right: -0.75rem;
-}
-
-#createUserModal .row > * {
-    padding-left: 0.75rem;
-    padding-right: 0.75rem;
-}
-
-@media (max-width: 767px) {
-    #createUserModal .row {
-        margin-left: -0.5rem;
-        margin-right: -0.5rem;
+@media (max-width: 768px) {
+    #createUserModal .modal-dialog {
+        margin: 1rem;
+        max-width: calc(100% - 2rem);
+        width: calc(100% - 2rem);
     }
     
-    #createUserModal .row > * {
-        padding-left: 0.5rem;
-        padding-right: 0.5rem;
-    }
-    
-    /* Stack form fields on mobile */
     #createUserModal .col-md-6 {
         flex: 0 0 100%;
         max-width: 100%;
     }
 }
 
-/* Responsive modal header */
-#createUserModal .modal-header {
-    padding: 1.25rem 1.5rem;
+/* Role Change Confirmation Modal - Positioned at Top, Smaller Size */
+#roleChangeModal.modal {
+    align-items: flex-start !important;
+    padding-top: 1rem !important;
+    padding-bottom: 1rem !important;
+}
+
+#roleChangeModal .modal-dialog {
+    max-width: 500px;
+    width: 90%;
+    margin: 1rem auto !important;
+    margin-top: 1rem !important;
+    align-self: flex-start !important;
+}
+
+#roleChangeModal .modal-header {
+    background: linear-gradient(135deg, #f59e0b 0%, #f97316 50%, #ea580c 100%);
+    color: #1e293b;
+    border-bottom: none;
+    padding: 1rem 1.25rem;
     flex-shrink: 0;
-}
-
-@media (min-width: 992px) {
-    #createUserModal .modal-header {
-        padding: 1.5rem 2rem;
-    }
-}
-
-@media (max-width: 575px) {
-    #createUserModal .modal-header {
-        padding: 1rem;
-    }
-    
-    #createUserModal .modal-title {
-        font-size: 1.125rem;
-    }
-}
-
-/* Responsive modal footer */
-#createUserModal .modal-footer {
-    padding: 1rem 1.5rem;
-    flex-shrink: 0;
-    border-top: 1px solid #e2e8f0;
-}
-
-@media (min-width: 992px) {
-    #createUserModal .modal-footer {
-        padding: 1.25rem 2rem;
-    }
-}
-
-@media (max-width: 575px) {
-    #createUserModal .modal-footer {
-        padding: 0.75rem 1rem;
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-    
-    #createUserModal .modal-footer .btn {
-        width: 100%;
-        margin: 0;
-    }
-}
-
-body.modal-open .modal-backdrop {
-    z-index: 1101 !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-    background-color: rgba(0, 0, 0, 0.5) !important;
-    cursor: pointer !important;
-}
-
-/* Ensure backdrop is clickable */
-.modal-backdrop.show {
-    pointer-events: auto !important;
-    cursor: pointer !important;
-}
-
-/* Make sure backdrop click closes modal */
-#createUserModal.show ~ .modal-backdrop,
-body.modal-open .modal-backdrop:not(.modal-backdrop-static) {
-    pointer-events: auto !important;
-    cursor: pointer !important;
-}
-
-body.modal-open #createUserModal {
-    z-index: 1200 !important;
-}
-
-/* Ensure modal backdrop has no blur */
-.modal-backdrop,
-.modal-backdrop-clear {
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-    background-color: rgba(0, 0, 0, 0.5) !important;
-}
-
-/* Ensure no blur on body when modal is open */
-body.modal-open {
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-}
-
-/* Ensure main content is not blurred */
-body.modal-open .main-content,
-body.modal-open .content {
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-    filter: none !important;
-}
-
-/* Fix any potential pointer-events issues */
-#createUserModal .modal-content * {
-    pointer-events: auto !important;
-}
-
-#createUserModal input,
-#createUserModal select,
-#createUserModal textarea,
-#createUserModal button,
-#createUserModal label {
-    pointer-events: auto !important;
-    position: relative;
-    z-index: 1;
-}
-
-/* Ensure modal body is clickable */
-#createUserModal .modal-body {
-    pointer-events: auto !important;
-    position: relative;
-    z-index: 1;
-}
-
-/* Make sure form elements are interactive */
-#createUserModal form {
-    pointer-events: auto !important;
-    position: relative;
-    z-index: 1;
-}
-
-/* Role Change Confirmation Modal - Fixed viewport-centered positioning */
-/* Modal container - ensure it covers viewport when shown */
-#roleChangeModal:not(.show) {
-    display: none !important;
-    pointer-events: none !important;
-}
-
-#roleChangeModal.show {
-    z-index: 1200 !important;
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    bottom: 0 !important;
-    width: 100vw !important;
-    height: 100vh !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    overflow: hidden !important;
-    display: block !important;
-}
-
-/* Modal dialog - fixed to viewport center */
-#roleChangeModal.show .modal-dialog,
-#roleChangeModal.showing .modal-dialog {
-    z-index: 1201 !important;
-    position: fixed !important;
-    margin: 0 !important;
-    max-width: 500px !important;
-    width: calc(100% - 2rem) !important;
-    max-height: calc(100vh - 2rem) !important;
-    top: 50% !important;
-    left: 50% !important;
-    transform: translate(-50%, -50%) !important;
-    display: flex !important;
-    flex-direction: column !important;
-    /* Fixed positioning keeps it centered in viewport, not document */
-}
-
-/* Mobile responsive */
-@media (max-width: 576px) {
-    #roleChangeModal.show .modal-dialog,
-    #roleChangeModal.showing .modal-dialog {
-        width: calc(100% - 1rem) !important;
-        max-width: calc(100% - 1rem) !important;
-    }
 }
 
 #roleChangeModal .modal-content {
-    z-index: 1202 !important;
-    position: relative;
     border: none;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
-    max-height: calc(100vh - 100px);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    border-radius: 12px;
+    overflow: hidden;
+    max-height: calc(100vh - 2rem);
     display: flex;
     flex-direction: column;
-    border-radius: 8px;
-}
-
-/* Mobile modal content */
-@media (max-width: 576px) {
-    #roleChangeModal .modal-content {
-        max-height: calc(100vh - 40px);
-    }
-}
-
-body.modal-open #roleChangeModal {
-    z-index: 1200 !important;
 }
 
 #roleChangeModal .modal-body {
-    padding: 1.5rem;
+    padding: 1.25rem;
     overflow-y: auto;
     flex: 1 1 auto;
 }
 
 #roleChangeModal .modal-footer {
-    border-top: 1px solid #e2e8f0;
-    padding: 1rem 1.5rem;
+    padding: 1rem 1.25rem;
     flex-shrink: 0;
+    border-top: 1px solid #e2e8f0;
 }
 
-/* Hide backdrop for role change modal */
-body:has(#roleChangeModal.show) .modal-backdrop,
-#roleChangeModal.show ~ .modal-backdrop,
-.modal-backdrop:has(+ #roleChangeModal.show) {
-    display: none !important;
-    opacity: 0 !important;
-    visibility: hidden !important;
+@media (max-width: 768px) {
+    #roleChangeModal .modal-dialog {
+        margin: 1rem;
+        max-width: calc(100% - 2rem);
+        width: calc(100% - 2rem);
+    }
 }
 /* Card styling to match HR admin dashboard */
 .card-modern,
@@ -1284,37 +1044,79 @@ html[data-theme="dark"] .alert-info {
 </style>
 
 <script>
-// Auto-filter functionality - filter automatically as user types
+// Auto-filter functionality - filter automatically as user types or changes dropdowns
 function initializeAutoFilter() {
     let searchTimeout;
     const searchInput = document.getElementById('userSearchInput');
     const filterForm = document.getElementById('filterForm');
     
-    if (searchInput && filterForm) {
-        // Remove any existing listeners by cloning the input
-        const newInput = searchInput.cloneNode(true);
-        searchInput.parentNode.replaceChild(newInput, searchInput);
+    if (filterForm) {
+        // Get the page name input (we'll preserve it)
+        const pageNameInput = filterForm.querySelector('#pageNameInput');
         
-        // Add event listeners to the new input
-        newInput.addEventListener('input', function() {
-            // Clear previous timeout
-            clearTimeout(searchTimeout);
+        // Function to submit form with page reset
+        function submitForm() {
+            // Remove any existing page number from URL params
+            const urlParams = new URLSearchParams(window.location.search);
+            urlParams.delete('page'); // Remove page number if it exists
             
-            // Set a new timeout to submit after user stops typing (500ms delay)
-            searchTimeout = setTimeout(function() {
-                filterForm.submit();
-            }, 500);
+            // Build new URL with page=users and filters, but no page number (defaults to 1)
+            const newParams = new URLSearchParams();
+            newParams.set('page', 'users');
+            
+            // Add filters
+            const searchValue = filterForm.querySelector('[name="search"]')?.value || '';
+            const roleValue = filterForm.querySelector('[name="role"]')?.value || '';
+            const statusValue = filterForm.querySelector('[name="status"]')?.value || '';
+            
+            if (searchValue) newParams.set('search', searchValue);
+            if (roleValue) newParams.set('role', roleValue);
+            if (statusValue) newParams.set('status', statusValue);
+            
+            // Navigate to new URL (this resets to page 1)
+            window.location.href = '?' + newParams.toString();
+        }
+        
+        // Auto-submit on select changes
+        const autoFilterElements = filterForm.querySelectorAll('.auto-filter');
+        autoFilterElements.forEach(function(element) {
+            element.addEventListener('change', function() {
+                submitForm();
+            });
         });
         
-        // Also trigger on Enter key for immediate search
-        newInput.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') {
+        // Auto-submit on search input with debounce
+        if (searchInput) {
+            // Remove any existing listeners by cloning the input
+            const newInput = searchInput.cloneNode(true);
+            searchInput.parentNode.replaceChild(newInput, searchInput);
+            
+            // Add event listeners to the new input
+            newInput.addEventListener('input', function() {
+                // Clear previous timeout
                 clearTimeout(searchTimeout);
-                e.preventDefault();
-                filterForm.submit();
-            }
-        });
+                
+                // Set a new timeout to submit after user stops typing (500ms delay)
+                searchTimeout = setTimeout(function() {
+                    submitForm();
+                }, 500);
+            });
+            
+            // Also trigger on Enter key for immediate search
+            newInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    clearTimeout(searchTimeout);
+                    e.preventDefault();
+                    submitForm();
+                }
+            });
+        }
     }
+}
+
+// Clear all filters function
+function clearFilters() {
+    window.location.href = '?page=users';
 }
 
 // Initialize on page load
@@ -1396,13 +1198,13 @@ function initializeUsersPage() {
         modalInstance.dispose();
     }
   
-    // Initialize Create User modal WITHOUT backdrop so the rest of the page stays clickable
+    // Initialize Create User modal with standard Bootstrap behavior
     modalInstance = new bootstrap.Modal(createUserModal, {
-        backdrop: false,
+        backdrop: true,
         keyboard: true,
         focus: true
     });
-    console.log('✅ Create User modal initialized with backdrop disabled');
+    console.log('✅ Create User modal initialized');
     
     // Store modal instance for later use
     createUserModal._modalInstance = modalInstance;
@@ -1540,17 +1342,17 @@ function initializeUsersPage() {
     if (!createUserModal.hasAttribute('data-modal-events')) {
         createUserModal.setAttribute('data-modal-events', 'attached');
         
-        // Handle modal show event - responsive positioning
+        // Handle modal show event
         createUserModal.addEventListener('show.bs.modal', function() {
-            // Adjust modal for current viewport size
-            if (typeof positionModalRelativeToScroll === 'function') {
-                positionModalRelativeToScroll(createUserModal);
+            // Focus on first input when modal opens
+            const usernameInput = document.getElementById('create_username');
+            if (usernameInput) {
+                setTimeout(() => usernameInput.focus(), 300);
             }
         });
         
         // Handle backdrop clicks to close modal
         createUserModal.addEventListener('click', function(e) {
-            // If click is on the modal backdrop (not on modal-content), close the modal
             if (e.target === createUserModal) {
                 const modalInstance = bootstrap.Modal.getInstance(createUserModal);
                 if (modalInstance) {
@@ -1559,6 +1361,7 @@ function initializeUsersPage() {
             }
         });
         
+        // Reset form when modal is hidden
         createUserModal.addEventListener('hidden.bs.modal', function() {
             if (createUserForm) {
                 createUserForm.reset();
@@ -1566,105 +1369,6 @@ function initializeUsersPage() {
             }
             const alertDiv = document.getElementById('createUserAlert');
             if (alertDiv) alertDiv.innerHTML = '';
-            
-            // Remove scroll and resize listeners when modal is hidden
-            if (createUserModal._scrollHandler) {
-                window.removeEventListener('scroll', createUserModal._scrollHandler);
-                delete createUserModal._scrollHandler;
-            }
-            if (createUserModal._resizeHandler) {
-                window.removeEventListener('resize', createUserModal._resizeHandler);
-                delete createUserModal._resizeHandler;
-            }
-            if (createUserModal._visibilityHandler) {
-                delete createUserModal._visibilityHandler;
-            }
-        });
-        
-        createUserModal.addEventListener('shown.bs.modal', function() {
-            // Position modal relative to current viewport after animation
-            if (typeof positionModalRelativeToScroll === 'function') {
-                positionModalRelativeToScroll(createUserModal);
-            }
-            
-            // Check if modal is out of viewport/container and close if needed
-            const checkModalVisibility = () => {
-                if (!createUserModal.classList.contains('show')) return;
-                
-                const modalDialog = createUserModal.querySelector('.modal-dialog');
-                if (!modalDialog) return;
-                
-                const rect = modalDialog.getBoundingClientRect();
-                const viewportHeight = window.innerHeight;
-                const viewportWidth = window.innerWidth;
-                
-                // Check if modal is completely out of viewport
-                const isOutOfView = (
-                    rect.bottom < 0 || 
-                    rect.top > viewportHeight || 
-                    rect.right < 0 || 
-                    rect.left > viewportWidth
-                );
-                
-                // Check if modal is mostly out of viewport (less than 20% visible)
-                const visibleHeight = Math.max(0, Math.min(rect.bottom, viewportHeight) - Math.max(rect.top, 0));
-                const visibleWidth = Math.max(0, Math.min(rect.right, viewportWidth) - Math.max(rect.left, 0));
-                const visibleArea = visibleHeight * visibleWidth;
-                const totalArea = rect.height * rect.width;
-                const visibilityRatio = totalArea > 0 ? visibleArea / totalArea : 0;
-                
-                if (isOutOfView || visibilityRatio < 0.2) {
-                    const modalInstance = bootstrap.Modal.getInstance(createUserModal);
-                    if (modalInstance) {
-                        console.log('Modal out of viewport, closing...');
-                        modalInstance.hide();
-                    }
-                }
-            };
-            
-            // Reposition on scroll while modal is open
-            const handleScroll = () => {
-                if (createUserModal.classList.contains('show')) {
-                    positionModalRelativeToScroll(createUserModal);
-                    checkModalVisibility();
-                }
-            };
-            
-            // Reposition on window resize for responsive behavior
-            const handleResize = () => {
-                if (createUserModal.classList.contains('show')) {
-                    positionModalRelativeToScroll(createUserModal);
-                    checkModalVisibility();
-                }
-            };
-            
-            // Check visibility periodically and on scroll/resize
-            const handleVisibility = () => {
-                if (createUserModal.classList.contains('show')) {
-                    checkModalVisibility();
-                }
-            };
-            
-            // Add scroll, resize, and visibility listeners
-            window.addEventListener('scroll', handleScroll, { passive: true });
-            window.addEventListener('resize', handleResize, { passive: true });
-            
-            // Check visibility every 500ms while modal is open
-            const visibilityInterval = setInterval(() => {
-                if (!createUserModal.classList.contains('show')) {
-                    clearInterval(visibilityInterval);
-                } else {
-                    checkModalVisibility();
-                }
-            }, 500);
-            
-            // Store handlers for cleanup
-            createUserModal._scrollHandler = handleScroll;
-            createUserModal._resizeHandler = handleResize;
-            createUserModal._visibilityHandler = visibilityInterval;
-            
-            const usernameInput = document.getElementById('create_username');
-            if (usernameInput) setTimeout(() => usernameInput.focus(), 100);
         });
         
         console.log('✅ Modal events attached');
@@ -1682,8 +1386,9 @@ function initializeUsersPage() {
             roleModalInstance.dispose();
         }
         roleModalInstance = new bootstrap.Modal(roleChangeModal, {
-            backdrop: false,
-            keyboard: true
+            backdrop: true,
+            keyboard: true,
+            focus: true
         });
         
         // Handle confirmation button
@@ -1720,26 +1425,13 @@ function initializeUsersPage() {
             }
         });
         
-        // Ensure modal is positioned correctly when shown
+        // Modal event handlers - no positioning needed, uses standard Bootstrap behavior
         roleChangeModal.addEventListener('show.bs.modal', function() {
-            // Position before animation starts
-            if (typeof positionModalRelativeToScroll === 'function') {
-                positionModalRelativeToScroll(roleChangeModal);
-            }
+            // Modal will appear at top automatically via CSS
         });
         
         roleChangeModal.addEventListener('shown.bs.modal', function() {
-            // Position after animation completes
-            if (typeof positionModalRelativeToScroll === 'function') {
-                positionModalRelativeToScroll(roleChangeModal);
-            }
-            
-            // Also position after a short delay to ensure it's correct
-            setTimeout(() => {
-                if (roleChangeModal.classList.contains('show') && typeof positionModalRelativeToScroll === 'function') {
-                    positionModalRelativeToScroll(roleChangeModal);
-                }
-            }, 100);
+            // Modal is now visible at top
         });
         
         console.log('✅ Role change modal initialized');
@@ -1847,8 +1539,9 @@ function showRoleChangeModal(userName, newRoleText) {
     }
     
     const modal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement, {
-        backdrop: false,
-        keyboard: true
+        backdrop: true,
+        keyboard: true,
+        focus: true
     });
     
     const messageEl = document.getElementById('roleChangeMessage');
@@ -1856,53 +1549,7 @@ function showRoleChangeModal(userName, newRoleText) {
         messageEl.innerHTML = `Are you sure you want to change <strong>${userName}</strong>'s role to <strong>"${newRoleText}"</strong>?`;
     }
     
-    // Position modal before showing (will use fixed positioning for viewport centering)
-    positionModalRelativeToScroll(modalElement);
-    
     modal.show();
-    
-    // Reposition multiple times to ensure fixed positioning is maintained
-    // Bootstrap's animation might temporarily override positioning
-    const repositionIntervals = [0, 50, 100, 150, 300];
-    repositionIntervals.forEach(delay => {
-        setTimeout(() => {
-            if (modalElement.classList.contains('show') || modalElement.classList.contains('showing')) {
-                positionModalRelativeToScroll(modalElement);
-            }
-        }, delay);
-    });
-    
-    // Remove any backdrop that might have been created
-    setTimeout(() => {
-        const backdrops = document.querySelectorAll('.modal-backdrop');
-        backdrops.forEach(backdrop => {
-            if (backdrop && backdrop.parentNode) {
-                backdrop.remove();
-            }
-        });
-    }, 150);
-    
-    // Reposition on scroll while modal is open (though fixed positioning shouldn't need this)
-    const handleScroll = () => {
-        if (modalElement.classList.contains('show') || modalElement.classList.contains('showing')) {
-            positionModalRelativeToScroll(modalElement);
-        }
-    };
-    
-    // Add scroll listener
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    
-    // Store handler for cleanup
-    modalElement._scrollHandler = handleScroll;
-    
-    // Remove scroll listener when modal is hidden
-    modalElement.addEventListener('hidden.bs.modal', function removeScrollListener() {
-        if (modalElement._scrollHandler) {
-            window.removeEventListener('scroll', modalElement._scrollHandler);
-            delete modalElement._scrollHandler;
-        }
-        modalElement.removeEventListener('hidden.bs.modal', removeScrollListener);
-    }, { once: true });
 }
 
 /**
