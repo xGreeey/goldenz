@@ -74,6 +74,11 @@ $audit_table = $_GET['audit_table'] ?? '';
 $audit_date_from = $_GET['audit_date_from'] ?? '';
 $audit_date_to = $_GET['audit_date_to'] ?? '';
 
+// Pagination for audit trail
+$audit_page = max(1, (int)($_GET['audit_p'] ?? 1));
+$audit_per_page = 10;
+$audit_offset = ($audit_page - 1) * $audit_per_page;
+
 // Get alerts based on filters
 try {
     $alerts = get_employee_alerts($status, $priority ?: null);
@@ -502,15 +507,14 @@ try {
                     <table class="table table-hover table-sm">
                         <thead>
                             <tr>
-                                <th style="width: 5%;"></th>
                                 <th style="width: 12%;">Timestamp</th>
                                 <th style="width: 12%;">User</th>
-                                <th style="width: 8%;">Action</th>
+                                <th style="width: 10%;">Action</th>
                                 <th style="width: 10%;">Table</th>
-                                <th style="width: 15%;">Record</th>
-                                <th style="width: 25%;">Changes</th>
-                                <th style="width: 8%;">IP Address</th>
-                                <th style="width: 5%;">Details</th>
+                                <th style="width: 12%;">Record</th>
+                                <th style="width: 28%;">Changes</th>
+                                <th style="width: 10%;">IP Address</th>
+                                <th style="width: 6%;">Details</th>
                             </tr>
                         </thead>
                         <tbody id="auditTrailBody">
@@ -525,9 +529,15 @@ try {
                             
                             // Get audit logs (check if function exists and table exists)
                             $audit_logs = [];
-                            if (function_exists('get_audit_logs')) {
+                            $audit_total_count = 0;
+                            $audit_total_pages = 1;
+                            
+                            if (function_exists('get_audit_logs') && function_exists('get_audit_logs_count')) {
                                 try {
-                                    $audit_logs = get_audit_logs($audit_filters, 50, 0);
+                                    $audit_logs = get_audit_logs($audit_filters, $audit_per_page, $audit_offset);
+                                    $audit_total_count = get_audit_logs_count($audit_filters);
+                                    $audit_total_pages = max(1, (int)ceil($audit_total_count / $audit_per_page));
+                                    $audit_page = min($audit_page, $audit_total_pages);
                                 } catch (Exception $e) {
                                     // Table might not exist yet
                                     error_log("Audit logs error: " . $e->getMessage());
@@ -537,7 +547,7 @@ try {
                             if (empty($audit_logs)):
                             ?>
                             <tr>
-                                <td colspan="7" class="text-center py-4">
+                                <td colspan="8" class="text-center py-4">
                                     <div class="text-muted">
                                         <i class="fas fa-inbox fa-2x mb-2"></i>
                                         <p class="mb-0">No audit logs found</p>
@@ -628,12 +638,15 @@ try {
                                                 </div>
                                                 <?php endif; ?>
                                             <?php else: ?>
-                                                <small class="text-muted"><?php echo htmlspecialchars($log['action']); ?></small>
+                                                <small class="text-muted">-</small>
                                             <?php endif; ?>
                                         </div>
                                     </td>
                                     <td>
                                         <small class="text-muted"><?php echo htmlspecialchars($log['ip_address'] ?? 'N/A'); ?></small>
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">-</small>
                                     </td>
                                 </tr>
                                 <?php endforeach; ?>
@@ -643,17 +656,57 @@ try {
                 </div>
                 
                 <!-- Audit Trail Pagination -->
-                <?php if (!empty($audit_logs)): ?>
-                <div class="d-flex justify-content-between align-items-center mt-3">
-                    <div>
-                        <small class="text-muted">Showing <?php echo count($audit_logs); ?> recent audit logs</small>
+                <?php if (!empty($audit_logs) && $audit_total_pages > 1): ?>
+                    <nav class="mt-3" aria-label="Audit trail pagination">
+                        <ul class="pagination justify-content-center mb-0">
+                            <?php
+                            $audit_base_query = array_merge(
+                                ['page' => 'alerts'],
+                                array_filter([
+                                    'audit_action' => $audit_action,
+                                    'audit_table' => $audit_table,
+                                    'audit_date_from' => $audit_date_from,
+                                    'audit_date_to' => $audit_date_to,
+                                ])
+                            );
+                            ?>
+                            <li class="page-item <?php echo $audit_page <= 1 ? 'disabled' : ''; ?>">
+                                <a class="page-link" href="?<?php echo http_build_query(array_merge($audit_base_query, ['audit_p' => max(1, $audit_page - 1)])); ?>">
+                                    &laquo;
+                                </a>
+                            </li>
+                            <?php
+                            $start = max(1, $audit_page - 2);
+                            $end   = min($audit_total_pages, $audit_page + 2);
+                            for ($i = $start; $i <= $end; $i++):
+                            ?>
+                                <li class="page-item <?php echo $i === $audit_page ? 'active' : ''; ?>">
+                                    <a class="page-link" href="?<?php echo http_build_query(array_merge($audit_base_query, ['audit_p' => $i])); ?>">
+                                        <?php echo $i; ?>
+                                    </a>
+                                </li>
+                            <?php endfor; ?>
+                            <li class="page-item <?php echo $audit_page >= $audit_total_pages ? 'disabled' : ''; ?>">
+                                <a class="page-link" href="?<?php echo http_build_query(array_merge($audit_base_query, ['audit_p' => min($audit_total_pages, $audit_page + 1)])); ?>">
+                                    &raquo;
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                    <div class="text-center mt-2">
+                        <small class="text-muted">
+                            Showing <?php echo number_format(count($audit_logs)); ?> of <?php echo number_format($audit_total_count); ?> events
+                            <?php if (!empty(array_filter($audit_filters))): ?>
+                                <span class="text-muted">(filtered)</span>
+                            <?php endif; ?>
+                        </small>
                     </div>
-                    <div>
-                        <button class="btn btn-sm btn-outline-primary" onclick="loadMoreAuditLogs()">
-                            <i class="fas fa-chevron-down me-1"></i>Load More
-                        </button>
+                <?php elseif (!empty($audit_logs)): ?>
+                    <div class="text-center mt-3">
+                        <small class="text-muted">
+                            Showing <?php echo number_format(count($audit_logs)); ?> of <?php echo number_format($audit_total_count); ?> events
+                        </small>
                     </div>
-                </div>
                 <?php endif; ?>
             </div>
         </div>
@@ -837,32 +890,35 @@ function filterAuditTrail() {
     const table = document.getElementById('auditTableFilter').value;
     const dateFrom = document.getElementById('auditDateFrom').value;
     const dateTo = document.getElementById('auditDateTo').value;
-    
+
     let url = '?page=alerts';
     const params = [];
-    
+
     // Keep existing alert filters
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('status')) params.push('status=' + urlParams.get('status'));
     if (urlParams.get('priority')) params.push('priority=' + urlParams.get('priority'));
     if (urlParams.get('alert_type')) params.push('alert_type=' + urlParams.get('alert_type'));
-    
+
     // Add audit filters
     if (action) params.push('audit_action=' + action);
     if (table) params.push('audit_table=' + table);
     if (dateFrom) params.push('audit_date_from=' + dateFrom);
     if (dateTo) params.push('audit_date_to=' + dateTo);
-    
+
+    // Reset to page 1 when filters change
+    params.push('audit_p=1');
+
     if (params.length > 0) {
         url += '&' + params.join('&');
     }
-    
+
     window.location.href = url;
 }
 
 function clearAuditFilters() {
     const urlParams = new URLSearchParams(window.location.search);
-    let url = '?page=alerts';
+    let url = '?page=alerts&audit_p=1';
     
     // Keep alert filters, remove audit filters
     if (urlParams.get('status')) url += '&status=' + urlParams.get('status');
@@ -883,21 +939,22 @@ function refreshAuditTrail() {
 function exportAuditTrail() {
     // Export audit trail to CSV
     const table = document.querySelector('#auditTrailBody').closest('table');
-    let csv = 'Timestamp,User,Action,Table,Record ID,Details,IP Address\n';
+    let csv = 'Timestamp,User,Action,Table,Record,Changes,IP Address,Details\n';
     
     const rows = table.querySelectorAll('tbody tr');
     rows.forEach(row => {
         const cells = row.querySelectorAll('td');
-        if (cells.length >= 7) {
+        if (cells.length >= 8) {
             const timestamp = cells[0].textContent.trim().replace(/\n/g, ' ');
             const user = cells[1].textContent.trim().replace(/\n/g, ' ');
             const action = cells[2].textContent.trim();
             const tableName = cells[3].textContent.trim();
-            const recordId = cells[4].textContent.trim();
-            const details = cells[5].textContent.trim();
+            const record = cells[4].textContent.trim();
+            const changes = cells[5].textContent.trim();
             const ip = cells[6].textContent.trim();
+            const details = cells[7].textContent.trim();
             
-            csv += `"${timestamp}","${user}","${action}","${tableName}","${recordId}","${details}","${ip}"\n`;
+            csv += `"${timestamp}","${user}","${action}","${tableName}","${record}","${changes}","${ip}","${details}"\n`;
         }
     });
     
@@ -1168,6 +1225,29 @@ body.portal-hr-admin .alerts-modern {
     vertical-align: middle;
 }
 
+/* Fix audit trail table alignment */
+.table-responsive table {
+    table-layout: fixed;
+    width: 100%;
+}
+
+.table-responsive table th,
+.table-responsive table td {
+    vertical-align: middle;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+.table-responsive table th {
+    white-space: nowrap;
+    text-align: left;
+    font-weight: 600;
+}
+
+.table-responsive table td {
+    text-align: left;
+}
+
 /* Alerts Table Styling */
 .table-responsive {
     border-radius: 8px;
@@ -1430,6 +1510,295 @@ body.portal-hr-admin .alerts-modern {
     .summary-cards-modern {
         grid-template-columns: 1fr;
     }
+}
+
+/* Dark theme support for Employee Alerts page */
+html[data-theme="dark"] .hrdash {
+    background: var(--interface-bg) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .page-title-main {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .page-subtitle-modern {
+    color: var(--interface-text-muted) !important;
+}
+
+html[data-theme="dark"] .hrdash-stat {
+    background: #1a1d23 !important;
+    border-color: var(--interface-border) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .hrdash-stat__label {
+    color: var(--interface-text-muted) !important;
+}
+
+html[data-theme="dark"] .hrdash-stat__value {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .hrdash-stat__meta {
+    color: var(--interface-text-muted) !important;
+}
+
+html[data-theme="dark"] .alerts-card-modern {
+    background: #1a1d23 !important;
+    border-color: var(--interface-border) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .card-header-modern {
+    background: #1a1d23 !important;
+    border-bottom-color: var(--interface-border) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .card-title-modern {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .card-body {
+    background: #1a1d23 !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .filter-section {
+    background: #1a1d23 !important;
+    border: 1px solid var(--interface-border) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .filter-section .form-label {
+    color: var(--interface-text-muted) !important;
+}
+
+html[data-theme="dark"] .filter-section .form-select,
+html[data-theme="dark"] .filter-section .form-control {
+    background-color: #0f1114 !important;
+    border-color: var(--interface-border) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .filter-section .form-select option {
+    background-color: #1a1d23 !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .filter-section .form-select:focus,
+html[data-theme="dark"] .filter-section .form-control:focus {
+    background-color: #0f1114 !important;
+    border-color: var(--primary-color) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .filter-section .btn-outline-secondary {
+    background-color: #1a1d23 !important;
+    border-color: var(--interface-border) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .filter-section .btn-outline-secondary:hover {
+    background-color: var(--interface-hover) !important;
+    border-color: var(--interface-border) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .table {
+    background: #1a1d23 !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .table thead {
+    background: #1a1d23 !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .table thead th {
+    background: #1a1d23 !important;
+    color: var(--interface-text) !important;
+    border-bottom-color: var(--interface-border) !important;
+}
+
+html[data-theme="dark"] .table tbody {
+    background: #1a1d23 !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .table tbody tr {
+    background-color: #1a1d23 !important;
+    color: var(--interface-text) !important;
+    border-bottom-color: var(--interface-border) !important;
+}
+
+html[data-theme="dark"] .table tbody tr:hover {
+    background-color: var(--interface-hover) !important;
+}
+
+html[data-theme="dark"] .table td {
+    background-color: transparent !important;
+    color: var(--interface-text) !important;
+    border-color: var(--interface-border) !important;
+}
+
+html[data-theme="dark"] .table td strong {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .text-muted {
+    color: var(--interface-text-muted) !important;
+}
+
+html[data-theme="dark"] .priority-badge {
+    border: 1px solid var(--interface-border) !important;
+}
+
+html[data-theme="dark"] .priority-badge.urgent {
+    background-color: rgba(239, 68, 68, 0.2) !important;
+    color: #ef4444 !important;
+    border-color: #ef4444 !important;
+}
+
+html[data-theme="dark"] .priority-badge.high {
+    background-color: rgba(245, 158, 11, 0.2) !important;
+    color: #f59e0b !important;
+    border-color: #f59e0b !important;
+}
+
+html[data-theme="dark"] .priority-badge.medium {
+    background-color: rgba(59, 130, 246, 0.2) !important;
+    color: #3b82f6 !important;
+    border-color: #3b82f6 !important;
+}
+
+html[data-theme="dark"] .priority-badge.low {
+    background-color: rgba(100, 116, 139, 0.2) !important;
+    color: #64748b !important;
+    border-color: #64748b !important;
+}
+
+html[data-theme="dark"] .badge {
+    border: 1px solid var(--interface-border) !important;
+}
+
+html[data-theme="dark"] .badge.bg-info {
+    background-color: rgba(59, 130, 246, 0.2) !important;
+    color: #3b82f6 !important;
+    border-color: #3b82f6 !important;
+}
+
+html[data-theme="dark"] .alert-badge.active {
+    background-color: rgba(236, 72, 153, 0.2) !important;
+    color: #ec4899 !important;
+    border-color: #ec4899 !important;
+}
+
+html[data-theme="dark"] .alert-badge.acknowledged {
+    background-color: rgba(34, 197, 94, 0.2) !important;
+    color: #22c55e !important;
+    border-color: #22c55e !important;
+}
+
+html[data-theme="dark"] .alert-badge.resolved {
+    background-color: rgba(34, 197, 94, 0.2) !important;
+    color: #22c55e !important;
+    border-color: #22c55e !important;
+}
+
+html[data-theme="dark"] .alert-badge.dismissed {
+    background-color: rgba(100, 116, 139, 0.2) !important;
+    color: #64748b !important;
+    border-color: #64748b !important;
+}
+
+html[data-theme="dark"] .text-danger {
+    color: #ef4444 !important;
+}
+
+html[data-theme="dark"] .text-success {
+    color: #22c55e !important;
+}
+
+html[data-theme="dark"] .text-warning {
+    color: #f59e0b !important;
+}
+
+html[data-theme="dark"] .alert-actions .btn {
+    background: #1a1d23 !important;
+    border-color: var(--interface-border) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .alert-actions .btn:hover {
+    background: var(--interface-hover) !important;
+    border-color: var(--primary-color) !important;
+}
+
+html[data-theme="dark"] .alert-actions .btn.btn-success:hover {
+    background-color: rgba(34, 197, 94, 0.2) !important;
+    border-color: #22c55e !important;
+    color: #22c55e !important;
+}
+
+html[data-theme="dark"] .alert-actions .btn.btn-danger:hover {
+    background-color: rgba(239, 68, 68, 0.2) !important;
+    border-color: #ef4444 !important;
+    color: #ef4444 !important;
+}
+
+html[data-theme="dark"] .alert-actions .btn.btn-info:hover {
+    background-color: rgba(59, 130, 246, 0.2) !important;
+    border-color: #3b82f6 !important;
+    color: #3b82f6 !important;
+}
+
+html[data-theme="dark"] .form-check-input {
+    background-color: #0f1114 !important;
+    border-color: var(--interface-border) !important;
+}
+
+html[data-theme="dark"] .form-check-input:checked {
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+}
+
+html[data-theme="dark"] .modal-content {
+    background-color: #1a1d23 !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .modal-header {
+    border-bottom-color: var(--interface-border) !important;
+}
+
+html[data-theme="dark"] .modal-title {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .modal-footer {
+    border-top-color: var(--interface-border) !important;
+}
+
+html[data-theme="dark"] .modal-body {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .modal-body strong {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .alert {
+    background-color: rgba(30, 41, 59, 0.8) !important;
+    border-color: var(--interface-border) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .alert-info {
+    background-color: rgba(31, 178, 213, 0.1) !important;
+    border-color: var(--primary-color) !important;
+    color: var(--interface-text) !important;
 }
 
 </style>
