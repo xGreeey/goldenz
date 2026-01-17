@@ -221,6 +221,8 @@ $activeSection = getActiveSection($page);
                     include $pages_path . 'dashboard.php';
                     break;
                 case 'profile':
+                    include $pages_path . 'profile.php';
+                    break;
                 case 'payslips':
                 case 'documents':
                     // Employee specific pages - create these later

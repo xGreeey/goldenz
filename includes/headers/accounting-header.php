@@ -17,6 +17,7 @@ function getPageTitle($page) {
         'invoices' => 'Invoice Generation',
         'contributions' => 'Track Contributions',
         'settings' => 'Settings',
+        'profile' => 'My Profile',
         'help' => 'Help & Support'
     ];
     
@@ -286,6 +287,9 @@ $activeSection = getActiveSection($page);
                     break;
                 case 'settings':
                     include $pages_path . 'settings.php';
+                    break;
+                case 'profile':
+                    include $pages_path . 'profile.php';
                     break;
                 case 'help':
                     include $pages_path . 'help.php';
