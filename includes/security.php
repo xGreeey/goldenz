@@ -180,12 +180,22 @@ if (!function_exists('generate_secure_string')) {
 // Log security events
 if (!function_exists('log_security_event')) {
     function log_security_event($event, $details = '') {
+        // Try database logging first (for developer dashboard)
+        if (function_exists('log_security_event_db')) {
+            log_security_event_db($event, $details);
+        }
+        
+        // Also log system event
+        if (function_exists('log_system_event')) {
+            log_system_event('security', $event . ': ' . $details, 'security');
+        }
+        
         if (class_exists('App\Core\Security')) {
             \App\Core\Security::logSecurityEvent($event, $details);
             return;
         }
         
-        // Fallback to old method
+        // Fallback to old file method
         $log_entry = date('Y-m-d H:i:s') . " - " . $event . " - " . $details . " - IP: " . ($_SERVER['REMOTE_ADDR'] ?? 'Unknown') . "\n";
         $log_file = __DIR__ . '/../storage/logs/security.log';
         if (!is_dir(dirname($log_file))) {
@@ -329,6 +339,39 @@ if (!function_exists('verify_totp_code')) {
         }
 
         return false;
+    }
+}
+
+// CSRF Token Helpers
+if (!function_exists('generate_csrf_token')) {
+    /**
+     * Generate CSRF token
+     * 
+     * @return string
+     */
+    function generate_csrf_token() {
+        if (class_exists('App\Core\Security')) {
+            return \App\Core\Security::generateCsrfToken();
+        }
+        if (!isset($_SESSION['csrf_token'])) {
+            $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+        }
+        return $_SESSION['csrf_token'];
+    }
+}
+
+if (!function_exists('verify_csrf_token')) {
+    /**
+     * Verify CSRF token
+     * 
+     * @param string $token
+     * @return bool
+     */
+    function verify_csrf_token($token) {
+        if (class_exists('App\Core\Security')) {
+            return \App\Core\Security::verifyCsrfToken($token);
+        }
+        return isset($_SESSION['csrf_token']) && hash_equals($_SESSION['csrf_token'], $token);
     }
 }
 

@@ -122,14 +122,176 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         exit;
     }
     
-    // Other POST handlers can be added here
-    echo json_encode(['success' => false, 'message' => 'Invalid action']);
-    exit;
+    // Verify CSRF token for all actions
+    $csrf_token = $_POST['csrf_token'] ?? '';
+    if (!verify_csrf_token($csrf_token)) {
+        echo json_encode(['success' => false, 'message' => 'Invalid security token. Please refresh the page.']);
+        exit;
+    }
+    
+    // Handle developer dashboard tool actions
+    try {
+        switch ($action) {
+            case 'clear-sessions':
+                // Clear all session files
+                $session_path = storage_path('sessions');
+                $cleared = 0;
+                
+                if (is_dir($session_path)) {
+                    $files = glob($session_path . '/sess_*');
+                    foreach ($files as $file) {
+                        if (is_file($file)) {
+                            @unlink($file);
+                            $cleared++;
+                        }
+                    }
+                }
+                
+                // Log to system logs
+                if (function_exists('log_system_event')) {
+                    log_system_event('info', "Cleared $cleared session files", 'sessions', ['cleared_count' => $cleared]);
+                }
+                
+                if (function_exists('log_security_event')) {
+                    log_security_event('INFO Sessions Cleared', "Developer cleared $cleared session files");
+                }
+                
+                echo json_encode([
+                    'success' => true,
+                    'message' => "Successfully cleared $cleared session files."
+                ]);
+                exit;
+                
+            case 'test-email':
+                // Test email functionality (placeholder)
+                // TODO: Implement actual email test using PHPMailer
+                if (function_exists('log_system_event')) {
+                    log_system_event('info', 'Test email triggered', 'email', ['status' => 'not_implemented']);
+                }
+                
+                if (function_exists('log_security_event')) {
+                    log_security_event('INFO Test Email', 'Developer triggered test email');
+                }
+                
+                echo json_encode([
+                    'success' => true,
+                    'message' => 'Test email functionality is not yet implemented. Check email configuration.'
+                ]);
+                exit;
+                
+            case 'run-diagnostics':
+                // Run system diagnostics
+                $diagnostics = [];
+                
+                // Check PHP version
+                $diagnostics[] = [
+                    'check' => 'PHP Version',
+                    'status' => 'ok',
+                    'message' => 'PHP ' . PHP_VERSION
+                ];
+                
+                // Check database connection
+                try {
+                    $pdo = get_db_connection();
+                    $pdo->query("SELECT 1");
+                    $diagnostics[] = [
+                        'check' => 'Database Connection',
+                        'status' => 'ok',
+                        'message' => 'Connected successfully'
+                    ];
+                } catch (Exception $e) {
+                    $diagnostics[] = [
+                        'check' => 'Database Connection',
+                        'status' => 'error',
+                        'message' => 'Connection failed: ' . $e->getMessage()
+                    ];
+                }
+                
+                // Check session directory
+                $session_path = storage_path('sessions');
+                if (is_dir($session_path) && is_writable($session_path)) {
+                    $diagnostics[] = [
+                        'check' => 'Session Directory',
+                        'status' => 'ok',
+                        'message' => 'Directory exists and is writable'
+                    ];
+                } else {
+                    $diagnostics[] = [
+                        'check' => 'Session Directory',
+                        'status' => 'warning',
+                        'message' => 'Directory may not exist or is not writable'
+                    ];
+                }
+                
+                // Check storage/logs directory
+                $logs_path = storage_path('logs');
+                if (is_dir($logs_path) || @mkdir($logs_path, 0755, true)) {
+                    $diagnostics[] = [
+                        'check' => 'Logs Directory',
+                        'status' => 'ok',
+                        'message' => 'Directory accessible'
+                    ];
+                } else {
+                    $diagnostics[] = [
+                        'check' => 'Logs Directory',
+                        'status' => 'warning',
+                        'message' => 'Directory may not be accessible'
+                    ];
+                }
+                
+                if (function_exists('log_system_event')) {
+                    $passed = count(array_filter($diagnostics, function($d) { return $d['status'] === 'ok'; }));
+                    $total = count($diagnostics);
+                    log_system_event('info', "System diagnostics run: $passed of $total checks passed", 'diagnostics', ['results' => $diagnostics]);
+                }
+                
+                if (function_exists('log_security_event')) {
+                    log_security_event('INFO Diagnostics Run', 'Developer ran system diagnostics');
+                }
+                
+                $summary = count(array_filter($diagnostics, function($d) { return $d['status'] === 'ok'; })) . ' of ' . count($diagnostics) . ' checks passed';
+                
+                echo json_encode([
+                    'success' => true,
+                    'message' => 'Diagnostics completed. ' . $summary,
+                    'diagnostics' => $diagnostics
+                ]);
+                exit;
+                
+            case 'view-migrations':
+                // View migration status (placeholder)
+                // TODO: Implement migration status check if migration system exists
+                if (function_exists('log_system_event')) {
+                    log_system_event('info', 'Migration status viewed', 'migrations', ['status' => 'not_implemented']);
+                }
+                
+                if (function_exists('log_security_event')) {
+                    log_security_event('INFO Migrations Viewed', 'Developer viewed migration status');
+                }
+                
+                echo json_encode([
+                    'success' => true,
+                    'message' => 'Migration system is not yet implemented. Check database schema manually.'
+                ]);
+                exit;
+                
+            default:
+                echo json_encode(['success' => false, 'message' => 'Invalid action']);
+                exit;
+        }
+    } catch (Exception $e) {
+        error_log('Developer dashboard action error: ' . $e->getMessage());
+        echo json_encode([
+            'success' => false,
+            'message' => 'An error occurred: ' . ($_ENV['APP_DEBUG'] === 'true' ? $e->getMessage() : 'Please check server logs.')
+        ]);
+        exit;
+    }
 }
 
-// Redirect to dashboard if no page parameter is set
+// Redirect to developer dashboard if no page parameter is set
 if (!isset($_GET['page'])) {
-    header('Location: ?page=dashboard');
+    header('Location: ?page=developer-dashboard');
     exit;
 }
 

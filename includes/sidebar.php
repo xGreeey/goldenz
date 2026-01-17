@@ -4,33 +4,61 @@
 
 include_once __DIR__ . '/paths.php';
 
-$menu = [
-    [
-        'title' => 'Dashboard',
-        'page' => 'dashboard',
-        'section' => null,
-    ],
-    [
-        'title' => 'Employees',
-        'page' => 'employees',
-        'section' => null,
-    ],
-    [
-        'title' => 'Posts',
-        'page' => 'posts',
-        'section' => null,
-    ],
-    [
-        'title' => 'Post Assignments',
-        'page' => 'post_assignments',
-        'section' => null,
-    ],
-    [
-        'title' => 'Alerts',
-        'page' => 'alerts',
-        'section' => null,
-    ],
-];
+// Get user role
+$user_role = $_SESSION['user_role'] ?? '';
+
+// Developer-specific menu (technical monitoring only)
+if ($user_role === 'developer') {
+    $menu = [
+        [
+            'title' => 'Developer Dashboard',
+            'page' => 'developer-dashboard',
+            'section' => null,
+            'icon' => 'fa-chart-line',
+        ],
+        [
+            'title' => 'System Logs',
+            'page' => 'system_logs',
+            'section' => null,
+            'icon' => 'fa-file-lines',
+        ],
+        [
+            'title' => 'Profile',
+            'page' => 'profile',
+            'section' => null,
+            'icon' => 'fa-user',
+        ],
+    ];
+} else {
+    // Default HR/Admin menu
+    $menu = [
+        [
+            'title' => 'Dashboard',
+            'page' => 'dashboard',
+            'section' => null,
+        ],
+        [
+            'title' => 'Employees',
+            'page' => 'employees',
+            'section' => null,
+        ],
+        [
+            'title' => 'Posts',
+            'page' => 'posts',
+            'section' => null,
+        ],
+        [
+            'title' => 'Post Assignments',
+            'page' => 'post_assignments',
+            'section' => null,
+        ],
+        [
+            'title' => 'Alerts',
+            'page' => 'alerts',
+            'section' => null,
+        ],
+    ];
+}
 ?>
 
 <nav class="sidebar" id="sidebar" role="navigation" aria-label="Main navigation">
@@ -87,7 +115,20 @@ $menu = [
 
     <!-- Bottom Navigation Section -->
     <!-- HR-Admin: moved to header as icon actions -->
-    <?php if (($_SESSION['user_role'] ?? '') !== 'hr_admin'): ?>
+    <?php if ($user_role === 'developer'): ?>
+    <!-- Developer bottom menu -->
+    <ul class="sidebar-menu sidebar-bottom" role="menubar">
+        <li class="nav-item">
+            <a href="<?php echo base_url(); ?>/index.php?logout=1"
+               class="nav-link"
+               data-no-transition="true">
+                <i class="fas fa-right-from-bracket me-2"></i>
+                <span>Logout</span>
+            </a>
+        </li>
+    </ul>
+    <?php elseif ($user_role !== 'hr_admin'): ?>
+    <!-- Other roles bottom menu -->
     <ul class="sidebar-menu sidebar-bottom" role="menubar">
         <li class="nav-item">
             <a href="?page=tasks"

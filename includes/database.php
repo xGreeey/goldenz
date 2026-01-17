@@ -1628,6 +1628,265 @@ if (!function_exists('log_audit_event')) {
 }
 
 // ========================================
+// SYSTEM LOGS FUNCTIONS (Developer Dashboard)
+// ========================================
+
+// Log system event
+if (!function_exists('log_system_event')) {
+    function log_system_event($level, $message, $context = null, $metadata = null) {
+        try {
+            // Check if system_logs table exists
+            $pdo = get_db_connection();
+            $checkTable = $pdo->query("SHOW TABLES LIKE 'system_logs'");
+            if ($checkTable->rowCount() === 0) {
+                // Table doesn't exist, skip logging
+                return false;
+            }
+            
+            $user_id = $_SESSION['user_id'] ?? null;
+            $ip_address = $_SERVER['REMOTE_ADDR'] ?? null;
+            $user_agent = $_SERVER['HTTP_USER_AGENT'] ?? null;
+            
+            if (is_array($metadata)) {
+                $metadata = json_encode($metadata);
+            }
+            
+            $sql = "INSERT INTO system_logs (level, message, context, user_id, ip_address, user_agent, metadata, created_at) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, NOW())";
+            
+            $params = [
+                $level,
+                $message,
+                $context,
+                $user_id,
+                $ip_address,
+                $user_agent,
+                $metadata
+            ];
+            
+            return execute_query($sql, $params);
+        } catch (Exception $e) {
+            // Silently fail - don't break the application if logging fails
+            error_log("Error logging system event: " . $e->getMessage());
+            return false;
+        }
+    }
+}
+
+// Log security event (enhanced version that also logs to database)
+if (!function_exists('log_security_event_db')) {
+    function log_security_event_db($type, $details, $metadata = null) {
+        try {
+            // Check if security_logs table exists
+            $pdo = get_db_connection();
+            $checkTable = $pdo->query("SHOW TABLES LIKE 'security_logs'");
+            if ($checkTable->rowCount() === 0) {
+                // Table doesn't exist, fallback to file logging
+                if (function_exists('log_security_event')) {
+                    log_security_event($type, $details);
+                }
+                return false;
+            }
+            
+            $user_id = $_SESSION['user_id'] ?? null;
+            $ip_address = $_SERVER['REMOTE_ADDR'] ?? null;
+            $user_agent = $_SERVER['HTTP_USER_AGENT'] ?? null;
+            
+            if (is_array($metadata)) {
+                $metadata = json_encode($metadata);
+            }
+            
+            $sql = "INSERT INTO security_logs (type, details, user_id, ip_address, user_agent, metadata, created_at) 
+                    VALUES (?, ?, ?, ?, ?, ?, NOW())";
+            
+            $params = [
+                $type,
+                $details,
+                $user_id,
+                $ip_address,
+                $user_agent,
+                $metadata
+            ];
+            
+            $result = execute_query($sql, $params);
+            
+            // Also log to file as backup
+            if (function_exists('log_security_event')) {
+                log_security_event($type, $details);
+            }
+            
+            return $result;
+        } catch (Exception $e) {
+            // Fallback to file logging
+            if (function_exists('log_security_event')) {
+                log_security_event($type, $details);
+            }
+            error_log("Error logging security event: " . $e->getMessage());
+            return false;
+        }
+    }
+}
+
+// Get system logs count
+if (!function_exists('get_system_logs_count')) {
+    function get_system_logs_count($filters = []) {
+        try {
+            $pdo = get_db_connection();
+            $checkTable = $pdo->query("SHOW TABLES LIKE 'system_logs'");
+            if ($checkTable->rowCount() === 0) {
+                return 0;
+            }
+            
+            $sql = "SELECT COUNT(*) as total FROM system_logs sl WHERE 1=1";
+            $params = [];
+            
+            if (!empty($filters['level'])) {
+                $sql .= " AND sl.level = ?";
+                $params[] = $filters['level'];
+            }
+            
+            if (!empty($filters['context'])) {
+                $sql .= " AND sl.context = ?";
+                $params[] = $filters['context'];
+            }
+            
+            if (!empty($filters['search'])) {
+                $sql .= " AND (sl.message LIKE ? OR sl.context LIKE ?)";
+                $search_term = '%' . $filters['search'] . '%';
+                $params[] = $search_term;
+                $params[] = $search_term;
+            }
+            
+            if (!empty($filters['date_from'])) {
+                $sql .= " AND DATE(sl.created_at) >= ?";
+                $params[] = $filters['date_from'];
+            }
+            
+            if (!empty($filters['date_to'])) {
+                $sql .= " AND DATE(sl.created_at) <= ?";
+                $params[] = $filters['date_to'];
+            }
+            
+            $stmt = execute_query($sql, $params);
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            return (int)($result['total'] ?? 0);
+        } catch (Exception $e) {
+            error_log("Error getting system logs count: " . $e->getMessage());
+            return 0;
+        }
+    }
+}
+
+// Get system logs
+if (!function_exists('get_system_logs')) {
+    function get_system_logs($filters = [], $limit = 50, $offset = 0) {
+        try {
+            $pdo = get_db_connection();
+            $checkTable = $pdo->query("SHOW TABLES LIKE 'system_logs'");
+            if ($checkTable->rowCount() === 0) {
+                return [];
+            }
+            
+            $sql = "SELECT sl.*, u.username, u.name as user_name 
+                    FROM system_logs sl 
+                    LEFT JOIN users u ON sl.user_id = u.id 
+                    WHERE 1=1";
+            
+            $params = [];
+            
+            if (!empty($filters['level'])) {
+                $sql .= " AND sl.level = ?";
+                $params[] = $filters['level'];
+            }
+            
+            if (!empty($filters['context'])) {
+                $sql .= " AND sl.context = ?";
+                $params[] = $filters['context'];
+            }
+            
+            if (!empty($filters['search'])) {
+                $sql .= " AND (sl.message LIKE ? OR sl.context LIKE ?)";
+                $search_term = '%' . $filters['search'] . '%';
+                $params[] = $search_term;
+                $params[] = $search_term;
+            }
+            
+            if (!empty($filters['date_from'])) {
+                $sql .= " AND DATE(sl.created_at) >= ?";
+                $params[] = $filters['date_from'];
+            }
+            
+            if (!empty($filters['date_to'])) {
+                $sql .= " AND DATE(sl.created_at) <= ?";
+                $params[] = $filters['date_to'];
+            }
+            
+            $sql .= " ORDER BY sl.created_at DESC LIMIT ? OFFSET ?";
+            $params[] = $limit;
+            $params[] = $offset;
+            
+            $stmt = execute_query($sql, $params);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (Exception $e) {
+            error_log("Error getting system logs: " . $e->getMessage());
+            return [];
+        }
+    }
+}
+
+// Get security logs
+if (!function_exists('get_security_logs')) {
+    function get_security_logs($filters = [], $limit = 50, $offset = 0) {
+        try {
+            $pdo = get_db_connection();
+            $checkTable = $pdo->query("SHOW TABLES LIKE 'security_logs'");
+            if ($checkTable->rowCount() === 0) {
+                return [];
+            }
+            
+            $sql = "SELECT sl.*, u.username, u.name as user_name 
+                    FROM security_logs sl 
+                    LEFT JOIN users u ON sl.user_id = u.id 
+                    WHERE 1=1";
+            
+            $params = [];
+            
+            if (!empty($filters['type'])) {
+                $sql .= " AND sl.type = ?";
+                $params[] = $filters['type'];
+            }
+            
+            if (!empty($filters['search'])) {
+                $sql .= " AND (sl.details LIKE ? OR sl.type LIKE ?)";
+                $search_term = '%' . $filters['search'] . '%';
+                $params[] = $search_term;
+                $params[] = $search_term;
+            }
+            
+            if (!empty($filters['date_from'])) {
+                $sql .= " AND DATE(sl.created_at) >= ?";
+                $params[] = $filters['date_from'];
+            }
+            
+            if (!empty($filters['date_to'])) {
+                $sql .= " AND DATE(sl.created_at) <= ?";
+                $params[] = $filters['date_to'];
+            }
+            
+            $sql .= " ORDER BY sl.created_at DESC LIMIT ? OFFSET ?";
+            $params[] = $limit;
+            $params[] = $offset;
+            
+            $stmt = execute_query($sql, $params);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (Exception $e) {
+            error_log("Error getting security logs: " . $e->getMessage());
+            return [];
+        }
+    }
+}
+
+// ========================================
 // TIME OFF FUNCTIONS
 // ========================================
 
