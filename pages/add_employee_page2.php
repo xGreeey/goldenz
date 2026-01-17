@@ -4,21 +4,38 @@ $page = 'add_employee_page2';
 
 // Get logged-in user information
 $current_user_id = $_SESSION['user_id'] ?? $_SESSION['id'] ?? 1;
-$current_user_name = $_SESSION['user_name'] ?? $_SESSION['name'] ?? $_SESSION['username'] ?? 'System Administrator';
+$current_user_name = null;
+$current_user_department = null;
 
-// Try to get user name from database if we have user_id
+// Try to get user name and department from database if we have user_id
 if ($current_user_id && function_exists('get_db_connection')) {
     try {
         $pdo = get_db_connection();
-        $stmt = $pdo->prepare("SELECT name, username FROM users WHERE id = ?");
+        $stmt = $pdo->prepare("SELECT name, username, department FROM users WHERE id = ?");
         $stmt->execute([$current_user_id]);
         $user = $stmt->fetch();
         if ($user) {
-            $current_user_name = $user['name'] ?? $user['username'] ?? $current_user_name;
+            // Prioritize name field, fallback to username, then session, then default
+            $current_user_name = !empty(trim($user['name'] ?? '')) 
+                ? trim($user['name']) 
+                : (!empty(trim($user['username'] ?? '')) 
+                    ? trim($user['username']) 
+                    : ($_SESSION['user_name'] ?? $_SESSION['name'] ?? $_SESSION['username'] ?? 'System Administrator'));
+            $current_user_department = !empty(trim($user['department'] ?? '')) ? trim($user['department']) : null;
+        } else {
+            // User not found in database, use session values
+            $current_user_name = $_SESSION['user_name'] ?? $_SESSION['name'] ?? $_SESSION['username'] ?? 'System Administrator';
+            $current_user_department = $_SESSION['department'] ?? null;
         }
     } catch (Exception $e) {
-        // Use default if database query fails
+        // Use session values if database query fails
+        $current_user_name = $_SESSION['user_name'] ?? $_SESSION['name'] ?? $_SESSION['username'] ?? 'System Administrator';
+        $current_user_department = $_SESSION['department'] ?? null;
     }
+} else {
+    // No user_id, use session values
+    $current_user_name = $_SESSION['user_name'] ?? $_SESSION['name'] ?? $_SESSION['username'] ?? 'System Administrator';
+    $current_user_department = $_SESSION['department'] ?? null;
 }
 
 // ============================================================================
@@ -305,19 +322,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST)) {
                     // Ignore logging errors
                 }
                 
+                // Store employee info for modal display
+                $created_employee_name = trim(($page1_data['first_name'] ?? '') . ' ' . ($page1_data['surname'] ?? ''));
+                $created_employee_no = $page1_data['employee_no'] ?? '';
+                $created_employee_type = $page1_data['employee_type'] ?? '';
+                
                 // Clear session data
                 unset($_SESSION['employee_page1_data']);
                 unset($_SESSION['page1_data_ready']);
-                unset($_SESSION['employee_created_id']);
                 
                 $success = true;
                 
-                // Store success message in session for display on employees page
-                $_SESSION['employee_created_success'] = true;
+                // Store success info for modal display
+                $_SESSION['show_success_modal'] = true;
                 $_SESSION['employee_created_message'] = "Employee has been created successfully!";
+                $_SESSION['employee_created_id'] = $new_employee_id;
+                $_SESSION['employee_created_name'] = $created_employee_name;
+                $_SESSION['employee_created_no'] = $created_employee_no;
+                $_SESSION['employee_created_type'] = $created_employee_type;
                 
-                // Redirect to employees page
-                $_SESSION['employee_redirect_url'] = '?page=employees&success=employee_created';
+                // Also set for employees page (will be used after modal redirect)
+                $_SESSION['employee_created_success'] = true;
                 
             } else {
                 $errors[] = 'Failed to create employee. Please check all required fields and try again.';
@@ -351,7 +376,31 @@ if (!$has_page1_data && $_SERVER['REQUEST_METHOD'] !== 'POST') {
 ?>
 
 <?php
-// Handle redirect via JavaScript (since headers are already sent)
+// Check if we should show success modal
+$show_success_modal = false;
+$success_message = '';
+$created_employee_id = null;
+$created_employee_name = '';
+$created_employee_no = '';
+$created_employee_type = '';
+
+if (isset($_SESSION['show_success_modal']) && $_SESSION['show_success_modal']) {
+    $show_success_modal = true;
+    $success_message = $_SESSION['employee_created_message'] ?? 'Employee has been created successfully!';
+    $created_employee_id = $_SESSION['employee_created_id'] ?? null;
+    $created_employee_name = $_SESSION['employee_created_name'] ?? '';
+    $created_employee_no = $_SESSION['employee_created_no'] ?? '';
+    $created_employee_type = $_SESSION['employee_created_type'] ?? '';
+    
+    // Clear modal flags but keep employee_created_success and employee_created_message for employees page
+    unset($_SESSION['show_success_modal']);
+    unset($_SESSION['employee_created_name']);
+    unset($_SESSION['employee_created_no']);
+    unset($_SESSION['employee_created_type']);
+    // Keep employee_created_success, employee_created_message, and employee_created_id for redirect
+}
+
+// Handle redirect via JavaScript (for errors only)
 if (isset($_SESSION['employee_redirect_url'])) {
     $redirect_url = $_SESSION['employee_redirect_url'];
     unset($_SESSION['employee_redirect_url']);
@@ -374,13 +423,11 @@ if (isset($_SESSION['employee_redirect_url'])) {
             <h1 class="page-title-main">Add New Employee - Page 2</h1>
             <p class="page-subtitle-modern">Complete the employee application form</p>
             <?php if ($has_page1_data): ?>
-                <div class="alert alert-info mt-2 mb-0" style="font-size: 0.875rem;">
-                    <i class="fas fa-user-plus me-2"></i>
-                    <strong>Creating New Employee:</strong> 
-                    <?php echo htmlspecialchars($page1_data['employee_type'] ?? ''); ?> 
-                    #<?php echo htmlspecialchars($page1_data['employee_no'] ?? ''); ?> - 
-                    <?php echo htmlspecialchars(trim(($page1_data['first_name'] ?? '') . ' ' . ($page1_data['surname'] ?? ''))); ?>
-                    <span class="text-muted">(Data from Page 1 - Not yet saved to database)</span>
+                <div class="alert alert-info mt-2 mb-0" style="font-size: 0.875rem; border-left: 3px solid #0dcaf0;">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Draft Employee:</strong>&nbsp;
+                    <span class="text-dark"><?php echo htmlspecialchars(trim(($page1_data['first_name'] ?? '') . ' ' . ($page1_data['surname'] ?? ''))); ?></span>
+                    <span class="text-muted">(<?php echo htmlspecialchars($page1_data['employee_type'] ?? ''); ?> #<?php echo htmlspecialchars($page1_data['employee_no'] ?? ''); ?>)</span>
                 </div>
             <?php endif; ?>
         </div>
@@ -451,10 +498,7 @@ if (isset($_SESSION['employee_redirect_url'])) {
                 <!-- Employee Created By Info -->
                 <div class="alert alert-info">
                     <span class="hr-icon hr-icon-message me-2"></span>
-                    <strong>Recorded By:</strong> <?php echo htmlspecialchars($current_user_name); ?> 
-                    <?php if ($current_user_id): ?>
-                        (User ID: <?php echo $current_user_id; ?>)
-                    <?php endif; ?>
+                    <strong>Recorded By:</strong>&nbsp;<?php echo htmlspecialchars($current_user_name); ?><?php if ($current_user_department): ?> <?php echo htmlspecialchars($current_user_department); ?><?php endif; ?>
                 </div>
 
                 <!-- General Information Section -->
@@ -1086,6 +1130,54 @@ if (isset($_SESSION['employee_redirect_url'])) {
     </div>
 </div>
 
+<!-- Success Popup Modal -->
+<?php if ($show_success_modal): ?>
+<div class="modal fade show" id="successModal" tabindex="-1" role="dialog" aria-labelledby="successModalLabel" aria-hidden="false" style="display: block !important; background-color: rgba(0,0,0,0.5); position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1050;">
+    <div class="modal-dialog" role="document" style="margin: 2rem auto auto auto; max-width: 500px; position: relative;">
+        <div class="modal-content" style="border: none; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+            <div class="modal-header bg-success text-white" style="border-radius: 8px 8px 0 0; padding: 1rem 1.5rem;">
+                <h5 class="modal-title" id="successModalLabel" style="margin: 0; font-weight: 600;">
+                    <i class="fas fa-check-circle me-2"></i>Success!
+                </h5>
+                <button type="button" class="btn-close btn-close-white" aria-label="Close" onclick="closeSuccessModal()" style="margin: 0;"></button>
+            </div>
+            <div class="modal-body" style="padding: 1.5rem;">
+                <div class="text-center mb-3">
+                    <i class="fas fa-check-circle text-success" style="font-size: 3rem;"></i>
+                </div>
+                <p class="mb-0 text-center" style="font-size: 1.1rem;"><?php echo htmlspecialchars($success_message); ?></p>
+                <?php if ($created_employee_name): ?>
+                    <p class="text-center mt-3 mb-1" style="font-size: 1rem; font-weight: 500;">
+                        <?php echo htmlspecialchars($created_employee_name); ?>
+                    </p>
+                    <p class="text-muted small mt-1 mb-0 text-center">
+                        <?php if ($created_employee_type): ?>
+                            <?php echo htmlspecialchars($created_employee_type); ?>
+                        <?php endif; ?>
+                        <?php if ($created_employee_no): ?>
+                            #<?php echo htmlspecialchars($created_employee_no); ?>
+                        <?php endif; ?>
+                        <?php if ($created_employee_id): ?>
+                            <br>Employee ID: <strong><?php echo htmlspecialchars($created_employee_id); ?></strong>
+                        <?php endif; ?>
+                    </p>
+                <?php elseif ($created_employee_id): ?>
+                    <p class="text-muted small mt-2 mb-0 text-center">Employee ID: <strong><?php echo htmlspecialchars($created_employee_id); ?></strong></p>
+                <?php endif; ?>
+            </div>
+            <div class="modal-footer" style="border-top: 1px solid #dee2e6; padding: 1rem 1.5rem; border-radius: 0 0 8px 8px;">
+                <button type="button" class="btn btn-outline-modern" onclick="closeSuccessModal()">
+                    <i class="fas fa-times me-2"></i>Close
+                </button>
+                <a href="?page=employees" class="btn btn-primary-modern">
+                    <i class="fas fa-list me-2"></i>View All Employees
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+<?php endif; ?>
+
 <?php
 // Include paths helper if not already included
 if (!function_exists('base_url')) {
@@ -1098,6 +1190,21 @@ $css_path = ($root_prefix ? $root_prefix : '') . '/pages/css/add_employee.css';
 <link rel="stylesheet" href="<?php echo htmlspecialchars($css_path); ?>">
 
 <script>
+// Success Modal Functions
+function closeSuccessModal() {
+    const modal = document.getElementById('successModal');
+    if (modal) {
+        modal.style.opacity = '0';
+        modal.style.transition = 'opacity 0.3s ease';
+        setTimeout(() => {
+            modal.style.display = 'none';
+            modal.remove();
+            // Redirect to employees page after closing modal
+            window.location.href = '?page=employees&success=employee_created';
+        }, 300);
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     // Page 2: Make Y/N checkboxes mutually exclusive
     document.querySelectorAll('input[type="checkbox"][name^="req_"]').forEach(checkbox => {
@@ -1113,5 +1220,38 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+    
+    // Close modal on escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            const modal = document.getElementById('successModal');
+            if (modal && modal.style.display === 'block') {
+                closeSuccessModal();
+            }
+        }
+    });
+    
+    // Close modal on backdrop click
+    const modal = document.getElementById('successModal');
+    if (modal) {
+        modal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeSuccessModal();
+            }
+        });
+    }
+    
+    // Reset form after successful creation
+    <?php if ($show_success_modal): ?>
+    const form = document.getElementById('page2EmployeeForm');
+    if (form) {
+        // Reset the form
+        form.reset();
+        // Clear any validation classes
+        form.querySelectorAll('.is-invalid, .is-valid').forEach(el => {
+            el.classList.remove('is-invalid', 'is-valid');
+        });
+    }
+    <?php endif; ?>
 });
 </script>
