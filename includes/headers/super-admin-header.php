@@ -23,6 +23,7 @@ function getPageTitle($page) {
         'edit_post' => 'Edit Post',
         'post_assignments' => 'Post Assignments',
         'settings' => 'System Settings',
+        'profile' => 'My Profile',
         'integrations' => 'Integrations',
         'help' => 'Help & Support',
         'users' => 'User Management',
@@ -384,6 +385,9 @@ $activeSection = getActiveSection($page);
                     break;
                 case 'settings':
                     include $pages_path . 'settings.php';
+                    break;
+                case 'profile':
+                    include $pages_path . 'profile.php';
                     break;
                 case 'posts':
                     include $pages_path . 'posts.php';

@@ -123,6 +123,126 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         exit;
     }
     
+    // Handle profile update (AJAX)
+    if ($action === 'update_profile' && $isAjax) {
+        $current_user_id = $_SESSION['user_id'] ?? null;
+        
+        if (!$current_user_id) {
+            echo json_encode(['success' => false, 'message' => 'User not authenticated']);
+            exit;
+        }
+        
+        try {
+            $pdo = get_db_connection();
+            
+            // Get current user data
+            $current_user = get_user_by_id($current_user_id);
+            if (!$current_user) {
+                echo json_encode(['success' => false, 'message' => 'User not found']);
+                exit;
+            }
+            
+            $updates = [];
+            $params = [];
+            $user_updates = [];
+            $user_params = [];
+            
+            // Update user email if provided and valid
+            if (isset($_POST['email']) && !empty(trim($_POST['email']))) {
+                $email = trim($_POST['email']);
+                if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                    // Check if email is already taken
+                    $check_stmt = $pdo->prepare("SELECT id FROM users WHERE email = ? AND id != ?");
+                    $check_stmt->execute([$email, $current_user_id]);
+                    if ($check_stmt->rowCount() === 0) {
+                        $user_updates[] = "email = ?";
+                        $user_params[] = $email;
+                    } else {
+                        echo json_encode(['success' => false, 'message' => 'Email address is already in use']);
+                        exit;
+                    }
+                } else {
+                    echo json_encode(['success' => false, 'message' => 'Invalid email address format']);
+                    exit;
+                }
+            }
+            
+            // Update employee data if user is linked to an employee
+            if (!empty($current_user['employee_id'])) {
+                if (isset($_POST['first_name']) && !empty(trim($_POST['first_name']))) {
+                    $updates[] = "first_name = ?";
+                    $params[] = trim($_POST['first_name']);
+                }
+                
+                if (isset($_POST['last_name']) && !empty(trim($_POST['last_name']))) {
+                    $updates[] = "surname = ?";
+                    $params[] = trim($_POST['last_name']);
+                }
+                
+                if (isset($_POST['contact_number']) && !empty(trim($_POST['contact_number']))) {
+                    $updates[] = "cp_number = ?";
+                    $params[] = trim($_POST['contact_number']);
+                }
+                
+                if (isset($_POST['position']) && !empty(trim($_POST['position']))) {
+                    $updates[] = "post = ?";
+                    $params[] = trim($_POST['position']);
+                }
+                
+                if (isset($_POST['date_hired']) && !empty(trim($_POST['date_hired']))) {
+                    $updates[] = "date_hired = ?";
+                    $params[] = trim($_POST['date_hired']);
+                }
+                
+                // Update employees table
+                if (!empty($updates)) {
+                    $params[] = $current_user['employee_id'];
+                    $sql = "UPDATE employees SET " . implode(", ", $updates) . ", updated_at = NOW() WHERE id = ?";
+                    $stmt = $pdo->prepare($sql);
+                    $stmt->execute($params);
+                }
+            }
+            
+            // Update users table
+            if (!empty($user_updates)) {
+                // Update department if provided
+                if (isset($_POST['department']) && !empty(trim($_POST['department']))) {
+                    $user_updates[] = "department = ?";
+                    $user_params[] = trim($_POST['department']);
+                }
+                
+                $user_params[] = $current_user_id;
+                $user_sql = "UPDATE users SET " . implode(", ", $user_updates) . ", updated_at = NOW() WHERE id = ?";
+                $user_stmt = $pdo->prepare($user_sql);
+                $user_stmt->execute($user_params);
+            } elseif (isset($_POST['department']) && !empty(trim($_POST['department']))) {
+                // Only department update
+                $user_sql = "UPDATE users SET department = ?, updated_at = NOW() WHERE id = ?";
+                $user_stmt = $pdo->prepare($user_sql);
+                $user_stmt->execute([trim($_POST['department']), $current_user_id]);
+            }
+            
+            // Update session variables
+            if (isset($_POST['email']) && filter_var($_POST['email'], FILTER_VALIDATE_EMAIL)) {
+                $_SESSION['email'] = trim($_POST['email']);
+            }
+            
+            if (isset($_POST['first_name']) || isset($_POST['last_name'])) {
+                $first_name = trim($_POST['first_name'] ?? '');
+                $last_name = trim($_POST['last_name'] ?? '');
+                if (!empty($first_name) || !empty($last_name)) {
+                    $_SESSION['name'] = trim($first_name . ' ' . $last_name);
+                }
+            }
+            
+            echo json_encode(['success' => true, 'message' => 'Profile updated successfully']);
+        } catch (Exception $e) {
+            error_log('Profile update error: ' . $e->getMessage());
+            echo json_encode(['success' => false, 'message' => 'An error occurred while updating your profile']);
+        }
+        exit;
+    }
+    
     // Other POST handlers can be added here
     echo json_encode(['success' => false, 'message' => 'Invalid action']);
     exit;
