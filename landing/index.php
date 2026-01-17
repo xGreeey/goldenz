@@ -321,6 +321,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
                             $update_stmt->execute([$_SERVER['REMOTE_ADDR'] ?? null, $user['id']]);
                             
                             // Log successful login
+                            // Log to system logs
+                            if (function_exists('log_system_event')) {
+                                log_system_event('info', "User logged in: {$user['username']} ({$user['name']})", 'authentication', [
+                                    'user_id' => $user['id'],
+                                    'role' => $user['role'],
+                                    'ip' => $_SERVER['REMOTE_ADDR'] ?? null
+                                ]);
+                            }
+                            
                             if (function_exists('log_security_event')) {
                                 log_security_event('Login Success', "User: {$user['username']} ({$user['name']}) - Role: {$user['role']} - IP: " . ($_SERVER['REMOTE_ADDR'] ?? 'Unknown'));
                             }
@@ -358,6 +367,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
                     $debug_info[] = "Password verification failed";
                     
                     // Log failed login attempt
+                    // Log to system logs
+                    if (function_exists('log_system_event')) {
+                        log_system_event('warning', "Failed login attempt for user: {$user['username']}", 'authentication', [
+                            'user_id' => $user['id'],
+                            'ip' => $_SERVER['REMOTE_ADDR'] ?? null,
+                            'failed_attempts' => $user['failed_login_attempts'] + 1
+                        ]);
+                    }
+                    
                     if (function_exists('log_security_event')) {
                         log_security_event('Login Failed', "User: {$user['username']} - IP: " . ($_SERVER['REMOTE_ADDR'] ?? 'Unknown'));
                     }
@@ -368,6 +386,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
                     if ($failed_attempts >= 5) {
                         $locked_until = date('Y-m-d H:i:s', strtotime('+30 minutes'));
                         // Log account lockout
+                        // Log to system logs
+                        if (function_exists('log_system_event')) {
+                            log_system_event('error', "Account locked: {$user['username']} - 5 failed login attempts", 'authentication', [
+                                'user_id' => $user['id'],
+                                'ip' => $_SERVER['REMOTE_ADDR'] ?? null,
+                                'lockout_duration' => '30 minutes'
+                            ]);
+                        }
+                        
                         if (function_exists('log_security_event')) {
                             log_security_event('Account Locked', "User: {$user['username']} - Locked for 30 minutes due to 5 failed login attempts");
                         }
