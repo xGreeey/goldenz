@@ -32,6 +32,8 @@ function getPageTitle($page) {
         'profile' => 'My Profile',
         'integrations' => 'Integrations',
         'help' => 'Help & Support',
+        'developer-dashboard' => 'Developer Dashboard',
+        'system_logs' => 'System Logs',
     ];
     
     return $titles[$page] ?? 'Dashboard';
@@ -88,6 +90,9 @@ if ($userRole === 'hr_admin') {
     <link href="<?php echo asset_url('css/style.css'); ?>" rel="stylesheet">
     <link href="<?php echo asset_url('css/font-override.css'); ?>" rel="stylesheet">
     <!-- number-rendering-fix.css merged into font-override.css -->
+    <?php if ($page === 'developer-dashboard'): ?>
+    <link href="<?php echo asset_url('css/developer-dashboard.css'); ?>" rel="stylesheet">
+    <?php endif; ?>
     
     <!-- Security Headers -->
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
@@ -103,7 +108,7 @@ if ($userRole === 'hr_admin') {
         <!-- Header -->
         <?php 
         // Pages that should not show the header
-        $pages_without_header = ['permissions', 'add_employee', 'add_employee_page2', 'view_employee', 'tasks', 'hr-help', 'help', 'dashboard', 'employees', 'posts', 'post_assignments', 'alerts'];
+        $pages_without_header = ['permissions', 'add_employee', 'add_employee_page2', 'view_employee', 'tasks', 'hr-help', 'help', 'dashboard', 'employees', 'posts', 'post_assignments', 'alerts', 'developer-dashboard', 'system_logs'];
         
         // Pages that should show HR Admin header section (welcome section with notifications, etc.)
         // All pages now have their own header sections, so none are included here
@@ -177,6 +182,17 @@ if ($userRole === 'hr_admin') {
                     break;
                 case 'profile':
                     include $pagesPath . 'profile.php';
+                    break;
+                case 'developer-dashboard':
+                    include $pagesPath . 'developer-dashboard.php';
+                    break;
+                case 'system_logs':
+                    // Developer-specific system logs
+                    if (($userRole ?? '') === 'developer') {
+                        include $pagesPath . 'developer-system-logs.php';
+                    } else {
+                        include $pagesPath . 'system_logs.php';
+                    }
                     break;
                 default:
                     include $pagesPath . 'dashboard.php';
