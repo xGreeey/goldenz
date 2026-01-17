@@ -43,21 +43,38 @@ $page1_session_data = $_SESSION['employee_page1_data'] ?? null;
 // Get logged-in user information
 // Try to get from session, or use default system user
 $current_user_id = $_SESSION['user_id'] ?? $_SESSION['id'] ?? 1; // Default to user ID 1 (admin)
-$current_user_name = $_SESSION['user_name'] ?? $_SESSION['name'] ?? $_SESSION['username'] ?? 'System Administrator';
+$current_user_name = null;
+$current_user_department = null;
 
-// Try to get user name from database if we have user_id
+// Try to get user name and department from database if we have user_id
 if ($current_user_id && function_exists('get_db_connection')) {
     try {
         $pdo = get_db_connection();
-        $stmt = $pdo->prepare("SELECT name, username FROM users WHERE id = ?");
+        $stmt = $pdo->prepare("SELECT name, username, department FROM users WHERE id = ?");
         $stmt->execute([$current_user_id]);
         $user = $stmt->fetch();
         if ($user) {
-            $current_user_name = $user['name'] ?? $user['username'] ?? $current_user_name;
+            // Prioritize name field, fallback to username, then session, then default
+            $current_user_name = !empty(trim($user['name'] ?? '')) 
+                ? trim($user['name']) 
+                : (!empty(trim($user['username'] ?? '')) 
+                    ? trim($user['username']) 
+                    : ($_SESSION['user_name'] ?? $_SESSION['name'] ?? $_SESSION['username'] ?? 'System Administrator'));
+            $current_user_department = !empty(trim($user['department'] ?? '')) ? trim($user['department']) : null;
+        } else {
+            // User not found in database, use session values
+            $current_user_name = $_SESSION['user_name'] ?? $_SESSION['name'] ?? $_SESSION['username'] ?? 'System Administrator';
+            $current_user_department = $_SESSION['department'] ?? null;
         }
     } catch (Exception $e) {
-        // Use default if database query fails
+        // Use session values if database query fails
+        $current_user_name = $_SESSION['user_name'] ?? $_SESSION['name'] ?? $_SESSION['username'] ?? 'System Administrator';
+        $current_user_department = $_SESSION['department'] ?? null;
     }
+} else {
+    // No user_id, use session values
+    $current_user_name = $_SESSION['user_name'] ?? $_SESSION['name'] ?? $_SESSION['username'] ?? 'System Administrator';
+    $current_user_department = $_SESSION['department'] ?? null;
 }
 
 // Handle form submission
@@ -730,10 +747,7 @@ if (isset($_SESSION['employee_redirect_url'])) {
                 <!-- Employee Created By Info -->
                 <div class="alert alert-info">
                     <span class="hr-icon hr-icon-message me-2"></span>
-                    <strong>Recorded By:</strong> <?php echo htmlspecialchars($current_user_name); ?> 
-                    <?php if ($current_user_id): ?>
-                        (User ID: <?php echo $current_user_id; ?>)
-                    <?php endif; ?>
+                    <strong>Recorded By:</strong>&nbsp;<?php echo htmlspecialchars($current_user_name); ?><?php if ($current_user_department): ?> <?php echo htmlspecialchars($current_user_department); ?><?php endif; ?>
                 </div>
 
                 <!-- Basic Information Section -->
@@ -1846,7 +1860,6 @@ if (isset($_SESSION['employee_redirect_url'])) {
                 </div>
                 
                 <!-- Form Actions -->
-                <div class="text-muted small text-end mb-3" style="padding-left: 0; padding-right: 0;">Submission will be attributed to: <?php echo htmlspecialchars($current_user_name); ?><?php echo $current_user_id ? " (User ID: {$current_user_id})" : ''; ?></div>
                 <div class="form-actions d-flex justify-content-end" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #e2e8f0; visibility: visible !important; display: flex !important;">
                     <a href="?page=employees" class="btn btn-outline-modern me-2">
                         <i class="fas fa-times me-2"></i>Cancel
