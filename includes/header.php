@@ -102,12 +102,16 @@ if ($userRole === 'hr_admin') {
         <!-- Header -->
         <?php 
         // Pages that should not show the header
-        $pages_without_header = ['permissions', 'employees', 'dashboard', 'posts', 'post_assignments', 'alerts', 'add_employee', 'add_employee_page2', 'view_employee', 'tasks', 'hr-help', 'help'];
+        $pages_without_header = ['permissions', 'add_employee', 'add_employee_page2', 'view_employee', 'tasks', 'hr-help', 'help', 'dashboard', 'employees', 'posts', 'post_assignments', 'alerts'];
+        
+        // Pages that should show HR Admin header section (welcome section with notifications, etc.)
+        // All pages now have their own header sections, so none are included here
+        $pages_with_hr_header = [];
 
-        // HR Admin: no header (moved to dashboard welcome section)
-        if (($userRole ?? '') === 'hr_admin'): 
+        // HR Admin: show header section on specific pages
+        if (($userRole ?? '') === 'hr_admin' && in_array($page, $pages_with_hr_header)): 
         ?>
-        <!-- HR Admin header removed - welcome section in dashboard instead -->
+        <?php include __DIR__ . '/hr-admin-header-section.php'; ?>
         <?php
         elseif (($userRole ?? '') !== 'hr_admin' && !in_array($page, $pages_without_header)): 
         ?>
@@ -166,6 +170,9 @@ if ($userRole === 'hr_admin') {
                     break;
                 case 'post_assignments':
                     include $pagesPath . 'post_assignments.php';
+                    break;
+                case 'settings':
+                    include $pagesPath . 'hr-admin-settings.php';
                     break;
                 default:
                     include $pagesPath . 'dashboard.php';
