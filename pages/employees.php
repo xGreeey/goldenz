@@ -267,6 +267,7 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
 
 <div class="container-fluid hrdash">
     <!-- Header Section with Actions -->
+    <?php if (($_SESSION['user_role'] ?? '') !== 'super_admin'): ?>
     <div class="hrdash-welcome">
         <div class="hrdash-welcome__left">
             <h2 class="hrdash-welcome__title">Employee Management</h2>
@@ -477,6 +478,7 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
             </div>
         </div>
     </div>
+    <?php endif; ?>
 
     <!-- Breadcrumb -->
     <nav class="hr-breadcrumb" aria-label="Breadcrumb">
