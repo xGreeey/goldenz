@@ -632,6 +632,49 @@ if (!function_exists('delete_employee')) {
     }
 }
 
+// Fix employee auto-increment counter
+// This resets the auto-increment to be one more than the maximum existing ID
+if (!function_exists('fix_employee_auto_increment')) {
+    function fix_employee_auto_increment() {
+        try {
+            $pdo = get_db_connection();
+            
+            // Get the maximum ID from the employees table
+            $stmt = $pdo->query("SELECT COALESCE(MAX(id), 0) as max_id FROM employees");
+            $result = $stmt->fetch();
+            $max_id = (int)($result['max_id'] ?? 0);
+            
+            // Set the auto-increment to max_id + 1
+            $new_auto_increment = $max_id + 1;
+            $pdo->exec("ALTER TABLE employees AUTO_INCREMENT = {$new_auto_increment}");
+            
+            // Verify the fix
+            $stmt = $pdo->query("SELECT AUTO_INCREMENT 
+                                 FROM information_schema.TABLES 
+                                 WHERE TABLE_SCHEMA = DATABASE() 
+                                 AND TABLE_NAME = 'employees'");
+            $verify = $stmt->fetch();
+            $actual_auto_increment = (int)($verify['AUTO_INCREMENT'] ?? 0);
+            
+            return [
+                'success' => true,
+                'max_id' => $max_id,
+                'new_auto_increment' => $new_auto_increment,
+                'actual_auto_increment' => $actual_auto_increment,
+                'message' => "Auto-increment reset successfully. Next employee ID will be: {$new_auto_increment}"
+            ];
+        } catch (Exception $e) {
+            log_db_error('fix_employee_auto_increment', 'Error fixing auto-increment', [
+                'error' => $e->getMessage()
+            ]);
+            return [
+                'success' => false,
+                'message' => 'Error fixing auto-increment: ' . $e->getMessage()
+            ];
+        }
+    }
+}
+
 // Get dashboard statistics
 if (!function_exists('get_dashboard_stats')) {
     function get_dashboard_stats() {
