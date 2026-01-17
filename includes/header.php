@@ -29,6 +29,7 @@ function getPageTitle($page) {
         'edit_post' => 'Edit Post',
         'post_assignments' => 'Post Assignments',
         'settings' => 'System Settings',
+        'profile' => 'My Profile',
         'integrations' => 'Integrations',
         'help' => 'Help & Support',
     ];
@@ -173,6 +174,9 @@ if ($userRole === 'hr_admin') {
                     break;
                 case 'settings':
                     include $pagesPath . 'hr-admin-settings.php';
+                    break;
+                case 'profile':
+                    include $pagesPath . 'profile.php';
                     break;
                 default:
                     include $pagesPath . 'dashboard.php';
