@@ -9,10 +9,10 @@ if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'super_admin') 
 }
 ?>
 
-<div class="container-fluid super-admin-teams">
-    <div class="page-header-modern mb-4">
+
+    <div class="page-header-modern mb-3">
         <div class="page-title-modern">
-            <h1 class="page-title-main">Teams</h1>
+            <h1 class="page-title-main">Teams Overview</h1>
             <p class="page-subtitle">Create, edit, assign users, and control module access.</p>
         </div>
         <div class="page-actions-modern">
@@ -22,7 +22,71 @@ if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'super_admin') 
         </div>
     </div>
 
-    <div class="row g-4">
+    <!-- Team Statistics -->
+    <div class="row g-3 mb-3">
+        <div class="col-md-3 col-sm-6">
+            <div class="card stat-card-modern h-100">
+                <div class="card-body-modern">
+                    <div class="stat-header">
+                        <span class="stat-label">Total Teams</span>
+                        <i class="fas fa-users stat-icon"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 class="stat-number">2</h3>
+                        <span class="badge badge-primary-modern">2 Active</span>
+                    </div>
+                    <small class="stat-footer">All teams in system</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="card stat-card-modern h-100">
+                <div class="card-body-modern">
+                    <div class="stat-header">
+                        <span class="stat-label">Total Members</span>
+                        <i class="fas fa-user-friends stat-icon"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 class="stat-number">20</h3>
+                        <span class="badge badge-success-modern">18 Active</span>
+                    </div>
+                    <small class="stat-footer">Across all teams</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="card stat-card-modern h-100">
+                <div class="card-body-modern">
+                    <div class="stat-header">
+                        <span class="stat-label">Team Leads</span>
+                        <i class="fas fa-user-tie stat-icon"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 class="stat-number">2</h3>
+                        <span class="badge badge-primary-modern">2 Assigned</span>
+                    </div>
+                    <small class="stat-footer">Active team leaders</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="card stat-card-modern h-100">
+                <div class="card-body-modern">
+                    <div class="stat-header">
+                        <span class="stat-label">Avg Team Size</span>
+                        <i class="fas fa-chart-line stat-icon"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 class="stat-number">10</h3>
+                        <span class="badge badge-warning-modern">±2 members</span>
+                    </div>
+                    <small class="stat-footer">Average per team</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3">
         <!-- Team Editor -->
         <div class="col-xl-5">
             <div class="card card-modern h-100">
@@ -162,7 +226,7 @@ if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'super_admin') 
         </div>
     </div>
 
-    <div class="row g-4 mt-1">
+    <div class="row g-3 mt-1">
         <!-- Team Roles & Permissions -->
         <div class="col-xl-6">
             <div class="card card-modern h-100">
@@ -254,10 +318,11 @@ if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'super_admin') 
 
 <style>
 .super-admin-teams {
-    padding: 2rem 2.5rem;
+    padding: 1rem 1.5rem;
     max-width: 100%;
     background: #f8fafc;
     min-height: 100vh;
+    border-radius: 14px;
 }
 
 /* Card styling to match HR admin dashboard */
@@ -276,12 +341,12 @@ if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'super_admin') 
 }
 
 .super-admin-teams .card-body-modern {
-    padding: 1.5rem;
+    padding: 1rem;
 }
 
 .super-admin-teams .card-header-modern {
-    margin-bottom: 1.5rem;
-    padding-bottom: 1rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
     border-bottom: 1px solid #e2e8f0;
 }
 
@@ -296,6 +361,53 @@ if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'super_admin') 
     font-size: 0.875rem;
     color: #64748b;
     margin: 0;
+}
+
+/* Compact form spacing */
+.super-admin-teams .row.g-3 > * {
+    padding-right: calc(var(--bs-gutter-x) * 0.5);
+    padding-left: calc(var(--bs-gutter-x) * 0.5);
+    margin-top: calc(var(--bs-gutter-y) * 0.5);
+}
+
+.super-admin-teams form .row.g-3 {
+    margin-bottom: 0.75rem;
+}
+
+.super-admin-teams .form-label {
+    margin-bottom: 0.375rem;
+    font-size: 0.875rem;
+}
+
+.super-admin-teams textarea.form-control {
+    min-height: 80px;
+}
+
+.super-admin-teams .page-header-modern {
+    padding: 1rem 1.25rem;
+    margin-bottom: 1rem;
+}
+
+.super-admin-teams .page-title-main {
+    font-size: 1.5rem;
+    margin-bottom: 0.25rem;
+}
+
+.super-admin-teams .page-subtitle {
+    font-size: 0.875rem;
+    margin-bottom: 0;
+}
+
+.super-admin-teams .mb-3 {
+    margin-bottom: 0.75rem !important;
+}
+
+.super-admin-teams .mb-4 {
+    margin-bottom: 1rem !important;
+}
+
+.super-admin-teams .card-modern.mb-4 {
+    margin-bottom: 1rem !important;
 }
 
 /* Dark theme support for Super Admin Teams */
