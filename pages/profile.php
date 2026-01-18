@@ -3,6 +3,11 @@
 $page_title = 'Profile - Golden Z-5 HR System';
 $page = 'profile';
 
+// Ensure paths.php is included for get_avatar_url() function
+if (!function_exists('get_avatar_url')) {
+    require_once __DIR__ . '/../includes/paths.php';
+}
+
 // Get current user info
 $current_user_id = $_SESSION['user_id'] ?? null;
 $current_user = null;
@@ -35,7 +40,6 @@ if (!empty($employee_data['post'])) {
 }
 
 // Handle form submission
-$update_success = false;
 $update_error = null;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'update_profile') {
@@ -47,6 +51,66 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         $user_params = [];
         $employee_updates = [];
         $employee_params = [];
+        
+        // Handle avatar upload (users table)
+        if (isset($_FILES['avatar']) && is_uploaded_file($_FILES['avatar']['tmp_name'])) {
+            if ($_FILES['avatar']['error'] === UPLOAD_ERR_OK) {
+                $upload_dir = __DIR__ . '/../uploads/users/';
+                if (!file_exists($upload_dir)) {
+                    if (!mkdir($upload_dir, 0755, true)) {
+                        $update_error = 'Failed to create upload directory. Please check permissions.';
+                    }
+                }
+                
+                if (empty($update_error)) {
+                    $file = $_FILES['avatar'];
+                    $allowed_types = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+                    $max_size = 2 * 1024 * 1024; // 2MB
+                    
+                    if (in_array($file['type'], $allowed_types) && $file['size'] <= $max_size) {
+                        $extension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+                        $filename = 'user_' . $current_user_id . '_' . time() . '.' . $extension;
+                        $target_path = $upload_dir . $filename;
+                        
+                        if (move_uploaded_file($file['tmp_name'], $target_path)) {
+                            // Delete old avatar if exists
+                            if (!empty($current_user['avatar'])) {
+                                $old_avatar_path = __DIR__ . '/../' . $current_user['avatar'];
+                                if (file_exists($old_avatar_path)) {
+                                    @unlink($old_avatar_path);
+                                }
+                            }
+                            
+                            $avatar_path = 'uploads/users/' . $filename;
+                            $user_updates[] = "avatar = ?";
+                            $user_params[] = $avatar_path;
+                        } else {
+                            $update_error = 'Failed to move uploaded file. Please check file permissions.';
+                            error_log('Avatar upload failed: Cannot move file from ' . $file['tmp_name'] . ' to ' . $target_path);
+                        }
+                    } else {
+                        if (!in_array($file['type'], $allowed_types)) {
+                            $update_error = 'Invalid file type. Please upload a JPG, PNG, or GIF image.';
+                        } elseif ($file['size'] > $max_size) {
+                            $update_error = 'File size too large. Maximum size is 2MB.';
+                        }
+                    }
+                }
+            } else {
+                // Handle upload errors
+                $upload_errors = [
+                    UPLOAD_ERR_INI_SIZE => 'File exceeds upload_max_filesize directive.',
+                    UPLOAD_ERR_FORM_SIZE => 'File exceeds MAX_FILE_SIZE directive.',
+                    UPLOAD_ERR_PARTIAL => 'File was only partially uploaded.',
+                    UPLOAD_ERR_NO_TMP_DIR => 'Missing temporary folder.',
+                    UPLOAD_ERR_CANT_WRITE => 'Failed to write file to disk.',
+                    UPLOAD_ERR_EXTENSION => 'File upload stopped by extension.'
+                ];
+                $error_code = $_FILES['avatar']['error'];
+                $update_error = $upload_errors[$error_code] ?? 'Unknown upload error occurred (Error code: ' . $error_code . ').';
+                error_log('Avatar upload error: ' . $update_error);
+            }
+        }
         
         // Email update (users table)
         if (isset($_POST['email']) && !empty(trim($_POST['email']))) {
@@ -120,8 +184,53 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         if (!empty($user_updates) && empty($update_error)) {
             $user_params[] = $current_user_id;
             $user_sql = "UPDATE users SET " . implode(", ", $user_updates) . ", updated_at = NOW() WHERE id = ?";
-            $user_stmt = $pdo->prepare($user_sql);
-            $user_stmt->execute($user_params);
+            try {
+                // Check if avatar column exists
+                $check_avatar_col = $pdo->query("SHOW COLUMNS FROM users LIKE 'avatar'");
+                if ($check_avatar_col->rowCount() === 0) {
+                    $update_error = 'Avatar column does not exist in users table.';
+                    error_log('Avatar column missing in users table');
+                } else {
+                    $user_stmt = $pdo->prepare($user_sql);
+                    if ($user_stmt->execute($user_params)) {
+                        // Success - avatar or other fields updated
+                        $rows_affected = $user_stmt->rowCount();
+                        
+                        // Verify avatar was saved if it was in the update
+                        if (in_array('avatar = ?', $user_updates)) {
+                            $avatar_index = array_search('avatar = ?', $user_updates);
+                            $saved_avatar_path = $user_params[$avatar_index];
+                            
+                            // Verify the avatar was actually saved to database
+                            $verify_stmt = $pdo->prepare("SELECT avatar FROM users WHERE id = ?");
+                            $verify_stmt->execute([$current_user_id]);
+                            $verify_result = $verify_stmt->fetch(PDO::FETCH_ASSOC);
+                            
+                            if ($verify_result && $verify_result['avatar'] !== $saved_avatar_path) {
+                                error_log('Avatar verification failed: Expected ' . $saved_avatar_path . ' but got ' . ($verify_result['avatar'] ?? 'NULL'));
+                                $update_error = 'Avatar was uploaded but not saved to database correctly.';
+                            } else {
+                                // Avatar saved successfully
+                                error_log('Avatar saved successfully: ' . $saved_avatar_path);
+                            }
+                        }
+                        
+                        if ($rows_affected === 0) {
+                            error_log('Profile update: No rows affected. SQL: ' . $user_sql . ' Params: ' . print_r($user_params, true));
+                        }
+                    } else {
+                        $error_info = $user_stmt->errorInfo();
+                        error_log('Profile update failed: ' . print_r($error_info, true));
+                        $update_error = 'Failed to update profile in database: ' . ($error_info[2] ?? 'Unknown error');
+                    }
+                }
+            } catch (PDOException $e) {
+                error_log('Profile update PDO exception: ' . $e->getMessage());
+                $update_error = 'Database error while updating profile: ' . $e->getMessage();
+            }
+        } elseif (!empty($user_updates) && !empty($update_error)) {
+            // If there was an error but we have updates, log it
+            error_log('Profile update skipped due to error: ' . $update_error . ' Updates: ' . print_r($user_updates, true));
         }
         
         // Update employees table if user is linked to an employee
@@ -133,14 +242,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         }
         
         // Only proceed with success if no errors occurred
+        // Note: Redirect is now handled in index.php before header output
         if (empty($update_error)) {
             // Refresh user data
             $current_user = get_user_by_id($current_user_id);
             if (!empty($current_user['employee_id']) && function_exists('get_employee')) {
                 $employee_data = get_employee($current_user['employee_id']);
             }
-            
-            $update_success = true;
             
             // Update session if name changed
             if (isset($_POST['first_name']) || isset($_POST['last_name'])) {
@@ -161,12 +269,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     }
 }
 
-// Prepare display values
-$display_first_name = $employee_data['first_name'] ?? $current_user['first_name'] ?? '';
-$display_last_name = $employee_data['surname'] ?? '';
+// Prepare display values - fetch from users table first, fallback to employees if linked
+$display_first_name = $current_user['first_name'] ?? $employee_data['first_name'] ?? '';
+$display_last_name = $current_user['last_name'] ?? $employee_data['surname'] ?? '';
 $display_username = $current_user['username'] ?? $_SESSION['username'] ?? '';
 $display_email = $current_user['email'] ?? $_SESSION['email'] ?? '';
-$display_contact = $employee_data['cp_number'] ?? $current_user['phone'] ?? '';
+$display_contact = $current_user['phone'] ?? $employee_data['cp_number'] ?? '';
 $display_employee_id = $employee_data['employee_no'] ?? $current_user['employee_no'] ?? '';
 $display_company_name = 'Golden Z-5 Security and Investigation Agency, Inc.'; // Default company name
 $display_department = $current_user['department'] ?? '';
@@ -174,9 +282,14 @@ $display_position = $employee_data['post'] ?? '';
 $display_office_location = $post_location ?? '';
 $display_date_hired = $employee_data['date_hired'] ?? '';
 
-// Get profile photo
+// Get profile photo - check users.avatar first, then employee photos
 $profile_photo = null;
-if (!empty($employee_data['id'])) {
+if (!empty($current_user['avatar'])) {
+    $profile_photo = get_avatar_url($current_user['avatar']);
+}
+
+// If no avatar from users table, check employee photos
+if (!$profile_photo && !empty($employee_data['id'])) {
     $photo_path = __DIR__ . '/../uploads/employees/' . $employee_data['id'] . '.png';
     if (!file_exists($photo_path)) {
         $photo_path = __DIR__ . '/../uploads/employees/' . $employee_data['id'] . '.jpg';
@@ -205,21 +318,26 @@ if (!empty($display_first_name) || !empty($display_last_name)) {
         </div>
     </div>
 
-    <?php if ($update_success): ?>
+    <?php if (isset($_GET['updated']) && $_GET['updated'] == '1'): ?>
     <div class="alert alert-success alert-dismissible fade show" role="alert">
         <i class="fas fa-check-circle me-2"></i>Profile updated successfully!
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
     <?php endif; ?>
 
-    <?php if ($update_error): ?>
+    <?php 
+    // Check for error from session (set by index.php redirect)
+    $display_error = $update_error ?? ($_SESSION['profile_update_error'] ?? null);
+    if ($display_error):
+        unset($_SESSION['profile_update_error']); // Clear after displaying
+    ?>
     <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        <i class="fas fa-exclamation-circle me-2"></i><?php echo htmlspecialchars($update_error); ?>
+        <i class="fas fa-exclamation-circle me-2"></i><?php echo htmlspecialchars($display_error); ?>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
     <?php endif; ?>
 
-    <form method="POST" action="?page=profile" id="profileForm">
+    <form method="POST" action="?page=profile" id="profileForm" enctype="multipart/form-data">
         <input type="hidden" name="action" value="update_profile">
         
         <!-- Personal / User Info Section -->
@@ -239,43 +357,74 @@ if (!empty($display_first_name) || !empty($display_last_name)) {
                                 <?php if ($profile_photo): ?>
                                     <img src="<?php echo htmlspecialchars($profile_photo); ?>" 
                                          alt="Profile Photo" 
+                                         id="avatarPreview"
                                          class="profile-photo-img"
                                          style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 3px solid #e2e8f0;">
                                 <?php else: ?>
                                     <div class="profile-photo-placeholder" 
+                                         id="avatarPlaceholder"
                                          style="width: 120px; height: 120px; border-radius: 50%; background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1e293b 100%); color: white; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: 700; border: 3px solid #e2e8f0;">
                                         <?php echo htmlspecialchars($initials); ?>
                                     </div>
                                 <?php endif; ?>
                             </div>
                             <div class="flex-grow-1">
-                                <p class="text-muted small mb-0">Profile photo is managed through employee records.</p>
+                                <input type="file" 
+                                       class="form-control" 
+                                       id="avatarInput" 
+                                       name="avatar" 
+                                       accept="image/jpeg,image/jpg,image/png,image/gif"
+                                       style="display: none;">
+                                <button type="button" 
+                                        class="btn btn-outline-modern btn-sm" 
+                                        onclick="document.getElementById('avatarInput').click();"
+                                        style="margin-bottom: 0.5rem;">
+                                    <i class="fas fa-upload me-2"></i>Upload Photo
+                                </button>
+                                <p class="text-muted small mb-0">JPG, PNG, or GIF. Max size: 2MB</p>
+                                <div id="avatarFileName" class="text-muted small mt-1" style="display: none;"></div>
                             </div>
                         </div>
                     </div>
 
                     <!-- First Name -->
                     <div class="col-md-6">
-                        <label for="first_name" class="form-label">First Name <span class="text-danger">*</span></label>
+                        <label for="first_name" class="form-label d-flex justify-content-between align-items-center">
+                            <span>First Name</span>
+                            <button type="button" 
+                                    class="btn btn-sm btn-outline-secondary edit-field-btn" 
+                                    data-field="first_name"
+                                    title="Edit First Name">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                        </label>
                         <input type="text" 
                                class="form-control" 
                                id="first_name" 
                                name="first_name" 
                                value="<?php echo htmlspecialchars($display_first_name); ?>"
-                               required
-                               placeholder="Enter your first name">
+                               placeholder="Enter your first name"
+                               readonly>
                     </div>
 
                     <!-- Last Name -->
                     <div class="col-md-6">
-                        <label for="last_name" class="form-label">Last Name <span class="text-danger">*</span></label>
+                        <label for="last_name" class="form-label d-flex justify-content-between align-items-center">
+                            <span>Last Name</span>
+                            <button type="button" 
+                                    class="btn btn-sm btn-outline-secondary edit-field-btn" 
+                                    data-field="last_name"
+                                    title="Edit Last Name">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                        </label>
                         <input type="text" 
                                class="form-control" 
                                id="last_name" 
                                name="last_name" 
                                value="<?php echo htmlspecialchars($display_last_name); ?>"
-                               required
-                               placeholder="Enter your last name">
+                               placeholder="Enter your last name"
+                               readonly>
                     </div>
 
                     <!-- Username -->
@@ -292,14 +441,23 @@ if (!empty($display_first_name) || !empty($display_last_name)) {
 
                     <!-- Email Address -->
                     <div class="col-md-6">
-                        <label for="email" class="form-label">Email Address <span class="text-danger">*</span></label>
+                        <label for="email" class="form-label d-flex justify-content-between align-items-center">
+                            <span>Email Address</span>
+                            <button type="button" 
+                                    class="btn btn-sm btn-outline-secondary edit-field-btn" 
+                                    data-field="email"
+                                    title="Edit Email">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                        </label>
                         <input type="email" 
                                class="form-control" 
                                id="email" 
                                name="email" 
                                value="<?php echo htmlspecialchars($display_email); ?>"
-                               required
-                               placeholder="Enter your email address">
+                               placeholder="Enter your email address"
+                               readonly
+                               style="background-color: #f8fafc;">
                     </div>
 
                     <!-- Contact Number -->
@@ -550,21 +708,103 @@ html[data-theme="dark"] .profile-page .form-select:focus {
 document.addEventListener('DOMContentLoaded', function() {
     const profileForm = document.getElementById('profileForm');
     const saveProfileBtn = document.getElementById('saveProfileBtn');
+    const avatarInput = document.getElementById('avatarInput');
+    const avatarPreview = document.getElementById('avatarPreview');
+    const avatarPlaceholder = document.getElementById('avatarPlaceholder');
+    const avatarFileName = document.getElementById('avatarFileName');
+    
+    // Handle edit buttons for first_name, last_name, and email
+    const editButtons = document.querySelectorAll('.edit-field-btn');
+    editButtons.forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            const fieldName = this.getAttribute('data-field');
+            const inputField = document.getElementById(fieldName);
+            
+            if (inputField) {
+                if (inputField.readOnly) {
+                    // Enable editing
+                    inputField.readOnly = false;
+                    inputField.style.backgroundColor = '#ffffff';
+                    inputField.focus();
+                    this.innerHTML = '<i class="fas fa-check"></i> Done';
+                    this.classList.remove('btn-outline-secondary');
+                    this.classList.add('btn-success');
+                } else {
+                    // Disable editing
+                    inputField.readOnly = true;
+                    inputField.style.backgroundColor = '#f8fafc';
+                    this.innerHTML = '<i class="fas fa-edit"></i> Edit';
+                    this.classList.remove('btn-success');
+                    this.classList.add('btn-outline-secondary');
+                }
+            }
+        });
+    });
+    
+    // Handle avatar preview
+    if (avatarInput) {
+        avatarInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                // Validate file type
+                const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+                if (!allowedTypes.includes(file.type)) {
+                    alert('Invalid file type. Please upload a JPG, PNG, or GIF image.');
+                    avatarInput.value = '';
+                    return;
+                }
+                
+                // Validate file size (2MB)
+                if (file.size > 2 * 1024 * 1024) {
+                    alert('File size too large. Maximum size is 2MB.');
+                    avatarInput.value = '';
+                    return;
+                }
+                
+                // Show file name
+                if (avatarFileName) {
+                    avatarFileName.textContent = 'Selected: ' + file.name;
+                    avatarFileName.style.display = 'block';
+                }
+                
+                // Create preview
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    // Hide placeholder if exists
+                    if (avatarPlaceholder) {
+                        avatarPlaceholder.style.display = 'none';
+                    }
+                    
+                    // Show or create preview image
+                    if (avatarPreview) {
+                        avatarPreview.src = e.target.result;
+                        avatarPreview.style.display = 'block';
+                    } else {
+                        // Create new preview image if it doesn't exist
+                        const previewImg = document.createElement('img');
+                        previewImg.id = 'avatarPreview';
+                        previewImg.src = e.target.result;
+                        previewImg.alt = 'Profile Photo';
+                        previewImg.className = 'profile-photo-img';
+                        previewImg.style.cssText = 'width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 3px solid #e2e8f0;';
+                        
+                        const previewContainer = document.querySelector('.profile-photo-preview');
+                        if (previewContainer) {
+                            previewContainer.appendChild(previewImg);
+                        }
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
     
     if (profileForm) {
         profileForm.addEventListener('submit', function(e) {
-            // Basic validation
-            const firstName = document.getElementById('first_name').value.trim();
-            const lastName = document.getElementById('last_name').value.trim();
+            // Basic validation - email is optional but if provided must be valid
             const email = document.getElementById('email').value.trim();
             
-            if (!firstName || !lastName) {
-                e.preventDefault();
-                alert('First name and last name are required.');
-                return false;
-            }
-            
-            if (!email || !email.includes('@')) {
+            if (email && !email.includes('@')) {
                 e.preventDefault();
                 alert('Please enter a valid email address.');
                 return false;

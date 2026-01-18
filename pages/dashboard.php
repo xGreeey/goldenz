@@ -848,6 +848,15 @@ $display_employees = array_slice($all_employees, 0, 10); // Show first 10 employ
     font-weight: 700;
     font-size: 0.875rem;
 }
+.hrdash-welcome__avatar-img {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    object-fit: cover;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    background: none;
+    display: inline-block;
+}
 .hrdash-welcome__chevron {
     font-size: 0.75rem;
     color: #64748b;

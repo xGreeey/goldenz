@@ -7,6 +7,16 @@ if (($_SESSION['user_role'] ?? '') !== 'super_admin') {
     return; // Only show for super admin
 }
 
+// Get current user avatar
+$current_user_avatar = null;
+if (!empty($_SESSION['user_id']) && function_exists('get_user_by_id')) {
+    require_once __DIR__ . '/../includes/database.php';
+    $current_user_data = get_user_by_id($_SESSION['user_id']);
+    if (!empty($current_user_data['avatar'])) {
+        $current_user_avatar = get_avatar_url($current_user_data['avatar']);
+    }
+}
+
 // Get page title for dynamic header
 $current_page = $_GET['page'] ?? 'dashboard';
 $page_titles = [
@@ -222,7 +232,13 @@ $page_subtitle = $current_page === 'dashboard'
                     $initials = strtoupper($first . $last);
                 }
                 ?>
-                <span class="hrdash-welcome__avatar"><?php echo htmlspecialchars($initials); ?></span>
+                <?php if ($current_user_avatar): ?>
+                    <img src="<?php echo htmlspecialchars($current_user_avatar); ?>" 
+                         alt="<?php echo htmlspecialchars($displayName); ?>" 
+                         class="hrdash-welcome__avatar hrdash-welcome__avatar-img">
+                <?php else: ?>
+                    <span class="hrdash-welcome__avatar"><?php echo htmlspecialchars($initials); ?></span>
+                <?php endif; ?>
                 <i class="fas fa-chevron-down hrdash-welcome__chevron"></i>
             </button>
             <ul class="dropdown-menu dropdown-menu-end">
