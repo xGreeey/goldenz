@@ -265,7 +265,6 @@ $inactive_employees = $employee_stats['inactive_employees'];
 $onboarding_employees = $employee_stats['onboarding_employees'];
 ?>
 
-<div class="container-fluid hrdash">
     <!-- Header Section with Actions -->
     <?php if (($_SESSION['user_role'] ?? '') !== 'super_admin'): ?>
     <div class="hrdash-welcome">
@@ -480,6 +479,15 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
     </div>
     <?php endif; ?>
 
+    <!-- Page Header for Super Admin -->
+    <?php if (($_SESSION['user_role'] ?? '') === 'super_admin'): ?>
+    <div class="page-header-modern mb-3">
+        <div class="page-title-modern">
+            <h1 class="page-title-main">Employees</h1>
+            <p class="page-subtitle">Manage employee information and records</p>
+        </div>
+    </div>
+    <?php else: ?>
     <!-- Breadcrumb -->
     <nav class="hr-breadcrumb" aria-label="Breadcrumb">
         <ol class="hr-breadcrumb__list">
@@ -491,6 +499,7 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
             </li>
         </ol>
     </nav>
+    <?php endif; ?>
 
     <!-- Employee List (single view) -->
     <div class="tab-content">
@@ -555,52 +564,52 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
     <?php endif; ?>
 
     <!-- Summary Cards -->
-    <div class="row g-4">
+    <div class="row g-3 mb-3">
         <div class="col-xl-4 col-md-6">
-            <div class="card hrdash-stat hrdash-stat--primary">
-                <div class="hrdash-stat__header">
-                    <div class="hrdash-stat__label">Total Employees</div>
-                </div>
-                <div class="hrdash-stat__content">
-                    <div class="hrdash-stat__value"><?php echo number_format($total_all_employees); ?></div>
-                    <div class="hrdash-stat__trend hrdash-stat__trend--positive">
-                        <i class="fas fa-arrow-up"></i>
-                        <span>5%</span>
+            <div class="card stat-card-modern h-100">
+                <div class="card-body-modern">
+                    <div class="stat-header">
+                        <span class="stat-label">Total Employees</span>
+                        <i class="fas fa-users stat-icon"></i>
                     </div>
+                    <div class="stat-content">
+                        <h3 class="stat-number"><?php echo number_format($total_all_employees); ?></h3>
+                        <span class="badge badge-primary-modern"><?php echo number_format($active_employees); ?> Active</span>
+                    </div>
+                    <small class="stat-footer">The total number of employees in the system</small>
                 </div>
-                <div class="hrdash-stat__meta">The total number of employees in the system.</div>
             </div>
         </div>
 
         <div class="col-xl-4 col-md-6">
-            <div class="card hrdash-stat">
-                <div class="hrdash-stat__header">
-                    <div class="hrdash-stat__label">Active</div>
-                </div>
-                <div class="hrdash-stat__content">
-                    <div class="hrdash-stat__value"><?php echo number_format($active_employees); ?></div>
-                    <div class="hrdash-stat__trend hrdash-stat__trend--positive">
-                        <i class="fas fa-arrow-up"></i>
-                        <span><?php echo ($total_all_employees ?? 0) > 0 ? round(($active_employees / max(1, $total_all_employees)) * 100) : 0; ?>%</span>
+            <div class="card stat-card-modern h-100">
+                <div class="card-body-modern">
+                    <div class="stat-header">
+                        <span class="stat-label">Active Employees</span>
+                        <i class="fas fa-user-check stat-icon"></i>
                     </div>
+                    <div class="stat-content">
+                        <h3 class="stat-number"><?php echo number_format($active_employees); ?></h3>
+                        <span class="badge badge-success-modern"><?php echo ($total_all_employees ?? 0) > 0 ? round(($active_employees / max(1, $total_all_employees)) * 100) : 0; ?>%</span>
+                    </div>
+                    <small class="stat-footer">Employees currently active and on roster</small>
                 </div>
-                <div class="hrdash-stat__meta">Employees currently active and on roster.</div>
             </div>
         </div>
 
         <div class="col-xl-4 col-md-6">
-            <div class="card hrdash-stat">
-                <div class="hrdash-stat__header">
-                    <div class="hrdash-stat__label">Inactive</div>
-                </div>
-                <div class="hrdash-stat__content">
-                    <div class="hrdash-stat__value"><?php echo number_format($inactive_employees); ?></div>
-                    <div class="hrdash-stat__trend hrdash-stat__trend--negative">
-                        <i class="fas fa-arrow-down"></i>
-                        <span>2%</span>
+            <div class="card stat-card-modern h-100">
+                <div class="card-body-modern">
+                    <div class="stat-header">
+                        <span class="stat-label">Inactive Employees</span>
+                        <i class="fas fa-user-slash stat-icon"></i>
                     </div>
+                    <div class="stat-content">
+                        <h3 class="stat-number"><?php echo number_format($inactive_employees); ?></h3>
+                        <span class="badge badge-secondary"><?php echo ($total_all_employees ?? 0) > 0 ? round(($inactive_employees / max(1, $total_all_employees)) * 100) : 0; ?>%</span>
+                    </div>
+                    <small class="stat-footer">Employees currently inactive or off roster</small>
                 </div>
-                <div class="hrdash-stat__meta">Employees currently inactive or off roster.</div>
             </div>
         </div>
     </div>
@@ -619,7 +628,13 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
         </div>
     </div>
 
-            <!-- Employee Table -->
+    <!-- Employee Table -->
+    <div class="card card-modern mb-2">
+        <div class="card-body-modern">
+            <div class="card-header-modern mb-3">
+                <h5 class="card-title-modern">Employee List</h5>
+                <small class="card-subtitle">View and manage all employees</small>
+            </div>
             <div class="table-container">
                 <table class="employees-table">
                         <thead>
@@ -795,6 +810,8 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
                         </tbody>
                     </table>
             </div>
+        </div>
+    </div>
 
             <!-- Employee Details Modal -->
             <div class="modal fade" id="employeeDetailsModal" tabindex="-1" aria-labelledby="employeeDetailsModalLabel" aria-hidden="true">
@@ -823,8 +840,12 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
 
-            <!-- Pagination -->
+    <!-- Pagination -->
+    <div class="card card-modern">
+        <div class="card-body-modern">
             <div class="pagination-container">
                 <div class="pagination-info">
                     <select class="form-select form-select-sm" id="perPageSelect">
@@ -875,7 +896,6 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
                 </div>
             </div>
         </div>
-
     </div>
 </div>
 
@@ -905,50 +925,51 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
 
 <style>
 /* Modern Employees Page Styling */
-.employees-modern {
-    /* Use portal-wide spacing system (font-override.css) instead of page-local padding */
-    padding: 0;
+.super-admin-teams {
+    padding: 0.75rem 1rem;
     max-width: 100%;
-    overflow-x: hidden;
+    background: #f8fafc;
     min-height: 100vh;
-    background: #ffffff; /* default for non HR-Admin portals */
+    border-radius: 14px;
 }
 
-/* HR-Admin: use light separated background */
-body.portal-hr-admin .employees-modern {
-    background: #f8fafc;
+/* Header Section Padding */
+.super-admin-teams .hrdash-welcome__left {
+    padding-left: 1rem;
 }
+
+/* Align all content sections with page title */
+/* All sections are now in cards, so they align naturally with the container padding */
 
 /* Page Header */
 .page-header-modern {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: 1.5rem;
-    margin-top: 0;
-    padding-top: 0;
-    background: #1e293b;
-    border: 1px solid #334155;
+    margin-bottom: 1rem;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
     border-radius: 14px;
-    padding: 1.5rem 2rem;
+    padding: 1rem 1rem;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.04);
 }
 
 .page-title-modern {
     flex: 1;
+    padding-left: 0;
 }
 
 .page-title-main {
-    font-size: 2rem;
+    font-size: 1.5rem;
     font-weight: 700;
-    color: #ffffff;
-    margin: 0 0 0.5rem 0;
+    color: #1e293b;
+    margin: 0 0 0.25rem 0;
     line-height: 1.2;
     letter-spacing: -0.02em;
 }
 
-.page-subtitle-modern {
-    color: #cbd5e1;
+.page-subtitle {
+    color: #64748b;
     font-size: 0.875rem;
     margin: 0;
     line-height: 1.5;
@@ -1005,40 +1026,71 @@ body.portal-hr-admin .employees-modern {
     color: #ffffff;
 }
 
-/* Summary Cards */
-.summary-cards-modern {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1.25rem;
-    margin-bottom: 1.5rem;
+/* Card styling to match teams page */
+.super-admin-teams .card-modern {
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+    background: #ffffff;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.stat-card-modern {
+.super-admin-teams .card-modern:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.1);
+}
+
+.super-admin-teams .card-body-modern {
+    padding: 0.375rem;
+}
+
+.super-admin-teams .card-header-modern {
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.375rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.super-admin-teams .card-title-modern {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0 0 0.25rem 0;
+}
+
+.super-admin-teams .card-subtitle {
+    font-size: 0.875rem;
+    color: #64748b;
+    margin: 0;
+}
+
+/* Stat Cards */
+.super-admin-teams .stat-card-modern {
     background: #ffffff;
-    border: none;
-    border-radius: 12px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.04);
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
     transition: all 0.2s ease;
     overflow: hidden;
 }
 
-.stat-card-modern:hover {
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08), 0 8px 16px rgba(0, 0, 0, 0.06);
+.super-admin-teams .stat-card-modern:hover {
     transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.1);
 }
 
-.card-body-modern {
-    padding: 1.5rem;
+.super-admin-teams .stat-card-modern .card-body-modern {
+    padding: 0.5rem;
 }
 
-.stat-header {
+.super-admin-teams .stat-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
 }
 
-.stat-label {
+.super-admin-teams .stat-label {
     font-size: 0.8125rem;
     font-weight: 500;
     color: #64748b;
@@ -1046,26 +1098,25 @@ body.portal-hr-admin .employees-modern {
     letter-spacing: 0.05em;
 }
 
-.stat-icon {
+.super-admin-teams .stat-icon {
     font-size: 1.125rem;
     color: #94a3b8;
 }
 
-.stat-content {
+.super-admin-teams .stat-content {
     display: flex;
     align-items: baseline;
     gap: 0.75rem;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.25rem;
 }
 
-.stat-number {
-    font-size: 2rem;
+.super-admin-teams .stat-number {
+    font-size: 1.75rem;
     font-weight: 700;
     color: #1e293b;
     margin: 0;
     line-height: 1;
     letter-spacing: -0.02em;
-    /* Number rendering fix - ensures digits display correctly on Windows 10/11 */
     font-family: 'Segoe UI', Arial, Helvetica, sans-serif !important;
     font-variant-numeric: tabular-nums !important;
     font-feature-settings: 'tnum' !important;
@@ -1076,18 +1127,18 @@ body.portal-hr-admin .employees-modern {
     -moz-osx-font-smoothing: grayscale !important;
 }
 
-.stat-footer {
-    font-size: 0.8125rem;
+.super-admin-teams .stat-footer {
+    font-size: 0.75rem;
     color: #94a3b8;
     display: block;
-    margin-top: 0.5rem;
+    margin-top: 0.25rem;
 }
 
 /* Badges */
-.badge-success-modern,
-.badge-primary-modern,
-.badge-warning-modern,
-.badge-danger-modern {
+.super-admin-teams .badge-success-modern,
+.super-admin-teams .badge-primary-modern,
+.super-admin-teams .badge-warning-modern,
+.super-admin-teams .badge-danger-modern {
     font-size: 0.75rem;
     font-weight: 600;
     padding: 0.375rem 0.75rem;
@@ -1095,38 +1146,49 @@ body.portal-hr-admin .employees-modern {
     letter-spacing: 0.01em;
 }
 
-.badge-success-modern {
+.super-admin-teams .badge-success-modern {
     background: #dcfce7;
     color: #16a34a;
 }
 
-.badge-primary-modern {
+.super-admin-teams .badge-primary-modern {
     background: #dbeafe;
     color: #2563eb;
 }
 
-.badge-warning-modern {
+.super-admin-teams .badge-warning-modern {
     background: #fef3c7;
     color: #d97706;
 }
 
-.badge-danger-modern {
+.super-admin-teams .badge-danger-modern {
     background: #fee2e2;
     color: #dc2626;
 }
 
 /* Table Container */
 .table-container {
-    background: #ffffff;
-    border-radius: 16px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.04);
-    overflow-x: hidden;
+    background: transparent;
+    border-radius: 0;
+    box-shadow: none;
+    overflow-x: auto;
     overflow-y: visible;
-    margin-bottom: 1.5rem;
+    margin-bottom: 0;
     margin-top: 0;
     width: 100%;
     max-width: 100%;
     box-sizing: border-box;
+}
+
+/* Compact table styling */
+.super-admin-teams .employees-table thead th {
+    padding: 0.5rem 0.625rem;
+    font-size: 0.6875rem;
+}
+
+.super-admin-teams .employees-table tbody td {
+    padding: 0.5rem 0.625rem;
+    font-size: 0.8125rem;
 }
 
 /* Employees Table */
@@ -1438,6 +1500,16 @@ body.portal-hr-admin .employees-modern {
     color: #64748b;
     font-size: 0.875rem;
     font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.pagination-info select {
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 0.375rem 0.75rem;
+    font-size: 0.875rem;
 }
 
 /* Responsive Design */
