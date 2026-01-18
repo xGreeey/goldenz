@@ -3107,3 +3107,201 @@ body.portal-super-admin .table-responsive::-webkit-scrollbar-thumb {
 body.portal-super-admin .table-responsive::-webkit-scrollbar-thumb:hover {
     background: #94a3b8 !important;
 }
+
+/* ============================================
+   SUPER ADMIN: DARK THEME SUPPORT FOR HEADERS
+   ============================================ */
+
+/* Dark theme: hrdash-welcome section */
+html[data-theme="dark"] body.portal-super-admin .hrdash-welcome {
+    background: #1a1d23 !important;
+    border-bottom-color: var(--interface-border) !important;
+}
+
+html[data-theme="dark"] body.portal-super-admin .hrdash-welcome__title {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] body.portal-super-admin .hrdash-welcome__subtitle {
+    color: var(--interface-text-muted) !important;
+}
+
+html[data-theme="dark"] body.portal-super-admin .hrdash-welcome__time {
+    color: var(--interface-text-muted) !important;
+}
+
+html[data-theme="dark"] body.portal-super-admin .hrdash-welcome__icon-btn {
+    background: #0f1114 !important;
+    color: var(--interface-text-muted) !important;
+}
+
+html[data-theme="dark"] body.portal-super-admin .hrdash-welcome__icon-btn:hover {
+    background: var(--interface-hover) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] body.portal-super-admin .hrdash-welcome__icon-btn:focus,
+html[data-theme="dark"] body.portal-super-admin .hrdash-welcome__icon-btn:active,
+html[data-theme="dark"] body.portal-super-admin .hrdash-welcome__icon-btn:focus-visible,
+html[data-theme="dark"] body.portal-super-admin .hrdash-welcome__icon-btn.show,
+html[data-theme="dark"] body.portal-super-admin .hrdash-welcome__icon-btn[aria-expanded="true"] {
+    background: var(--interface-hover) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] body.portal-super-admin .hrdash-welcome__icon-btn i {
+    color: var(--interface-text-muted) !important;
+}
+
+html[data-theme="dark"] body.portal-super-admin .hrdash-welcome__icon-btn:hover i {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] body.portal-super-admin .hrdash-welcome__chevron {
+    color: var(--interface-text-muted) !important;
+}
+
+/* Dark theme: page headers */
+html[data-theme="dark"] body.portal-super-admin .page-header-modern {
+    background: #1a1d23 !important;
+    border-color: var(--interface-border) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] body.portal-super-admin .page-title-main {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] body.portal-super-admin .page-subtitle {
+    color: var(--interface-text-muted) !important;
+}
+
+/* Dark theme: card headers */
+html[data-theme="dark"] body.portal-super-admin .card-header-modern {
+    background: #1a1d23 !important;
+    border-bottom-color: var(--interface-border) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] body.portal-super-admin .card-title-modern {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] body.portal-super-admin .card-subtitle {
+    color: var(--interface-text-muted) !important;
+}
+
+/* Dark theme: notification dropdowns */
+html[data-theme="dark"] body.portal-super-admin .hrdash-notification-dropdown {
+    background: #1a1d23 !important;
+    border-color: var(--interface-border) !important;
+}
+
+html[data-theme="dark"] body.portal-super-admin .hrdash-notification-dropdown .dropdown-header {
+    background: #0f1114 !important;
+    border-bottom-color: var(--interface-border) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] body.portal-super-admin .hrdash-notification-dropdown .dropdown-header a {
+    color: var(--primary-color) !important;
+}
+
+html[data-theme="dark"] body.portal-super-admin .hrdash-notification-dropdown .dropdown-item {
+    border-bottom-color: var(--interface-border) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] body.portal-super-admin .hrdash-notification-dropdown .dropdown-item:hover {
+    background: var(--interface-hover) !important;
+}
+
+html[data-theme="dark"] body.portal-super-admin .hrdash-notification-item .fw-semibold {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] body.portal-super-admin .hrdash-notification-item .text-muted {
+    color: var(--interface-text-muted) !important;
+}
+
+/* Dark theme: profile dropdown */
+html[data-theme="dark"] body.portal-super-admin .hrdash-welcome__profile-btn + .dropdown-menu {
+    background: #1a1d23 !important;
+    border-color: var(--interface-border) !important;
+}
+
+html[data-theme="dark"] body.portal-super-admin .hrdash-welcome__profile-btn + .dropdown-menu .dropdown-item {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] body.portal-super-admin .hrdash-welcome__profile-btn + .dropdown-menu .dropdown-item:hover {
+    background: var(--interface-hover) !important;
+}
+
+/* Dark theme: page tabs */
+html[data-theme="dark"] body.portal-super-admin .page-tabs {
+    border-bottom-color: var(--interface-border) !important;
+}
+
+html[data-theme="dark"] body.portal-super-admin .tab-button {
+    color: var(--interface-text-muted) !important;
+}
+
+html[data-theme="dark"] body.portal-super-admin .tab-button.active {
+    color: var(--primary-color) !important;
+    border-bottom-color: var(--primary-color) !important;
+}
+
+html[data-theme="dark"] body.portal-super-admin .tab-button:hover {
+    color: var(--interface-text) !important;
+}
+
+/* Dark theme: Bootstrap nav tabs */
+html[data-theme="dark"] body.portal-super-admin .nav-tabs {
+    border-bottom-color: var(--interface-border) !important;
+}
+
+html[data-theme="dark"] body.portal-super-admin .nav-tabs .nav-link {
+    color: var(--interface-text-muted) !important;
+    border-bottom-color: transparent !important;
+}
+
+html[data-theme="dark"] body.portal-super-admin .nav-tabs .nav-link.active {
+    color: var(--primary-color) !important;
+    border-bottom-color: var(--primary-color) !important;
+    background-color: transparent !important;
+}
+
+html[data-theme="dark"] body.portal-super-admin .nav-tabs .nav-link:hover:not(.active) {
+    color: var(--interface-text) !important;
+    border-bottom-color: var(--interface-border) !important;
+}
+
+/* Dark theme: settings-nav tabs (list-group based) */
+html[data-theme="dark"] body.portal-super-admin .settings-nav .list-group-item {
+    background: #1a1d23 !important;
+    color: var(--interface-text-muted) !important;
+    border-color: transparent !important;
+}
+
+html[data-theme="dark"] body.portal-super-admin .settings-nav .list-group-item:hover {
+    background: var(--interface-hover) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] body.portal-super-admin .settings-nav .list-group-item.active {
+    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1e293b 100%) !important;
+    color: #ffffff !important;
+}
+
+html[data-theme="dark"] body.portal-super-admin .settings-nav .list-group-item.active i {
+    color: #ffffff !important;
+}
+
+html[data-theme="dark"] body.portal-super-admin .settings-nav .list-group-item i {
+    color: var(--interface-text-muted) !important;
+}
+
+html[data-theme="dark"] body.portal-super-admin .settings-nav .list-group-item:hover i {
+    color: var(--interface-text) !important;
+}
