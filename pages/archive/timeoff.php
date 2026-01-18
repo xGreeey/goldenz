@@ -588,6 +588,24 @@ $next_year = $display_month == 12 ? $display_year + 1 : $display_year;
     justify-content: space-between;
     align-items: center;
     margin-bottom: var(--spacing-xl);
+    padding: 1.5rem 2rem;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+.timeoff-container .page-header .page-title h1 {
+    margin: 0;
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.timeoff-container .page-header .page-actions {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
 }
 
 .page-title h1 {
@@ -607,7 +625,11 @@ $next_year = $display_month == 12 ? $display_year + 1 : $display_year;
     display: flex;
     gap: var(--spacing-lg);
     margin-bottom: var(--spacing-xl);
-    border-bottom: 1px solid var(--interface-border);
+    padding: 1rem 1.5rem;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.04);
 }
 
 .tab-button {
