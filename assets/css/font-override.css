@@ -2924,6 +2924,16 @@ body.portal-super-admin .hrdash-welcome__avatar {
     font-size: 0.875rem !important;
 }
 
+body.portal-super-admin .hrdash-welcome__avatar-img {
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 8px !important;
+    object-fit: cover !important;
+    border: 2px solid rgba(255, 255, 255, 0.2) !important;
+    background: none !important;
+    display: inline-block !important;
+}
+
 body.portal-super-admin .hrdash-welcome__chevron {
     font-size: 0.75rem !important;
     color: #64748b !important;
