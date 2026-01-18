@@ -289,9 +289,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     }
 }
 
-// Redirect to developer dashboard if no page parameter is set
+// Redirect to system logs if no page parameter is set
 if (!isset($_GET['page'])) {
-    header('Location: ?page=developer-dashboard');
+    header('Location: ?page=system_logs');
     exit;
 }
 
