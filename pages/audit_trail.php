@@ -152,7 +152,7 @@ function h($v) { return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8'); }
                         <tbody>
                             <?php foreach ($logs as $log): ?>
                                 <tr>
-                                    <td style="white-space: nowrap;">
+                                    <td class="text-nowrap">
                                         <?php echo h(date('Y-m-d H:i:s', strtotime($log['created_at']))); ?>
                                     </td>
                                     <td>
@@ -213,7 +213,7 @@ function h($v) { return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8'); }
                                         <small class="text-muted">
                                             <?php echo h($log['ip_address'] ?? '—'); ?><br>
                                             <?php if (!empty($log['user_agent'])): ?>
-                                                <span class="d-inline-block text-truncate" style="max-width: 180px;">
+                                                <span class="d-inline-block text-truncate-custom">
                                                     <?php echo h($log['user_agent']); ?>
                                                 </span>
                                             <?php endif; ?>
