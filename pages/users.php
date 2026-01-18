@@ -538,6 +538,19 @@ $role_config = config('roles.roles', []);
 <!-- Role Change Confirmation Modal -->
 
 <style>
+/* Page Header - Rectangle container with rounded corners */
+.super-admin-dashboard .page-header-modern {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 14px !important;
+    padding: 1.5rem 2rem !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.04) !important;
+}
+
+.super-admin-dashboard .page-header-modern .page-title-modern {
+    padding-left: 1rem;
+}
+
 .user-role-select,
 .user-status-select {
     border: 1px solid #e2e8f0;

@@ -450,6 +450,42 @@ if ($_POST['action'] ?? '' === 'create') {
     border: 1px solid #e2e8f0 !important;
 }
 
+/* Page Header - Rectangle container with rounded corners */
+.add-post-container .page-header,
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding: 1.5rem 2rem;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+.add-post-container .page-header .page-title h1,
+.page-header .page-title h1 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.add-post-container .page-header .page-title .text-muted,
+.page-header .page-title .text-muted {
+    margin: 0;
+    color: #64748b;
+    font-size: 0.875rem;
+}
+
+.add-post-container .page-header .page-actions,
+.page-header .page-actions {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+}
+
 /* Dark theme support for Add Post page header */
 html[data-theme="dark"] .page-header {
     background-color: #1a1d23 !important;
