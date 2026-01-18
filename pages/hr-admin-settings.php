@@ -26,15 +26,250 @@ if ($current_user_id && function_exists('check_password_expiry')) {
     $expiry_check = check_password_expiry($current_user_id);
     $password_expired = !empty($expiry_check['expired']);
 }
+
+// Get current user avatar and data for header
+$current_user_avatar = null;
+$current_user_data = null;
+if (!empty($_SESSION['user_id']) && function_exists('get_user_by_id')) {
+    require_once __DIR__ . '/../includes/database.php';
+    if (!function_exists('get_avatar_url')) {
+        require_once __DIR__ . '/../includes/paths.php';
+    }
+    $current_user_data = get_user_by_id($_SESSION['user_id']);
+    if (!empty($current_user_data['avatar'])) {
+        $current_user_avatar = get_avatar_url($current_user_data['avatar']);
+    }
+}
 ?>
 
-<div class="container-fluid hr-admin-settings">
-    <div class="page-header-modern mb-4">
-        <div class="page-title-modern">
-            <h1 class="page-title-main">Account Settings</h1>
-            <p class="page-subtitle">Manage your account security, profile, and preferences.</p>
+<!-- Header Section (copied from Super Admin Settings) -->
+<div class="hrdash-welcome">
+    <div class="hrdash-welcome__left">
+        <h2 class="hrdash-welcome__title">Account Settings</h2>
+        <p class="hrdash-welcome__subtitle">Manage your account security, profile, and preferences</p>
+    </div>
+    <div class="hrdash-welcome__actions">
+        <span id="current-time-settings" class="hrdash-welcome__time"><?php echo strtolower(date('h:i A')); ?></span>
+        
+        <!-- Messages Dropdown -->
+        <?php
+        // Get recent messages/alerts (last 5 active alerts)
+        $recentMessages = [];
+        if (function_exists('get_employee_alerts')) {
+            try {
+                $recentMessages = get_employee_alerts('active', null);
+                $recentMessages = array_slice($recentMessages, 0, 5);
+            } catch (Exception $e) {
+                $recentMessages = [];
+            }
+        }
+        $messageCount = count($recentMessages);
+        ?>
+        <div class="dropdown">
+            <button class="hrdash-welcome__icon-btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Messages" aria-label="Messages">
+                <i class="fas fa-envelope"></i>
+                <?php if ($messageCount > 0): ?>
+                    <span class="hrdash-welcome__badge"><?php echo $messageCount > 99 ? '99+' : $messageCount; ?></span>
+                <?php endif; ?>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end hrdash-notification-dropdown">
+                <li class="dropdown-header">
+                    <strong>Messages</strong>
+                    <a href="?page=alerts" class="text-decoration-none ms-auto">View All</a>
+                </li>
+                <li><hr class="dropdown-divider"></li>
+                <?php if (empty($recentMessages)): ?>
+                    <li class="dropdown-item-text text-muted text-center py-3">
+                        <i class="far fa-envelope-open fa-2x mb-2 d-block"></i>
+                        <small>No new messages</small>
+                    </li>
+                <?php else: ?>
+                    <?php foreach ($recentMessages as $msg): 
+                        $priorityClass = '';
+                        $priorityIcon = 'fa-info-circle';
+                        switch(strtolower($msg['priority'] ?? '')) {
+                            case 'urgent':
+                                $priorityClass = 'text-danger';
+                                $priorityIcon = 'fa-exclamation-triangle';
+                                break;
+                            case 'high':
+                                $priorityClass = 'text-warning';
+                                $priorityIcon = 'fa-exclamation-circle';
+                                break;
+                            default:
+                                $priorityClass = 'text-info';
+                        }
+                        $employeeName = trim(($msg['surname'] ?? '') . ', ' . ($msg['first_name'] ?? '') . ' ' . ($msg['middle_name'] ?? ''));
+                        $timeAgo = '';
+                        if (!empty($msg['created_at'])) {
+                            $created = new DateTime($msg['created_at']);
+                            $now = new DateTime();
+                            $diff = $now->diff($created);
+                            if ($diff->days > 0) {
+                                $timeAgo = $diff->days . 'd ago';
+                            } elseif ($diff->h > 0) {
+                                $timeAgo = $diff->h . 'h ago';
+                            } else {
+                                $timeAgo = $diff->i . 'm ago';
+                            }
+                        }
+                    ?>
+                        <li>
+                            <a class="dropdown-item hrdash-notification-item" href="?page=alerts">
+                                <div class="d-flex align-items-start">
+                                    <i class="fas <?php echo $priorityIcon; ?> <?php echo $priorityClass; ?> me-2 mt-1"></i>
+                                    <div class="flex-grow-1">
+                                        <div class="fw-semibold small"><?php echo htmlspecialchars($msg['title'] ?? 'Alert'); ?></div>
+                                        <div class="text-muted small"><?php echo htmlspecialchars($employeeName); ?></div>
+                                        <?php if ($timeAgo): ?>
+                                            <div class="text-muted" style="font-size: 0.7rem;"><?php echo $timeAgo; ?></div>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </ul>
+        </div>
+        
+        <!-- Notifications Dropdown -->
+        <?php
+        // Get recent notifications (pending tasks)
+        $recentNotifications = [];
+        $pendingTasks = 0;
+        if (function_exists('get_all_tasks')) {
+            try {
+                $recentNotifications = get_all_tasks('pending', null, null);
+                $recentNotifications = array_slice($recentNotifications, 0, 5);
+                $pendingTasks = count($recentNotifications);
+            } catch (Exception $e) {
+                $recentNotifications = [];
+            }
+        }
+        if (function_exists('get_pending_task_count')) {
+            try {
+                $pendingTasks = (int) get_pending_task_count();
+            } catch (Exception $e) {
+                $pendingTasks = 0;
+            }
+        }
+        ?>
+        <div class="dropdown">
+            <button class="hrdash-welcome__icon-btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Notifications" aria-label="Notifications">
+                <i class="fas fa-bell"></i>
+                <?php if ($pendingTasks > 0): ?>
+                    <span class="hrdash-welcome__badge"><?php echo $pendingTasks > 99 ? '99+' : $pendingTasks; ?></span>
+                <?php endif; ?>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end hrdash-notification-dropdown">
+                <li class="dropdown-header">
+                    <strong>Notifications</strong>
+                    <a href="?page=tasks" class="text-decoration-none ms-auto">View All</a>
+                </li>
+                <li><hr class="dropdown-divider"></li>
+                <?php if (empty($recentNotifications)): ?>
+                    <li class="dropdown-item-text text-muted text-center py-3">
+                        <i class="far fa-bell-slash fa-2x mb-2 d-block"></i>
+                        <small>No new notifications</small>
+                    </li>
+                <?php else: ?>
+                    <?php foreach ($recentNotifications as $notif): 
+                        $priorityClass = '';
+                        $priorityIcon = 'fa-circle';
+                        switch(strtolower($notif['priority'] ?? '')) {
+                            case 'urgent':
+                                $priorityClass = 'text-danger';
+                                $priorityIcon = 'fa-exclamation-triangle';
+                                break;
+                            case 'high':
+                                $priorityClass = 'text-warning';
+                                $priorityIcon = 'fa-exclamation-circle';
+                                break;
+                            case 'medium':
+                                $priorityClass = 'text-info';
+                                $priorityIcon = 'fa-info-circle';
+                                break;
+                            default:
+                                $priorityClass = 'text-muted';
+                        }
+                        $timeAgo = '';
+                        if (!empty($notif['created_at'])) {
+                            $created = new DateTime($notif['created_at']);
+                            $now = new DateTime();
+                            $diff = $now->diff($created);
+                            if ($diff->days > 0) {
+                                $timeAgo = $diff->days . 'd ago';
+                            } elseif ($diff->h > 0) {
+                                $timeAgo = $diff->h . 'h ago';
+                            } else {
+                                $timeAgo = $diff->i . 'm ago';
+                            }
+                        }
+                    ?>
+                        <li>
+                            <a class="dropdown-item hrdash-notification-item" href="?page=tasks">
+                                <div class="d-flex align-items-start">
+                                    <i class="fas <?php echo $priorityIcon; ?> <?php echo $priorityClass; ?> me-2 mt-1"></i>
+                                    <div class="flex-grow-1">
+                                        <div class="fw-semibold small"><?php echo htmlspecialchars($notif['title'] ?? 'Task'); ?></div>
+                                        <div class="text-muted small"><?php echo htmlspecialchars($notif['category'] ?? 'Task'); ?></div>
+                                        <?php if ($timeAgo): ?>
+                                            <div class="text-muted" style="font-size: 0.7rem;"><?php echo $timeAgo; ?></div>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </ul>
+        </div>
+        <div class="dropdown">
+            <button class="hrdash-welcome__profile-btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Profile menu">
+                <?php
+                // Get name from first_name and last_name if available, otherwise use session name
+                $displayName = trim((string)($_SESSION['name'] ?? ($_SESSION['username'] ?? 'HR Admin')));
+                if (!empty($current_user_data)) {
+                    $first_name = $current_user_data['first_name'] ?? '';
+                    $last_name = $current_user_data['last_name'] ?? '';
+                    if (!empty($first_name) || !empty($last_name)) {
+                        $displayName = trim($first_name . ' ' . $last_name);
+                    }
+                }
+                
+                $initials = 'HA';
+                if ($displayName) {
+                    $parts = preg_split('/\s+/', $displayName);
+                    $first = $parts[0][0] ?? 'H';
+                    $last = (count($parts) > 1) ? ($parts[count($parts) - 1][0] ?? 'A') : ($parts[0][1] ?? 'A');
+                    $initials = strtoupper($first . $last);
+                }
+                ?>
+                <?php if ($current_user_avatar): ?>
+                    <img src="<?php echo htmlspecialchars($current_user_avatar); ?>" 
+                         alt="<?php echo htmlspecialchars($displayName); ?>" 
+                         class="hrdash-welcome__avatar hrdash-welcome__avatar-img">
+                <?php else: ?>
+                    <span class="hrdash-welcome__avatar"><?php echo htmlspecialchars($initials); ?></span>
+                <?php endif; ?>
+                <i class="fas fa-chevron-down hrdash-welcome__chevron"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item" href="?page=profile"><i class="fas fa-user me-2"></i>Profile</a></li>
+                <li><a class="dropdown-item" href="?page=settings"><i class="fas fa-cog me-2"></i>Settings</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                    <a class="dropdown-item text-danger" href="<?php echo base_url(); ?>/index.php?logout=1" data-no-transition="true">
+                        <i class="fas fa-right-from-bracket me-2"></i>Logout
+                    </a>
+                </li>
+            </ul>
         </div>
     </div>
+</div>
+
+<div class="container-fluid hr-admin-settings">
 
     <div class="row">
         <!-- Left: Navigation -->
@@ -199,6 +434,51 @@ if ($current_user_id && function_exists('check_password_expiry')) {
                             <div class="card-header-modern mb-3">
                                 <h5 class="card-title-modern">Profile Information</h5>
                                 <small class="card-subtitle">View and manage your account profile details.</small>
+                            </div>
+
+                            <!-- Profile Photo -->
+                            <div class="row g-3 mb-4">
+                                <div class="col-12">
+                                    <label class="form-label">Profile Photo</label>
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="profile-photo-preview">
+                                            <?php 
+                                            // Get profile photo from current user
+                                            $profile_photo = null;
+                                            if (!empty($current_user_data) && !empty($current_user_data['avatar'])) {
+                                                $profile_photo = get_avatar_url($current_user_data['avatar']);
+                                            }
+                                            
+                                            // Generate initials
+                                            $profile_initials = 'HA';
+                                            if (!empty($current_user_data)) {
+                                                $first_name = $current_user_data['first_name'] ?? '';
+                                                $last_name = $current_user_data['last_name'] ?? '';
+                                                if (!empty($first_name) || !empty($last_name)) {
+                                                    $first = strtoupper(substr($first_name, 0, 1));
+                                                    $last = strtoupper(substr($last_name, 0, 1));
+                                                    $profile_initials = $first . ($last ?: $first);
+                                                }
+                                            }
+                                            ?>
+                                            <?php if ($profile_photo): ?>
+                                                <img src="<?php echo htmlspecialchars($profile_photo); ?>" 
+                                                     alt="Profile Photo" 
+                                                     class="profile-photo-img"
+                                                     style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 3px solid #e2e8f0; display: block;">
+                                            <?php else: ?>
+                                                <div class="profile-photo-placeholder" 
+                                                     style="width: 120px; height: 120px; border-radius: 50%; background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1e293b 100%); color: white; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: 700; border: 3px solid #e2e8f0;">
+                                                    <?php echo htmlspecialchars($profile_initials); ?>
+                                                </div>
+                                            <?php endif; ?>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <p class="text-muted mb-0 small">Your profile photo is displayed in the header and throughout the system.</p>
+                                            <p class="text-muted mb-0 small">To update your profile photo, please visit the <a href="?page=profile">Profile page</a>.</p>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
                             <div class="row g-3">
@@ -1058,4 +1338,28 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 });
+</script>
+
+<script>
+// Update time display every minute for settings page
+(function() {
+    function updateTime() {
+        const timeElement = document.getElementById('current-time-settings');
+        if (timeElement) {
+            const now = new Date();
+            const hours = now.getHours();
+            const minutes = now.getMinutes();
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            const displayHours = hours % 12 || 12;
+            const displayMinutes = minutes < 10 ? '0' + minutes : minutes;
+            timeElement.textContent = displayHours + ':' + displayMinutes + ' ' + ampm.toLowerCase();
+        }
+    }
+    
+    // Update immediately
+    updateTime();
+    
+    // Update every minute
+    setInterval(updateTime, 60000);
+})();
 </script>

@@ -7,10 +7,14 @@ if (($_SESSION['user_role'] ?? '') !== 'super_admin') {
     return; // Only show for super admin
 }
 
-// Get current user avatar
+// Get current user avatar and data
 $current_user_avatar = null;
+$current_user_data = null;
 if (!empty($_SESSION['user_id']) && function_exists('get_user_by_id')) {
     require_once __DIR__ . '/../includes/database.php';
+    if (!function_exists('get_avatar_url')) {
+        require_once __DIR__ . '/../includes/paths.php';
+    }
     $current_user_data = get_user_by_id($_SESSION['user_id']);
     if (!empty($current_user_data['avatar'])) {
         $current_user_avatar = get_avatar_url($current_user_data['avatar']);
@@ -223,7 +227,16 @@ $page_subtitle = $current_page === 'dashboard'
         <div class="dropdown">
             <button class="hrdash-welcome__profile-btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Profile menu">
                 <?php
+                // Get name from first_name and last_name if available, otherwise use session name
                 $displayName = trim((string)($_SESSION['name'] ?? ($_SESSION['username'] ?? 'Super Admin')));
+                if (!empty($current_user_data)) {
+                    $first_name = $current_user_data['first_name'] ?? '';
+                    $last_name = $current_user_data['last_name'] ?? '';
+                    if (!empty($first_name) || !empty($last_name)) {
+                        $displayName = trim($first_name . ' ' . $last_name);
+                    }
+                }
+                
                 $initials = 'SA';
                 if ($displayName) {
                     $parts = preg_split('/\s+/', $displayName);
