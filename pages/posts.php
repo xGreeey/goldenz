@@ -86,70 +86,66 @@ $posts = get_posts($filters);
     </div>
 
     <!-- Filters and Search -->
-    <div class="filters-modern">
-        <div class="search-control-modern">
-            <div class="search-input-modern">
-                <i class="fas fa-search search-icon"></i>
-                <input type="text" 
-                       id="searchInput" 
-                       class="search-field"
-                       placeholder="Search posts, locations, or descriptions..." 
-                       value="<?php echo htmlspecialchars($filters['search']); ?>">
-            </div>
-        </div>
-        
-        <div class="filter-controls-modern">
-            <select class="form-select-modern" id="departmentFilter">
-                <option value="">All Departments</option>
-                <option value="Security" <?php echo $filters['department'] === 'Security' ? 'selected' : ''; ?>>Security</option>
-                <option value="Administration" <?php echo $filters['department'] === 'Administration' ? 'selected' : ''; ?>>Administration</option>
-                <option value="Operations" <?php echo $filters['department'] === 'Operations' ? 'selected' : ''; ?>>Operations</option>
-                <option value="Management" <?php echo $filters['department'] === 'Management' ? 'selected' : ''; ?>>Management</option>
-                <option value="Support" <?php echo $filters['department'] === 'Support' ? 'selected' : ''; ?>>Support</option>
-            </select>
-
-            <select class="form-select-modern" id="employeeTypeFilter">
-                <option value="">All Employee Types</option>
-                <option value="SG" <?php echo $filters['employee_type'] === 'SG' ? 'selected' : ''; ?>>Security Guard (SG)</option>
-                <option value="LG" <?php echo $filters['employee_type'] === 'LG' ? 'selected' : ''; ?>>Lady Guard (LG)</option>
-                <option value="SO" <?php echo $filters['employee_type'] === 'SO' ? 'selected' : ''; ?>>Security Officer (SO)</option>
-            </select>
-
-            <select class="form-select-modern" id="statusFilter">
-                <option value="">All Status</option>
-                <option value="Active" <?php echo $filters['status'] === 'Active' ? 'selected' : ''; ?>>Active</option>
-                <option value="Inactive" <?php echo $filters['status'] === 'Inactive' ? 'selected' : ''; ?>>Inactive</option>
-                <option value="Filled" <?php echo $filters['status'] === 'Filled' ? 'selected' : ''; ?>>Filled</option>
-                <option value="Suspended" <?php echo $filters['status'] === 'Suspended' ? 'selected' : ''; ?>>Suspended</option>
-            </select>
-
-            <select class="form-select-modern" id="priorityFilter">
-                <option value="">All Priorities</option>
-                <option value="Urgent" <?php echo $filters['priority'] === 'Urgent' ? 'selected' : ''; ?>>Urgent</option>
-                <option value="High" <?php echo $filters['priority'] === 'High' ? 'selected' : ''; ?>>High</option>
-                <option value="Medium" <?php echo $filters['priority'] === 'Medium' ? 'selected' : ''; ?>>Medium</option>
-                <option value="Low" <?php echo $filters['priority'] === 'Low' ? 'selected' : ''; ?>>Low</option>
-            </select>
-        </div>
-
-        <div class="control-buttons-modern">
-            <button class="btn btn-outline-secondary-modern" onclick="resetFilters()">
-                <i class="fas fa-refresh me-2"></i>Reset
-            </button>
-        </div>
-    </div>
-
-    <!-- Post List -->
-    <div class="card card-modern mb-4 mt-4">
+    <div class="card card-modern mb-4">
         <div class="card-body-modern">
-            <div class="card-header-modern mb-4 d-flex justify-content-between align-items-start">
-                <div>
-                    <h5 class="card-title-modern">Post List</h5>
-                    <small class="card-subtitle">View and manage all posts</small>
+            <div class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label">Search Posts</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        <input type="text" 
+                               id="searchInput" 
+                               class="form-control"
+                               placeholder="Search posts, locations, or descriptions..." 
+                               value="<?php echo htmlspecialchars($filters['search']); ?>">
+                    </div>
                 </div>
-                <div class="d-flex gap-2">
+                <div class="col-md-2">
+                    <label class="form-label">Department</label>
+                    <select class="form-select" id="departmentFilter">
+                        <option value="">All Departments</option>
+                        <option value="Security" <?php echo $filters['department'] === 'Security' ? 'selected' : ''; ?>>Security</option>
+                        <option value="Administration" <?php echo $filters['department'] === 'Administration' ? 'selected' : ''; ?>>Administration</option>
+                        <option value="Operations" <?php echo $filters['department'] === 'Operations' ? 'selected' : ''; ?>>Operations</option>
+                        <option value="Management" <?php echo $filters['department'] === 'Management' ? 'selected' : ''; ?>>Management</option>
+                        <option value="Support" <?php echo $filters['department'] === 'Support' ? 'selected' : ''; ?>>Support</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Employee Type</label>
+                    <select class="form-select" id="employeeTypeFilter">
+                        <option value="">All Types</option>
+                        <option value="SG" <?php echo $filters['employee_type'] === 'SG' ? 'selected' : ''; ?>>Security Guard (SG)</option>
+                        <option value="LG" <?php echo $filters['employee_type'] === 'LG' ? 'selected' : ''; ?>>Lady Guard (LG)</option>
+                        <option value="SO" <?php echo $filters['employee_type'] === 'SO' ? 'selected' : ''; ?>>Security Officer (SO)</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Status</label>
+                    <select class="form-select" id="statusFilter">
+                        <option value="">All Status</option>
+                        <option value="Active" <?php echo $filters['status'] === 'Active' ? 'selected' : ''; ?>>Active</option>
+                        <option value="Inactive" <?php echo $filters['status'] === 'Inactive' ? 'selected' : ''; ?>>Inactive</option>
+                        <option value="Filled" <?php echo $filters['status'] === 'Filled' ? 'selected' : ''; ?>>Filled</option>
+                        <option value="Suspended" <?php echo $filters['status'] === 'Suspended' ? 'selected' : ''; ?>>Suspended</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Priority</label>
+                    <select class="form-select" id="priorityFilter">
+                        <option value="">All Priorities</option>
+                        <option value="Urgent" <?php echo $filters['priority'] === 'Urgent' ? 'selected' : ''; ?>>Urgent</option>
+                        <option value="High" <?php echo $filters['priority'] === 'High' ? 'selected' : ''; ?>>High</option>
+                        <option value="Medium" <?php echo $filters['priority'] === 'Medium' ? 'selected' : ''; ?>>Medium</option>
+                        <option value="Low" <?php echo $filters['priority'] === 'Low' ? 'selected' : ''; ?>>Low</option>
+                    </select>
+                </div>
+                <div class="col-md-12 d-flex justify-content-end gap-2 mt-2">
+                    <button class="btn btn-outline-modern" onclick="resetFilters()">
+                        <i class="fas fa-times me-2"></i>Clear Filters
+                    </button>
                     <button class="btn btn-outline-modern" onclick="exportToCSV()" title="Export post list">
-                        <i class="fas fa-download me-2"></i>Export
+                        <i class="fas fa-download me-2"></i>Export CSV
                     </button>
                     <a href="?page=post_assignments" class="btn btn-outline-modern" title="View post assignments">
                         <i class="fas fa-users-cog me-2"></i>Assignments
@@ -158,6 +154,16 @@ $posts = get_posts($filters);
                         <span class="hr-icon hr-icon-plus me-2"></span>Add New Post
                     </a>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Post List -->
+    <div class="card card-modern mb-4">
+        <div class="card-body-modern">
+            <div class="card-header-modern mb-4">
+                <h5 class="card-title-modern">Post List</h5>
+                <small class="card-subtitle">Viewing <?php echo count($posts); ?> posts</small>
             </div>
             <div class="table-container">
                 <table class="table posts-table" id="postsTable">
