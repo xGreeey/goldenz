@@ -350,6 +350,36 @@ $role_config = config('roles.roles', []);
     </div>
 </div>
 
+<!-- Delete User Confirmation Modal -->
+<div class="modal fade" id="deleteUserConfirmModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="false" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content futuristic-modal futuristic-modal-danger">
+            <div class="futuristic-modal-header">
+                <div class="futuristic-icon-wrapper">
+                    <i class="fas fa-exclamation-triangle futuristic-icon futuristic-icon-danger" id="deleteUserIcon"></i>
+                    <div class="futuristic-pulse futuristic-pulse-danger"></div>
+                </div>
+                <h5 class="futuristic-modal-title">Confirm User Deletion</h5>
+            </div>
+            <div class="futuristic-modal-body">
+                <p class="futuristic-message" id="deleteUserConfirmMessage"></p>
+                <div class="futuristic-info-box futuristic-info-box-danger" id="deleteUserInfoBox">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span id="deleteUserInfoText">This action cannot be undone. All user data and access will be permanently removed.</span>
+                </div>
+            </div>
+            <div class="futuristic-modal-footer">
+                <button type="button" class="btn futuristic-btn-cancel" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Cancel
+                </button>
+                <button type="button" class="btn futuristic-btn-danger" id="confirmDeleteUserBtn">
+                    <i class="fas fa-trash me-2"></i>Delete User
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Create User Modal -->
 <div class="modal fade" id="createUserModal" tabindex="-1" aria-labelledby="createUserModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-scrollable">
@@ -1215,7 +1245,8 @@ html[data-theme="dark"] .alert-info {
 /* Ensure modal is clickable and properly positioned */
 #roleChangeConfirmModal.show,
 #statusChangeConfirmModal.show,
-#userDetailsModal.show {
+#userDetailsModal.show,
+#deleteUserConfirmModal.show {
     display: block !important;
     z-index: 1060 !important;
     padding-right: 0 !important;
@@ -1365,7 +1396,9 @@ html[data-theme="dark"] #userDetailsModal .modal-footer .btn-secondary:hover {
 #roleChangeConfirmModal .futuristic-btn-cancel,
 #roleChangeConfirmModal .futuristic-btn-confirm,
 #statusChangeConfirmModal .futuristic-btn-cancel,
-#statusChangeConfirmModal .futuristic-btn-confirm {
+#statusChangeConfirmModal .futuristic-btn-confirm,
+#deleteUserConfirmModal .futuristic-btn-cancel,
+#deleteUserConfirmModal .futuristic-btn-danger {
     pointer-events: auto !important;
     cursor: pointer !important;
     z-index: 10;
@@ -1373,7 +1406,8 @@ html[data-theme="dark"] #userDetailsModal .modal-footer .btn-secondary:hover {
 }
 
 #roleChangeConfirmModal .modal-content,
-#statusChangeConfirmModal .modal-content {
+#statusChangeConfirmModal .modal-content,
+#deleteUserConfirmModal .modal-content {
     pointer-events: auto !important;
 }
 
@@ -1392,6 +1426,111 @@ html[data-theme="dark"] #userDetailsModal .modal-footer .btn-secondary:hover {
     z-index: 1059 !important;
     background: rgba(0, 0, 0, 0.7);
     backdrop-filter: blur(5px);
+}
+
+/* Delete User Confirmation Modal - Danger Theme */
+.futuristic-modal-danger {
+    background: linear-gradient(135deg, rgba(127, 29, 29, 0.95) 0%, rgba(153, 27, 27, 0.95) 100%);
+    border: none;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(220, 38, 38, 0.5),
+                0 0 0 1px rgba(239, 68, 68, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    overflow: hidden;
+    position: relative;
+}
+
+.futuristic-modal-danger::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, 
+        rgba(239, 68, 68, 0.1) 0%, 
+        rgba(220, 38, 38, 0.1) 50%, 
+        rgba(185, 28, 28, 0.1) 100%);
+    opacity: 0.6;
+    z-index: 0;
+    animation: gradientShift 8s ease infinite;
+}
+
+.futuristic-icon-danger {
+    color: #ef4444 !important;
+    text-shadow: 0 0 20px rgba(239, 68, 68, 0.6),
+                 0 0 40px rgba(239, 68, 68, 0.4);
+}
+
+.futuristic-pulse-danger {
+    border-color: rgba(239, 68, 68, 0.5) !important;
+}
+
+.futuristic-info-box-danger {
+    background: rgba(239, 68, 68, 0.1) !important;
+    border: 1px solid rgba(239, 68, 68, 0.3) !important;
+    color: #fca5a5 !important;
+}
+
+.futuristic-info-box-danger i {
+    color: #f87171 !important;
+}
+
+.futuristic-btn-danger {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 50%, #991b1b 100%);
+    color: #ffffff;
+    box-shadow: 0 4px 15px rgba(220, 38, 38, 0.4),
+                0 0 20px rgba(220, 38, 38, 0.2);
+    background-size: 200% 200%;
+    animation: gradientMove 3s ease infinite;
+    padding: 0.75rem 2rem;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: none;
+    position: relative;
+    overflow: hidden;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.futuristic-btn-danger::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.5s;
+}
+
+.futuristic-btn-danger:hover::before {
+    left: 100%;
+}
+
+.futuristic-btn-danger:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 6px 25px rgba(220, 38, 38, 0.6),
+                0 0 30px rgba(185, 28, 28, 0.4);
+}
+
+.futuristic-btn-danger:active {
+    transform: translateY(0) scale(0.98);
+}
+
+#deleteUserConfirmModal {
+    z-index: 1060 !important;
+}
+
+#deleteUserConfirmModal .modal-dialog {
+    z-index: 1061 !important;
+    position: relative;
+    margin: 1.75rem auto;
+    pointer-events: auto;
+    max-width: 500px;
 }
 
 /* Fix for modal appearing below screen */
@@ -2082,9 +2221,98 @@ function viewUserDetails(userId) {
 function deleteUser(userId, userName, buttonEl) {
     if (!userId) return;
 
-    const ok = confirm(`Delete ${userName}? This action cannot be undone.`);
-    if (!ok) return;
+    const modal = document.getElementById('deleteUserConfirmModal');
+    const messageEl = document.getElementById('deleteUserConfirmMessage');
+    const confirmBtn = document.getElementById('confirmDeleteUserBtn');
+    
+    if (!modal || !messageEl || !confirmBtn) {
+        // Fallback to default confirm if modal not found
+        const ok = confirm(`Delete ${userName}? This action cannot be undone.`);
+        if (!ok) return;
+        performDeleteUser(userId, buttonEl);
+        return;
+    }
+    
+    // Ensure modal is in the body (not hidden in a container)
+    if (modal.parentElement !== document.body) {
+        document.body.appendChild(modal);
+    }
+    
+    // Set message
+    messageEl.textContent = `Are you sure you want to delete "${userName}"?`;
+    
+    // Cleanup function to restore page state
+    function cleanupModal() {
+        // Remove all backdrops
+        cleanupAllBackdrops();
+        
+        // Remove show class from modal
+        modal.classList.remove('show');
+        modal.style.display = 'none';
+        modal.setAttribute('aria-hidden', 'true');
+        modal.setAttribute('aria-modal', 'false');
+    }
+    
+    // Remove previous event listeners by cloning button
+    const newConfirmBtn = confirmBtn.cloneNode(true);
+    confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+    
+    // Handle confirmation
+    newConfirmBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        cleanupModal();
+        performDeleteUser(userId, buttonEl);
+    });
+    
+    // Handle cancellation
+    const cancelBtn = modal.querySelector('.futuristic-btn-cancel');
+    if (cancelBtn) {
+        const newCancelBtn = cancelBtn.cloneNode(true);
+        cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+        
+        newCancelBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            cleanupModal();
+        });
+    }
+    
+    // Also handle modal hidden event to ensure cleanup
+    modal.addEventListener('hidden.bs.modal', function() {
+        cleanupModal();
+    });
+    
+    // Show modal using Bootstrap WITHOUT backdrop
+    const modalInstance = new bootstrap.Modal(modal, {
+        backdrop: false,
+        keyboard: false,
+        focus: true
+    });
+    
+    modalInstance.show();
+    
+    // Ensure modal is visible and properly positioned after Bootstrap shows it
+    setTimeout(() => {
+        modal.style.display = 'block';
+        modal.style.zIndex = '1060';
+        modal.classList.add('show');
+        modal.setAttribute('aria-hidden', 'false');
+        modal.setAttribute('aria-modal', 'true');
+        
+        const modalDialog = modal.querySelector('.modal-dialog');
+        if (modalDialog) {
+            modalDialog.style.zIndex = '1061';
+            modalDialog.style.pointerEvents = 'auto';
+            modalDialog.style.margin = '1.75rem auto';
+        }
+        
+        // Remove any backdrops - we don't use them
+        cleanupAllBackdrops();
+    }, 50);
+}
 
+function performDeleteUser(userId, buttonEl) {
     const formData = new FormData();
     formData.append('action', 'delete_user');
     formData.append('user_id', userId);
