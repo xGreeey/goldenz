@@ -1215,6 +1215,7 @@ if (isset($_SESSION['employee_redirect_url'])) {
                                         <th style="min-width: 260px;">Program / Title</th>
                                         <th style="min-width: 220px;">Conducted By</th>
                                         <th style="min-width: 240px;">Date of Training</th>
+                                        <th style="width: 50px;"></th>
                                     </tr>
                                 </thead>
                                 <tbody id="trainingsTbody">
@@ -1245,34 +1246,24 @@ if (isset($_SESSION['employee_redirect_url'])) {
                                                    name="trainings[<?php echo (int)$i; ?>][date]"
                                                    value="<?php echo htmlspecialchars($date); ?>">
                                         </td>
+                                        <td class="text-center">
+                                            <?php if (count($trainings) > 1 || $i > 0): ?>
+                                            <button type="button" class="btn btn-sm btn-icon-action training-remove-btn" 
+                                                    data-training-index="<?php echo (int)$i; ?>" 
+                                                    title="Remove row" aria-label="Remove training">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                            <?php endif; ?>
+                                        </td>
                                     </tr>
                                     <?php endforeach; ?>
                                 </tbody>
                             </table>
                         </div>
 
-                        <div class="d-flex justify-content-end align-items-start gap-2">
-                            <div class="training-remove-buttons d-flex flex-column gap-1" id="trainingRemoveButtons">
-                                <?php
-                                $trainings = $_POST['trainings'] ?? [];
-                                if (!is_array($trainings)) $trainings = [];
-                                if (count($trainings) === 0) $trainings = [[]];
-                                foreach ($trainings as $i => $t):
-                                ?>
-                                <button type="button"
-                                        class="btn btn-sm btn-remove-modern training-remove-btn"
-                                        data-training-index="<?php echo (int)$i; ?>"
-                                        aria-label="Remove training">
-                                    <span class="btn-icon-circle">
-                                        <img src="<?php echo asset_url('icons/minus-icon.png'); ?>?v=2" alt="Remove" class="btn-icon-img" loading="eager">
-                                    </span>
-                                </button>
-                                <?php endforeach; ?>
-                            </div>
-                            <button type="button" class="btn btn-add-modern btn-sm" id="addTrainingBtn">
-                                <span class="btn-icon-circle">
-                                    <img src="<?php echo asset_url('icons/plus-icon.png'); ?>?v=2" alt="Add" class="btn-icon-img" loading="eager">
-                                </span>
+                        <div class="d-flex justify-content-end mt-2">
+                            <button type="button" class="btn btn-sm btn-icon-action btn-icon-action-primary" id="addTrainingBtn" title="Add training row">
+                                <i class="fas fa-plus me-1"></i> Add Training
                             </button>
                         </div>
                     </div>
@@ -1293,6 +1284,7 @@ if (isset($_SESSION['employee_redirect_url'])) {
                                         <th style="min-width: 320px;">COMPANY</th>
                                         <th style="min-width: 190px;">PERIOD COVERED</th>
                                         <th style="min-width: 260px;">REASON/S FOR LEAVING</th>
+                                        <th style="width: 50px;"></th>
                                     </tr>
                                 </thead>
                                 <tbody id="employmentTbody">
@@ -1352,34 +1344,24 @@ if (isset($_SESSION['employee_redirect_url'])) {
                                                       rows="2" maxlength="300"
                                                       placeholder="Reason for leaving"><?php echo htmlspecialchars($reason); ?></textarea>
                                         </td>
+                                        <td class="text-center">
+                                            <?php if (count($jobs) > 1 || $i > 0): ?>
+                                            <button type="button" class="btn btn-sm btn-icon-action employment-remove-btn" 
+                                                    data-employment-index="<?php echo (int)$i; ?>" 
+                                                    title="Remove row" aria-label="Remove employment record">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                            <?php endif; ?>
+                                        </td>
                                     </tr>
                                     <?php endforeach; ?>
                                 </tbody>
                             </table>
                         </div>
 
-                        <div class="d-flex justify-content-end align-items-start gap-2">
-                            <div class="employment-remove-buttons d-flex flex-column gap-1" id="employmentRemoveButtons">
-                                <?php
-                                $jobs = $_POST['employment_history'] ?? [];
-                                if (!is_array($jobs)) $jobs = [];
-                                if (count($jobs) === 0) $jobs = [[]];
-                                foreach ($jobs as $i => $j):
-                                ?>
-                                <button type="button"
-                                        class="btn btn-sm btn-remove-modern employment-remove-btn"
-                                        data-employment-index="<?php echo (int)$i; ?>"
-                                        aria-label="Remove employment record">
-                                    <span class="btn-icon-circle">
-                                        <img src="<?php echo asset_url('icons/minus-icon.png'); ?>?v=2" alt="Remove" class="btn-icon-img" loading="eager">
-                                    </span>
-                                </button>
-                                <?php endforeach; ?>
-                            </div>
-                            <button type="button" class="btn btn-add-modern btn-sm" id="addEmploymentBtn">
-                                <span class="btn-icon-circle">
-                                    <img src="<?php echo asset_url('icons/plus-icon.png'); ?>?v=2" alt="Add" class="btn-icon-img" loading="eager">
-                                </span>
+                        <div class="d-flex justify-content-end mt-2">
+                            <button type="button" class="btn btn-sm btn-icon-action btn-icon-action-primary" id="addEmploymentBtn" title="Add employment record">
+                                <i class="fas fa-plus me-1"></i> Add Employment
                             </button>
                         </div>
                     </div>
@@ -1401,6 +1383,7 @@ if (isset($_SESSION['employee_redirect_url'])) {
                                         <th style="min-width: 180px;">OCCUPATION</th>
                                         <th style="min-width: 200px;">COMPANY</th>
                                         <th style="min-width: 200px;">CONTACT NO./S</th>
+                                        <th style="width: 50px;"></th>
                                     </tr>
                                 </thead>
                                 <tbody id="characterReferencesTbody">
@@ -1439,34 +1422,24 @@ if (isset($_SESSION['employee_redirect_url'])) {
                                                    value="<?php echo htmlspecialchars($ref_contact); ?>"
                                                    maxlength="30" placeholder="Contact Number">
                                         </td>
+                                        <td class="text-center">
+                                            <?php if (count($references) > 1 || $i > 0): ?>
+                                            <button type="button" class="btn btn-sm btn-icon-action character-reference-remove-btn" 
+                                                    data-reference-index="<?php echo (int)$i; ?>" 
+                                                    title="Remove row" aria-label="Remove character reference">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                            <?php endif; ?>
+                                        </td>
                                     </tr>
                                     <?php endforeach; ?>
                                 </tbody>
                             </table>
                         </div>
 
-                        <div class="d-flex justify-content-end align-items-start gap-2">
-                            <div class="character-reference-remove-buttons d-flex flex-column gap-1" id="characterReferenceRemoveButtons">
-                                <?php
-                                $references = $_POST['character_references'] ?? [];
-                                if (!is_array($references)) $references = [];
-                                if (count($references) === 0) $references = [[], [], []];
-                                foreach ($references as $i => $ref):
-                                ?>
-                                <button type="button"
-                                        class="btn btn-sm btn-remove-modern character-reference-remove-btn"
-                                        data-reference-index="<?php echo (int)$i; ?>"
-                                        aria-label="Remove character reference">
-                                    <span class="btn-icon-circle">
-                                        <img src="<?php echo asset_url('icons/minus-icon.png'); ?>?v=2" alt="Remove" class="btn-icon-img" loading="eager">
-                                    </span>
-                                </button>
-                                <?php endforeach; ?>
-                            </div>
-                            <button type="button" class="btn btn-add-modern btn-sm" id="addCharacterReferenceBtn">
-                                <span class="btn-icon-circle">
-                                    <img src="<?php echo asset_url('icons/plus-icon.png'); ?>?v=2" alt="Add" class="btn-icon-img" loading="eager">
-                                </span>
+                        <div class="d-flex justify-content-end mt-2">
+                            <button type="button" class="btn btn-sm btn-icon-action btn-icon-action-primary" id="addCharacterReferenceBtn" title="Add character reference">
+                                <i class="fas fa-plus me-1"></i> Add Reference
                             </button>
                         </div>
                     </div>
@@ -1944,7 +1917,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const reindexTrainingRows = () => {
         if (!trainingsTbody) return;
         const rows = Array.from(trainingsTbody.querySelectorAll('.training-row'));
-        const removeButtonsContainer = document.getElementById('trainingRemoveButtons');
         
         rows.forEach((row, idx) => {
             // Update data attribute
@@ -1957,53 +1929,40 @@ document.addEventListener('DOMContentLoaded', function() {
                 const updated = name.replace(/^trainings\[\d+\]/, `trainings[${idx}]`);
                 inp.setAttribute('name', updated);
             });
-        });
-        
-        // Update remove buttons - ensure count matches rows
-        if (removeButtonsContainer) {
-            const removeButtons = Array.from(removeButtonsContainer.querySelectorAll('.training-remove-btn'));
-            const minusIconUrl = '<?php echo asset_url("icons/minus-icon.png"); ?>?v=2';
             
-            // Remove extra buttons if there are more buttons than rows
-            while (removeButtons.length > rows.length) {
-                removeButtons[removeButtons.length - 1].remove();
-                removeButtons.pop();
-            }
-            
-            // Update existing buttons' data attributes
-            removeButtons.forEach((btn, idx) => {
-                if (idx < rows.length) {
-                    btn.setAttribute('data-training-index', idx);
+            // Update remove button data attribute and visibility
+            const removeBtn = row.querySelector('.training-remove-btn');
+            if (removeBtn) {
+                removeBtn.setAttribute('data-training-index', idx);
+                // Show/hide remove button based on row count
+                if (rows.length === 1) {
+                    removeBtn.style.display = 'none';
+                } else {
+                    removeBtn.style.display = '';
                 }
-            });
-        }
+            }
+        });
     };
 
+    // Event delegation for training remove buttons
     if (trainingsTbody) {
-        // Handle remove buttons beside "Add Training"
-        const removeButtonsContainer = document.getElementById('trainingRemoveButtons');
-        if (removeButtonsContainer) {
-            removeButtonsContainer.addEventListener('click', (e) => {
-                const removeBtn = e.target.closest('.training-remove-btn');
-                if (removeBtn) {
-                    const index = parseInt(removeBtn.getAttribute('data-training-index'));
-                    const row = trainingsTbody.querySelector(`tr.training-row[data-training-index="${index}"]`);
-                    if (!row) return;
-                    
-                    const allRows = trainingsTbody.querySelectorAll('.training-row');
-                    if (allRows.length <= 1) {
-                        // Clear last record instead of removing
-                        row.querySelectorAll('input').forEach(el => el.value = '');
-                        return;
-                    }
-                    
-                    row.remove();
-                    removeBtn.remove();
-                    reindexTrainingRows();
+        trainingsTbody.addEventListener('click', (e) => {
+            const removeBtn = e.target.closest('.training-remove-btn');
+            if (removeBtn) {
+                const row = removeBtn.closest('.training-row');
+                if (!row) return;
+                
+                const allRows = trainingsTbody.querySelectorAll('.training-row');
+                if (allRows.length <= 1) {
+                    // Clear last record instead of removing
+                    row.querySelectorAll('input').forEach(el => el.value = '');
                     return;
                 }
-            });
-        }
+                
+                row.remove();
+                reindexTrainingRows();
+            }
+        });
     }
 
     if (addTrainingBtn && trainingsTbody) {
@@ -2030,29 +1989,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     <input type="date" class="form-control"
                            name="trainings[${idx}][date]">
                 </td>
+                <td class="text-center">
+                    <button type="button" class="btn btn-sm btn-icon-action training-remove-btn" 
+                            data-training-index="${idx}" 
+                            title="Remove row" aria-label="Remove training">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </td>
             `;
             
-            // Add row first
             trainingsTbody.appendChild(tr);
-            
-            // Then add remove button (only one)
-            const removeButtonsContainer = document.getElementById('trainingRemoveButtons');
-            if (removeButtonsContainer) {
-                // Check if button already exists for this index
-                const existingBtn = removeButtonsContainer.querySelector(`.training-remove-btn[data-training-index="${idx}"]`);
-                if (!existingBtn) {
-                    const removeBtn = document.createElement('button');
-                    removeBtn.type = 'button';
-                    removeBtn.className = 'btn btn-sm btn-remove-modern training-remove-btn';
-                    removeBtn.setAttribute('data-training-index', idx);
-                    removeBtn.setAttribute('aria-label', 'Remove training');
-                    const minusIconUrl = '<?php echo asset_url("icons/minus-icon.png"); ?>?v=2';
-                    removeBtn.innerHTML = `<span class="btn-icon-circle"><img src="${minusIconUrl}" alt="Remove" class="btn-icon-img"></span>`;
-                    removeButtonsContainer.appendChild(removeBtn);
-                }
-            }
-            
-            // Reindex after everything is added
             reindexTrainingRows();
         });
     }
@@ -2064,7 +2010,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const reindexEmployment = () => {
         if (!employmentTbody) return;
         const mainRows = Array.from(employmentTbody.querySelectorAll('tr.employment-row'));
-        const removeButtonsContainer = document.getElementById('employmentRemoveButtons');
         
         mainRows.forEach((mainRow, idx) => {
             // Update data attribute
@@ -2076,52 +2021,40 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (!name) return;
                 el.setAttribute('name', name.replace(/^employment_history\[\d+\]/, `employment_history[${idx}]`));
             });
-        });
-        
-        // Update remove buttons - ensure count matches rows
-        if (removeButtonsContainer) {
-            const removeButtons = Array.from(removeButtonsContainer.querySelectorAll('.employment-remove-btn'));
             
-            // Remove extra buttons if there are more buttons than rows
-            while (removeButtons.length > mainRows.length) {
-                removeButtons[removeButtons.length - 1].remove();
-                removeButtons.pop();
-            }
-            
-            // Update existing buttons' data attributes
-            removeButtons.forEach((btn, idx) => {
-                if (idx < mainRows.length) {
-                    btn.setAttribute('data-employment-index', idx);
+            // Update remove button data attribute and visibility
+            const removeBtn = mainRow.querySelector('.employment-remove-btn');
+            if (removeBtn) {
+                removeBtn.setAttribute('data-employment-index', idx);
+                // Show/hide remove button based on row count
+                if (mainRows.length === 1) {
+                    removeBtn.style.display = 'none';
+                } else {
+                    removeBtn.style.display = '';
                 }
-            });
-        }
+            }
+        });
     };
 
+    // Event delegation for employment remove buttons
     if (employmentTbody) {
-        // Handle remove buttons beside "Add Employment"
-        const removeButtonsContainer = document.getElementById('employmentRemoveButtons');
-        if (removeButtonsContainer) {
-            removeButtonsContainer.addEventListener('click', (e) => {
-                const removeBtn = e.target.closest('.employment-remove-btn');
-                if (removeBtn) {
-                    const index = parseInt(removeBtn.getAttribute('data-employment-index'));
-                    const mainRow = employmentTbody.querySelector(`tr.employment-row[data-employment-index="${index}"]`);
-                    if (!mainRow) return;
-                    
-                    const allMain = employmentTbody.querySelectorAll('tr.employment-row');
-                    if (allMain.length <= 1) {
-                        // Clear last record instead of removing
-                        mainRow.querySelectorAll('input, textarea').forEach(el => el.value = '');
-                        return;
-                    }
-                    
-                    mainRow.remove();
-                    removeBtn.remove();
-                    reindexEmployment();
+        employmentTbody.addEventListener('click', (e) => {
+            const removeBtn = e.target.closest('.employment-remove-btn');
+            if (removeBtn) {
+                const mainRow = removeBtn.closest('.employment-row');
+                if (!mainRow) return;
+                
+                const allMain = employmentTbody.querySelectorAll('tr.employment-row');
+                if (allMain.length <= 1) {
+                    // Clear last record instead of removing
+                    mainRow.querySelectorAll('input, textarea').forEach(el => el.value = '');
                     return;
                 }
-            });
-        }
+                
+                mainRow.remove();
+                reindexEmployment();
+            }
+        });
     }
 
     if (addEmploymentBtn && employmentTbody) {
@@ -2173,6 +2106,13 @@ document.addEventListener('DOMContentLoaded', function() {
                               rows="2" maxlength="300"
                               placeholder="Reason for leaving"></textarea>
                 </td>
+                <td class="text-center">
+                    <button type="button" class="btn btn-sm btn-icon-action employment-remove-btn" 
+                            data-employment-index="${idx}" 
+                            title="Remove row" aria-label="Remove employment record">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </td>
             `;
             
             // Add row first (prepend for newest first)
@@ -2185,24 +2125,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }, 50);
             
-            // Then add remove button (only one, check for duplicates)
-            const removeButtonsContainer = document.getElementById('employmentRemoveButtons');
-            if (removeButtonsContainer) {
-                // Check if button already exists for this index
-                const existingBtn = removeButtonsContainer.querySelector(`.employment-remove-btn[data-employment-index="${idx}"]`);
-                if (!existingBtn) {
-                    const removeBtn = document.createElement('button');
-                    removeBtn.type = 'button';
-                    removeBtn.className = 'btn btn-sm btn-remove-modern employment-remove-btn';
-                    removeBtn.setAttribute('data-employment-index', idx);
-                    removeBtn.setAttribute('aria-label', 'Remove employment record');
-                    const minusIconUrl = '<?php echo asset_url("icons/minus-icon.png"); ?>?v=2';
-                    removeBtn.innerHTML = `<span class="btn-icon-circle"><img src="${minusIconUrl}" alt="Remove" class="btn-icon-img"></span>`;
-                    removeButtonsContainer.insertBefore(removeBtn, removeButtonsContainer.firstChild);
-                }
-            }
-            
-            // Reindex after everything is added
             reindexEmployment();
         });
     }
@@ -2214,7 +2136,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const reindexCharacterReferences = () => {
         if (!characterReferencesTbody) return;
         const mainRows = Array.from(characterReferencesTbody.querySelectorAll('tr.character-reference-row'));
-        const removeButtonsContainer = document.getElementById('characterReferenceRemoveButtons');
         
         mainRows.forEach((mainRow, idx) => {
             // Update data attribute
@@ -2226,51 +2147,40 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (!name) return;
                 el.setAttribute('name', name.replace(/^character_references\[\d+\]/, `character_references[${idx}]`));
             });
-        });
-        
-        // Update remove buttons - ensure count matches rows
-        if (removeButtonsContainer) {
-            // Remove all existing buttons first
-            removeButtonsContainer.innerHTML = '';
             
-            // Create new buttons for each row
-            mainRows.forEach((row, idx) => {
-                const removeBtn = document.createElement('button');
-                removeBtn.type = 'button';
-                removeBtn.className = 'btn btn-sm btn-remove-modern character-reference-remove-btn';
+            // Update remove button data attribute and visibility
+            const removeBtn = mainRow.querySelector('.character-reference-remove-btn');
+            if (removeBtn) {
                 removeBtn.setAttribute('data-reference-index', idx);
-                removeBtn.setAttribute('aria-label', 'Remove character reference');
-                const minusIconUrl = '<?php echo asset_url("icons/minus-icon.png"); ?>?v=2';
-                removeBtn.innerHTML = `<span class="btn-icon-circle"><img src="${minusIconUrl}" alt="Remove" class="btn-icon-img"></span>`;
-                removeButtonsContainer.appendChild(removeBtn);
-            });
-        }
+                // Show/hide remove button based on row count
+                if (mainRows.length === 1) {
+                    removeBtn.style.display = 'none';
+                } else {
+                    removeBtn.style.display = '';
+                }
+            }
+        });
     };
 
+    // Event delegation for character reference remove buttons
     if (characterReferencesTbody) {
-        // Handle remove buttons beside "Add Character Reference"
-        const removeButtonsContainer = document.getElementById('characterReferenceRemoveButtons');
-        if (removeButtonsContainer) {
-            removeButtonsContainer.addEventListener('click', (e) => {
-                const removeBtn = e.target.closest('.character-reference-remove-btn');
-                if (removeBtn) {
-                    const index = parseInt(removeBtn.getAttribute('data-reference-index'));
-                    const mainRow = characterReferencesTbody.querySelector(`tr.character-reference-row[data-reference-index="${index}"]`);
-                    if (!mainRow) return;
-                    
-                    const allMain = characterReferencesTbody.querySelectorAll('tr.character-reference-row');
-                    if (allMain.length <= 1) {
-                        // Clear last record instead of removing
-                        mainRow.querySelectorAll('input').forEach(el => el.value = '');
-                        return;
-                    }
-                    
-                    mainRow.remove();
-                    reindexCharacterReferences();
+        characterReferencesTbody.addEventListener('click', (e) => {
+            const removeBtn = e.target.closest('.character-reference-remove-btn');
+            if (removeBtn) {
+                const mainRow = removeBtn.closest('.character-reference-row');
+                if (!mainRow) return;
+                
+                const allMain = characterReferencesTbody.querySelectorAll('tr.character-reference-row');
+                if (allMain.length <= 1) {
+                    // Clear last record instead of removing
+                    mainRow.querySelectorAll('input').forEach(el => el.value = '');
                     return;
                 }
-            });
-        }
+                
+                mainRow.remove();
+                reindexCharacterReferences();
+            }
+        });
     }
 
     if (addCharacterReferenceBtn && characterReferencesTbody) {
@@ -2303,12 +2213,16 @@ document.addEventListener('DOMContentLoaded', function() {
                            name="character_references[${idx}][contact]"
                            maxlength="30" placeholder="Contact Number">
                 </td>
+                <td class="text-center">
+                    <button type="button" class="btn btn-sm btn-icon-action character-reference-remove-btn" 
+                            data-reference-index="${idx}" 
+                            title="Remove row" aria-label="Remove character reference">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </td>
             `;
             
-            // Add row to tbody
             characterReferencesTbody.appendChild(mainRow);
-            
-            // Reindex after everything is added
             reindexCharacterReferences();
         });
     }
@@ -2372,186 +2286,262 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Function to show validation error popup
-    function showValidationErrorPopup(errors, firstErrorField) {
-        // Remove any existing validation popup
-        const existingPopup = document.getElementById('validationErrorModal');
-        if (existingPopup) {
-            existingPopup.remove();
+    // ============================================
+    // COMPREHENSIVE VALIDATION SYSTEM
+    // Validates ALL form fields with elegant animations
+    // ============================================
+    
+    const form = document.getElementById('addEmployeeForm');
+    if (!form) return;
+    
+    // Helper function to get field label
+    function getFieldLabel(field) {
+        const label = field.labels && field.labels.length > 0 ? field.labels[0] : null;
+        if (label) {
+            let labelText = label.textContent || label.innerText;
+            labelText = labelText.replace(/\*/g, '').trim();
+            return labelText;
         }
-        
-        // Create popup modal
-        const modal = document.createElement('div');
-        modal.id = 'validationErrorModal';
-        modal.className = 'modal fade show';
-        modal.setAttribute('tabindex', '-1');
-        modal.setAttribute('role', 'dialog');
-        modal.style.cssText = 'display: block !important; background-color: rgba(0,0,0,0.5); position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1050;';
-        
-        modal.innerHTML = `
-            <div class="modal-dialog" role="document" style="margin: 2rem auto auto auto; max-width: 500px; position: relative;">
-                <div class="modal-content" style="border: none; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
-                    <div class="modal-header bg-danger text-white" style="border-radius: 8px 8px 0 0; padding: 1rem 1.5rem;">
-                        <h5 class="modal-title" style="margin: 0; font-weight: 600;">
-                            <i class="fas fa-exclamation-triangle me-2"></i>Validation Error
-                        </h5>
-                        <button type="button" class="btn-close btn-close-white" aria-label="Close" onclick="closeValidationModal()" style="margin: 0;"></button>
-                    </div>
-                    <div class="modal-body" style="padding: 1.5rem;">
-                        <div class="text-center mb-3">
-                            <i class="fas fa-circle-exclamation text-danger" style="font-size: 3rem;"></i>
-                        </div>
-                        <p class="mb-3 text-center" style="font-size: 1.1rem; font-weight: 500;">Please fill in all required fields:</p>
-                        <ul class="list-unstyled mb-0" style="text-align: left;">
-                            ${errors.map(error => `<li style="padding: 0.5rem 0; border-bottom: 1px solid #e9ecef;"><i class="fas fa-circle text-danger me-2" style="font-size: 0.5rem;"></i>${error}</li>`).join('')}
-                        </ul>
-                    </div>
-                    <div class="modal-footer" style="border-top: 1px solid #dee2e6; padding: 1rem 1.5rem; border-radius: 0 0 8px 8px;">
-                        <button type="button" class="btn btn-primary-modern" onclick="closeValidationModal()">
-                            <i class="fas fa-check me-2"></i>OK, I'll fix it
-                        </button>
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        // Add to body
-        document.body.appendChild(modal);
-        
-        // Scroll to first error field
-        if (firstErrorField.length > 0) {
-            setTimeout(function() {
-                firstErrorField[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
-                firstErrorField[0].focus();
-            }, 300);
-        }
-        
-        // Close on escape key
-        const escapeHandler = function(e) {
-            if (e.key === 'Escape') {
-                closeValidationModal();
-                document.removeEventListener('keydown', escapeHandler);
-            }
-        };
-        document.addEventListener('keydown', escapeHandler);
-        
-        // Close on backdrop click
-        modal.addEventListener('click', function(e) {
-            if (e.target === modal) {
-                closeValidationModal();
-            }
-        });
+        const name = field.name || field.id;
+        return name.replace(/_/g, ' ').replace(/([A-Z])/g, ' $1').trim()
+            .split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
     }
     
-    // Function to close validation modal
-    function closeValidationModal() {
-        const modal = document.getElementById('validationErrorModal');
-        if (modal) {
-            modal.style.opacity = '0';
-            modal.style.transition = 'opacity 0.3s ease';
-            setTimeout(() => {
-                modal.style.display = 'none';
-                modal.remove();
-            }, 300);
-        }
-    }
-    
-    // Make function globally accessible
-    window.closeValidationModal = closeValidationModal;
-    
-    // Form submission handler - SIMPLIFIED AND FIXED
-    // Form submission handler - IMPROVED
-const form = document.getElementById('addEmployeeForm');
-if (form) {
-    form.addEventListener('submit', function(e) {
-        // Remove any existing validation states
-        form.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+    // Helper function to show validation message
+    function showValidationMessage(field, message, type) {
+        const formGroup = field.closest('.form-group');
+        if (!formGroup) return;
         
-        let hasErrors = false;
-        const errors = [];
-        const firstErrorField = [];
-        
-        // Validate visible required fields
-        const requiredFields = form.querySelectorAll('input[required]:not([type="hidden"]):not([disabled]), select[required]:not([disabled]), textarea[required]:not([disabled])');
-        
-        // Helper function to get human-readable field name
-        function getFieldLabel(field) {
-            // Try to get label from associated label element
-            const label = field.labels && field.labels.length > 0 ? field.labels[0] : null;
-            if (label) {
-                let labelText = label.textContent || label.innerText;
-                // Remove asterisk and extra whitespace
-                labelText = labelText.replace(/\*/g, '').trim();
-                return labelText;
-            }
-            // Fallback to field name or ID
-            const name = field.name || field.id;
-            // Convert snake_case or camelCase to readable text
-            return name.replace(/_/g, ' ').replace(/([A-Z])/g, ' $1').trim()
-                .split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
-        }
-        
-        requiredFields.forEach(function(field) {
-            // Handle different field types
-            let isEmpty = false;
-            if (field.tagName === 'SELECT') {
-                isEmpty = !field.value || field.value === '';
-            } else if (field.type === 'checkbox' || field.type === 'radio') {
-                isEmpty = !field.checked;
+        let msgEl = formGroup.querySelector('.validation-message');
+        if (!msgEl) {
+            msgEl = document.createElement('small');
+            msgEl.className = 'validation-message';
+            // Insert after the field or after existing form-text
+            const formText = formGroup.querySelector('.form-text');
+            if (formText) {
+                formText.parentNode.insertBefore(msgEl, formText.nextSibling);
             } else {
-                isEmpty = !field.value || !field.value.trim();
+                formGroup.appendChild(msgEl);
             }
-            
-            if (isEmpty) {
-                field.classList.add('is-invalid');
-                hasErrors = true;
-                if (firstErrorField.length === 0) {
-                    firstErrorField.push(field);
+        }
+        msgEl.textContent = message;
+        msgEl.className = `validation-message ${type}`;
+        setTimeout(() => msgEl.classList.add('show'), 10);
+    }
+    
+    // Helper function to hide validation message
+    function hideValidationMessage(field) {
+        const formGroup = field.closest('.form-group');
+        if (!formGroup) return;
+        
+        const msgEl = formGroup.querySelector('.validation-message');
+        if (msgEl) {
+            msgEl.classList.remove('show');
+            setTimeout(() => {
+                if (msgEl && !msgEl.classList.contains('show')) {
+                    msgEl.remove();
                 }
-                const fieldLabel = getFieldLabel(field);
-                errors.push(fieldLabel + ' is required');
+            }, 300);
+        }
+    }
+    
+    // Comprehensive field validation function
+    function validateField(field) {
+        // Remove previous validation states
+        field.classList.remove('is-invalid', 'is-valid');
+        hideValidationMessage(field);
+        
+        const fieldType = field.type || field.tagName.toLowerCase();
+        const fieldValue = field.value ? field.value.trim() : '';
+        const isRequired = field.hasAttribute('required');
+        let isValid = true;
+        let errorMessage = '';
+        
+        // Skip hidden fields, disabled fields, and file inputs
+        if (field.type === 'hidden' || field.disabled || field.type === 'file') {
+            return true;
+        }
+        
+        // Validate based on field type
+        if (field.tagName === 'SELECT') {
+            if (isRequired && (!fieldValue || fieldValue === '')) {
+                isValid = false;
+                errorMessage = getFieldLabel(field) + ' is required';
+            }
+        } else if (field.type === 'checkbox' || field.type === 'radio') {
+            if (isRequired && !field.checked) {
+                isValid = false;
+                errorMessage = getFieldLabel(field) + ' is required';
+            }
+        } else if (field.tagName === 'TEXTAREA' || field.type === 'text' || field.type === 'email' || field.type === 'tel') {
+            if (isRequired && !fieldValue) {
+                isValid = false;
+                errorMessage = getFieldLabel(field) + ' is required';
+            } else if (fieldValue) {
+                // Validate email format
+                if (field.type === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fieldValue)) {
+                    isValid = false;
+                    errorMessage = 'Please enter a valid email address';
+                }
+                // Validate phone format (if pattern exists or if it's a PH phone number field)
+                if (field.type === 'tel') {
+                    // Check if it's a PH phone number (must start with 9, 10 digits)
+                    const phoneDigits = fieldValue.replace(/\D/g, '');
+                    if (field.hasAttribute('required') || phoneDigits.length > 0) {
+                        if (phoneDigits.length === 0 && field.hasAttribute('required')) {
+                            isValid = false;
+                            errorMessage = getFieldLabel(field) + ' is required';
+                        } else if (phoneDigits.length > 0 && (phoneDigits.length !== 10 || !phoneDigits.startsWith('9'))) {
+                            isValid = false;
+                            errorMessage = 'Phone number must be 10 digits starting with 9';
+                        } else if (field.hasAttribute('pattern')) {
+                            const pattern = new RegExp(field.getAttribute('pattern'));
+                            if (!pattern.test(phoneDigits)) {
+                                isValid = false;
+                                errorMessage = 'Please enter a valid phone number format';
+                            }
+                        }
+                    }
+                }
+                // Validate maxlength
+                if (field.hasAttribute('maxlength') && fieldValue.length > parseInt(field.getAttribute('maxlength'))) {
+                    isValid = false;
+                    errorMessage = 'Maximum length exceeded';
+                }
+            }
+        } else if (field.type === 'date') {
+            if (isRequired && !fieldValue) {
+                isValid = false;
+                errorMessage = getFieldLabel(field) + ' is required';
+            } else if (fieldValue) {
+                // Validate date range if max attribute exists
+                if (field.hasAttribute('max')) {
+                    const maxDate = new Date(field.getAttribute('max'));
+                    const selectedDate = new Date(fieldValue);
+                    if (selectedDate > maxDate) {
+                        isValid = false;
+                        errorMessage = 'Date cannot be in the future';
+                    }
+                }
+            }
+        } else if (field.type === 'number') {
+            if (isRequired && (!fieldValue || fieldValue === '')) {
+                isValid = false;
+                errorMessage = getFieldLabel(field) + ' is required';
+            } else if (fieldValue) {
+                const numValue = parseFloat(fieldValue);
+                if (isNaN(numValue)) {
+                    isValid = false;
+                    errorMessage = 'Please enter a valid number';
+                } else {
+                    if (field.hasAttribute('min') && numValue < parseFloat(field.getAttribute('min'))) {
+                        isValid = false;
+                        errorMessage = 'Value is too small';
+                    }
+                    if (field.hasAttribute('max') && numValue > parseFloat(field.getAttribute('max'))) {
+                        isValid = false;
+                        errorMessage = 'Value is too large';
+                    }
+                }
+            }
+        }
+        
+        // Apply validation styling with animation
+        if (isValid && fieldValue) {
+            field.classList.add('is-valid');
+            hideValidationMessage(field);
+        } else if (!isValid) {
+            field.classList.add('is-invalid');
+            showValidationMessage(field, errorMessage, 'error');
+        } else {
+            // Field is empty but not required - remove validation classes
+            field.classList.remove('is-invalid', 'is-valid');
+            hideValidationMessage(field);
+        }
+        
+        return isValid;
+    }
+    
+    // Validate all form fields
+    function validateAllFields() {
+        const allFields = form.querySelectorAll('input:not([type="hidden"]):not([type="file"]), select, textarea');
+        let allValid = true;
+        const firstInvalidField = [];
+        
+        allFields.forEach(field => {
+            if (!validateField(field)) {
+                allValid = false;
+                if (firstInvalidField.length === 0) {
+                    firstInvalidField.push(field);
+                }
             }
         });
         
-        // Validate hidden phone number fields manually
+        // Validate hidden phone number fields (they have required attribute on visible input)
         const cpNumber = document.getElementById('cp_number');
         const contactPersonNumber = document.getElementById('contact_person_number');
         
-        if (cpNumber && (!cpNumber.value || cpNumber.value.trim() === '')) {
-            hasErrors = true;
+        if (cpNumber) {
             const cpInput = document.getElementById('num_cp_full');
-            if (cpInput) {
-                cpInput.classList.add('is-invalid');
-                if (firstErrorField.length === 0) {
-                    firstErrorField.push(cpInput);
+            if (cpInput && cpInput.hasAttribute('required')) {
+                if (!cpNumber.value || cpNumber.value.trim() === '') {
+                    allValid = false;
+                    if (firstInvalidField.length === 0) {
+                        firstInvalidField.push(cpInput);
+                    }
+                    cpInput.classList.add('is-invalid');
+                    showValidationMessage(cpInput, 'Contact Phone Number is required', 'error');
+                } else if (cpNumber.value.length !== 10 || !cpNumber.value.startsWith('9')) {
+                    allValid = false;
+                    if (firstInvalidField.length === 0) {
+                        firstInvalidField.push(cpInput);
+                    }
+                    cpInput.classList.add('is-invalid');
+                    showValidationMessage(cpInput, 'Phone number must be 10 digits starting with 9', 'error');
                 }
             }
-            errors.push('Contact Phone Number is required');
         }
         
-        if (contactPersonNumber && (!contactPersonNumber.value || contactPersonNumber.value.trim() === '')) {
-            hasErrors = true;
+        if (contactPersonNumber) {
             const emInput = document.getElementById('num_em_full');
-            if (emInput) {
-                emInput.classList.add('is-invalid');
-                if (firstErrorField.length === 0) {
-                    firstErrorField.push(emInput);
+            if (emInput && emInput.hasAttribute('required')) {
+                if (!contactPersonNumber.value || contactPersonNumber.value.trim() === '') {
+                    allValid = false;
+                    if (firstInvalidField.length === 0) {
+                        firstInvalidField.push(emInput);
+                    }
+                    emInput.classList.add('is-invalid');
+                    showValidationMessage(emInput, 'Emergency Contact Number is required', 'error');
+                } else if (contactPersonNumber.value.length !== 10 || !contactPersonNumber.value.startsWith('9')) {
+                    allValid = false;
+                    if (firstInvalidField.length === 0) {
+                        firstInvalidField.push(emInput);
+                    }
+                    emInput.classList.add('is-invalid');
+                    showValidationMessage(emInput, 'Phone number must be 10 digits starting with 9', 'error');
                 }
             }
-            errors.push('Emergency Contact Number is required');
         }
         
-        // VALIDATION DISABLED - Allow form to submit regardless of validation errors
-        // This allows you to proceed to page 2 even if some fields are missing
-        // if (hasErrors) {
-        //     e.preventDefault();
-        //     e.stopPropagation();
-        //     
-        //     // Show custom validation error popup
-        //     showValidationErrorPopup(errors, firstErrorField);
-        //     
-        //     return false;
-        // }
+        // Scroll to first invalid field
+        if (!allValid && firstInvalidField.length > 0) {
+            setTimeout(() => {
+                firstInvalidField[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                firstInvalidField[0].focus();
+            }, 100);
+        }
+        
+        return allValid;
+    }
+    
+    // Form submission handler
+    form.addEventListener('submit', function(e) {
+        // Validate all fields
+        if (!validateAllFields()) {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        }
         
         // Validation passed - disable submit button
         const submitButton = form.querySelector('button[type="submit"]');
@@ -2560,41 +2550,37 @@ if (form) {
             submitButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Creating Employee & Going to Page 2...';
         }
         
-        // Allow form to submit
         return true;
     });
     
-    // Real-time validation on blur
-    const inputs = form.querySelectorAll('input, select, textarea');
-    inputs.forEach(input => {
-        input.addEventListener('blur', function() {
-            if (this.hasAttribute('required')) {
-                // Handle different input types
-                let isEmpty = false;
-                if (this.tagName === 'SELECT') {
-                    // For select elements, check if value is empty
-                    isEmpty = !this.value || this.value === '';
-                } else if (this.tagName === 'TEXTAREA' || this.type === 'text' || this.type === 'email' || this.type === 'tel') {
-                    // For text inputs and textareas, use trim
-                    isEmpty = !this.value || !this.value.trim();
-                } else {
-                    // For other input types (date, number, etc.), just check if empty
-                    isEmpty = !this.value || this.value === '';
-                }
-                
-                if (isEmpty) {
-                    this.classList.add('is-invalid');
-                } else {
-                    this.classList.remove('is-invalid');
-                    this.classList.add('is-valid');
-                }
-            } else {
-                // Remove validation classes if field is not required
-                this.classList.remove('is-invalid', 'is-valid');
-            }
+    // Real-time validation on input and blur for ALL fields
+    const allFields = form.querySelectorAll('input:not([type="hidden"]):not([type="file"]), select, textarea');
+    allFields.forEach(field => {
+        // Validate on blur (when user leaves field)
+        field.addEventListener('blur', function() {
+            validateField(this);
         });
+        
+        // Validate on input (real-time) for text fields
+        if (field.type === 'text' || field.type === 'email' || field.type === 'tel' || field.tagName === 'TEXTAREA') {
+            let timeout;
+            field.addEventListener('input', function() {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => {
+                    if (this.value.trim() || this.hasAttribute('required')) {
+                        validateField(this);
+                    }
+                }, 300); // Debounce for better performance
+            });
+        }
+        
+        // Validate on change for selects
+        if (field.tagName === 'SELECT') {
+            field.addEventListener('change', function() {
+                validateField(this);
+            });
+        }
     });
-}
 
     // Enforce numeric-only inputs on specific fields
     const numericInputs = document.querySelectorAll('.numeric-only');
@@ -3062,18 +3048,23 @@ if (form) {
             // The country code is just for display
             hidden.value = n || '';
             
-            // Add validation styling
-            if (n.length > 0 && n.length < numLen) {
-                num.classList.add('is-invalid');
-                num.classList.remove('is-valid');
-            } else if (n.length === numLen && n.startsWith('9')) {
-                num.classList.remove('is-invalid');
-                num.classList.add('is-valid');
-            } else if (n.length === 0) {
-                num.classList.remove('is-invalid', 'is-valid');
-            } else if (n.length > 0 && !n.startsWith('9')) {
-                num.classList.add('is-invalid');
-                num.classList.remove('is-valid');
+            // Use comprehensive validation function instead of managing classes directly
+            if (typeof validateField === 'function') {
+                setTimeout(() => validateField(num), 10);
+            } else {
+                // Fallback if comprehensive validation not loaded yet
+                if (n.length > 0 && n.length < numLen) {
+                    num.classList.add('is-invalid');
+                    num.classList.remove('is-valid');
+                } else if (n.length === numLen && n.startsWith('9')) {
+                    num.classList.remove('is-invalid');
+                    num.classList.add('is-valid');
+                } else if (n.length === 0) {
+                    num.classList.remove('is-invalid', 'is-valid');
+                } else if (n.length > 0 && !n.startsWith('9')) {
+                    num.classList.add('is-invalid');
+                    num.classList.remove('is-valid');
+                }
             }
         };
         
@@ -3121,15 +3112,20 @@ if (form) {
             }
         });
         
-        // Validate on blur
+        // Validate on blur - use comprehensive validation
         num.addEventListener('blur', () => {
-            const value = num.value.replace(/\D/g, '');
-            if (value.length > 0 && (!value.startsWith('9') || value.length !== numLen)) {
-                num.classList.add('is-invalid');
-                num.classList.remove('is-valid');
-            } else if (value.length === numLen && value.startsWith('9')) {
-                num.classList.remove('is-invalid');
-                num.classList.add('is-valid');
+            if (typeof validateField === 'function') {
+                validateField(num);
+            } else {
+                // Fallback validation
+                const value = num.value.replace(/\D/g, '');
+                if (value.length > 0 && (!value.startsWith('9') || value.length !== numLen)) {
+                    num.classList.add('is-invalid');
+                    num.classList.remove('is-valid');
+                } else if (value.length === numLen && value.startsWith('9')) {
+                    num.classList.remove('is-invalid');
+                    num.classList.add('is-valid');
+                }
             }
         });
         
@@ -3202,29 +3198,16 @@ if (form) {
         });
     }
 
-    // Additional contact name (text) - light validation feedback
+    // Additional contact name (text) - use comprehensive validation
     const contactPersonAltField = document.getElementById('contact_person_alt');
     if (contactPersonAltField) {
-        const validateContactNameAlt = () => {
-            const value = contactPersonAltField.value.trim();
-            if (value.length === 0) {
-                contactPersonAltField.classList.remove('is-valid', 'is-invalid');
-                return true;
+        // Use comprehensive validation on blur
+        contactPersonAltField.addEventListener('blur', function() {
+            if (typeof validateField === 'function') {
+                validateField(this);
             }
-            if (value.length >= 2) {
-                contactPersonAltField.classList.remove('is-invalid');
-                contactPersonAltField.classList.add('is-valid');
-                return true;
-            }
-            contactPersonAltField.classList.remove('is-valid');
-            contactPersonAltField.classList.add('is-invalid');
-            return false;
-        };
-
-        contactPersonAltField.addEventListener('blur', validateContactNameAlt);
-        contactPersonAltField.addEventListener('input', () => {
-            contactPersonAltField.classList.remove('is-invalid');
         });
+        // Don't clear validation on input - let comprehensive validation handle it
     }
         
     // (Emergency numbers are validated via the dedicated phone inputs and hidden fields)
@@ -3276,11 +3259,23 @@ if (form) {
             }
         };
 
-        // Validate on input (real-time)
-        field.addEventListener('input', validateGovId);
+        // Validate on input (real-time) - but also call comprehensive validation
+        field.addEventListener('input', function() {
+            validateGovId();
+            // Also trigger comprehensive validation after a short delay
+            if (typeof validateField === 'function') {
+                setTimeout(() => validateField(this), 50);
+            }
+        });
         
-        // Validate on blur (when user leaves field)
-        field.addEventListener('blur', validateGovId);
+        // Validate on blur (when user leaves field) - use comprehensive validation
+        field.addEventListener('blur', function() {
+            if (typeof validateField === 'function') {
+                validateField(this);
+            } else {
+                validateGovId();
+            }
+        });
         
         // Initial validation if field has value
         if (field.value.trim().length > 0) {
@@ -3322,12 +3317,24 @@ if (form) {
         };
 
         // Validate on input (real-time) - with small delay to allow formatting
-        licenseField.addEventListener('input', () => {
-            setTimeout(validateLicense, 10);
+        licenseField.addEventListener('input', function() {
+            setTimeout(() => {
+                validateLicense();
+                // Also trigger comprehensive validation
+                if (typeof validateField === 'function') {
+                    setTimeout(() => validateField(this), 50);
+                }
+            }, 10);
         });
         
-        // Validate on blur (when user leaves field)
-        licenseField.addEventListener('blur', validateLicense);
+        // Validate on blur (when user leaves field) - use comprehensive validation
+        licenseField.addEventListener('blur', function() {
+            if (typeof validateField === 'function') {
+                validateField(this);
+            } else {
+                validateLicense();
+            }
+        });
         
         // Note: Form submit validation is handled in the main form submit handler
         // This prevents multiple submit handlers from conflicting
@@ -3435,5 +3442,7 @@ if (!function_exists('base_url')) {
 // Calculate CSS path relative to project root
 $root_prefix = root_prefix();
 $css_path = ($root_prefix ? $root_prefix : '') . '/pages/css/add_employee.css';
+$css_path_icons = ($root_prefix ? $root_prefix : '') . '/pages/css/add_employee_icon_buttons.css';
 ?>
 <link rel="stylesheet" href="<?php echo htmlspecialchars($css_path); ?>">
+<link rel="stylesheet" href="<?php echo htmlspecialchars($css_path_icons); ?>">
