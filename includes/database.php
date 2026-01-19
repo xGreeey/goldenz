@@ -2,7 +2,7 @@
 /**
  * Database Functions for Golden Z-5 HR System
  * Secure Database Operations
- * 
+ *
  * NOTE: This file maintains backward compatibility.
  * New code should use App\Core\Database instead.
  */
@@ -26,7 +26,7 @@ if (!function_exists('get_db_connection')) {
     function get_db_connection() {
         // Use cached connection if available
         static $db_connection = null;
-        
+
         if ($db_connection !== null) {
             // Check if connection is still alive
             try {
@@ -37,7 +37,7 @@ if (!function_exists('get_db_connection')) {
                 $db_connection = null;
             }
         }
-        
+
         // Try to use new Database class if available
         if (class_exists('App\Core\Database')) {
             try {
@@ -47,10 +47,10 @@ if (!function_exists('get_db_connection')) {
                 // Fall through to fallback method
             }
         }
-        
+
         // Fallback to old method
         global $db_config;
-        
+
         if (!isset($db_config) || empty($db_config)) {
             // Try to load config if not available
             $config_file = __DIR__ . '/../config/database.php';
@@ -61,7 +61,7 @@ if (!function_exists('get_db_connection')) {
                 throw new Exception('Database configuration not found');
             }
         }
-        
+
         try {
             $dsn = "mysql:host={$db_config['host']};dbname={$db_config['database']};charset={$db_config['charset']}";
             $db_connection = new PDO($dsn, $db_config['username'], $db_config['password'], [
@@ -88,23 +88,23 @@ if (!function_exists('log_db_error')) {
         if (!is_dir($log_dir)) {
             @mkdir($log_dir, 0755, true);
         }
-        
+
         $log_file = $log_dir . '/error.log';
         $timestamp = date('Y-m-d H:i:s');
         $ip = $_SERVER['REMOTE_ADDR'] ?? 'Unknown';
         $user = $_SESSION['user_name'] ?? $_SESSION['username'] ?? 'Unknown';
         $user_id = $_SESSION['user_id'] ?? $_SESSION['id'] ?? 'Unknown';
-        
+
         $log_entry = "[{$timestamp}] [{$context}] User: {$user} (ID: {$user_id}) | IP: {$ip}\n";
         $log_entry .= "Error: {$message}\n";
-        
+
         if (!empty($data)) {
             $log_entry .= "Data: " . print_r($data, true) . "\n";
         }
-        
+
         $log_entry .= "File: " . ($_SERVER['SCRIPT_NAME'] ?? 'Unknown') . "\n";
         $log_entry .= str_repeat("-", 80) . "\n";
-        
+
         @file_put_contents($log_file, $log_entry, FILE_APPEND | LOCK_EX);
     }
 }
@@ -120,17 +120,17 @@ if (!function_exists('execute_query')) {
         } catch (PDOException $e) {
             $error_msg = $e->getMessage();
             $error_code = $e->getCode();
-            
+
             // Log to error log file
             log_db_error('execute_query', "PDO Error [{$error_code}]: {$error_msg}", [
                 'sql' => $sql,
                 'params' => $params,
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             // Also log to PHP error log
             error_log('Database Error: ' . $error_msg . ' | SQL: ' . $sql . ' | Params: ' . print_r($params, true));
-            
+
             // Throw the exception instead of dying so it can be caught and handled by calling code
             throw new Exception('Database error: ' . $error_msg);
         }
@@ -142,7 +142,7 @@ if (!function_exists('get_employees')) {
     function get_employees() {
         try {
             $pdo = get_db_connection();
-            
+
             // Check if created_by_name column exists, if not just select all
             try {
                 $check_sql = "SHOW COLUMNS FROM employees LIKE 'created_by_name'";
@@ -152,31 +152,31 @@ if (!function_exists('get_employees')) {
             } catch (Exception $e) {
                 $has_created_by = false;
             }
-            
+
             // Always fetch ALL employees from database - no filtering
             if ($has_created_by) {
-                $sql = "SELECT e.*, u.name as creator_name 
-                        FROM employees e 
-                        LEFT JOIN users u ON e.created_by = u.id 
+                $sql = "SELECT e.*, u.name as creator_name
+                        FROM employees e
+                        LEFT JOIN users u ON e.created_by = u.id
                         ORDER BY e.created_at DESC";
             } else {
                 // Get all columns and all records from employees table
                 $sql = "SELECT * FROM employees ORDER BY created_at DESC";
             }
-            
+
             $stmt = $pdo->prepare($sql);
             $stmt->execute();
-            
+
             // Fetch all records as associative array
             $employees = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            
+
             // Add created_by_name if it doesn't exist in result
             foreach ($employees as &$emp) {
                 if (!isset($emp['created_by_name']) && isset($emp['creator_name'])) {
                     $emp['created_by_name'] = $emp['creator_name'];
                 }
             }
-            
+
             return $employees;
         } catch (Exception $e) {
             // Log error but return empty array instead of failing
@@ -338,10 +338,10 @@ if (!function_exists('update_employee')) {
             'series_of' => 'VARCHAR(50) NULL',
         ]);
 
-        $sql = "UPDATE employees SET 
-                employee_no = ?, employee_type = ?, surname = ?, first_name = ?, middle_name = ?, 
-                post = ?, license_no = ?, license_exp_date = ?, rlm_exp = ?, date_hired = ?, 
-                cp_number = ?, sss_no = ?, pagibig_no = ?, tin_number = ?, philhealth_no = ?, 
+        $sql = "UPDATE employees SET
+                employee_no = ?, employee_type = ?, surname = ?, first_name = ?, middle_name = ?,
+                post = ?, license_no = ?, license_exp_date = ?, rlm_exp = ?, date_hired = ?,
+                cp_number = ?, sss_no = ?, pagibig_no = ?, tin_number = ?, philhealth_no = ?,
                 birth_date = ?, gender = ?, civil_status = ?, age = ?, birthplace = ?, citizenship = ?, provincial_address = ?, special_skills = ?,
                 spouse_name = ?, spouse_age = ?, spouse_occupation = ?, father_name = ?, father_age = ?, father_occupation = ?, mother_name = ?, mother_age = ?, mother_occupation = ?, children_names = ?,
                 college_course = ?, college_school_name = ?, college_school_address = ?, college_years = ?,
@@ -349,11 +349,11 @@ if (!function_exists('update_employee')) {
                 highschool_school_name = ?, highschool_school_address = ?, highschool_years = ?,
                 elementary_school_name = ?, elementary_school_address = ?, elementary_years = ?,
                 trainings_json = ?, gov_exam_taken = ?, gov_exam_json = ?, employment_history_json = ?,
-                height = ?, weight = ?, address = ?, contact_person = ?, 
-                relationship = ?, contact_person_address = ?, contact_person_number = ?, 
+                height = ?, weight = ?, address = ?, contact_person = ?,
+                relationship = ?, contact_person_address = ?, contact_person_number = ?,
                 blood_type = ?, religion = ?, status = ?, updated_at = NOW()
                 WHERE id = ?";
-        
+
         $params = [
             $data['employee_no'] ?? null,
             $data['employee_type'] ?? 'SG',
@@ -418,7 +418,7 @@ if (!function_exists('update_employee')) {
             $data['status'] ?? 'Active',
             $id
         ];
-        
+
         $stmt = execute_query($sql, $params);
         return $stmt->rowCount() > 0;
     }
@@ -428,30 +428,30 @@ if (!function_exists('update_employee')) {
 if (!function_exists('add_employee')) {
     /**
      * Create a new employee record (INSERT only)
-     * 
+     *
      * IMPORTANT: This function performs an INSERT operation only.
      * It does NOT include the 'id' field (auto_increment primary key).
      * The 'id' field is automatically generated by MySQL (e.g., 14901, 14902, 14903).
-     * 
+     *
      * NOTE: 'id' is the primary key field (auto-increment).
      *       'employee_no' is a separate field (employee number like 24434).
-     * 
+     *
      * This function is ONLY used by Page 1 (add_employee.php).
      * Page 2 (add_employee_page2.php) uses UPDATE statements only with WHERE id = ?
-     * 
+     *
      * @param array $data Employee data (must NOT include 'id' field - it's auto-generated)
      * @return int|false Returns the auto-generated 'id' value on success, false on failure
      */
     function add_employee($data) {
         log_db_error('add_employee', 'Starting employee creation (INSERT only - id field auto-generated by MySQL)', ['input_data' => $data]);
-        
+
         // Safety check: Ensure 'id' is not in the data array
         // The 'id' field is auto-increment and must never be manually set
         if (isset($data['id'])) {
             log_db_error('add_employee', 'WARNING: id field detected in data - removing it (auto_increment only)', []);
             unset($data['id']);
         }
-        
+
         // Check if created_by column exists, if not add it
         try {
             $check_sql = "SHOW COLUMNS FROM employees LIKE 'created_by'";
@@ -508,7 +508,7 @@ if (!function_exists('add_employee')) {
             // Employment History (stored as JSON)
             'employment_history_json' => 'TEXT NULL',
         ]);
-        
+
         // Keep column list + placeholders in sync (prevents 1136 column/value mismatch)
         // IMPORTANT: 'id' field is NOT included - it's auto_increment primary key, generated by MySQL
         // NOTE: 'employee_no' is included (it's the employee number, different from 'id')
@@ -533,7 +533,7 @@ if (!function_exists('add_employee')) {
         ];
         $placeholders = implode(', ', array_fill(0, count($columns), '?'));
         $sql = "INSERT INTO employees (" . implode(', ', $columns) . ") VALUES (" . $placeholders . ")";
-        
+
         $params = [
             $data['employee_no'],
             $data['employee_type'] ?? 'SG',
@@ -599,33 +599,33 @@ if (!function_exists('add_employee')) {
             $data['created_by'] ?? null,
             $data['created_by_name'] ?? null
         ];
-        
+
         log_db_error('add_employee', 'Prepared SQL and parameters', [
             'sql' => $sql,
             'params_count' => count($params),
             'params' => $params
         ]);
-        
+
         try {
             // Use the same PDO connection for INSERT and lastInsertId()
             $pdo = get_db_connection();
             $stmt = $pdo->prepare($sql);
             $result = $stmt->execute($params);
-            
+
             // Check if statement executed successfully
             if ($result && $stmt !== false) {
                 // Get the auto-generated 'id' value (primary key, auto-increment)
                 // This 'id' value (e.g., 14901, 14902, 14903) is generated by MySQL
                 // and must be used for all subsequent UPDATEs: WHERE id = ?
                 $last_insert_id = $pdo->lastInsertId();
-                
+
                 log_db_error('add_employee', 'Employee created successfully with auto-generated id (primary key)', [
                     'auto_generated_id' => $last_insert_id,  // This is the 'id' field value
                     'employee_no' => $data['employee_no'],   // This is the 'employee_no' field (different from 'id')
                     'first_name' => $data['first_name'] ?? 'N/A',
                     'surname' => $data['surname'] ?? 'N/A'
                 ]);
-                
+
                 // Return the auto-generated 'id' value instead of just true
                 // This 'id' value will be used in Page 2 for: UPDATE employees SET ... WHERE id = ?
                 return $last_insert_id > 0 ? $last_insert_id : false;
@@ -648,7 +648,7 @@ if (!function_exists('add_employee')) {
                 'sql' => $sql,
                 'params' => $params
             ]);
-            
+
             error_log('Error adding employee: ' . $e->getMessage());
             return false;
         }
@@ -669,24 +669,24 @@ if (!function_exists('fix_employee_auto_increment')) {
     function fix_employee_auto_increment() {
         try {
             $pdo = get_db_connection();
-            
+
             // Get the maximum ID from the employees table
             $stmt = $pdo->query("SELECT COALESCE(MAX(id), 0) as max_id FROM employees");
             $result = $stmt->fetch();
             $max_id = (int)($result['max_id'] ?? 0);
-            
+
             // Set the auto-increment to max_id + 1
             $new_auto_increment = $max_id + 1;
             $pdo->exec("ALTER TABLE employees AUTO_INCREMENT = {$new_auto_increment}");
-            
+
             // Verify the fix
-            $stmt = $pdo->query("SELECT AUTO_INCREMENT 
-                                 FROM information_schema.TABLES 
-                                 WHERE TABLE_SCHEMA = DATABASE() 
+            $stmt = $pdo->query("SELECT AUTO_INCREMENT
+                                 FROM information_schema.TABLES
+                                 WHERE TABLE_SCHEMA = DATABASE()
                                  AND TABLE_NAME = 'employees'");
             $verify = $stmt->fetch();
             $actual_auto_increment = (int)($verify['AUTO_INCREMENT'] ?? 0);
-            
+
             return [
                 'success' => true,
                 'max_id' => $max_id,
@@ -710,68 +710,68 @@ if (!function_exists('fix_employee_auto_increment')) {
 if (!function_exists('get_dashboard_stats')) {
     function get_dashboard_stats() {
         $stats = [];
-        
+
         // Total employees - ensure integer conversion
         $sql = "SELECT COUNT(*) as total FROM employees";
         $stmt = execute_query($sql);
         $result = $stmt->fetch();
         $stats['total_employees'] = (int)($result['total'] ?? 0);
-        
+
         // Active employees - ensure integer conversion
         $sql = "SELECT COUNT(*) as active FROM employees WHERE status = 'Active'";
         $stmt = execute_query($sql);
         $result = $stmt->fetch();
         $stats['active_employees'] = (int)($result['active'] ?? 0);
-        
+
         // Security Personnel (SG + LG combined) - ensure integer conversion
         $sql = "SELECT COUNT(*) as security FROM employees WHERE employee_type IN ('SG', 'LG') AND status = 'Active'";
         $stmt = execute_query($sql);
         $result = $stmt->fetch();
         $stats['security_personnel'] = (int)($result['security'] ?? 0);
-        
+
         // Investigation Team (placeholder - can be customized based on post assignments)
         $sql = "SELECT COUNT(*) as investigation FROM employees WHERE post LIKE '%INVESTIGATION%' AND status = 'Active'";
         $stmt = execute_query($sql);
         $result = $stmt->fetch();
         $stats['investigation_team'] = (int)($result['investigation'] ?? 0);
-        
+
         // Security Guards (SG) - for reference
         $sql = "SELECT COUNT(*) as security FROM employees WHERE employee_type = 'SG' AND status = 'Active'";
         $stmt = execute_query($sql);
         $result = $stmt->fetch();
         $stats['security_guards'] = (int)($result['security'] ?? 0);
-        
+
         // Licensed Guards (LG) - for reference
         $sql = "SELECT COUNT(*) as licensed FROM employees WHERE employee_type = 'LG' AND status = 'Active'";
         $stmt = execute_query($sql);
         $result = $stmt->fetch();
         $stats['licensed_guards'] = (int)($result['licensed'] ?? 0);
-        
+
         // Expired licenses - only count valid dates, exclude NULL and '0000-00-00'
-        $sql = "SELECT COUNT(*) as expired 
-                FROM employees 
-                WHERE license_no IS NOT NULL 
-                AND license_no != '' 
-                AND license_exp_date IS NOT NULL 
-                AND license_exp_date != '' 
+        $sql = "SELECT COUNT(*) as expired
+                FROM employees
+                WHERE license_no IS NOT NULL
+                AND license_no != ''
+                AND license_exp_date IS NOT NULL
+                AND license_exp_date != ''
                 AND license_exp_date != '0000-00-00'
                 AND license_exp_date < CURDATE()";
         $stmt = execute_query($sql);
         $stats['expired_licenses'] = (int)$stmt->fetch()['expired'];
-        
+
         // Expiring licenses (next 30 days) - exclude already expired licenses
-        $sql = "SELECT COUNT(*) as expiring 
-                FROM employees 
-                WHERE license_no IS NOT NULL 
-                AND license_no != '' 
-                AND license_exp_date IS NOT NULL 
-                AND license_exp_date != '' 
+        $sql = "SELECT COUNT(*) as expiring
+                FROM employees
+                WHERE license_no IS NOT NULL
+                AND license_no != ''
+                AND license_exp_date IS NOT NULL
+                AND license_exp_date != ''
                 AND license_exp_date != '0000-00-00'
-                AND license_exp_date >= CURDATE() 
+                AND license_exp_date >= CURDATE()
                 AND license_exp_date <= DATE_ADD(CURDATE(), INTERVAL 30 DAY)";
         $stmt = execute_query($sql);
         $stats['expiring_licenses'] = (int)$stmt->fetch()['expiring'];
-        
+
         return $stats;
     }
 }
@@ -780,33 +780,33 @@ if (!function_exists('get_dashboard_stats')) {
 if (!function_exists('get_employee_statistics')) {
     function get_employee_statistics() {
         $stats = [];
-        
+
         try {
             // Total employees
             $sql = "SELECT COUNT(*) as total FROM employees";
             $stmt = execute_query($sql);
             $result = $stmt->fetch();
             $stats['total_employees'] = $result ? (int)$result['total'] : 0;
-            
+
             // Active employees
             $sql = "SELECT COUNT(*) as active FROM employees WHERE LOWER(status) = 'active'";
             $stmt = execute_query($sql);
             $result = $stmt->fetch();
             $stats['active_employees'] = $result ? (int)$result['active'] : 0;
-            
+
             // Inactive employees (includes Inactive, Terminated, Suspended)
             $sql = "SELECT COUNT(*) as inactive FROM employees WHERE LOWER(status) IN ('inactive', 'terminated', 'suspended')";
             $stmt = execute_query($sql);
             $result = $stmt->fetch();
             $stats['inactive_employees'] = $result ? (int)$result['inactive'] : 0;
-            
+
             // Onboarding employees - check if employment_status column exists, otherwise use date_hired (hired in last 6 months)
             // First try with employment_status if it exists
             try {
                 $sql = "SHOW COLUMNS FROM employees LIKE 'employment_status'";
                 $stmt = execute_query($sql);
                 $has_employment_status = $stmt->rowCount() > 0;
-                
+
                 if ($has_employment_status) {
                     $sql = "SELECT COUNT(*) as onboarding FROM employees WHERE LOWER(employment_status) = 'provisional' AND LOWER(status) = 'active'";
                 } else {
@@ -823,7 +823,7 @@ if (!function_exists('get_employee_statistics')) {
                 $result = $stmt->fetch();
                 $stats['onboarding_employees'] = $result ? (int)$result['onboarding'] : 0;
             }
-            
+
         } catch (Exception $e) {
             // Fallback to zero if there's an error
             $stats['total_employees'] = 0;
@@ -831,7 +831,7 @@ if (!function_exists('get_employee_statistics')) {
             $stats['inactive_employees'] = 0;
             $stats['onboarding_employees'] = 0;
         }
-        
+
         return $stats;
     }
 }
@@ -870,7 +870,7 @@ if (!function_exists('create_tables')) {
             status ENUM('Active', 'Inactive', 'Terminated', 'Suspended') DEFAULT 'Active',
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-            
+
             INDEX idx_employee_no (employee_no),
             INDEX idx_employee_type (employee_type),
             INDEX idx_post (post),
@@ -878,12 +878,12 @@ if (!function_exists('create_tables')) {
             INDEX idx_license_exp (license_exp_date),
             INDEX idx_status (status)
         )";
-        
+
         execute_query($sql);
-        
+
         // Sample data insertion removed - users should manage their own employee data
         // If you need to insert sample data for testing, use the goldenz_hr.sql file or run it manually
-        
+
         // Create dtr_entries table
         $sql = "CREATE TABLE IF NOT EXISTS dtr_entries (
             id INT AUTO_INCREMENT PRIMARY KEY,
@@ -895,15 +895,15 @@ if (!function_exists('create_tables')) {
             notes TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-            
+
             FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE,
-            
+
             INDEX idx_employee_id (employee_id),
             INDEX idx_entry_date (entry_date),
             INDEX idx_entry_type (entry_type),
             UNIQUE KEY unique_employee_date (employee_id, entry_date)
         )";
-        
+
         execute_query($sql);
     }
 }
@@ -913,33 +913,33 @@ if (!function_exists('get_dtr_entries')) {
     function get_dtr_entries($employee_id = null, $date_from = null, $date_to = null) {
         try {
             $pdo = get_db_connection();
-            $sql = "SELECT d.*, e.first_name, e.surname, e.post 
-                    FROM dtr_entries d 
+            $sql = "SELECT d.*, e.first_name, e.surname, e.post
+                    FROM dtr_entries d
                     JOIN employees e ON d.employee_id = e.id";
             $params = [];
             $conditions = [];
-            
+
             if ($employee_id) {
                 $conditions[] = "d.employee_id = ?";
                 $params[] = $employee_id;
             }
-            
+
             if ($date_from) {
                 $conditions[] = "d.entry_date >= ?";
                 $params[] = $date_from;
             }
-            
+
             if ($date_to) {
                 $conditions[] = "d.entry_date <= ?";
                 $params[] = $date_to;
             }
-            
+
             if (!empty($conditions)) {
                 $sql .= " WHERE " . implode(" AND ", $conditions);
             }
-            
+
             $sql .= " ORDER BY d.entry_date DESC, d.time_in ASC";
-            
+
             $stmt = $pdo->prepare($sql);
             $stmt->execute($params);
             return $stmt->fetchAll();
@@ -954,15 +954,15 @@ if (!function_exists('save_dtr_entry')) {
     function save_dtr_entry($data) {
         try {
             $pdo = get_db_connection();
-            
+
             // Check if entry already exists for this employee and date
             $stmt = $pdo->prepare("SELECT id FROM dtr_entries WHERE employee_id = ? AND entry_date = ?");
             $stmt->execute([$data['employee_id'], $data['date']]);
             $existing = $stmt->fetch();
-            
+
             if ($existing) {
                 // Update existing entry
-                $sql = "UPDATE dtr_entries SET 
+                $sql = "UPDATE dtr_entries SET
                         time_in = ?, time_out = ?, entry_type = ?, notes = ?, updated_at = NOW()
                         WHERE id = ?";
                 $params = [
@@ -974,7 +974,7 @@ if (!function_exists('save_dtr_entry')) {
                 ];
             } else {
                 // Insert new entry
-                $sql = "INSERT INTO dtr_entries (employee_id, entry_date, time_in, time_out, entry_type, notes, created_at, updated_at) 
+                $sql = "INSERT INTO dtr_entries (employee_id, entry_date, time_in, time_out, entry_type, notes, created_at, updated_at)
                         VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())";
                 $params = [
                     $data['employee_id'],
@@ -985,14 +985,14 @@ if (!function_exists('save_dtr_entry')) {
                     $data['notes']
                 ];
             }
-            
+
             $stmt = $pdo->prepare($sql);
             $result = $stmt->execute($params);
-            
+
             if ($result) {
                 return true;
             }
-            
+
             return false;
         } catch (Exception $e) {
             error_log("Error saving DTR entry: " . $e->getMessage());
@@ -1005,19 +1005,19 @@ if (!function_exists('get_dtr_statistics')) {
     function get_dtr_statistics($date_from = null, $date_to = null) {
         try {
             $pdo = get_db_connection();
-            
+
             $date_from = $date_from ?: date('Y-m-01'); // First day of current month
             $date_to = $date_to ?: date('Y-m-t'); // Last day of current month
-            
+
             $stmt = $pdo->prepare("
-                SELECT 
+                SELECT
                     COUNT(DISTINCT employee_id) as total_employees,
                     COUNT(*) as total_entries,
                     SUM(CASE WHEN entry_type = 'time-in' THEN 1 ELSE 0 END) as time_in_count,
                     SUM(CASE WHEN entry_type = 'time-out' THEN 1 ELSE 0 END) as time_out_count,
                     SUM(CASE WHEN entry_type = 'break' THEN 1 ELSE 0 END) as break_count,
                     SUM(CASE WHEN entry_type = 'overtime' THEN 1 ELSE 0 END) as overtime_count
-                FROM dtr_entries 
+                FROM dtr_entries
                 WHERE entry_date BETWEEN ? AND ?
             ");
             $stmt->execute([$date_from, $date_to]);
@@ -1043,32 +1043,32 @@ if (!function_exists('get_posts')) {
             $pdo = get_db_connection();
             $sql = "SELECT * FROM posts WHERE 1=1";
             $params = [];
-            
+
             if (!empty($filters['department'])) {
                 $sql .= " AND department = :department";
                 $params['department'] = $filters['department'];
             }
-            
+
             if (!empty($filters['employee_type'])) {
                 $sql .= " AND employee_type = :employee_type";
                 $params['employee_type'] = $filters['employee_type'];
             }
-            
+
             if (!empty($filters['status'])) {
                 $sql .= " AND status = :status";
                 $params['status'] = $filters['status'];
             }
-            
+
             if (!empty($filters['search'])) {
                 $sql .= " AND (post_title LIKE :search OR location LIKE :search OR description LIKE :search)";
                 $params['search'] = '%' . $filters['search'] . '%';
             }
-            
+
             $sql .= " ORDER BY created_at DESC";
-            
+
             $stmt = $pdo->prepare($sql);
             $stmt->execute($params);
-            
+
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
             error_log("Database error in get_posts: " . $e->getMessage());
@@ -1095,9 +1095,9 @@ if (!function_exists('create_post')) {
     function create_post($data) {
         try {
             $pdo = get_db_connection();
-            $sql = "INSERT INTO posts (post_title, post_code, department, employee_type, location, description, requirements, responsibilities, required_count, priority, status, shift_type, work_hours, salary_range, benefits, reporting_to, expires_at) 
+            $sql = "INSERT INTO posts (post_title, post_code, department, employee_type, location, description, requirements, responsibilities, required_count, priority, status, shift_type, work_hours, salary_range, benefits, reporting_to, expires_at)
                     VALUES (:post_title, :post_code, :department, :employee_type, :location, :description, :requirements, :responsibilities, :required_count, :priority, :status, :shift_type, :work_hours, :salary_range, :benefits, :reporting_to, :expires_at)";
-            
+
             $stmt = $pdo->prepare($sql);
             return $stmt->execute($data);
         } catch (PDOException $e) {
@@ -1112,7 +1112,7 @@ if (!function_exists('update_post')) {
         try {
             $pdo = get_db_connection();
             $data['id'] = $id;
-            $sql = "UPDATE posts SET 
+            $sql = "UPDATE posts SET
                     post_title = :post_title,
                     post_code = :post_code,
                     department = :department,
@@ -1132,7 +1132,7 @@ if (!function_exists('update_post')) {
                     expires_at = :expires_at,
                     updated_at = CURRENT_TIMESTAMP
                     WHERE id = :id";
-            
+
             $stmt = $pdo->prepare($sql);
             return $stmt->execute($data);
         } catch (PDOException $e) {
@@ -1160,7 +1160,7 @@ if (!function_exists('get_post_statistics')) {
         try {
             $pdo = get_db_connection();
             $stmt = $pdo->query("
-                SELECT 
+                SELECT
                     COUNT(*) as total_posts,
                     SUM(CASE WHEN status = 'Active' THEN 1 ELSE 0 END) as active_posts,
                     SUM(required_count) as total_required,
@@ -1170,7 +1170,7 @@ if (!function_exists('get_post_statistics')) {
                     SUM(CASE WHEN priority = 'High' THEN 1 ELSE 0 END) as high_priority_posts
                 FROM posts
             ");
-            
+
             return $stmt->fetch(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
             error_log("Database error in get_post_statistics: " . $e->getMessage());
@@ -1192,13 +1192,13 @@ if (!function_exists('get_posts_for_dropdown')) {
         try {
             $pdo = get_db_connection();
             $stmt = $pdo->query("
-                SELECT id, post_title, post_code, location, required_count, filled_count, 
+                SELECT id, post_title, post_code, location, required_count, filled_count,
                        (required_count - filled_count) as available_count
-                FROM posts 
-                WHERE status = 'Active' 
+                FROM posts
+                WHERE status = 'Active'
                 ORDER BY post_title
             ");
-            
+
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
             error_log("Database error in get_posts_for_dropdown: " . $e->getMessage());
@@ -1214,40 +1214,44 @@ if (!function_exists('get_posts_for_dropdown')) {
 // Get all employee alerts
 if (!function_exists('get_employee_alerts')) {
     function get_employee_alerts($status = 'active', $priority = null, $user_id = null) {
-        $sql = "SELECT ea.*, e.employee_no, e.surname, e.first_name, e.middle_name, e.post, 
-                        u1.name as created_by_name, u2.name as acknowledged_by_name,
-                        ns.is_read, ns.is_dismissed, ns.read_at, ns.dismissed_at
-                 FROM employee_alerts ea
-                 JOIN employees e ON ea.employee_id = e.id
-                 LEFT JOIN users u1 ON ea.created_by = u1.id
-                 LEFT JOIN users u2 ON ea.acknowledged_by = u2.id";
-        
-        // Add notification status if user_id is provided
+        // Build SELECT clause - include notification status columns only if user_id provided
         if ($user_id) {
-            $sql .= " LEFT JOIN notification_status ns ON ea.id = ns.notification_id 
-                      AND ns.user_id = ? AND ns.notification_type = 'alert'";
+            $sql = "SELECT ea.*, e.employee_no, e.surname, e.first_name, e.middle_name, e.post,
+                            u1.name as created_by_name, u2.name as acknowledged_by_name,
+                            ns.is_read, ns.is_dismissed, ns.read_at, ns.dismissed_at
+                     FROM employee_alerts ea
+                     JOIN employees e ON ea.employee_id = e.id
+                     LEFT JOIN users u1 ON ea.created_by = u1.id
+                     LEFT JOIN users u2 ON ea.acknowledged_by = u2.id
+                     LEFT JOIN notification_status ns ON ea.id = ns.notification_id
+                          AND ns.user_id = ? AND ns.notification_type = 'alert'
+                     WHERE ea.status = ?";
+
+            $params = [$user_id, $status];
+        } else {
+            $sql = "SELECT ea.*, e.employee_no, e.surname, e.first_name, e.middle_name, e.post,
+                            u1.name as created_by_name, u2.name as acknowledged_by_name
+                     FROM employee_alerts ea
+                     JOIN employees e ON ea.employee_id = e.id
+                     LEFT JOIN users u1 ON ea.created_by = u1.id
+                     LEFT JOIN users u2 ON ea.acknowledged_by = u2.id
+                     WHERE ea.status = ?";
+
+            $params = [$status];
         }
-        
-        $sql .= " WHERE ea.status = ?";
-        
-        $params = [];
-        if ($user_id) {
-            $params[] = $user_id;
-        }
-        $params[] = $status;
-        
+
         if ($priority) {
             $sql .= " AND ea.priority = ?";
             $params[] = $priority;
         }
-        
+
         // Filter out dismissed notifications if user_id provided
         if ($user_id) {
             $sql .= " AND (ns.is_dismissed IS NULL OR ns.is_dismissed = 0)";
         }
-        
+
         $sql .= " ORDER BY ea.priority DESC, ea.due_date ASC, ea.created_at DESC";
-        
+
         $stmt = execute_query($sql, $params);
         return $stmt->fetchAll();
     }
@@ -1264,7 +1268,7 @@ if (!function_exists('get_employee_alerts_by_employee')) {
                  LEFT JOIN users u2 ON ea.acknowledged_by = u2.id
                  WHERE ea.employee_id = ? AND ea.status = ?
                  ORDER BY ea.priority DESC, ea.due_date ASC, ea.created_at DESC";
-        
+
         $stmt = execute_query($sql, [$employee_id, $status]);
         return $stmt->fetchAll();
     }
@@ -1280,7 +1284,7 @@ if (!function_exists('get_alert')) {
                  LEFT JOIN users u1 ON ea.created_by = u1.id
                  LEFT JOIN users u2 ON ea.acknowledged_by = u2.id
                  WHERE ea.id = ?";
-        
+
         $stmt = execute_query($sql, [$id]);
         return $stmt->fetch();
     }
@@ -1289,9 +1293,9 @@ if (!function_exists('get_alert')) {
 // Create new alert
 if (!function_exists('create_alert')) {
     function create_alert($data) {
-        $sql = "INSERT INTO employee_alerts (employee_id, alert_type, title, description, alert_date, due_date, priority, status, created_by) 
+        $sql = "INSERT INTO employee_alerts (employee_id, alert_type, title, description, alert_date, due_date, priority, status, created_by)
                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        
+
         $params = [
             $data['employee_id'],
             $data['alert_type'],
@@ -1303,7 +1307,7 @@ if (!function_exists('create_alert')) {
             $data['status'] ?? 'active',
             $data['created_by'] ?? null
         ];
-        
+
         return execute_query($sql, $params);
     }
 }
@@ -1311,11 +1315,11 @@ if (!function_exists('create_alert')) {
 // Update alert
 if (!function_exists('update_alert')) {
     function update_alert($id, $data) {
-        $sql = "UPDATE employee_alerts SET 
-                 alert_type = ?, title = ?, description = ?, alert_date = ?, due_date = ?, 
-                 priority = ?, status = ? 
+        $sql = "UPDATE employee_alerts SET
+                 alert_type = ?, title = ?, description = ?, alert_date = ?, due_date = ?,
+                 priority = ?, status = ?
                  WHERE id = ?";
-        
+
         $params = [
             $data['alert_type'],
             $data['title'],
@@ -1326,7 +1330,7 @@ if (!function_exists('update_alert')) {
             $data['status'],
             $id
         ];
-        
+
         return execute_query($sql, $params);
     }
 }
@@ -1334,10 +1338,10 @@ if (!function_exists('update_alert')) {
 // Acknowledge alert
 if (!function_exists('acknowledge_alert')) {
     function acknowledge_alert($id, $acknowledged_by) {
-        $sql = "UPDATE employee_alerts SET 
-                 status = 'acknowledged', acknowledged_by = ?, acknowledged_at = CURRENT_TIMESTAMP 
+        $sql = "UPDATE employee_alerts SET
+                 status = 'acknowledged', acknowledged_by = ?, acknowledged_at = CURRENT_TIMESTAMP
                  WHERE id = ?";
-        
+
         return execute_query($sql, [$acknowledged_by, $id]);
     }
 }
@@ -1345,10 +1349,10 @@ if (!function_exists('acknowledge_alert')) {
 // Resolve alert
 if (!function_exists('resolve_alert')) {
     function resolve_alert($id, $resolved_by) {
-        $sql = "UPDATE employee_alerts SET 
-                 status = 'resolved', resolved_at = CURRENT_TIMESTAMP 
+        $sql = "UPDATE employee_alerts SET
+                 status = 'resolved', resolved_at = CURRENT_TIMESTAMP
                  WHERE id = ?";
-        
+
         return execute_query($sql, [$id]);
     }
 }
@@ -1373,32 +1377,32 @@ if (!function_exists('delete_alert')) {
 if (!function_exists('get_alert_statistics')) {
     function get_alert_statistics() {
         $stats = [];
-        
+
         // Total active alerts
         $sql = "SELECT COUNT(*) as total FROM employee_alerts WHERE status = 'active'";
         $stmt = execute_query($sql);
         $stats['total_active'] = $stmt->fetch()['total'];
-        
+
         // Urgent alerts
         $sql = "SELECT COUNT(*) as urgent FROM employee_alerts WHERE status = 'active' AND priority = 'urgent'";
         $stmt = execute_query($sql);
         $stats['urgent'] = $stmt->fetch()['urgent'];
-        
+
         // High priority alerts
         $sql = "SELECT COUNT(*) as high FROM employee_alerts WHERE status = 'active' AND priority = 'high'";
         $stmt = execute_query($sql);
         $stats['high'] = $stmt->fetch()['high'];
-        
+
         // Overdue alerts
         $sql = "SELECT COUNT(*) as overdue FROM employee_alerts WHERE status = 'active' AND due_date < CURDATE()";
         $stmt = execute_query($sql);
         $stats['overdue'] = $stmt->fetch()['overdue'];
-        
+
         // Alerts by type
         $sql = "SELECT alert_type, COUNT(*) as count FROM employee_alerts WHERE status = 'active' GROUP BY alert_type";
         $stmt = execute_query($sql);
         $stats['by_type'] = $stmt->fetchAll();
-        
+
         return $stats;
     }
 }
@@ -1406,26 +1410,26 @@ if (!function_exists('get_alert_statistics')) {
 // Auto-generate alerts for expiring licenses
 if (!function_exists('generate_license_expiry_alerts')) {
     function generate_license_expiry_alerts() {
-        $sql = "SELECT id, employee_no, surname, first_name, license_no, license_exp_date 
-                 FROM employees 
-                 WHERE license_no IS NOT NULL 
-                 AND license_exp_date IS NOT NULL 
+        $sql = "SELECT id, employee_no, surname, first_name, license_no, license_exp_date
+                 FROM employees
+                 WHERE license_no IS NOT NULL
+                 AND license_exp_date IS NOT NULL
                  AND license_exp_date BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 30 DAY)
                  AND id NOT IN (
-                     SELECT employee_id FROM employee_alerts 
-                     WHERE alert_type = 'license_expiry' 
+                     SELECT employee_id FROM employee_alerts
+                     WHERE alert_type = 'license_expiry'
                      AND status IN ('active', 'acknowledged')
                      AND due_date >= CURDATE()
                  )";
-        
+
         $stmt = execute_query($sql);
         $employees = $stmt->fetchAll();
-        
+
         $alerts_created = 0;
         foreach ($employees as $employee) {
             $days_until_expiry = (strtotime($employee['license_exp_date']) - time()) / (60 * 60 * 24);
             $priority = $days_until_expiry <= 7 ? 'urgent' : ($days_until_expiry <= 15 ? 'high' : 'medium');
-            
+
             $alert_data = [
                 'employee_id' => $employee['id'],
                 'alert_type' => 'license_expiry',
@@ -1437,11 +1441,11 @@ if (!function_exists('generate_license_expiry_alerts')) {
                 'status' => 'active',
                 'created_by' => 1 // System user
             ];
-            
+
             create_alert($alert_data);
             $alerts_created++;
         }
-        
+
         return $alerts_created;
     }
 }
@@ -1455,27 +1459,27 @@ if (!function_exists('get_audit_logs')) {
     function get_audit_logs($filters = [], $limit = 50, $offset = 0) {
         try {
             $sql = "SELECT al.*, u.name as user_name, u.username, u.role, u.email as user_email
-                    FROM audit_logs al 
-                    LEFT JOIN users u ON al.user_id = u.id 
+                    FROM audit_logs al
+                    LEFT JOIN users u ON al.user_id = u.id
                     WHERE 1=1";
-            
+
             $params = [];
-            
+
             if (!empty($filters['action'])) {
                 $sql .= " AND al.action = ?";
                 $params[] = $filters['action'];
             }
-            
+
             if (!empty($filters['table_name'])) {
                 $sql .= " AND al.table_name = ?";
                 $params[] = $filters['table_name'];
             }
-            
+
             if (!empty($filters['user_id'])) {
                 $sql .= " AND al.user_id = ?";
                 $params[] = $filters['user_id'];
             }
-            
+
             if (!empty($filters['user_search'])) {
                 $sql .= " AND (u.name LIKE ? OR u.username LIKE ? OR u.email LIKE ?)";
                 $search_term = '%' . $filters['user_search'] . '%';
@@ -1483,29 +1487,29 @@ if (!function_exists('get_audit_logs')) {
                 $params[] = $search_term;
                 $params[] = $search_term;
             }
-            
+
             if (!empty($filters['date_from'])) {
                 $sql .= " AND DATE(al.created_at) >= ?";
                 $params[] = $filters['date_from'];
             }
-            
+
             if (!empty($filters['date_to'])) {
                 $sql .= " AND DATE(al.created_at) <= ?";
                 $params[] = $filters['date_to'];
             }
-            
+
             $sql .= " ORDER BY al.created_at DESC LIMIT ? OFFSET ?";
             $params[] = $limit;
             $params[] = $offset;
-            
+
             $stmt = execute_query($sql, $params);
             $logs = $stmt->fetchAll();
-            
+
             // Enhance logs with related record information
             foreach ($logs as &$log) {
                 $log['related_record'] = get_audit_related_record($log['table_name'], $log['record_id']);
             }
-            
+
             return $logs;
         } catch (Exception $e) {
             error_log("Database error in get_audit_logs: " . $e->getMessage());
@@ -1520,11 +1524,11 @@ if (!function_exists('get_audit_related_record')) {
         if (!$table_name || !$record_id) {
             return null;
         }
-        
+
         try {
             switch ($table_name) {
                 case 'employees':
-                    $sql = "SELECT id, employee_no, surname, first_name, middle_name, employee_type, post, status 
+                    $sql = "SELECT id, employee_no, surname, first_name, middle_name, employee_type, post, status
                             FROM employees WHERE id = ?";
                     $stmt = execute_query($sql, [$record_id]);
                     $record = $stmt->fetch();
@@ -1533,9 +1537,9 @@ if (!function_exists('get_audit_related_record')) {
                         $record['display_id'] = $record['employee_no'];
                     }
                     return $record;
-                    
+
                 case 'employee_alerts':
-                    $sql = "SELECT ea.id, ea.title, ea.alert_type, ea.priority, ea.status, 
+                    $sql = "SELECT ea.id, ea.title, ea.alert_type, ea.priority, ea.status,
                                    e.employee_no, e.surname, e.first_name, e.middle_name
                             FROM employee_alerts ea
                             JOIN employees e ON ea.employee_id = e.id
@@ -1548,7 +1552,7 @@ if (!function_exists('get_audit_related_record')) {
                         $record['employee_name'] = trim($record['surname'] . ', ' . $record['first_name'] . ' ' . ($record['middle_name'] ?? ''));
                     }
                     return $record;
-                    
+
                 case 'posts':
                     $sql = "SELECT id, post_name, location, status FROM posts WHERE id = ?";
                     $stmt = execute_query($sql, [$record_id]);
@@ -1558,7 +1562,7 @@ if (!function_exists('get_audit_related_record')) {
                         $record['display_id'] = 'Post #' . $record['id'];
                     }
                     return $record;
-                    
+
                 case 'users':
                     $sql = "SELECT id, username, name, email, role, status FROM users WHERE id = ?";
                     $stmt = execute_query($sql, [$record_id]);
@@ -1568,7 +1572,7 @@ if (!function_exists('get_audit_related_record')) {
                         $record['display_id'] = $record['username'];
                     }
                     return $record;
-                    
+
                 default:
                     return null;
             }
@@ -1585,22 +1589,22 @@ if (!function_exists('get_audit_logs_count')) {
         try {
             $sql = "SELECT COUNT(*) as total FROM audit_logs al WHERE 1=1";
             $params = [];
-            
+
             if (!empty($filters['action'])) {
                 $sql .= " AND al.action = ?";
                 $params[] = $filters['action'];
             }
-            
+
             if (!empty($filters['table_name'])) {
                 $sql .= " AND al.table_name = ?";
                 $params[] = $filters['table_name'];
             }
-            
+
             if (!empty($filters['user_id'])) {
                 $sql .= " AND al.user_id = ?";
                 $params[] = $filters['user_id'];
             }
-            
+
             if (!empty($filters['user_search'])) {
                 $sql .= " AND EXISTS (SELECT 1 FROM users u WHERE u.id = al.user_id AND (u.name LIKE ? OR u.username LIKE ? OR u.email LIKE ?))";
                 $search_term = '%' . $filters['user_search'] . '%';
@@ -1608,17 +1612,17 @@ if (!function_exists('get_audit_logs_count')) {
                 $params[] = $search_term;
                 $params[] = $search_term;
             }
-            
+
             if (!empty($filters['date_from'])) {
                 $sql .= " AND DATE(al.created_at) >= ?";
                 $params[] = $filters['date_from'];
             }
-            
+
             if (!empty($filters['date_to'])) {
                 $sql .= " AND DATE(al.created_at) <= ?";
                 $params[] = $filters['date_to'];
             }
-            
+
             $stmt = execute_query($sql, $params);
             $result = $stmt->fetch();
             return $result ? (int)$result['total'] : 0;
@@ -1637,13 +1641,13 @@ if (!function_exists('log_audit_event')) {
             if ($user_id === null) {
                 $user_id = $_SESSION['user_id'] ?? $_SESSION['id'] ?? null;
             }
-            
-            $sql = "INSERT INTO audit_logs (user_id, action, table_name, record_id, old_values, new_values, ip_address, user_agent, created_at) 
+
+            $sql = "INSERT INTO audit_logs (user_id, action, table_name, record_id, old_values, new_values, ip_address, user_agent, created_at)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())";
-            
+
             $ip_address = $_SERVER['REMOTE_ADDR'] ?? null;
             $user_agent = $_SERVER['HTTP_USER_AGENT'] ?? null;
-            
+
             // Convert arrays to JSON if needed
             if (is_array($old_values)) {
                 $old_values = json_encode($old_values);
@@ -1651,7 +1655,7 @@ if (!function_exists('log_audit_event')) {
             if (is_array($new_values)) {
                 $new_values = json_encode($new_values);
             }
-            
+
             $params = [
                 $user_id,
                 $action,
@@ -1662,7 +1666,7 @@ if (!function_exists('log_audit_event')) {
                 $ip_address,
                 $user_agent
             ];
-            
+
             return execute_query($sql, $params);
         } catch (Exception $e) {
             error_log("Error logging audit event: " . $e->getMessage());
@@ -1690,18 +1694,18 @@ if (!function_exists('log_system_event')) {
                 // Table doesn't exist, skip logging
                 return false;
             }
-            
+
             $user_id = $_SESSION['user_id'] ?? null;
             $ip_address = $_SERVER['REMOTE_ADDR'] ?? null;
             $user_agent = $_SERVER['HTTP_USER_AGENT'] ?? null;
-            
+
             if (is_array($metadata)) {
                 $metadata = json_encode($metadata);
             }
-            
-            $sql = "INSERT INTO system_logs (level, message, context, user_id, ip_address, user_agent, metadata, created_at) 
+
+            $sql = "INSERT INTO system_logs (level, message, context, user_id, ip_address, user_agent, metadata, created_at)
                     VALUES (?, ?, ?, ?, ?, ?, ?, NOW())";
-            
+
             $params = [
                 $level,
                 $message,
@@ -1711,7 +1715,7 @@ if (!function_exists('log_system_event')) {
                 $user_agent,
                 $metadata
             ];
-            
+
             return execute_query($sql, $params);
         } catch (Exception $e) {
             // Silently fail - don't break the application if logging fails
@@ -1725,7 +1729,7 @@ if (!function_exists('log_system_event')) {
 if (!function_exists('log_security_event_db')) {
     // Use global variable to prevent recursion between log_security_event and log_security_event_db
     $GLOBALS['_security_logging_in_progress'] = false;
-    
+
     function log_security_event_db($type, $details, $metadata = null) {
         // Prevent infinite recursion - check global flag
         if (isset($GLOBALS['_security_logging_in_progress']) && $GLOBALS['_security_logging_in_progress']) {
@@ -1740,14 +1744,14 @@ if (!function_exists('log_security_event_db')) {
             }
             return false;
         }
-        
+
         $GLOBALS['_security_logging_in_progress'] = true;
-        
+
         try {
             // Check if security_logs table exists (cache the result to avoid repeated queries)
             static $table_exists = null;
             static $table_checked = false;
-            
+
             if (!$table_checked) {
                 try {
                     $pdo = get_db_connection();
@@ -1775,7 +1779,7 @@ if (!function_exists('log_security_event_db')) {
                     $table_checked = true;
                 }
             }
-            
+
             if (!$table_exists) {
                 // Table doesn't exist, fallback to file logging directly (don't call log_security_event to avoid recursion)
                 $GLOBALS['_security_logging_in_progress'] = false;
@@ -1790,18 +1794,18 @@ if (!function_exists('log_security_event_db')) {
                 }
                 return false;
             }
-            
+
             $user_id = $_SESSION['user_id'] ?? null;
             $ip_address = $_SERVER['REMOTE_ADDR'] ?? null;
             $user_agent = $_SERVER['HTTP_USER_AGENT'] ?? null;
-            
+
             if (is_array($metadata)) {
                 $metadata = json_encode($metadata);
             }
-            
-            $sql = "INSERT INTO security_logs (type, details, user_id, ip_address, user_agent, metadata, created_at) 
+
+            $sql = "INSERT INTO security_logs (type, details, user_id, ip_address, user_agent, metadata, created_at)
                     VALUES (?, ?, ?, ?, ?, ?, NOW())";
-            
+
             $params = [
                 $type,
                 $details,
@@ -1810,7 +1814,7 @@ if (!function_exists('log_security_event_db')) {
                 $user_agent,
                 $metadata
             ];
-            
+
             // Use direct PDO instead of execute_query to avoid potential recursion
             try {
                 $pdo = get_db_connection();
@@ -1820,7 +1824,7 @@ if (!function_exists('log_security_event_db')) {
                 // If database insert fails, just log to file
                 $result = false;
             }
-            
+
             // Also log to file as backup (but only if not already logging to avoid recursion)
             // Write directly to file instead of calling log_security_event
             $log_entry = date('Y-m-d H:i:s') . " - " . $type . " - " . $details . " - IP: " . ($_SERVER['REMOTE_ADDR'] ?? 'Unknown') . "\n";
@@ -1831,7 +1835,7 @@ if (!function_exists('log_security_event_db')) {
             if (file_exists(dirname($log_file)) || mkdir(dirname($log_file), 0755, true)) {
                 @file_put_contents($log_file, $log_entry, FILE_APPEND | LOCK_EX);
             }
-            
+
             $logging_in_progress = false;
             return $result;
         } catch (Exception $e) {
@@ -1863,37 +1867,37 @@ if (!function_exists('get_system_logs_count')) {
             if ($checkTable->rowCount() === 0) {
                 return 0;
             }
-            
+
             $sql = "SELECT COUNT(*) as total FROM system_logs sl WHERE 1=1";
             $params = [];
-            
+
             if (!empty($filters['level'])) {
                 $sql .= " AND sl.level = ?";
                 $params[] = $filters['level'];
             }
-            
+
             if (!empty($filters['context'])) {
                 $sql .= " AND sl.context = ?";
                 $params[] = $filters['context'];
             }
-            
+
             if (!empty($filters['search'])) {
                 $sql .= " AND (sl.message LIKE ? OR sl.context LIKE ?)";
                 $search_term = '%' . $filters['search'] . '%';
                 $params[] = $search_term;
                 $params[] = $search_term;
             }
-            
+
             if (!empty($filters['date_from'])) {
                 $sql .= " AND DATE(sl.created_at) >= ?";
                 $params[] = $filters['date_from'];
             }
-            
+
             if (!empty($filters['date_to'])) {
                 $sql .= " AND DATE(sl.created_at) <= ?";
                 $params[] = $filters['date_to'];
             }
-            
+
             $stmt = execute_query($sql, $params);
             $result = $stmt->fetch(PDO::FETCH_ASSOC);
             return (int)($result['total'] ?? 0);
@@ -1913,45 +1917,45 @@ if (!function_exists('get_system_logs')) {
             if ($checkTable->rowCount() === 0) {
                 return [];
             }
-            
-            $sql = "SELECT sl.*, u.username, u.name as user_name 
-                    FROM system_logs sl 
-                    LEFT JOIN users u ON sl.user_id = u.id 
+
+            $sql = "SELECT sl.*, u.username, u.name as user_name
+                    FROM system_logs sl
+                    LEFT JOIN users u ON sl.user_id = u.id
                     WHERE 1=1";
-            
+
             $params = [];
-            
+
             if (!empty($filters['level'])) {
                 $sql .= " AND sl.level = ?";
                 $params[] = $filters['level'];
             }
-            
+
             if (!empty($filters['context'])) {
                 $sql .= " AND sl.context = ?";
                 $params[] = $filters['context'];
             }
-            
+
             if (!empty($filters['search'])) {
                 $sql .= " AND (sl.message LIKE ? OR sl.context LIKE ?)";
                 $search_term = '%' . $filters['search'] . '%';
                 $params[] = $search_term;
                 $params[] = $search_term;
             }
-            
+
             if (!empty($filters['date_from'])) {
                 $sql .= " AND DATE(sl.created_at) >= ?";
                 $params[] = $filters['date_from'];
             }
-            
+
             if (!empty($filters['date_to'])) {
                 $sql .= " AND DATE(sl.created_at) <= ?";
                 $params[] = $filters['date_to'];
             }
-            
+
             $sql .= " ORDER BY sl.created_at DESC LIMIT ? OFFSET ?";
             $params[] = $limit;
             $params[] = $offset;
-            
+
             $stmt = execute_query($sql, $params);
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (Exception $e) {
@@ -1970,40 +1974,40 @@ if (!function_exists('get_security_logs')) {
             if ($checkTable->rowCount() === 0) {
                 return [];
             }
-            
-            $sql = "SELECT sl.*, u.username, u.name as user_name 
-                    FROM security_logs sl 
-                    LEFT JOIN users u ON sl.user_id = u.id 
+
+            $sql = "SELECT sl.*, u.username, u.name as user_name
+                    FROM security_logs sl
+                    LEFT JOIN users u ON sl.user_id = u.id
                     WHERE 1=1";
-            
+
             $params = [];
-            
+
             if (!empty($filters['type'])) {
                 $sql .= " AND sl.type = ?";
                 $params[] = $filters['type'];
             }
-            
+
             if (!empty($filters['search'])) {
                 $sql .= " AND (sl.details LIKE ? OR sl.type LIKE ?)";
                 $search_term = '%' . $filters['search'] . '%';
                 $params[] = $search_term;
                 $params[] = $search_term;
             }
-            
+
             if (!empty($filters['date_from'])) {
                 $sql .= " AND DATE(sl.created_at) >= ?";
                 $params[] = $filters['date_from'];
             }
-            
+
             if (!empty($filters['date_to'])) {
                 $sql .= " AND DATE(sl.created_at) <= ?";
                 $params[] = $filters['date_to'];
             }
-            
+
             $sql .= " ORDER BY sl.created_at DESC LIMIT ? OFFSET ?";
             $params[] = $limit;
             $params[] = $offset;
-            
+
             $stmt = execute_query($sql, $params);
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (Exception $e) {
@@ -2026,26 +2030,26 @@ if (!function_exists('get_time_off_requests')) {
                  JOIN employees e ON tor.employee_id = e.id
                  LEFT JOIN users u ON tor.approved_by = u.id
                  WHERE 1=1";
-        
+
         $params = [];
-        
+
         if (!empty($filters['status'])) {
             $sql .= " AND tor.status = ?";
             $params[] = $filters['status'];
         }
-        
+
         if (!empty($filters['employee_id'])) {
             $sql .= " AND tor.employee_id = ?";
             $params[] = $filters['employee_id'];
         }
-        
+
         if (!empty($filters['request_type'])) {
             $sql .= " AND tor.request_type = ?";
             $params[] = $filters['request_type'];
         }
-        
+
         $sql .= " ORDER BY tor.created_at DESC";
-        
+
         $stmt = execute_query($sql, $params);
         return $stmt->fetchAll();
     }
@@ -2055,21 +2059,21 @@ if (!function_exists('get_time_off_requests')) {
 if (!function_exists('get_leave_balances')) {
     function get_leave_balances($employee_id = null, $year = null) {
         $year = $year ?: date('Y');
-        
+
         $sql = "SELECT lb.*, e.employee_no, e.surname, e.first_name, e.middle_name, e.post
                  FROM leave_balances lb
                  JOIN employees e ON lb.employee_id = e.id
                  WHERE lb.year = ?";
-        
+
         $params = [$year];
-        
+
         if ($employee_id) {
             $sql .= " AND lb.employee_id = ?";
             $params[] = $employee_id;
         }
-        
+
         $sql .= " ORDER BY e.surname, e.first_name, lb.leave_type";
-        
+
         $stmt = execute_query($sql, $params);
         return $stmt->fetchAll();
     }
@@ -2102,7 +2106,7 @@ if (!function_exists('create_tasks_table')) {
             INDEX idx_due_date (due_date),
             INDEX idx_assigned_to (assigned_to)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
-        
+
         try {
             execute_query($sql);
             return true;
@@ -2115,38 +2119,38 @@ if (!function_exists('create_tasks_table')) {
 
 if (!function_exists('get_all_tasks')) {
     function get_all_tasks($status = null, $priority = null, $category = null) {
-        $sql = "SELECT t.*, u.name as assigned_to_name 
+        $sql = "SELECT t.*, u.name as assigned_to_name
                 FROM hr_tasks t
                 LEFT JOIN users u ON t.assigned_to = u.id
                 WHERE 1=1";
-        
+
         $params = [];
-        
+
         if ($status) {
             $sql .= " AND t.status = ?";
             $params[] = $status;
         }
-        
+
         if ($priority) {
             $sql .= " AND t.priority = ?";
             $params[] = $priority;
         }
-        
+
         if ($category) {
             $sql .= " AND t.category = ?";
             $params[] = $category;
         }
-        
-        $sql .= " ORDER BY 
-                    CASE t.priority 
-                        WHEN 'urgent' THEN 1 
-                        WHEN 'high' THEN 2 
-                        WHEN 'medium' THEN 3 
-                        WHEN 'low' THEN 4 
+
+        $sql .= " ORDER BY
+                    CASE t.priority
+                        WHEN 'urgent' THEN 1
+                        WHEN 'high' THEN 2
+                        WHEN 'medium' THEN 3
+                        WHEN 'low' THEN 4
                     END,
                     t.due_date ASC,
                     t.created_at DESC";
-        
+
         $stmt = execute_query($sql, $params);
         return $stmt->fetchAll();
     }
@@ -2154,7 +2158,7 @@ if (!function_exists('get_all_tasks')) {
 
 if (!function_exists('get_task')) {
     function get_task($id) {
-        $sql = "SELECT t.*, u.name as assigned_to_name 
+        $sql = "SELECT t.*, u.name as assigned_to_name
                 FROM hr_tasks t
                 LEFT JOIN users u ON t.assigned_to = u.id
                 WHERE t.id = ?";
@@ -2167,20 +2171,20 @@ if (!function_exists('create_task')) {
     function create_task($data) {
         // Generate task number
         $task_number = 'TASK-' . date('Ymd') . '-' . str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT);
-        
+
         // Ensure unique task number
         $check_sql = "SELECT COUNT(*) as count FROM hr_tasks WHERE task_number = ?";
         $check_stmt = execute_query($check_sql, [$task_number]);
         $count = $check_stmt->fetch()['count'];
-        
+
         if ($count > 0) {
             $task_number = 'TASK-' . date('Ymd') . '-' . str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT);
         }
-        
-        $sql = "INSERT INTO hr_tasks (task_number, task_title, description, category, assigned_by, assigned_by_name, 
-                                     due_date, priority, urgency_level, location_page, notes, assigned_to, status) 
+
+        $sql = "INSERT INTO hr_tasks (task_number, task_title, description, category, assigned_by, assigned_by_name,
+                                     due_date, priority, urgency_level, location_page, notes, assigned_to, status)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        
+
         $params = [
             $task_number,
             $data['task_title'] ?? '',
@@ -2196,7 +2200,7 @@ if (!function_exists('create_task')) {
             $data['assigned_to'] ?? null,
             $data['status'] ?? 'pending'
         ];
-        
+
         $stmt = execute_query($sql, $params);
         return $stmt->rowCount() > 0;
     }
@@ -2204,19 +2208,19 @@ if (!function_exists('create_task')) {
 
 if (!function_exists('update_task')) {
     function update_task($id, $data) {
-        $sql = "UPDATE hr_tasks SET 
-                task_title = ?, description = ?, category = ?, due_date = ?, priority = ?, 
-                urgency_level = ?, location_page = ?, notes = ?, status = ?, 
+        $sql = "UPDATE hr_tasks SET
+                task_title = ?, description = ?, category = ?, due_date = ?, priority = ?,
+                urgency_level = ?, location_page = ?, notes = ?, status = ?,
                 assigned_to = ?, updated_at = CURRENT_TIMESTAMP";
-        
+
         if (isset($data['status']) && $data['status'] === 'completed') {
             $sql .= ", completed_at = CURRENT_TIMESTAMP";
         } else {
             $sql .= ", completed_at = NULL";
         }
-        
+
         $sql .= " WHERE id = ?";
-        
+
         $params = [
             $data['task_title'] ?? '',
             $data['description'] ?? null,
@@ -2230,7 +2234,7 @@ if (!function_exists('update_task')) {
             $data['assigned_to'] ?? null,
             $id
         ];
-        
+
         $stmt = execute_query($sql, $params);
         return $stmt->rowCount() > 0;
     }
@@ -2255,69 +2259,69 @@ if (!function_exists('get_pending_task_count')) {
 if (!function_exists('get_task_statistics')) {
     function get_task_statistics() {
         $stats = [];
-        
+
         // Total tasks
         $sql = "SELECT COUNT(*) as total FROM hr_tasks";
         $stmt = execute_query($sql);
         $result = $stmt->fetch();
         $stats['total'] = (int)($result['total'] ?? 0);
-        
+
         // Pending tasks
         $sql = "SELECT COUNT(*) as count FROM hr_tasks WHERE status = 'pending'";
         $stmt = execute_query($sql);
         $result = $stmt->fetch();
         $stats['pending'] = (int)($result['count'] ?? 0);
-        
+
         // In Progress tasks
         $sql = "SELECT COUNT(*) as count FROM hr_tasks WHERE status = 'in_progress'";
         $stmt = execute_query($sql);
         $result = $stmt->fetch();
         $stats['in_progress'] = (int)($result['count'] ?? 0);
-        
+
         // Completed tasks
         $sql = "SELECT COUNT(*) as count FROM hr_tasks WHERE status = 'completed'";
         $stmt = execute_query($sql);
         $result = $stmt->fetch();
         $stats['completed'] = (int)($result['count'] ?? 0);
-        
+
         // Cancelled tasks
         $sql = "SELECT COUNT(*) as count FROM hr_tasks WHERE status = 'cancelled'";
         $stmt = execute_query($sql);
         $result = $stmt->fetch();
         $stats['cancelled'] = (int)($result['count'] ?? 0);
-        
+
         // Tasks needing action (pending + in_progress)
         $stats['needs_action'] = $stats['pending'] + $stats['in_progress'];
-        
+
         // Overdue tasks (pending/in_progress with due_date < today)
-        $sql = "SELECT COUNT(*) as count FROM hr_tasks 
-                WHERE status IN ('pending', 'in_progress') 
-                AND due_date IS NOT NULL 
-                AND due_date != '' 
+        $sql = "SELECT COUNT(*) as count FROM hr_tasks
+                WHERE status IN ('pending', 'in_progress')
+                AND due_date IS NOT NULL
+                AND due_date != ''
                 AND due_date != '0000-00-00'
                 AND due_date < CURDATE()";
         $stmt = execute_query($sql);
         $result = $stmt->fetch();
         $stats['overdue'] = (int)($result['count'] ?? 0);
-        
+
         // Urgent tasks (priority = urgent and status != completed)
-        $sql = "SELECT COUNT(*) as count FROM hr_tasks 
-                WHERE priority = 'urgent' 
-                AND status != 'completed' 
+        $sql = "SELECT COUNT(*) as count FROM hr_tasks
+                WHERE priority = 'urgent'
+                AND status != 'completed'
                 AND status != 'cancelled'";
         $stmt = execute_query($sql);
         $result = $stmt->fetch();
         $stats['urgent'] = (int)($result['count'] ?? 0);
-        
+
         // High priority tasks (priority = high and status != completed)
-        $sql = "SELECT COUNT(*) as count FROM hr_tasks 
-                WHERE priority = 'high' 
-                AND status != 'completed' 
+        $sql = "SELECT COUNT(*) as count FROM hr_tasks
+                WHERE priority = 'high'
+                AND status != 'completed'
                 AND status != 'cancelled'";
         $stmt = execute_query($sql);
         $result = $stmt->fetch();
         $stats['high_priority'] = (int)($result['count'] ?? 0);
-        
+
         return $stats;
     }
 }
@@ -2336,26 +2340,26 @@ if (!function_exists('generate_employee_update_tasks')) {
             'days_overdue_urgent' => 30,         // 30+ days overdue = urgent escalation
             'days_overdue_high' => 7              // 7+ days overdue = high priority
         ];
-        
+
         // Get all active employees
         $sql = "SELECT * FROM employees WHERE status = 'Active'";
         $stmt = execute_query($sql);
         $employees = $stmt->fetchAll();
-        
+
         $tasks_created = 0;
         $now = strtotime('today');
-        
+
         foreach ($employees as $employee) {
             $employee_id = $employee['id'];
             $employee_name = trim(($employee['first_name'] ?? '') . ' ' . ($employee['middle_name'] ?? '') . ' ' . ($employee['surname'] ?? ''));
             $employee_no = $employee['employee_no'] ?? 'N/A';
             $location_page = "?page=view_employee&id=" . $employee_id;
-            
+
             // Check for missing required fields
             $missing_fields = [];
             $critical_fields = [];
             $important_fields = [];
-            
+
             // Critical fields (affect operations)
             if (empty($employee['cp_number'])) {
                 $missing_fields[] = 'Contact Phone Number';
@@ -2369,7 +2373,7 @@ if (!function_exists('generate_employee_update_tasks')) {
                 $missing_fields[] = 'License Expiration Date';
                 $critical_fields[] = 'License Expiration Date';
             }
-            
+
             // Important fields (compliance)
             if (empty($employee['contact_person'])) {
                 $missing_fields[] = 'Emergency Contact Person';
@@ -2407,12 +2411,12 @@ if (!function_exists('generate_employee_update_tasks')) {
                 $missing_fields[] = 'Barangay Clearance';
                 $important_fields[] = 'Barangay Clearance';
             }
-            
+
             // Create task for missing required fields with threshold-based priority
             if (!empty($missing_fields)) {
                 $missing_count = count($missing_fields);
                 $critical_count = count($critical_fields);
-                
+
                 // Determine priority based on thresholds
                 if ($missing_count >= $thresholds['missing_fields_critical'] || $critical_count >= 2) {
                     $priority = 'urgent';
@@ -2427,7 +2431,7 @@ if (!function_exists('generate_employee_update_tasks')) {
                     $urgency_level = 'normal';
                     $prefix = '';
                 }
-                
+
                 // Create more descriptive task title
                 $field_type = !empty($critical_fields) ? 'Critical Information' : 'Required Information';
                 $task_title = $prefix . "Employee Record Update Needed - " . $employee_name . " (ID: " . $employee_no . ")";
@@ -2437,16 +2441,16 @@ if (!function_exists('generate_employee_update_tasks')) {
                     $description .= "CRITICAL: Missing " . count($critical_fields) . " critical field(s) that affect operations: " . implode(', ', $critical_fields) . ". ";
                 }
                 $description .= "Please update the employee record to ensure compliance and operational readiness.";
-                
+
                 $notes = "Auto-generated task. Missing fields detected: " . implode(', ', $missing_fields) . ". ";
                 $notes .= "This task was automatically created based on data completeness thresholds. ";
                 if ($priority === 'urgent') {
                     $notes .= "URGENT: Critical information missing - immediate action required.";
                 }
-                
+
                 // Check if task already exists for this employee's missing fields
-                $check_sql = "SELECT id FROM hr_tasks 
-                             WHERE task_title LIKE ? 
+                $check_sql = "SELECT id FROM hr_tasks
+                             WHERE task_title LIKE ?
                              AND description LIKE ?
                              AND status IN ('pending', 'in_progress')
                              AND location_page = ?";
@@ -2455,7 +2459,7 @@ if (!function_exists('generate_employee_update_tasks')) {
                     '%Missing ' . $missing_count . ' required field%',
                     $location_page
                 ]);
-                
+
                 if ($check_stmt->rowCount() == 0) {
                     $task_data = [
                         'task_title' => $task_title,
@@ -2471,20 +2475,20 @@ if (!function_exists('generate_employee_update_tasks')) {
                         'assigned_to' => $assigned_to, // Assigned to HR-ADMIN
                         'status' => 'pending'
                     ];
-                    
+
                     if (function_exists('create_task')) {
                         create_task($task_data);
                         $tasks_created++;
                     }
                 }
             }
-            
+
             // Check for expired licenses with threshold-based escalation
             if (!empty($employee['license_exp_date']) && $employee['license_exp_date'] !== '0000-00-00' && $employee['license_exp_date'] !== '') {
                 $license_exp = strtotime($employee['license_exp_date']);
                 if ($license_exp < $now) {
                     $days_expired = floor(($now - $license_exp) / (60 * 60 * 24));
-                    
+
                     // Determine priority based on days expired threshold
                     if ($days_expired >= $thresholds['days_overdue_urgent']) {
                         $priority = 'urgent';
@@ -2499,9 +2503,9 @@ if (!function_exists('generate_employee_update_tasks')) {
                         $urgency_level = 'critical';
                         $prefix = 'URGENT: ';
                     }
-                    
-                    $check_sql = "SELECT id FROM hr_tasks 
-                                 WHERE task_title LIKE ? 
+
+                    $check_sql = "SELECT id FROM hr_tasks
+                                 WHERE task_title LIKE ?
                                  AND category = 'License'
                                  AND description LIKE ?
                                  AND status IN ('pending', 'in_progress')
@@ -2511,7 +2515,7 @@ if (!function_exists('generate_employee_update_tasks')) {
                         '%License expired%',
                         $location_page
                     ]);
-                    
+
                     if ($check_stmt->rowCount() == 0) {
                         $task_title = $prefix . "License Expired - " . $employee_name . " (ID: " . $employee_no . ")";
                         $description = "Employee license (" . ($employee['license_no'] ?? 'N/A') . ") expired " . $days_expired . " day(s) ago. ";
@@ -2520,7 +2524,7 @@ if (!function_exists('generate_employee_update_tasks')) {
                         } else {
                             $description .= "Immediate action required to renew license and restore employee operational status.";
                         }
-                        
+
                         $task_data = [
                             'task_title' => $task_title,
                             'description' => $description,
@@ -2531,14 +2535,14 @@ if (!function_exists('generate_employee_update_tasks')) {
                             'priority' => $priority,
                             'urgency_level' => $urgency_level,
                             'location_page' => $location_page,
-                            'notes' => "License expired on " . date('M d, Y', $license_exp) . ". " . 
-                                      ($days_expired >= $thresholds['days_overdue_urgent'] ? 
-                                       "CRITICAL: Overdue by " . $days_expired . " days - immediate HR notification triggered." : 
+                            'notes' => "License expired on " . date('M d, Y', $license_exp) . ". " .
+                                      ($days_expired >= $thresholds['days_overdue_urgent'] ?
+                                       "CRITICAL: Overdue by " . $days_expired . " days - immediate HR notification triggered." :
                                        "Please renew immediately to avoid operational disruption."),
                             'assigned_to' => $assigned_to,
                             'status' => 'pending'
                         ];
-                        
+
                         if (function_exists('create_task')) {
                             create_task($task_data);
                             $tasks_created++;
@@ -2546,15 +2550,15 @@ if (!function_exists('generate_employee_update_tasks')) {
                     }
                 }
             }
-            
+
             // Check for expiring licenses with threshold-based priority
             if (!empty($employee['license_exp_date']) && $employee['license_exp_date'] !== '0000-00-00' && $employee['license_exp_date'] !== '') {
                 $license_exp = strtotime($employee['license_exp_date']);
                 $days_until_exp = floor(($license_exp - $now) / (60 * 60 * 24));
-                
+
                 if ($days_until_exp > 0 && $days_until_exp <= $thresholds['license_expiring_medium']) {
-                    $check_sql = "SELECT id FROM hr_tasks 
-                                 WHERE task_title LIKE ? 
+                    $check_sql = "SELECT id FROM hr_tasks
+                                 WHERE task_title LIKE ?
                                  AND category = 'License'
                                  AND description LIKE ?
                                  AND status IN ('pending', 'in_progress')
@@ -2564,7 +2568,7 @@ if (!function_exists('generate_employee_update_tasks')) {
                         '%License expiring%',
                         $location_page
                     ]);
-                    
+
                     if ($check_stmt->rowCount() == 0) {
                         // Determine priority based on threshold
                         if ($days_until_exp <= $thresholds['license_expiring_critical']) {
@@ -2580,7 +2584,7 @@ if (!function_exists('generate_employee_update_tasks')) {
                             $urgency_level = 'normal';
                             $prefix = '';
                         }
-                        
+
                         $task_title = $prefix . "License Expiring - " . $employee_name . " (ID: " . $employee_no . ")";
                         $description = "Employee license (" . ($employee['license_no'] ?? 'N/A') . ") will expire in " . $days_until_exp . " day(s) on " . date('M d, Y', $license_exp) . ". ";
                         if ($days_until_exp <= $thresholds['license_expiring_critical']) {
@@ -2588,7 +2592,7 @@ if (!function_exists('generate_employee_update_tasks')) {
                         } else {
                             $description .= "Please initiate renewal process before expiration to maintain compliance.";
                         }
-                        
+
                         $task_data = [
                             'task_title' => $task_title,
                             'description' => $description,
@@ -2599,14 +2603,14 @@ if (!function_exists('generate_employee_update_tasks')) {
                             'priority' => $priority,
                             'urgency_level' => $urgency_level,
                             'location_page' => $location_page,
-                            'notes' => "License expires on " . date('M d, Y', $license_exp) . ". " . 
-                                      ($days_until_exp <= $thresholds['license_expiring_critical'] ? 
-                                       "CRITICAL: Automatic HR notification triggered due to threshold (" . $thresholds['license_expiring_critical'] . " days)." : 
+                            'notes' => "License expires on " . date('M d, Y', $license_exp) . ". " .
+                                      ($days_until_exp <= $thresholds['license_expiring_critical'] ?
+                                       "CRITICAL: Automatic HR notification triggered due to threshold (" . $thresholds['license_expiring_critical'] . " days)." :
                                        "Action needed before expiration."),
                             'assigned_to' => $assigned_to,
                             'status' => 'pending'
                         ];
-                        
+
                         if (function_exists('create_task')) {
                             create_task($task_data);
                             $tasks_created++;
@@ -2614,23 +2618,23 @@ if (!function_exists('generate_employee_update_tasks')) {
                     }
                 }
             }
-            
+
             // Check for expired and expiring clearances with threshold-based priority
             $clearances = [
                 ['field' => 'nbi_clearance_exp', 'name' => 'NBI Clearance', 'number_field' => 'nbi_clearance_no'],
                 ['field' => 'police_clearance_exp', 'name' => 'Police Clearance', 'number_field' => 'police_clearance_no'],
                 ['field' => 'barangay_clearance_exp', 'name' => 'Barangay Clearance', 'number_field' => 'barangay_clearance_no']
             ];
-            
+
             foreach ($clearances as $clearance) {
                 if (!empty($employee[$clearance['field']]) && $employee[$clearance['field']] !== '0000-00-00' && $employee[$clearance['field']] !== '') {
                     $clearance_exp = strtotime($employee[$clearance['field']]);
                     $clearance_no = $employee[$clearance['number_field']] ?? 'N/A';
-                    
+
                     // Check for expired clearances
                     if ($clearance_exp < $now) {
                         $days_expired = floor(($now - $clearance_exp) / (60 * 60 * 24));
-                        
+
                         // Determine priority based on threshold
                         if ($days_expired >= $thresholds['days_overdue_urgent']) {
                             $priority = 'urgent';
@@ -2645,9 +2649,9 @@ if (!function_exists('generate_employee_update_tasks')) {
                             $urgency_level = 'important';
                             $prefix = '';
                         }
-                        
-                        $check_sql = "SELECT id FROM hr_tasks 
-                                     WHERE task_title LIKE ? 
+
+                        $check_sql = "SELECT id FROM hr_tasks
+                                     WHERE task_title LIKE ?
                                      AND category = 'Clearance'
                                      AND description LIKE ?
                                      AND status IN ('pending', 'in_progress')
@@ -2657,7 +2661,7 @@ if (!function_exists('generate_employee_update_tasks')) {
                             '%' . $clearance['name'] . '%',
                             $location_page
                         ]);
-                        
+
                         if ($check_stmt->rowCount() == 0) {
                             $task_title = $prefix . $clearance['name'] . " Expired - " . $employee_name . " (ID: " . $employee_no . ")";
                             $description = $clearance['name'] . " (" . $clearance_no . ") expired " . $days_expired . " day(s) ago. ";
@@ -2666,7 +2670,7 @@ if (!function_exists('generate_employee_update_tasks')) {
                             } else {
                                 $description .= "Please renew to maintain compliance and operational status.";
                             }
-                            
+
                             $task_data = [
                                 'task_title' => $task_title,
                                 'description' => $description,
@@ -2677,27 +2681,27 @@ if (!function_exists('generate_employee_update_tasks')) {
                                 'priority' => $priority,
                                 'urgency_level' => $urgency_level,
                                 'location_page' => $location_page,
-                                'notes' => $clearance['name'] . " expired on " . date('M d, Y', $clearance_exp) . ". " . 
-                                          ($days_expired >= $thresholds['days_overdue_urgent'] ? 
-                                           "CRITICAL: Automatic HR notification triggered - overdue by " . $days_expired . " days." : 
+                                'notes' => $clearance['name'] . " expired on " . date('M d, Y', $clearance_exp) . ". " .
+                                          ($days_expired >= $thresholds['days_overdue_urgent'] ?
+                                           "CRITICAL: Automatic HR notification triggered - overdue by " . $days_expired . " days." :
                                            "Renewal required."),
                                 'assigned_to' => $assigned_to,
                                 'status' => 'pending'
                             ];
-                            
+
                             if (function_exists('create_task')) {
                                 create_task($task_data);
                                 $tasks_created++;
                             }
                         }
-                    } 
+                    }
                     // Check for expiring clearances
                     elseif ($clearance_exp > $now) {
                         $days_until_exp = floor(($clearance_exp - $now) / (60 * 60 * 24));
-                        
+
                         if ($days_until_exp <= $thresholds['clearance_expiring_high']) {
-                            $check_sql = "SELECT id FROM hr_tasks 
-                                         WHERE task_title LIKE ? 
+                            $check_sql = "SELECT id FROM hr_tasks
+                                         WHERE task_title LIKE ?
                                          AND category = 'Clearance'
                                          AND description LIKE ?
                                          AND status IN ('pending', 'in_progress')
@@ -2707,7 +2711,7 @@ if (!function_exists('generate_employee_update_tasks')) {
                                 '%' . $clearance['name'] . ' expiring%',
                                 $location_page
                             ]);
-                            
+
                             if ($check_stmt->rowCount() == 0) {
                                 // Determine priority based on threshold
                                 if ($days_until_exp <= $thresholds['clearance_expiring_critical']) {
@@ -2719,7 +2723,7 @@ if (!function_exists('generate_employee_update_tasks')) {
                                     $urgency_level = 'important';
                                     $prefix = '';
                                 }
-                                
+
                                 $task_title = $prefix . $clearance['name'] . " Expiring - " . $employee_name . " (ID: " . $employee_no . ")";
                                 $description = $clearance['name'] . " (" . $clearance_no . ") will expire in " . $days_until_exp . " day(s) on " . date('M d, Y', $clearance_exp) . ". ";
                                 if ($days_until_exp <= $thresholds['clearance_expiring_critical']) {
@@ -2727,7 +2731,7 @@ if (!function_exists('generate_employee_update_tasks')) {
                                 } else {
                                     $description .= "Please initiate renewal process before expiration.";
                                 }
-                                
+
                                 $task_data = [
                                     'task_title' => $task_title,
                                     'description' => $description,
@@ -2738,14 +2742,14 @@ if (!function_exists('generate_employee_update_tasks')) {
                                     'priority' => $priority,
                                     'urgency_level' => $urgency_level,
                                     'location_page' => $location_page,
-                                    'notes' => $clearance['name'] . " expires on " . date('M d, Y', $clearance_exp) . ". " . 
-                                              ($days_until_exp <= $thresholds['clearance_expiring_critical'] ? 
-                                               "CRITICAL: Automatic HR notification triggered due to threshold (" . $thresholds['clearance_expiring_critical'] . " days)." : 
+                                    'notes' => $clearance['name'] . " expires on " . date('M d, Y', $clearance_exp) . ". " .
+                                              ($days_until_exp <= $thresholds['clearance_expiring_critical'] ?
+                                               "CRITICAL: Automatic HR notification triggered due to threshold (" . $thresholds['clearance_expiring_critical'] . " days)." :
                                                "Action needed before expiration."),
                                     'assigned_to' => $assigned_to,
                                     'status' => 'pending'
                                 ];
-                                
+
                                 if (function_exists('create_task')) {
                                     create_task($task_data);
                                     $tasks_created++;
@@ -2756,7 +2760,7 @@ if (!function_exists('generate_employee_update_tasks')) {
                 }
             }
         }
-        
+
         return $tasks_created;
     }
 }
@@ -2769,40 +2773,40 @@ if (!function_exists('generate_employee_update_tasks')) {
 if (!function_exists('get_super_admin_stats')) {
     function get_super_admin_stats($filters = []) {
         $stats = [];
-        
+
         try {
             $pdo = get_db_connection();
-            
+
             // Date filters
             $date_from = $filters['date_from'] ?? date('Y-m-d', strtotime('-30 days'));
             $date_to = $filters['date_to'] ?? date('Y-m-d');
             $role_filter = $filters['role'] ?? null;
             $status_filter = $filters['status'] ?? null;
-            
+
             // Build WHERE clause for date filtering
             $date_where = "WHERE DATE(created_at) BETWEEN ? AND ?";
             $date_params = [$date_from, $date_to];
-            
+
             // USER STATISTICS
             $user_where = "WHERE 1=1";
             $user_params = [];
-            
+
             if ($role_filter) {
                 $user_where .= " AND role = ?";
                 $user_params[] = $role_filter;
             }
-            
+
             if ($status_filter) {
                 $user_where .= " AND status = ?";
                 $user_params[] = $status_filter;
             }
-            
+
             // Total users
             $sql = "SELECT COUNT(*) as total FROM users $user_where";
             $stmt = $pdo->prepare($sql);
             $stmt->execute($user_params);
             $stats['total_users'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['total'];
-            
+
             // Users by role
             $sql = "SELECT role, COUNT(*) as count FROM users $user_where GROUP BY role";
             $stmt = $pdo->prepare($sql);
@@ -2811,52 +2815,52 @@ if (!function_exists('get_super_admin_stats')) {
             while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                 $stats['users_by_role'][$row['role']] = (int)$row['count'];
             }
-            
+
             // Active users
             $sql = "SELECT COUNT(*) as active FROM users $user_where AND status = 'active'";
             $stmt = $pdo->prepare($sql);
             $stmt->execute($user_params);
             $stats['active_users'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['active'];
-            
+
             // Users logged in today
             $sql = "SELECT COUNT(*) as today FROM users $user_where AND DATE(last_login) = CURDATE()";
             $stmt = $pdo->prepare($sql);
             $stmt->execute($user_params);
             $stats['users_logged_in_today'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['today'];
-            
+
             // EMPLOYEE STATISTICS
             $emp_where = "WHERE 1=1";
             $emp_params = [];
-            
+
             if ($status_filter) {
                 $emp_where .= " AND LOWER(status) = LOWER(?)";
                 $emp_params[] = $status_filter;
             }
-            
+
             // Total employees
             $sql = "SELECT COUNT(*) as total FROM employees $emp_where";
             $stmt = $pdo->prepare($sql);
             $stmt->execute($emp_params);
             $stats['total_employees'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['total'];
-            
+
             // Active employees
             $sql = "SELECT COUNT(*) as active FROM employees $emp_where AND LOWER(status) = 'active'";
             $stmt = $pdo->prepare($sql);
             $stmt->execute($emp_params);
             $stats['active_employees'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['active'];
-            
+
             // Employees by status (optimized - only counts, no full records)
-            $sql = "SELECT status, COUNT(*) as count 
-                    FROM employees 
-                    GROUP BY status 
-                    ORDER BY count DESC 
+            $sql = "SELECT status, COUNT(*) as count
+                    FROM employees
+                    GROUP BY status
+                    ORDER BY count DESC
                     LIMIT 10";
             $stmt = $pdo->query($sql);
             $stats['employees_by_status'] = [];
             while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                 $stats['employees_by_status'][$row['status']] = (int)$row['count'];
             }
-            
+
             // Employees by type
             $sql = "SELECT employee_type, COUNT(*) as count FROM employees WHERE status = 'Active' GROUP BY employee_type";
             $stmt = $pdo->query($sql);
@@ -2864,23 +2868,23 @@ if (!function_exists('get_super_admin_stats')) {
             while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                 $stats['employees_by_type'][$row['employee_type']] = (int)$row['count'];
             }
-            
+
             // New employees in date range
             $sql = "SELECT COUNT(*) as new FROM employees WHERE DATE(created_at) BETWEEN ? AND ?";
             $stmt = $pdo->prepare($sql);
             $stmt->execute([$date_from, $date_to]);
             $stats['new_employees'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['new'];
-            
+
             // AUDIT LOG STATISTICS
             $audit_where = $date_where;
             $audit_params = $date_params;
-            
+
             // Total audit logs
             $sql = "SELECT COUNT(*) as total FROM audit_logs $audit_where";
             $stmt = $pdo->prepare($sql);
             $stmt->execute($audit_params);
             $stats['total_audit_logs'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['total'];
-            
+
             // Audit logs by action
             $sql = "SELECT action, COUNT(*) as count FROM audit_logs $audit_where GROUP BY action ORDER BY count DESC LIMIT 10";
             $stmt = $pdo->prepare($sql);
@@ -2889,7 +2893,7 @@ if (!function_exists('get_super_admin_stats')) {
             while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                 $stats['audit_logs_by_action'][$row['action']] = (int)$row['count'];
             }
-            
+
             // Audit logs by table
             $sql = "SELECT table_name, COUNT(*) as count FROM audit_logs $audit_where GROUP BY table_name ORDER BY count DESC LIMIT 10";
             $stmt = $pdo->prepare($sql);
@@ -2898,59 +2902,59 @@ if (!function_exists('get_super_admin_stats')) {
             while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                 $stats['audit_logs_by_table'][$row['table_name']] = (int)$row['count'];
             }
-            
+
             // Recent audit activity (last 7 days)
-            $sql = "SELECT DATE(created_at) as date, COUNT(*) as count 
-                    FROM audit_logs 
+            $sql = "SELECT DATE(created_at) as date, COUNT(*) as count
+                    FROM audit_logs
                     WHERE DATE(created_at) >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
-                    GROUP BY DATE(created_at) 
+                    GROUP BY DATE(created_at)
                     ORDER BY date DESC";
             $stmt = $pdo->query($sql);
             $stats['audit_activity_trend'] = [];
             while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                 $stats['audit_activity_trend'][$row['date']] = (int)$row['count'];
             }
-            
+
             // POST STATISTICS
             $sql = "SELECT COUNT(*) as total FROM posts";
             $stmt = $pdo->query($sql);
             $stats['total_posts'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['total'];
-            
+
             // ALERT STATISTICS
             $sql = "SELECT COUNT(*) as total FROM employee_alerts WHERE status = 'active'";
             $stmt = $pdo->query($sql);
             $stats['active_alerts'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['total'];
-            
+
             // LICENSE STATISTICS
-            $sql = "SELECT COUNT(*) as expired FROM employees 
-                    WHERE license_no IS NOT NULL 
-                    AND license_no != '' 
-                    AND license_exp_date IS NOT NULL 
-                    AND license_exp_date != '' 
+            $sql = "SELECT COUNT(*) as expired FROM employees
+                    WHERE license_no IS NOT NULL
+                    AND license_no != ''
+                    AND license_exp_date IS NOT NULL
+                    AND license_exp_date != ''
                     AND license_exp_date != '0000-00-00'
                     AND license_exp_date < CURDATE()";
             $stmt = $pdo->query($sql);
             $stats['expired_licenses'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['expired'];
-            
-            $sql = "SELECT COUNT(*) as expiring FROM employees 
-                    WHERE license_no IS NOT NULL 
-                    AND license_no != '' 
-                    AND license_exp_date IS NOT NULL 
-                    AND license_exp_date != '' 
+
+            $sql = "SELECT COUNT(*) as expiring FROM employees
+                    WHERE license_no IS NOT NULL
+                    AND license_no != ''
+                    AND license_exp_date IS NOT NULL
+                    AND license_exp_date != ''
                     AND license_exp_date != '0000-00-00'
-                    AND license_exp_date >= CURDATE() 
+                    AND license_exp_date >= CURDATE()
                     AND license_exp_date <= DATE_ADD(CURDATE(), INTERVAL 30 DAY)";
             $stmt = $pdo->query($sql);
             $stats['expiring_licenses'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['expiring'];
-            
+
             // SYSTEM ACTIVITY (from audit logs)
-            $sql = "SELECT COUNT(DISTINCT user_id) as unique_users 
-                    FROM audit_logs 
+            $sql = "SELECT COUNT(DISTINCT user_id) as unique_users
+                    FROM audit_logs
                     WHERE DATE(created_at) BETWEEN ? AND ?";
             $stmt = $pdo->prepare($sql);
             $stmt->execute([$date_from, $date_to]);
             $stats['active_users_period'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['unique_users'];
-            
+
         } catch (Exception $e) {
             error_log("Error in get_super_admin_stats: " . $e->getMessage());
             // Return empty stats on error
@@ -2966,7 +2970,7 @@ if (!function_exists('get_super_admin_stats')) {
                 'audit_activity_trend' => []
             ];
         }
-        
+
         return $stats;
     }
 }
@@ -2975,10 +2979,10 @@ if (!function_exists('get_super_admin_stats')) {
 if (!function_exists('get_recent_audit_logs')) {
     function get_recent_audit_logs($limit = 10) {
         try {
-            $sql = "SELECT al.*, u.name as user_name, u.username, u.role 
-                    FROM audit_logs al 
-                    LEFT JOIN users u ON al.user_id = u.id 
-                    ORDER BY al.created_at DESC 
+            $sql = "SELECT al.*, u.name as user_name, u.username, u.role
+                    FROM audit_logs al
+                    LEFT JOIN users u ON al.user_id = u.id
+                    ORDER BY al.created_at DESC
                     LIMIT ?";
             $stmt = execute_query($sql, [$limit]);
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -2999,22 +3003,22 @@ if (!function_exists('get_security_log_stats')) {
             'account_locked' => 0,
             'recent_events' => []
         ];
-        
+
         $log_file = __DIR__ . '/../storage/logs/security.log';
         if (!file_exists($log_file)) {
             return $stats;
         }
-        
+
         try {
             $lines = file($log_file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
             $cutoff_date = date('Y-m-d', strtotime("-$days days"));
-            
+
             foreach ($lines as $line) {
                 if (preg_match('/\[(\d{4}-\d{2}-\d{2})/', $line, $matches)) {
                     $log_date = $matches[1];
                     if ($log_date >= $cutoff_date) {
                         $stats['total_events']++;
-                        
+
                         if (stripos($line, 'Login Attempt') !== false || stripos($line, 'Login Success') !== false) {
                             $stats['login_attempts']++;
                         }
@@ -3024,7 +3028,7 @@ if (!function_exists('get_security_log_stats')) {
                         if (stripos($line, 'Account Locked') !== false) {
                             $stats['account_locked']++;
                         }
-                        
+
                         // Keep last 20 events
                         if (count($stats['recent_events']) < 20) {
                             $stats['recent_events'][] = $line;
@@ -3032,14 +3036,14 @@ if (!function_exists('get_security_log_stats')) {
                     }
                 }
             }
-            
+
             // Reverse to show most recent first
             $stats['recent_events'] = array_reverse($stats['recent_events']);
-            
+
         } catch (Exception $e) {
             error_log("Error reading security log: " . $e->getMessage());
         }
-        
+
         return $stats;
     }
 }
@@ -3053,22 +3057,22 @@ if (!function_exists('get_all_users')) {
     function get_all_users($filters = [], $limit = 50, $offset = 0) {
         try {
             $pdo = get_db_connection();
-            
+
             $where = "WHERE 1=1";
             $params = [];
-            
+
             // Role filter
             if (!empty($filters['role'])) {
                 $where .= " AND u.role = ?";
                 $params[] = $filters['role'];
             }
-            
+
             // Status filter
             if (!empty($filters['status'])) {
                 $where .= " AND u.status = ?";
                 $params[] = $filters['status'];
             }
-            
+
             // Search filter (case-insensitive)
             if (!empty($filters['search'])) {
                 $where .= " AND (LOWER(u.name) LIKE LOWER(?) OR LOWER(u.username) LIKE LOWER(?) OR LOWER(u.email) LIKE LOWER(?))";
@@ -3077,23 +3081,23 @@ if (!function_exists('get_all_users')) {
                 $params[] = $search_term;
                 $params[] = $search_term;
             }
-            
+
             // Get total count - need to use same table alias structure
             $count_sql = "SELECT COUNT(*) FROM users u WHERE 1=1";
             $count_params = [];
-            
+
             // Role filter for count
             if (!empty($filters['role'])) {
                 $count_sql .= " AND u.role = ?";
                 $count_params[] = $filters['role'];
             }
-            
+
             // Status filter for count
             if (!empty($filters['status'])) {
                 $count_sql .= " AND u.status = ?";
                 $count_params[] = $filters['status'];
             }
-            
+
             // Search filter for count (case-insensitive)
             if (!empty($filters['search'])) {
                 $count_sql .= " AND (LOWER(u.name) LIKE LOWER(?) OR LOWER(u.username) LIKE LOWER(?) OR LOWER(u.email) LIKE LOWER(?))";
@@ -3102,13 +3106,13 @@ if (!function_exists('get_all_users')) {
                 $count_params[] = $search_term;
                 $count_params[] = $search_term;
             }
-            
+
             $count_stmt = $pdo->prepare($count_sql);
             $count_stmt->execute($count_params);
             $total = (int)$count_stmt->fetchColumn();
-            
+
             // Get users
-            $sql = "SELECT u.*, 
+            $sql = "SELECT u.*,
                            creator.name as created_by_name,
                            e.first_name, e.surname, e.employee_no
                     FROM users u
@@ -3117,14 +3121,14 @@ if (!function_exists('get_all_users')) {
                     $where
                     ORDER BY u.created_at DESC
                     LIMIT ? OFFSET ?";
-            
+
             $params[] = $limit;
             $params[] = $offset;
-            
+
             $stmt = $pdo->prepare($sql);
             $stmt->execute($params);
             $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            
+
             return [
                 'users' => $users,
                 'total' => $total
@@ -3141,27 +3145,27 @@ if (!function_exists('update_user_role')) {
     function update_user_role($user_id, $new_role, $updated_by = null) {
         try {
             $pdo = get_db_connection();
-            
+
             // Validate role
             $valid_roles = ['super_admin', 'hr_admin', 'hr', 'admin', 'accounting', 'operation', 'logistics', 'employee', 'developer'];
             if (!in_array($new_role, $valid_roles)) {
                 return ['success' => false, 'message' => 'Invalid role specified'];
             }
-            
+
             // Get current user data for audit
             $current_user = $pdo->prepare("SELECT role, name, username FROM users WHERE id = ?");
             $current_user->execute([$user_id]);
             $user_data = $current_user->fetch(PDO::FETCH_ASSOC);
-            
+
             if (!$user_data) {
                 return ['success' => false, 'message' => 'User not found'];
             }
-            
+
             // Update role
             $sql = "UPDATE users SET role = ?, updated_at = NOW() WHERE id = ?";
             $stmt = $pdo->prepare($sql);
             $result = $stmt->execute([$new_role, $user_id]);
-            
+
             if ($result) {
                 // Log audit event
                 if (function_exists('log_audit_event')) {
@@ -3174,10 +3178,10 @@ if (!function_exists('update_user_role')) {
                         $updated_by
                     );
                 }
-                
+
                 return ['success' => true, 'message' => 'User role updated successfully'];
             }
-            
+
             return ['success' => false, 'message' => 'Failed to update user role'];
         } catch (Exception $e) {
             error_log("Error in update_user_role: " . $e->getMessage());
@@ -3191,32 +3195,32 @@ if (!function_exists('update_user_status')) {
     function update_user_status($user_id, $new_status, $updated_by = null) {
         try {
             $pdo = get_db_connection();
-            
+
             // Validate status
             $valid_statuses = ['active', 'inactive', 'suspended'];
             if (!in_array($new_status, $valid_statuses)) {
                 return ['success' => false, 'message' => 'Invalid status specified'];
             }
-            
+
             // Get current user data for audit
             $current_user = $pdo->prepare("SELECT status, name, username FROM users WHERE id = ?");
             $current_user->execute([$user_id]);
             $user_data = $current_user->fetch(PDO::FETCH_ASSOC);
-            
+
             if (!$user_data) {
                 return ['success' => false, 'message' => 'User not found'];
             }
-            
+
             // Prevent disabling own account
             if ($user_id == ($updated_by ?? $_SESSION['user_id'] ?? null) && $new_status !== 'active') {
                 return ['success' => false, 'message' => 'You cannot disable your own account'];
             }
-            
+
             // Update status
             $sql = "UPDATE users SET status = ?, updated_at = NOW() WHERE id = ?";
             $stmt = $pdo->prepare($sql);
             $result = $stmt->execute([$new_status, $user_id]);
-            
+
             if ($result) {
                 // If suspending, also lock the account
                 if ($new_status === 'suspended') {
@@ -3229,7 +3233,7 @@ if (!function_exists('update_user_status')) {
                     $unlock_stmt = $pdo->prepare($unlock_sql);
                     $unlock_stmt->execute([$user_id]);
                 }
-                
+
                 // Log audit event
                 if (function_exists('log_audit_event')) {
                     log_audit_event(
@@ -3241,10 +3245,10 @@ if (!function_exists('update_user_status')) {
                         $updated_by
                     );
                 }
-                
+
                 return ['success' => true, 'message' => 'User status updated successfully'];
             }
-            
+
             return ['success' => false, 'message' => 'Failed to update user status'];
         } catch (Exception $e) {
             error_log("Error in update_user_status: " . $e->getMessage());
@@ -3335,10 +3339,10 @@ if (!function_exists('get_user_by_id')) {
             // Check if first_name and last_name columns exist
             $check_cols = $pdo->query("SHOW COLUMNS FROM users LIKE 'first_name'");
             $has_first_name = $check_cols->rowCount() > 0;
-            
+
             $check_cols = $pdo->query("SHOW COLUMNS FROM users LIKE 'last_name'");
             $has_last_name = $check_cols->rowCount() > 0;
-            
+
             // Build SELECT based on available columns
             $select_fields = "u.*";
             if ($has_first_name && $has_last_name) {
@@ -3346,11 +3350,11 @@ if (!function_exists('get_user_by_id')) {
             } else {
                 // Fallback: use name field if first_name/last_name don't exist
             }
-            
-            $sql = "SELECT u.*, 
+
+            $sql = "SELECT u.*,
                            creator.name as created_by_name,
-                           e.first_name as employee_first_name, 
-                           e.surname as employee_surname, 
+                           e.first_name as employee_first_name,
+                           e.surname as employee_surname,
                            e.employee_no
                     FROM users u
                     LEFT JOIN users creator ON u.created_by = creator.id
@@ -3359,14 +3363,14 @@ if (!function_exists('get_user_by_id')) {
             $stmt = $pdo->prepare($sql);
             $stmt->execute([$user_id]);
             $user = $stmt->fetch(PDO::FETCH_ASSOC);
-            
+
             // If first_name/last_name don't exist in users table, try to derive from name field
             if ($user && !$has_first_name && !empty($user['name'])) {
                 $name_parts = preg_split('/\s+/', trim($user['name']), 2);
                 $user['first_name'] = $name_parts[0] ?? '';
                 $user['last_name'] = $name_parts[1] ?? '';
             }
-            
+
             return $user;
         } catch (Exception $e) {
             error_log("Error in get_user_by_id: " . $e->getMessage());
@@ -3576,7 +3580,7 @@ if (!function_exists('create_database_backup')) {
         try {
             $pdo = get_db_connection();
             $settings = get_backup_settings();
-            
+
             // Get database config
             $db_config = [
                 'host' => $_ENV['DB_HOST'] ?? 'localhost',
@@ -3746,7 +3750,7 @@ if (!function_exists('cleanup_old_backups')) {
         try {
             $settings = get_backup_settings();
             $retention_days = (int)$settings['retention_days'];
-            
+
             if ($retention_days <= 0) {
                 return; // Keep forever
             }
@@ -3802,14 +3806,14 @@ if (!function_exists('get_backup_list')) {
         try {
             $settings = get_backup_settings();
             $backup_dir = __DIR__ . '/../' . $settings['backup_location'];
-            
+
             if (!is_dir($backup_dir)) {
                 return [];
             }
 
             $backups = [];
             $files = glob($backup_dir . '/backup_*.sql');
-            
+
             foreach ($files as $file) {
                 $backups[] = [
                     'filename' => basename($file),
@@ -3842,20 +3846,20 @@ if (!function_exists('generate_secure_password')) {
         $uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
         $numbers = '0123456789';
         $symbols = '!@#$%^&*()_+-=[]{}|;:,.<>?';
-        
+
         // Ensure at least one character from each set
         $password = '';
         $password .= $lowercase[random_int(0, strlen($lowercase) - 1)];
         $password .= $uppercase[random_int(0, strlen($uppercase) - 1)];
         $password .= $numbers[random_int(0, strlen($numbers) - 1)];
         $password .= $symbols[random_int(0, strlen($symbols) - 1)];
-        
+
         // Fill the rest with random characters from all sets
         $all_chars = $lowercase . $uppercase . $numbers . $symbols;
         for ($i = strlen($password); $i < $length; $i++) {
             $password .= $all_chars[random_int(0, strlen($all_chars) - 1)];
         }
-        
+
         // Shuffle to avoid predictable pattern
         return str_shuffle($password);
     }
@@ -3871,11 +3875,11 @@ if (!function_exists('send_new_user_credentials_email')) {
                 error_log('PHPMailer not found at: ' . $phpmailer_path);
                 return false;
             }
-            
+
             require_once $phpmailer_path;
-            
+
             $mail = new \PHPMailer\PHPMailer\PHPMailer(true);
-            
+
             // Get SMTP configuration from environment
             $smtp_host = $_ENV['SMTP_HOST'] ?? null;
             $smtp_username = $_ENV['SMTP_USERNAME'] ?? null;
@@ -3884,18 +3888,18 @@ if (!function_exists('send_new_user_credentials_email')) {
             $smtp_encryption_raw = $_ENV['SMTP_ENCRYPTION'] ?? 'tls';
             $mail_from_address = $_ENV['MAIL_FROM_ADDRESS'] ?? null;
             $mail_from_name = $_ENV['MAIL_FROM_NAME'] ?? 'Golden Z-5 HR System';
-            
+
             if (empty($smtp_host) || empty($smtp_username) || empty($smtp_password) || empty($mail_from_address)) {
                 error_log('SMTP configuration incomplete. Cannot send new user credentials email.');
                 return false;
             }
-            
+
             // Map encryption string to PHPMailer constant
             $smtp_encryption = \PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
             if (strtolower($smtp_encryption_raw) === 'ssl') {
                 $smtp_encryption = \PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_SMTPS;
             }
-            
+
             // SMTP Configuration
             $mail->isSMTP();
             $mail->Host = $smtp_host;
@@ -3905,24 +3909,24 @@ if (!function_exists('send_new_user_credentials_email')) {
             $mail->SMTPSecure = $smtp_encryption;
             $mail->Port = (int)$smtp_port;
             $mail->CharSet = 'UTF-8';
-            
+
             // Email content
             $mail->setFrom($mail_from_address, $mail_from_name);
             $mail->addAddress($email);
             $mail->Subject = 'Your Golden Z-5 HR System Account Credentials';
-            
+
             // Build user name
             $user_name = trim(($first_name ?? '') . ' ' . ($last_name ?? ''));
             if (empty($user_name)) {
                 $user_name = $username;
             }
-            
+
             // Login URL
-            $login_url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http') . 
-                        '://' . $_SERVER['HTTP_HOST'] . 
-                        dirname(dirname($_SERVER['PHP_SELF'])) . 
+            $login_url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http') .
+                        '://' . $_SERVER['HTTP_HOST'] .
+                        dirname(dirname($_SERVER['PHP_SELF'])) .
                         '/landing/index.php';
-            
+
             // HTML body
             $mail->isHTML(true);
             $mail->Body = "
@@ -3950,7 +3954,7 @@ if (!function_exists('send_new_user_credentials_email')) {
                         <div class='content'>
                             <p>Hello " . htmlspecialchars($user_name) . ",</p>
                             <p>Your account has been created successfully. Please find your login credentials below:</p>
-                            
+
                             <div class='credentials'>
                                 <div class='credential-item'>
                                     <span class='label'>Username:</span><br>
@@ -3961,17 +3965,17 @@ if (!function_exists('send_new_user_credentials_email')) {
                                     <span class='value'>" . htmlspecialchars($password) . "</span>
                                 </div>
                             </div>
-                            
+
                             <div class='warning'>
                                 <strong>⚠️ Important Security Notice:</strong><br>
-                                For your security, you <strong>must change your password</strong> immediately after your first login. 
+                                For your security, you <strong>must change your password</strong> immediately after your first login.
                                 You will be prompted to change your password when you log in for the first time.
                             </div>
-                            
+
                             <p>
                                 <a href='" . htmlspecialchars($login_url) . "' class='button'>Login to Your Account</a>
                             </p>
-                            
+
                             <p>If you have any questions or need assistance, please contact your system administrator.</p>
                         </div>
                         <div class='footer'>
@@ -3982,7 +3986,7 @@ if (!function_exists('send_new_user_credentials_email')) {
                 </body>
                 </html>
             ";
-            
+
             // Plain text alternative
             $mail->AltBody = "Hello " . $user_name . ",\n\n" .
                            "Your account has been created successfully.\n\n" .
@@ -3993,13 +3997,13 @@ if (!function_exists('send_new_user_credentials_email')) {
                            "Login URL: " . $login_url . "\n\n" .
                            "If you have any questions, please contact your system administrator.\n\n" .
                            "This is an automated message. Please do not reply to this email.";
-            
+
             // Send email
             if (!$mail->send()) {
                 error_log('Failed to send new user credentials email: ' . $mail->ErrorInfo);
                 return false;
             }
-            
+
             return true;
         } catch (Exception $e) {
             error_log('Error sending new user credentials email: ' . $e->getMessage());
@@ -4012,13 +4016,13 @@ if (!function_exists('create_user')) {
     function create_user($user_data, $created_by = null) {
         try {
             $pdo = get_db_connection();
-            
+
             // Check if first_name and last_name columns exist
             $check_first_name = $pdo->query("SHOW COLUMNS FROM users LIKE 'first_name'");
             $check_last_name = $pdo->query("SHOW COLUMNS FROM users LIKE 'last_name'");
             $has_first_name = $check_first_name->rowCount() > 0;
             $has_last_name = $check_last_name->rowCount() > 0;
-            
+
             // Validate required fields (password is now auto-generated, so not required)
             if ($has_first_name && $has_last_name) {
                 // Use first_name and last_name if columns exist
@@ -4027,45 +4031,45 @@ if (!function_exists('create_user')) {
                 // Fallback to name field for backward compatibility
                 $required_fields = ['username', 'email', 'name', 'role'];
             }
-            
+
             foreach ($required_fields as $field) {
                 if (empty($user_data[$field])) {
                     return ['success' => false, 'message' => "Field '{$field}' is required"];
                 }
             }
-            
+
             // Generate password if not provided
             if (empty($user_data['password'])) {
                 $user_data['password'] = generate_secure_password();
             }
-            
+
             // Validate role
             $valid_roles = ['super_admin', 'hr_admin', 'hr', 'admin', 'accounting', 'operation', 'logistics', 'employee', 'developer'];
             if (!in_array($user_data['role'], $valid_roles)) {
                 return ['success' => false, 'message' => 'Invalid role specified'];
             }
-            
+
             // Validate status
             $valid_statuses = ['active', 'inactive', 'suspended'];
             $status = $user_data['status'] ?? 'active';
             if (!in_array($status, $valid_statuses)) {
                 $status = 'active';
             }
-            
+
             // Check if username already exists
             $check_username = $pdo->prepare("SELECT id FROM users WHERE username = ?");
             $check_username->execute([$user_data['username']]);
             if ($check_username->fetch()) {
                 return ['success' => false, 'message' => 'Username already exists'];
             }
-            
+
             // Check if email already exists
             $check_email = $pdo->prepare("SELECT id FROM users WHERE email = ?");
             $check_email->execute([$user_data['email']]);
             if ($check_email->fetch()) {
                 return ['success' => false, 'message' => 'Email already exists'];
             }
-            
+
             // Validate employee_id if provided
             $employee_id = null;
             if (!empty($user_data['employee_id'])) {
@@ -4076,14 +4080,14 @@ if (!function_exists('create_user')) {
                 }
                 $employee_id = (int)$user_data['employee_id'];
             }
-            
+
             // Hash password
             $password_hash = password_hash($user_data['password'], PASSWORD_DEFAULT);
-            
+
             // Prepare first_name and last_name values
             $first_name = $has_first_name ? trim($user_data['first_name'] ?? '') : null;
             $last_name = $has_last_name ? trim($user_data['last_name'] ?? '') : null;
-            
+
             // For backward compatibility, also set name field (concatenate first_name + last_name)
             $full_name = null;
             if ($has_first_name && $has_last_name) {
@@ -4091,50 +4095,50 @@ if (!function_exists('create_user')) {
             } elseif (isset($user_data['name'])) {
                 $full_name = trim($user_data['name']);
             }
-            
+
             // Store plain password for email (before hashing)
             $plain_password = $user_data['password'];
-            
+
             // Prepare insert statement (let MySQL handle timestamps automatically)
             // Set password_changed_at to NULL to force password change on first login
             if ($has_first_name && $has_last_name) {
                 // Use first_name and last_name columns
                 $sql = "INSERT INTO users (
-                            username, 
-                            email, 
-                            password_hash, 
+                            username,
+                            email,
+                            password_hash,
                             name,
-                            first_name, 
-                            last_name, 
-                            role, 
-                            status, 
-                            employee_id, 
-                            department, 
-                            phone, 
+                            first_name,
+                            last_name,
+                            role,
+                            status,
+                            employee_id,
+                            department,
+                            phone,
                             password_changed_at,
                             created_by
                         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, ?)";
             } else {
                 // Fallback to name field only
                 $sql = "INSERT INTO users (
-                            username, 
-                            email, 
-                            password_hash, 
-                            name, 
-                            role, 
-                            status, 
-                            employee_id, 
-                            department, 
-                            phone, 
+                            username,
+                            email,
+                            password_hash,
+                            name,
+                            role,
+                            status,
+                            employee_id,
+                            department,
+                            phone,
                             password_changed_at,
                             created_by
                         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, ?)";
             }
-            
+
             // Convert empty strings to null for optional fields
             $department = (!empty($user_data['department']) && trim($user_data['department']) !== '') ? trim($user_data['department']) : null;
             $phone = (!empty($user_data['phone']) && trim($user_data['phone']) !== '') ? trim($user_data['phone']) : null;
-            
+
             // Prepare parameters based on which columns exist
             if ($has_first_name && $has_last_name) {
                 $params = [
@@ -4165,13 +4169,13 @@ if (!function_exists('create_user')) {
                     $created_by
                 ];
             }
-            
+
             $stmt = $pdo->prepare($sql);
-            
+
             // Execute with error handling
             try {
                 $result = $stmt->execute($params);
-                
+
                 // Check for execution errors
                 if (!$result) {
                     $error_info = $stmt->errorInfo();
@@ -4185,7 +4189,7 @@ if (!function_exists('create_user')) {
                 error_log("Params: " . print_r($params, true));
                 return ['success' => false, 'message' => 'Database error: ' . $e->getMessage()];
             }
-            
+
             // Check if insert was successful
             // If execute() returned true and no exception was thrown, the insert succeeded
             if (!$result) {
@@ -4194,10 +4198,10 @@ if (!function_exists('create_user')) {
                 error_log("PDO Error Info: " . print_r($error_info, true));
                 return ['success' => false, 'message' => 'Failed to create user - execution returned false. Check logs for details.'];
             }
-            
+
             // Get the inserted user ID - try multiple methods
             $new_user_id = $pdo->lastInsertId();
-            
+
             // If lastInsertId() returns 0 or false, query the database to get the ID
             // This can happen in some MySQL configurations or if there are connection issues
             if (!$new_user_id || $new_user_id == 0) {
@@ -4205,7 +4209,7 @@ if (!function_exists('create_user')) {
                 $verify_stmt = $pdo->prepare("SELECT id FROM users WHERE username = ? LIMIT 1");
                 $verify_stmt->execute([$user_data['username']]);
                 $verified_user = $verify_stmt->fetch(PDO::FETCH_ASSOC);
-                
+
                 if ($verified_user && isset($verified_user['id'])) {
                     $new_user_id = (int)$verified_user['id'];
                 } else {
@@ -4213,14 +4217,14 @@ if (!function_exists('create_user')) {
                     $verify_stmt = $pdo->prepare("SELECT id FROM users WHERE email = ? LIMIT 1");
                     $verify_stmt->execute([$user_data['email']]);
                     $verified_user = $verify_stmt->fetch(PDO::FETCH_ASSOC);
-                    
+
                     if ($verified_user && isset($verified_user['id'])) {
                         $new_user_id = (int)$verified_user['id'];
                     }
                 }
             }
-            
-            // If we still don't have an ID, but execute() returned true, 
+
+            // If we still don't have an ID, but execute() returned true,
             // the insert likely succeeded but we can't get the ID
             // In this case, we'll still return success but log a warning
             if (!$new_user_id || $new_user_id == 0) {
@@ -4230,7 +4234,7 @@ if (!function_exists('create_user')) {
                 // Still return success since execute() returned true
                 $new_user_id = null;
             }
-            
+
             // Send credentials email to new user
             if ($new_user_id) {
                 $email_sent = send_new_user_credentials_email(
@@ -4240,12 +4244,12 @@ if (!function_exists('create_user')) {
                     $first_name ?? '',
                     $last_name ?? ''
                 );
-                
+
                 if (!$email_sent) {
                     error_log("Warning: Failed to send credentials email to {$user_data['email']} for user {$user_data['username']}");
                 }
             }
-            
+
             // Log audit event if we have a user ID
             if ($new_user_id && function_exists('log_audit_event')) {
                 log_audit_event(
@@ -4265,13 +4269,13 @@ if (!function_exists('create_user')) {
                     $created_by
                 );
             }
-            
+
             // Log security event
             if (function_exists('log_security_event')) {
                 $display_name = $full_name ?? ($user_data['name'] ?? ($first_name . ' ' . $last_name));
                 log_security_event('User Created', "New user created: {$user_data['username']} ({$display_name}) - Role: {$user_data['role']} - Created by: " . ($created_by ?? 'System'));
             }
-            
+
             // Build success message
             $message = 'User created successfully';
             if (isset($email_sent) && $email_sent) {
@@ -4279,9 +4283,9 @@ if (!function_exists('create_user')) {
             } elseif (isset($email_sent) && !$email_sent) {
                 $message .= '. Warning: Failed to send credentials email. Please contact the user manually.';
             }
-            
+
             return [
-                'success' => true, 
+                'success' => true,
                 'message' => $message,
                 'user_id' => $new_user_id
             ];
@@ -4305,7 +4309,7 @@ if (!function_exists('create_support_tickets_table')) {
     function create_support_tickets_table() {
         try {
             $pdo = get_db_connection();
-            
+
             // Create support_tickets table
             $sql = "CREATE TABLE IF NOT EXISTS support_tickets (
                 id INT AUTO_INCREMENT PRIMARY KEY,
@@ -4329,7 +4333,7 @@ if (!function_exists('create_support_tickets_table')) {
                 INDEX idx_ticket_no (ticket_no)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
             $pdo->exec($sql);
-            
+
             // Create ticket_replies table
             $sql = "CREATE TABLE IF NOT EXISTS ticket_replies (
                 id INT AUTO_INCREMENT PRIMARY KEY,
@@ -4344,7 +4348,7 @@ if (!function_exists('create_support_tickets_table')) {
                 INDEX idx_ticket_id (ticket_id)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
             $pdo->exec($sql);
-            
+
             return true;
         } catch (Exception $e) {
             error_log("Error creating support tickets tables: " . $e->getMessage());
@@ -4368,25 +4372,25 @@ if (!function_exists('get_support_tickets')) {
     function get_support_tickets($filters = [], $limit = 50, $offset = 0) {
         try {
             $pdo = get_db_connection();
-            
+
             $where = "WHERE 1=1";
             $params = [];
-            
+
             if (!empty($filters['status'])) {
                 $where .= " AND t.status = ?";
                 $params[] = $filters['status'];
             }
-            
+
             if (!empty($filters['priority'])) {
                 $where .= " AND t.priority = ?";
                 $params[] = $filters['priority'];
             }
-            
+
             if (!empty($filters['category'])) {
                 $where .= " AND t.category = ?";
                 $params[] = $filters['category'];
             }
-            
+
             if (!empty($filters['search'])) {
                 $where .= " AND (t.ticket_no LIKE ? OR t.subject LIKE ? OR t.user_name LIKE ?)";
                 $search = '%' . $filters['search'] . '%';
@@ -4394,37 +4398,37 @@ if (!function_exists('get_support_tickets')) {
                 $params[] = $search;
                 $params[] = $search;
             }
-            
+
             // Get total count
             $count_sql = "SELECT COUNT(*) FROM support_tickets t $where";
             $count_stmt = $pdo->prepare($count_sql);
             $count_stmt->execute($params);
             $total = (int)$count_stmt->fetchColumn();
-            
+
             // Get tickets
-            $sql = "SELECT t.*, 
+            $sql = "SELECT t.*,
                            a.name as assigned_to_name,
                            (SELECT COUNT(*) FROM ticket_replies WHERE ticket_id = t.id) as reply_count
                     FROM support_tickets t
                     LEFT JOIN users a ON t.assigned_to = a.id
                     $where
-                    ORDER BY 
-                        CASE t.priority 
-                            WHEN 'urgent' THEN 1 
-                            WHEN 'high' THEN 2 
-                            WHEN 'medium' THEN 3 
-                            WHEN 'low' THEN 4 
+                    ORDER BY
+                        CASE t.priority
+                            WHEN 'urgent' THEN 1
+                            WHEN 'high' THEN 2
+                            WHEN 'medium' THEN 3
+                            WHEN 'low' THEN 4
                         END,
                         t.created_at DESC
                     LIMIT ? OFFSET ?";
-            
+
             $params[] = $limit;
             $params[] = $offset;
-            
+
             $stmt = $pdo->prepare($sql);
             $stmt->execute($params);
             $tickets = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            
+
             return [
                 'tickets' => $tickets,
                 'total' => $total
@@ -4441,7 +4445,7 @@ if (!function_exists('get_ticket_by_id')) {
     function get_ticket_by_id($ticket_id) {
         try {
             $pdo = get_db_connection();
-            
+
             // Get ticket
             $sql = "SELECT t.*, a.name as assigned_to_name
                     FROM support_tickets t
@@ -4450,17 +4454,17 @@ if (!function_exists('get_ticket_by_id')) {
             $stmt = $pdo->prepare($sql);
             $stmt->execute([$ticket_id]);
             $ticket = $stmt->fetch(PDO::FETCH_ASSOC);
-            
+
             if (!$ticket) {
                 return null;
             }
-            
+
             // Get replies
             $sql = "SELECT * FROM ticket_replies WHERE ticket_id = ? ORDER BY created_at ASC";
             $stmt = $pdo->prepare($sql);
             $stmt->execute([$ticket_id]);
             $ticket['replies'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            
+
             return $ticket;
         } catch (Exception $e) {
             error_log("Error in get_ticket_by_id: " . $e->getMessage());
@@ -4474,13 +4478,13 @@ if (!function_exists('create_support_ticket')) {
     function create_support_ticket($data) {
         try {
             $pdo = get_db_connection();
-            
+
             $ticket_no = generate_ticket_number();
-            
-            $sql = "INSERT INTO support_tickets 
+
+            $sql = "INSERT INTO support_tickets
                     (ticket_no, user_id, user_name, user_email, user_role, category, priority, subject, description)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-            
+
             $stmt = $pdo->prepare($sql);
             $result = $stmt->execute([
                 $ticket_no,
@@ -4493,7 +4497,7 @@ if (!function_exists('create_support_ticket')) {
                 $data['subject'],
                 $data['description']
             ]);
-            
+
             if ($result) {
                 return [
                     'success' => true,
@@ -4502,7 +4506,7 @@ if (!function_exists('create_support_ticket')) {
                     'message' => "Ticket $ticket_no created successfully"
                 ];
             }
-            
+
             return ['success' => false, 'message' => 'Failed to create ticket'];
         } catch (Exception $e) {
             error_log("Error in create_support_ticket: " . $e->getMessage());
@@ -4516,11 +4520,11 @@ if (!function_exists('add_ticket_reply')) {
     function add_ticket_reply($ticket_id, $data) {
         try {
             $pdo = get_db_connection();
-            
-            $sql = "INSERT INTO ticket_replies 
+
+            $sql = "INSERT INTO ticket_replies
                     (ticket_id, user_id, user_name, user_role, message, is_internal)
                     VALUES (?, ?, ?, ?, ?, ?)";
-            
+
             $stmt = $pdo->prepare($sql);
             $result = $stmt->execute([
                 $ticket_id,
@@ -4530,15 +4534,15 @@ if (!function_exists('add_ticket_reply')) {
                 $data['message'],
                 $data['is_internal'] ?? 0
             ]);
-            
+
             if ($result) {
                 // Update ticket's updated_at timestamp
                 $update_sql = "UPDATE support_tickets SET updated_at = NOW() WHERE id = ?";
                 $pdo->prepare($update_sql)->execute([$ticket_id]);
-                
+
                 return ['success' => true, 'message' => 'Reply added successfully'];
             }
-            
+
             return ['success' => false, 'message' => 'Failed to add reply'];
         } catch (Exception $e) {
             error_log("Error in add_ticket_reply: " . $e->getMessage());
@@ -4552,20 +4556,20 @@ if (!function_exists('update_ticket_status')) {
     function update_ticket_status($ticket_id, $status, $updated_by = null) {
         try {
             $pdo = get_db_connection();
-            
+
             $valid_statuses = ['open', 'in_progress', 'pending_user', 'resolved', 'closed'];
             if (!in_array($status, $valid_statuses)) {
                 return ['success' => false, 'message' => 'Invalid status'];
             }
-            
+
             $resolved_at = in_array($status, ['resolved', 'closed']) ? 'NOW()' : 'NULL';
-            
-            $sql = "UPDATE support_tickets 
-                    SET status = ?, resolved_at = $resolved_at, updated_at = NOW() 
+
+            $sql = "UPDATE support_tickets
+                    SET status = ?, resolved_at = $resolved_at, updated_at = NOW()
                     WHERE id = ?";
             $stmt = $pdo->prepare($sql);
             $result = $stmt->execute([$status, $ticket_id]);
-            
+
             if ($result) {
                 // Log the status change as a system reply
                 if ($updated_by) {
@@ -4577,10 +4581,10 @@ if (!function_exists('update_ticket_status')) {
                         'is_internal' => 1
                     ]);
                 }
-                
+
                 return ['success' => true, 'message' => 'Ticket status updated'];
             }
-            
+
             return ['success' => false, 'message' => 'Failed to update status'];
         } catch (Exception $e) {
             error_log("Error in update_ticket_status: " . $e->getMessage());
@@ -4594,15 +4598,15 @@ if (!function_exists('assign_ticket')) {
     function assign_ticket($ticket_id, $assigned_to, $updated_by = null) {
         try {
             $pdo = get_db_connection();
-            
+
             $sql = "UPDATE support_tickets SET assigned_to = ?, updated_at = NOW() WHERE id = ?";
             $stmt = $pdo->prepare($sql);
             $result = $stmt->execute([$assigned_to, $ticket_id]);
-            
+
             if ($result) {
                 return ['success' => true, 'message' => 'Ticket assigned successfully'];
             }
-            
+
             return ['success' => false, 'message' => 'Failed to assign ticket'];
         } catch (Exception $e) {
             error_log("Error in assign_ticket: " . $e->getMessage());
@@ -4616,9 +4620,9 @@ if (!function_exists('get_ticket_stats')) {
     function get_ticket_stats() {
         try {
             $pdo = get_db_connection();
-            
+
             $stats = [];
-            
+
             // By status
             $sql = "SELECT status, COUNT(*) as count FROM support_tickets GROUP BY status";
             $stmt = $pdo->query($sql);
@@ -4626,7 +4630,7 @@ if (!function_exists('get_ticket_stats')) {
             while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                 $stats['by_status'][$row['status']] = (int)$row['count'];
             }
-            
+
             // By priority
             $sql = "SELECT priority, COUNT(*) as count FROM support_tickets WHERE status NOT IN ('resolved', 'closed') GROUP BY priority";
             $stmt = $pdo->query($sql);
@@ -4634,19 +4638,19 @@ if (!function_exists('get_ticket_stats')) {
             while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                 $stats['by_priority'][$row['priority']] = (int)$row['count'];
             }
-            
+
             // Total open
             $sql = "SELECT COUNT(*) FROM support_tickets WHERE status NOT IN ('resolved', 'closed')";
             $stats['open_tickets'] = (int)$pdo->query($sql)->fetchColumn();
-            
+
             // Total today
             $sql = "SELECT COUNT(*) FROM support_tickets WHERE DATE(created_at) = CURDATE()";
             $stats['today'] = (int)$pdo->query($sql)->fetchColumn();
-            
+
             // Urgent/High priority needing attention
             $sql = "SELECT COUNT(*) FROM support_tickets WHERE status NOT IN ('resolved', 'closed') AND priority IN ('urgent', 'high')";
             $stats['urgent_high'] = (int)$pdo->query($sql)->fetchColumn();
-            
+
             return $stats;
         } catch (Exception $e) {
             error_log("Error in get_ticket_stats: " . $e->getMessage());
@@ -4690,8 +4694,8 @@ if (!function_exists('get_license_notifications')) {
     function get_license_notifications($user_id = null, $days_threshold = 60) {
         $today = date('Y-m-d');
         $threshold_date = date('Y-m-d', strtotime("+{$days_threshold} days"));
-        
-        $sql = "SELECT 
+
+        $sql = "SELECT
                     e.id as employee_id,
                     e.employee_no,
                     e.surname,
@@ -4701,7 +4705,7 @@ if (!function_exists('get_license_notifications')) {
                     e.license_no,
                     e.license_exp_date,
                     DATEDIFF(e.license_exp_date, ?) as days_until_expiry,
-                    CASE 
+                    CASE
                         WHEN e.license_exp_date < ? THEN 'expired'
                         WHEN DATEDIFF(e.license_exp_date, ?) <= 7 THEN 'urgent'
                         WHEN DATEDIFF(e.license_exp_date, ?) <= 15 THEN 'high'
@@ -4713,30 +4717,30 @@ if (!function_exists('get_license_notifications')) {
                     ns.read_at,
                     ns.dismissed_at
                 FROM employees e";
-        
+
         if ($user_id) {
-            $sql .= " LEFT JOIN notification_status ns ON 
-                      CONCAT('license_', e.id) = ns.notification_id 
-                      AND ns.user_id = ? 
+            $sql .= " LEFT JOIN notification_status ns ON
+                      CONCAT('license_', e.id) = ns.notification_id
+                      AND ns.user_id = ?
                       AND ns.notification_type = 'license'";
         }
-        
+
         $sql .= " WHERE e.status = 'Active'
                   AND e.license_exp_date IS NOT NULL
                   AND e.license_exp_date <= ?";
-        
+
         if ($user_id) {
             $sql .= " AND (ns.is_dismissed IS NULL OR ns.is_dismissed = 0)";
         }
-        
+
         $sql .= " ORDER BY e.license_exp_date ASC";
-        
+
         $params = [$today, $today, $today, $today, $today];
         if ($user_id) {
             $params[] = $user_id;
         }
         $params[] = $threshold_date;
-        
+
         $stmt = execute_query($sql, $params);
         return $stmt->fetchAll();
     }
@@ -4752,8 +4756,8 @@ if (!function_exists('get_clearance_notifications')) {
     function get_clearance_notifications($user_id = null, $days_threshold = 60) {
         $today = date('Y-m-d');
         $threshold_date = date('Y-m-d', strtotime("+{$days_threshold} days"));
-        
-        $sql = "SELECT 
+
+        $sql = "SELECT
                     e.id as employee_id,
                     e.employee_no,
                     e.surname,
@@ -4763,7 +4767,7 @@ if (!function_exists('get_clearance_notifications')) {
                     e.rlm_exp,
                     STR_TO_DATE(e.rlm_exp, '%m/%d/%Y') as rlm_exp_date,
                     DATEDIFF(STR_TO_DATE(e.rlm_exp, '%m/%d/%Y'), ?) as days_until_expiry,
-                    CASE 
+                    CASE
                         WHEN STR_TO_DATE(e.rlm_exp, '%m/%d/%Y') < ? THEN 'expired'
                         WHEN DATEDIFF(STR_TO_DATE(e.rlm_exp, '%m/%d/%Y'), ?) <= 14 THEN 'urgent'
                         WHEN DATEDIFF(STR_TO_DATE(e.rlm_exp, '%m/%d/%Y'), ?) <= 30 THEN 'high'
@@ -4775,32 +4779,32 @@ if (!function_exists('get_clearance_notifications')) {
                     ns.read_at,
                     ns.dismissed_at
                 FROM employees e";
-        
+
         if ($user_id) {
-            $sql .= " LEFT JOIN notification_status ns ON 
-                      CONCAT('clearance_', e.id) = ns.notification_id 
-                      AND ns.user_id = ? 
+            $sql .= " LEFT JOIN notification_status ns ON
+                      CONCAT('clearance_', e.id) = ns.notification_id
+                      AND ns.user_id = ?
                       AND ns.notification_type = 'clearance'";
         }
-        
+
         $sql .= " WHERE e.status = 'Active'
                   AND e.rlm_exp IS NOT NULL
                   AND e.rlm_exp != ''
                   AND STR_TO_DATE(e.rlm_exp, '%m/%d/%Y') IS NOT NULL
                   AND STR_TO_DATE(e.rlm_exp, '%m/%d/%Y') <= ?";
-        
+
         if ($user_id) {
             $sql .= " AND (ns.is_dismissed IS NULL OR ns.is_dismissed = 0)";
         }
-        
+
         $sql .= " ORDER BY STR_TO_DATE(e.rlm_exp, '%m/%d/%Y') ASC";
-        
+
         $params = [$today, $today, $today, $today, $today];
         if ($user_id) {
             $params[] = $user_id;
         }
         $params[] = $threshold_date;
-        
+
         $stmt = execute_query($sql, $params);
         return $stmt->fetchAll();
     }
@@ -4814,29 +4818,29 @@ if (!function_exists('get_clearance_notifications')) {
 if (!function_exists('get_unread_notification_count')) {
     function get_unread_notification_count($user_id) {
         $count = 0;
-        
+
         // Count unread alerts
         $sql = "SELECT COUNT(*) as count
                 FROM employee_alerts ea
-                LEFT JOIN notification_status ns ON ea.id = ns.notification_id 
-                    AND ns.user_id = ? 
+                LEFT JOIN notification_status ns ON ea.id = ns.notification_id
+                    AND ns.user_id = ?
                     AND ns.notification_type = 'alert'
-                WHERE ea.status = 'active' 
+                WHERE ea.status = 'active'
                 AND (ns.is_read IS NULL OR ns.is_read = 0)
                 AND (ns.is_dismissed IS NULL OR ns.is_dismissed = 0)";
-        
+
         $stmt = execute_query($sql, [$user_id]);
         $result = $stmt->fetch();
         $count += (int)($result['count'] ?? 0);
-        
+
         // Count expiring licenses
         $licenses = get_license_notifications($user_id, 60);
         $count += count($licenses);
-        
+
         // Count expiring clearances
         $clearances = get_clearance_notifications($user_id, 60);
         $count += count($clearances);
-        
+
         return $count;
     }
 }
