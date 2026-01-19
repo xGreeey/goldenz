@@ -1586,18 +1586,12 @@ body.portal-hr-admin .hrdash .row.g-4 + div:not(.row) {
     margin-top: 1.75rem !important;
 }
 
-/* Compact spacing for stat cards - keep them together */
-body.portal-hr-admin .row.g-4:has(.hrdash-stat) {
-    gap: 1.25rem !important;
-    row-gap: 1.25rem !important;
-}
-
-@media (max-width: 768px) {
-    body.portal-hr-admin .row.g-4:has(.hrdash-stat) {
-        gap: 1rem !important;
-        row-gap: 1rem !important;
-    }
-}
+/* STAT CARDS ALIGNMENT: Bootstrap grid system handles stat card spacing
+ * - Uses .g-4 class for 1.5rem gutters between cards
+ * - col-xl-3 = 4 cards per row on wide screens (≥1200px)
+ * - col-md-6 = 2 cards per row on medium screens (≥768px)
+ * - Full width = 1 card per row on mobile (<768px)
+ * Do NOT use gap/row-gap on .row - it breaks Bootstrap grid alignment */
 /* Content area starts below the permanent header */
 body.portal-hr-admin .content {
     padding-top: 0 !important;
@@ -2866,18 +2860,12 @@ body.portal-super-admin .hrdash .row.g-4 + div:not(.row) {
     margin-top: 1.75rem !important;
 }
 
-/* Compact spacing for stat cards - keep them together */
-body.portal-super-admin .row.g-4:has(.hrdash-stat) {
-    gap: 1.25rem !important;
-    row-gap: 1.25rem !important;
-}
-
-@media (max-width: 768px) {
-    body.portal-super-admin .row.g-4:has(.hrdash-stat) {
-        gap: 1rem !important;
-        row-gap: 1rem !important;
-    }
-}
+/* STAT CARDS ALIGNMENT: Bootstrap grid system handles stat card spacing
+ * - Uses .g-4 class for 1.5rem gutters between cards
+ * - col-xl-3 = 4 cards per row on wide screens (≥1200px)
+ * - col-md-6 = 2 cards per row on medium screens (≥768px)
+ * - Full width = 1 card per row on mobile (<768px)
+ * Do NOT use gap/row-gap on .row - it breaks Bootstrap grid alignment */
 
 /* Super Admin Dashboard: Apply same light grey background as HR Admin */
 body.portal-super-admin .dashboard-modern {

@@ -919,6 +919,7 @@ try {
     </div>
 </div>
 </div>
+<?php endif; ?>
 
 <!-- Add Alert Modal -->
 <div class="modal fade" id="addAlertModal" tabindex="-1">
@@ -2092,3 +2093,4 @@ html[data-theme="dark"] .alert-info {
     </div>
 </div>
 
+<?php endif; ?>
