@@ -29,10 +29,17 @@ if (!in_array($user_role, $allowed_roles)) {
 
 // Handle POST requests (AJAX and form submissions)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
-    header('Content-Type: application/json');
-    
     $action = $_POST['action'] ?? '';
     $isAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
+    $page = $_GET['page'] ?? 'dashboard';
+    
+    // For non-AJAX profile updates, let the profile page handle it (skip JSON response)
+    if (!$isAjax && $page === 'profile' && $action === 'update_profile') {
+        // Don't set JSON header or exit - let the profile page process the form
+    } else {
+        // Set JSON header for AJAX requests
+        header('Content-Type: application/json');
+    }
     
     // Handle password change (AJAX)
     if ($action === 'change_password' && $isAjax) {
@@ -123,8 +130,249 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         exit;
     }
     
-    // Handle profile update (AJAX)
+    // Handle profile update (non-AJAX - process before header output)
+    if ($action === 'update_profile' && !$isAjax) {
+        // Process profile update before header output, then redirect
+        $current_user_id = $_SESSION['user_id'] ?? null;
+        if ($current_user_id) {
+            require_once __DIR__ . '/../includes/database.php';
+            $pdo = get_db_connection();
+            $current_user = get_user_by_id($current_user_id);
+            
+            $user_updates = [];
+            $user_params = [];
+            $employee_updates = [];
+            $employee_params = [];
+            $update_error = null;
+            
+            // Handle avatar upload
+            if (isset($_FILES['avatar']) && !empty($_FILES['avatar']['tmp_name']) && is_uploaded_file($_FILES['avatar']['tmp_name'])) {
+                error_log('Avatar upload attempt - File info: ' . json_encode($_FILES['avatar']));
+                
+                if ($_FILES['avatar']['error'] === UPLOAD_ERR_OK) {
+                    $upload_dir = __DIR__ . '/../uploads/users/';
+                    if (!file_exists($upload_dir)) {
+                        if (!mkdir($upload_dir, 0755, true)) {
+                            error_log('Failed to create upload directory: ' . $upload_dir);
+                            $update_error = 'Failed to create upload directory.';
+                        }
+                    }
+                    
+                    if (empty($update_error)) {
+                        $file = $_FILES['avatar'];
+                        $allowed_types = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+                        $max_size = 2 * 1024 * 1024; // 2MB
+                        
+                        // Also check by extension as a fallback
+                        $extension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+                        $allowed_extensions = ['jpg', 'jpeg', 'png', 'gif'];
+                        
+                        if ((in_array($file['type'], $allowed_types) || in_array($extension, $allowed_extensions)) && $file['size'] <= $max_size) {
+                            $filename = 'user_' . $current_user_id . '_' . time() . '.' . $extension;
+                            $target_path = $upload_dir . $filename;
+                            
+                            error_log('Attempting to move file to: ' . $target_path);
+                            
+                            if (move_uploaded_file($file['tmp_name'], $target_path)) {
+                                error_log('File moved successfully to: ' . $target_path);
+                                
+                                // Delete old avatar if exists
+                                if (!empty($current_user['avatar'])) {
+                                    $old_avatar_path = __DIR__ . '/../' . $current_user['avatar'];
+                                    if (file_exists($old_avatar_path)) {
+                                        @unlink($old_avatar_path);
+                                        error_log('Deleted old avatar: ' . $old_avatar_path);
+                                    }
+                                }
+                                
+                                $avatar_path = 'uploads/users/' . $filename;
+                                $user_updates[] = "avatar = ?";
+                                $user_params[] = $avatar_path;
+                                error_log('Avatar path set for database update: ' . $avatar_path);
+                            } else {
+                                error_log('Failed to move uploaded file from ' . $file['tmp_name'] . ' to ' . $target_path);
+                                $update_error = 'Failed to move uploaded file. Please check file permissions.';
+                            }
+                        } else {
+                            if (!in_array($file['type'], $allowed_types) && !in_array($extension, $allowed_extensions)) {
+                                error_log('Invalid file type: ' . $file['type'] . ', extension: ' . $extension);
+                                $update_error = 'Invalid file type. Please upload a JPG, PNG, or GIF image.';
+                            } elseif ($file['size'] > $max_size) {
+                                error_log('File too large: ' . $file['size'] . ' bytes');
+                                $update_error = 'File size too large. Maximum size is 2MB.';
+                            }
+                        }
+                    }
+                } else {
+                    $upload_errors = [
+                        UPLOAD_ERR_INI_SIZE => 'File exceeds upload_max_filesize directive.',
+                        UPLOAD_ERR_FORM_SIZE => 'File exceeds MAX_FILE_SIZE directive.',
+                        UPLOAD_ERR_PARTIAL => 'File was only partially uploaded.',
+                        UPLOAD_ERR_NO_TMP_DIR => 'Missing temporary folder.',
+                        UPLOAD_ERR_CANT_WRITE => 'Failed to write file to disk.',
+                        UPLOAD_ERR_EXTENSION => 'File upload stopped by extension.'
+                    ];
+                    $error_code = $_FILES['avatar']['error'];
+                    $update_error = $upload_errors[$error_code] ?? 'Unknown upload error (code: ' . $error_code . ')';
+                    error_log('Avatar upload error: ' . $update_error);
+                }
+            }
+            
+            // Email update (optional but must be valid if provided)
+            if (isset($_POST['email'])) {
+                $email = trim($_POST['email']);
+                if (!empty($email)) {
+                    if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                        $check_stmt = $pdo->prepare("SELECT id FROM users WHERE email = ? AND id != ?");
+                        $check_stmt->execute([$email, $current_user_id]);
+                        if ($check_stmt->rowCount() === 0) {
+                            $user_updates[] = "email = ?";
+                            $user_params[] = $email;
+                        } else {
+                            $update_error = 'Email address is already in use by another account.';
+                        }
+                    } else {
+                        $update_error = 'Invalid email address format.';
+                    }
+                }
+                // If email is empty, we don't update it (leave existing value)
+            }
+            
+            // First name and last name update (users table)
+            // Check if columns exist before updating
+            try {
+                $check_first_name = $pdo->query("SHOW COLUMNS FROM users LIKE 'first_name'");
+                $check_last_name = $pdo->query("SHOW COLUMNS FROM users LIKE 'last_name'");
+                $has_first_name = $check_first_name->rowCount() > 0;
+                $has_last_name = $check_last_name->rowCount() > 0;
+                
+                if ($has_first_name && isset($_POST['first_name'])) {
+                    $user_updates[] = "first_name = ?";
+                    $user_params[] = trim($_POST['first_name']);
+                }
+                
+                if ($has_last_name && isset($_POST['last_name'])) {
+                    $user_updates[] = "last_name = ?";
+                    $user_params[] = trim($_POST['last_name']);
+                }
+            } catch (Exception $e) {
+                error_log('Error checking first_name/last_name columns: ' . $e->getMessage());
+            }
+            
+            // Department update
+            if (isset($_POST['department']) && !empty(trim($_POST['department']))) {
+                $user_updates[] = "department = ?";
+                $user_params[] = trim($_POST['department']);
+            }
+            
+            // Contact number update
+            if (isset($_POST['contact_number']) && !empty(trim($_POST['contact_number']))) {
+                try {
+                    $check_col = $pdo->query("SHOW COLUMNS FROM users LIKE 'phone'");
+                    if ($check_col->rowCount() > 0) {
+                        $user_updates[] = "phone = ?";
+                        $user_params[] = trim($_POST['contact_number']);
+                    } elseif (!empty($current_user['employee_id'])) {
+                        $employee_updates[] = "cp_number = ?";
+                        $employee_params[] = trim($_POST['contact_number']);
+                    }
+                } catch (Exception $e) {
+                    if (!empty($current_user['employee_id'])) {
+                        $employee_updates[] = "cp_number = ?";
+                        $employee_params[] = trim($_POST['contact_number']);
+                    }
+                }
+            }
+            
+            // Employee-specific fields (only position and date_hired, not name)
+            if (!empty($current_user['employee_id'])) {
+                if (isset($_POST['position']) && !empty(trim($_POST['position']))) {
+                    $employee_updates[] = "post = ?";
+                    $employee_params[] = trim($_POST['position']);
+                }
+                
+                if (isset($_POST['date_hired']) && !empty(trim($_POST['date_hired']))) {
+                    $employee_updates[] = "date_hired = ?";
+                    $employee_params[] = trim($_POST['date_hired']);
+                }
+            }
+            
+            // Update users table
+            if (!empty($user_updates) && empty($update_error)) {
+                try {
+                    $user_params[] = $current_user_id;
+                    $user_sql = "UPDATE users SET " . implode(", ", $user_updates) . ", updated_at = NOW() WHERE id = ?";
+                    
+                    error_log('Profile update SQL: ' . $user_sql);
+                    error_log('Profile update params: ' . json_encode($user_params));
+                    
+                    $user_stmt = $pdo->prepare($user_sql);
+                    $result = $user_stmt->execute($user_params);
+                    $rows_affected = $user_stmt->rowCount();
+                    
+                    error_log('Profile update result: ' . ($result ? 'success' : 'failed') . ', rows affected: ' . $rows_affected);
+                    
+                    if (!$result) {
+                        $error_info = $user_stmt->errorInfo();
+                        error_log('Profile update error info: ' . json_encode($error_info));
+                        $update_error = 'Failed to update profile in database.';
+                    }
+                    
+                    // Update session
+                    if (isset($_POST['email']) && filter_var($_POST['email'], FILTER_VALIDATE_EMAIL)) {
+                        $_SESSION['email'] = trim($_POST['email']);
+                    }
+                    
+                    // Update session name from first_name and last_name
+                    $first_name = trim($_POST['first_name'] ?? '');
+                    $last_name = trim($_POST['last_name'] ?? '');
+                    if (!empty($first_name) || !empty($last_name)) {
+                        $_SESSION['name'] = trim($first_name . ' ' . $last_name);
+                    } elseif (!empty($first_name)) {
+                        $_SESSION['name'] = $first_name;
+                    } elseif (!empty($last_name)) {
+                        $_SESSION['name'] = $last_name;
+                    }
+                } catch (Exception $e) {
+                    error_log('Profile update exception: ' . $e->getMessage());
+                    $update_error = 'An error occurred while updating your profile.';
+                }
+            } else {
+                if (empty($user_updates)) {
+                    error_log('Profile update: No updates to apply');
+                }
+                if (!empty($update_error)) {
+                    error_log('Profile update skipped due to error: ' . $update_error);
+                }
+            }
+            
+            // Update employees table
+            if (!empty($current_user['employee_id']) && !empty($employee_updates) && empty($update_error)) {
+                try {
+                    $employee_params[] = $current_user['employee_id'];
+                    $employee_sql = "UPDATE employees SET " . implode(", ", $employee_updates) . ", updated_at = NOW() WHERE id = ?";
+                    $employee_stmt = $pdo->prepare($employee_sql);
+                    $employee_stmt->execute($employee_params);
+                } catch (Exception $e) {
+                    error_log('Employee update error: ' . $e->getMessage());
+                }
+            }
+            
+            // Redirect after update (before header output)
+            if (empty($update_error)) {
+                header('Location: ?page=profile&updated=1');
+                exit;
+            } else {
+                $_SESSION['profile_update_error'] = $update_error;
+                header('Location: ?page=profile');
+                exit;
+            }
+        }
+    }
+    
+    // Handle profile update (AJAX only)
     if ($action === 'update_profile' && $isAjax) {
+        // Handle AJAX profile update
         $current_user_id = $_SESSION['user_id'] ?? null;
         
         if (!$current_user_id) {
@@ -244,8 +492,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     }
     
     // Other POST handlers can be added here
-    echo json_encode(['success' => false, 'message' => 'Invalid action']);
-    exit;
+    // Skip JSON response for non-AJAX profile updates
+    if (!(!$isAjax && $page === 'profile' && $action === 'update_profile')) {
+        echo json_encode(['success' => false, 'message' => 'Invalid action']);
+        exit;
+    }
+    // For profile page non-AJAX, continue to include the page normally
 }
 
 // Redirect to dashboard if no page parameter is set

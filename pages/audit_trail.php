@@ -152,7 +152,7 @@ function h($v) { return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8'); }
                         <tbody>
                             <?php foreach ($logs as $log): ?>
                                 <tr>
-                                    <td style="white-space: nowrap;">
+                                    <td class="text-nowrap">
                                         <?php echo h(date('Y-m-d H:i:s', strtotime($log['created_at']))); ?>
                                     </td>
                                     <td>
@@ -213,7 +213,7 @@ function h($v) { return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8'); }
                                         <small class="text-muted">
                                             <?php echo h($log['ip_address'] ?? '—'); ?><br>
                                             <?php if (!empty($log['user_agent'])): ?>
-                                                <span class="d-inline-block text-truncate" style="max-width: 180px;">
+                                                <span class="d-inline-block text-truncate-custom">
                                                     <?php echo h($log['user_agent']); ?>
                                                 </span>
                                             <?php endif; ?>
@@ -271,6 +271,19 @@ function h($v) { return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8'); }
 </div>
 
 <style>
+/* Page Header - Rectangle container with rounded corners */
+.super-admin-dashboard .page-header-modern {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 14px !important;
+    padding: 1.5rem 2rem !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.04) !important;
+}
+
+.super-admin-dashboard .page-header-modern .page-title-modern {
+    padding-left: 1rem;
+}
+
 .audit-diff pre {
     background: #0b1220;
     color: #e2e8f0;

@@ -11,12 +11,6 @@ $user_role = $_SESSION['user_role'] ?? '';
 if ($user_role === 'developer') {
     $menu = [
         [
-            'title' => 'Developer Dashboard',
-            'page' => 'developer-dashboard',
-            'section' => null,
-            'icon' => 'fa-chart-line',
-        ],
-        [
             'title' => 'System Logs',
             'page' => 'system_logs',
             'section' => null,

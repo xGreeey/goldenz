@@ -30,11 +30,9 @@ if (isset($_GET['action']) && $_GET['action'] === 'get_details' && isset($_GET['
                 <?php if (!empty($user['avatar'])): ?>
                     <img src="<?php echo htmlspecialchars($user['avatar']); ?>" 
                          alt="<?php echo htmlspecialchars($user['name']); ?>" 
-                         class="rounded-circle mb-3" 
-                         style="width: 100px; height: 100px; object-fit: cover;">
+                         class="rounded-circle mb-3 avatar-md">
                 <?php else: ?>
-                    <div class="avatar-placeholder rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" 
-                         style="width: 100px; height: 100px; background: linear-gradient(135deg, #1fb2d5 0%, #0ea5e9 100%); color: white; font-weight: 600; font-size: 2.5rem;">
+                    <div class="avatar-placeholder avatar-placeholder-lg rounded-circle mx-auto mb-3">
                         <?php echo strtoupper(substr($user['name'], 0, 1)); ?>
                     </div>
                 <?php endif; ?>
@@ -240,11 +238,9 @@ $role_config = config('roles.roles', []);
                                                 <?php if (!empty($user['avatar'])): ?>
                                                     <img src="<?php echo htmlspecialchars($user['avatar']); ?>" 
                                                          alt="<?php echo htmlspecialchars($user['name']); ?>" 
-                                                         class="rounded-circle" 
-                                                         style="width: 40px; height: 40px; object-fit: cover;">
+                                                         class="rounded-circle avatar-sm">
                                                 <?php else: ?>
-                                                    <div class="avatar-placeholder rounded-circle d-flex align-items-center justify-content-center" 
-                                                         style="width: 40px; height: 40px; background: linear-gradient(135deg, #1fb2d5 0%, #0ea5e9 100%); color: white; font-weight: 600;">
+                                                    <div class="avatar-placeholder avatar-placeholder-sm rounded-circle">
                                                         <?php echo strtoupper(substr($user['name'], 0, 1)); ?>
                                                     </div>
                                                 <?php endif; ?>
@@ -258,11 +254,10 @@ $role_config = config('roles.roles', []);
                                         </div>
                                     </td>
                                     <td>
-                                        <select class="form-select form-select-sm user-role-select" 
+                                        <select class="form-select form-select-sm user-role-select min-w-150" 
                                                 data-user-id="<?php echo $user['id']; ?>"
                                                 data-username="<?php echo htmlspecialchars($user['username']); ?>"
-                                                data-user-name="<?php echo htmlspecialchars($user['name']); ?>"
-                                                style="min-width: 150px;">
+                                                data-user-name="<?php echo htmlspecialchars($user['name']); ?>">
                                             <?php foreach ($role_config as $role_key => $role_data): ?>
                                                 <option value="<?php echo $role_key; ?>" 
                                                         <?php echo $user['role'] === $role_key ? 'selected' : ''; ?>>
@@ -272,9 +267,8 @@ $role_config = config('roles.roles', []);
                                         </select>
                                     </td>
                                     <td>
-                                        <select class="form-select form-select-sm user-status-select" 
-                                                data-user-id="<?php echo $user['id']; ?>"
-                                                style="min-width: 120px;">
+                                        <select class="form-select form-select-sm user-status-select min-w-120" 
+                                                data-user-id="<?php echo $user['id']; ?>">
                                             <option value="active" <?php echo $user['status'] === 'active' ? 'selected' : ''; ?>>Active</option>
                                             <option value="inactive" <?php echo $user['status'] === 'inactive' ? 'selected' : ''; ?>>Inactive</option>
                                             <option value="suspended" <?php echo $user['status'] === 'suspended' ? 'selected' : ''; ?>>Suspended</option>
@@ -314,7 +308,7 @@ $role_config = config('roles.roles', []);
                                                     data-user-id="<?php echo $user['id']; ?>"
                                                     data-user-name="<?php echo htmlspecialchars($user['name']); ?>"
                                                     title="Delete User">
-                                                <i class="fa-solid fa-trash" aria-hidden="true" style="font-size: 0.95rem;"></i>
+                                                <i class="fa-solid fa-trash icon-sm" aria-hidden="true"></i>
                                             </button>
                                         </div>
                                     </td>
@@ -400,7 +394,7 @@ $role_config = config('roles.roles', []);
                     <div class="row g-2">
                         <!-- Required Fields -->
                         <div class="col-12">
-                            <h6 class="text-muted mb-2 border-bottom pb-1" style="font-size: 0.9rem;">Required Information</h6>
+                            <h6 class="text-muted mb-2 border-bottom pb-1 section-header">Required Information</h6>
                         </div>
                         
                         <div class="col-md-6">
@@ -486,7 +480,7 @@ $role_config = config('roles.roles', []);
                         
                         <!-- Additional Fields -->
                         <div class="col-12 mt-2">
-                            <h6 class="text-muted mb-2 border-bottom pb-1" style="font-size: 0.9rem;">Additional Information</h6>
+                            <h6 class="text-muted mb-2 border-bottom pb-1 section-header">Additional Information</h6>
                         </div>
                         
                         <div class="col-md-6">
@@ -538,6 +532,19 @@ $role_config = config('roles.roles', []);
 <!-- Role Change Confirmation Modal -->
 
 <style>
+/* Page Header - Rectangle container with rounded corners */
+.super-admin-dashboard .page-header-modern {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 14px !important;
+    padding: 1.5rem 2rem !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.04) !important;
+}
+
+.super-admin-dashboard .page-header-modern .page-title-modern {
+    padding-left: 1rem;
+}
+
 .user-role-select,
 .user-status-select {
     border: 1px solid #e2e8f0;

@@ -401,6 +401,38 @@ $onboarding_steps = [
     margin: 0 0 0.25rem 0;
 }
 
+/* Page Header - Rectangle container with rounded corners */
+.onboarding-container .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding: 1.5rem 2rem;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+.onboarding-container .page-header .page-title h1 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.onboarding-container .page-header .page-title .text-muted {
+    margin: 0;
+    color: #64748b;
+    font-size: 0.875rem;
+}
+
+.onboarding-container .page-header .page-actions {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+}
+
 /* Dark theme support for onboarding page */
 html[data-theme="dark"] .onboarding-container {
     background-color: transparent;

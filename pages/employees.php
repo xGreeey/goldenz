@@ -265,7 +265,6 @@ $inactive_employees = $employee_stats['inactive_employees'];
 $onboarding_employees = $employee_stats['onboarding_employees'];
 ?>
 
-<div class="container-fluid hrdash">
     <!-- Header Section with Actions -->
     <?php if (($_SESSION['user_role'] ?? '') !== 'super_admin'): ?>
     <div class="hrdash-welcome">
@@ -480,6 +479,15 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
     </div>
     <?php endif; ?>
 
+    <!-- Page Header for Super Admin -->
+    <?php if (($_SESSION['user_role'] ?? '') === 'super_admin'): ?>
+    <div class="page-header-modern mb-3">
+        <div class="page-title-modern">
+            <h1 class="page-title-main">Employees</h1>
+            <p class="page-subtitle">Manage employee information and records</p>
+        </div>
+    </div>
+    <?php else: ?>
     <!-- Breadcrumb -->
     <nav class="hr-breadcrumb" aria-label="Breadcrumb">
         <ol class="hr-breadcrumb__list">
@@ -491,6 +499,7 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
             </li>
         </ol>
     </nav>
+    <?php endif; ?>
 
     <!-- Employee List (single view) -->
     <div class="tab-content">
@@ -555,52 +564,52 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
     <?php endif; ?>
 
     <!-- Summary Cards -->
-    <div class="row g-4">
+    <div class="row g-3 mb-3">
         <div class="col-xl-4 col-md-6">
-            <div class="card hrdash-stat hrdash-stat--primary">
-                <div class="hrdash-stat__header">
-                    <div class="hrdash-stat__label">Total Employees</div>
-                </div>
-                <div class="hrdash-stat__content">
-                    <div class="hrdash-stat__value"><?php echo number_format($total_all_employees); ?></div>
-                    <div class="hrdash-stat__trend hrdash-stat__trend--positive">
-                        <i class="fas fa-arrow-up"></i>
-                        <span>5%</span>
+            <div class="card stat-card-modern h-100">
+                <div class="card-body-modern">
+                    <div class="stat-header">
+                        <span class="stat-label">Total Employees</span>
+                        <i class="fas fa-users stat-icon"></i>
                     </div>
+                    <div class="stat-content">
+                        <h3 class="stat-number"><?php echo number_format($total_all_employees); ?></h3>
+                        <span class="badge badge-primary-modern"><?php echo number_format($active_employees); ?> Active</span>
+                    </div>
+                    <small class="stat-footer">The total number of employees in the system</small>
                 </div>
-                <div class="hrdash-stat__meta">The total number of employees in the system.</div>
             </div>
         </div>
 
         <div class="col-xl-4 col-md-6">
-            <div class="card hrdash-stat">
-                <div class="hrdash-stat__header">
-                    <div class="hrdash-stat__label">Active</div>
-                </div>
-                <div class="hrdash-stat__content">
-                    <div class="hrdash-stat__value"><?php echo number_format($active_employees); ?></div>
-                    <div class="hrdash-stat__trend hrdash-stat__trend--positive">
-                        <i class="fas fa-arrow-up"></i>
-                        <span><?php echo ($total_all_employees ?? 0) > 0 ? round(($active_employees / max(1, $total_all_employees)) * 100) : 0; ?>%</span>
+            <div class="card stat-card-modern h-100">
+                <div class="card-body-modern">
+                    <div class="stat-header">
+                        <span class="stat-label">Active Employees</span>
+                        <i class="fas fa-user-check stat-icon"></i>
                     </div>
+                    <div class="stat-content">
+                        <h3 class="stat-number"><?php echo number_format($active_employees); ?></h3>
+                        <span class="badge badge-success-modern"><?php echo ($total_all_employees ?? 0) > 0 ? round(($active_employees / max(1, $total_all_employees)) * 100) : 0; ?>%</span>
+                    </div>
+                    <small class="stat-footer">Employees currently active and on roster</small>
                 </div>
-                <div class="hrdash-stat__meta">Employees currently active and on roster.</div>
             </div>
         </div>
 
         <div class="col-xl-4 col-md-6">
-            <div class="card hrdash-stat">
-                <div class="hrdash-stat__header">
-                    <div class="hrdash-stat__label">Inactive</div>
-                </div>
-                <div class="hrdash-stat__content">
-                    <div class="hrdash-stat__value"><?php echo number_format($inactive_employees); ?></div>
-                    <div class="hrdash-stat__trend hrdash-stat__trend--negative">
-                        <i class="fas fa-arrow-down"></i>
-                        <span>2%</span>
+            <div class="card stat-card-modern h-100">
+                <div class="card-body-modern">
+                    <div class="stat-header">
+                        <span class="stat-label">Inactive Employees</span>
+                        <i class="fas fa-user-slash stat-icon"></i>
                     </div>
+                    <div class="stat-content">
+                        <h3 class="stat-number"><?php echo number_format($inactive_employees); ?></h3>
+                        <span class="badge badge-secondary"><?php echo ($total_all_employees ?? 0) > 0 ? round(($inactive_employees / max(1, $total_all_employees)) * 100) : 0; ?>%</span>
+                    </div>
+                    <small class="stat-footer">Employees currently inactive or off roster</small>
                 </div>
-                <div class="hrdash-stat__meta">Employees currently inactive or off roster.</div>
             </div>
         </div>
     </div>
@@ -619,7 +628,13 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
         </div>
     </div>
 
-            <!-- Employee Table -->
+    <!-- Employee Table -->
+    <div class="card card-modern mb-2">
+        <div class="card-body-modern">
+            <div class="card-header-modern mb-3">
+                <h5 class="card-title-modern">Employee List</h5>
+                <small class="card-subtitle">View and manage all employees</small>
+            </div>
             <div class="table-container">
                 <table class="employees-table">
                         <thead>
@@ -795,6 +810,8 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
                         </tbody>
                     </table>
             </div>
+        </div>
+    </div>
 
             <!-- Employee Details Modal -->
             <div class="modal fade" id="employeeDetailsModal" tabindex="-1" aria-labelledby="employeeDetailsModalLabel" aria-hidden="true">
@@ -823,8 +840,12 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
 
-            <!-- Pagination -->
+    <!-- Pagination -->
+    <div class="card card-modern">
+        <div class="card-body-modern">
             <div class="pagination-container">
                 <div class="pagination-info">
                     <select class="form-select form-select-sm" id="perPageSelect">
@@ -875,7 +896,6 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
                 </div>
             </div>
         </div>
-
     </div>
 </div>
 
@@ -902,662 +922,6 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
     setInterval(updateTime, 60000);
 })();
 </script>
-
-<style>
-/* Modern Employees Page Styling */
-.employees-modern {
-    /* Use portal-wide spacing system (font-override.css) instead of page-local padding */
-    padding: 0;
-    max-width: 100%;
-    overflow-x: hidden;
-    min-height: 100vh;
-    background: #ffffff; /* default for non HR-Admin portals */
-}
-
-/* HR-Admin: use light separated background */
-body.portal-hr-admin .employees-modern {
-    background: #f8fafc;
-}
-
-/* Page Header */
-.page-header-modern {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 1.5rem;
-    margin-top: 0;
-    padding-top: 0;
-    background: #1e293b;
-    border: 1px solid #334155;
-    border-radius: 14px;
-    padding: 1.5rem 2rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.04);
-}
-
-.page-title-modern {
-    flex: 1;
-}
-
-.page-title-main {
-    font-size: 2rem;
-    font-weight: 700;
-    color: #ffffff;
-    margin: 0 0 0.5rem 0;
-    line-height: 1.2;
-    letter-spacing: -0.02em;
-}
-
-.page-subtitle-modern {
-    color: #cbd5e1;
-    font-size: 0.875rem;
-    margin: 0;
-    line-height: 1.5;
-}
-
-.page-actions-modern {
-    display: flex;
-    gap: 0.75rem;
-    align-items: center;
-}
-
-/* Modern Buttons */
-.btn-outline-modern {
-    border: 1.5px solid #e2e8f0;
-    color: #475569;
-    background: #ffffff;
-    padding: 0.5rem 1rem;
-    border-radius: 8px;
-    font-weight: 500;
-    font-size: 0.875rem;
-    transition: all 0.2s ease;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-}
-
-.btn-outline-modern:hover {
-    background: #f1f5f9;
-    border-color: #cbd5e1;
-    color: #334155;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-}
-
-.btn-primary-modern {
-    background: linear-gradient(135deg, #1fb2d5 0%, #0ea5e9 100%);
-    color: #ffffff;
-    border: none;
-    padding: 0.5rem 1rem;
-    border-radius: 8px;
-    font-weight: 600;
-    font-size: 0.875rem;
-    transition: all 0.2s ease;
-    box-shadow: 0 2px 8px rgba(31, 178, 213, 0.25);
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-}
-
-.btn-primary-modern:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(31, 178, 213, 0.35);
-    background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
-    color: #ffffff;
-}
-
-/* Summary Cards */
-.summary-cards-modern {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1.25rem;
-    margin-bottom: 1.5rem;
-}
-
-.stat-card-modern {
-    background: #ffffff;
-    border: none;
-    border-radius: 12px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.04);
-    transition: all 0.2s ease;
-    overflow: hidden;
-}
-
-.stat-card-modern:hover {
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08), 0 8px 16px rgba(0, 0, 0, 0.06);
-    transform: translateY(-2px);
-}
-
-.card-body-modern {
-    padding: 1.5rem;
-}
-
-.stat-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
-}
-
-.stat-label {
-    font-size: 0.8125rem;
-    font-weight: 500;
-    color: #64748b;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-
-.stat-icon {
-    font-size: 1.125rem;
-    color: #94a3b8;
-}
-
-.stat-content {
-    display: flex;
-    align-items: baseline;
-    gap: 0.75rem;
-    margin-bottom: 0.5rem;
-}
-
-.stat-number {
-    font-size: 2rem;
-    font-weight: 700;
-    color: #1e293b;
-    margin: 0;
-    line-height: 1;
-    letter-spacing: -0.02em;
-    /* Number rendering fix - ensures digits display correctly on Windows 10/11 */
-    font-family: 'Segoe UI', Arial, Helvetica, sans-serif !important;
-    font-variant-numeric: tabular-nums !important;
-    font-feature-settings: 'tnum' !important;
-    -webkit-font-feature-settings: 'tnum' !important;
-    -moz-font-feature-settings: 'tnum' !important;
-    text-rendering: optimizeLegibility !important;
-    -webkit-font-smoothing: antialiased !important;
-    -moz-osx-font-smoothing: grayscale !important;
-}
-
-.stat-footer {
-    font-size: 0.8125rem;
-    color: #94a3b8;
-    display: block;
-    margin-top: 0.5rem;
-}
-
-/* Badges */
-.badge-success-modern,
-.badge-primary-modern,
-.badge-warning-modern,
-.badge-danger-modern {
-    font-size: 0.75rem;
-    font-weight: 600;
-    padding: 0.375rem 0.75rem;
-    border-radius: 6px;
-    letter-spacing: 0.01em;
-}
-
-.badge-success-modern {
-    background: #dcfce7;
-    color: #16a34a;
-}
-
-.badge-primary-modern {
-    background: #dbeafe;
-    color: #2563eb;
-}
-
-.badge-warning-modern {
-    background: #fef3c7;
-    color: #d97706;
-}
-
-.badge-danger-modern {
-    background: #fee2e2;
-    color: #dc2626;
-}
-
-/* Table Container */
-.table-container {
-    background: #ffffff;
-    border-radius: 16px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.04);
-    overflow-x: hidden;
-    overflow-y: visible;
-    margin-bottom: 1.5rem;
-    margin-top: 0;
-    width: 100%;
-    max-width: 100%;
-    box-sizing: border-box;
-}
-
-/* Employees Table */
-.employees-table {
-    width: 100%;
-    max-width: 100%;
-    table-layout: auto;
-    border-collapse: separate;
-    border-spacing: 0;
-}
-
-.employees-table thead {
-    background: #f8fafc;
-}
-
-.employees-table thead th {
-    padding: 0.625rem 0.75rem;
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: #64748b;
-    border-bottom: 2px solid #e2e8f0;
-    white-space: normal;
-    word-wrap: break-word;
-}
-
-.employees-table thead th.sortable {
-    cursor: pointer !important;
-    user-select: none !important;
-    transition: color 0.2s ease;
-    position: relative;
-}
-
-.employees-table thead th.sortable:hover {
-    color: #1fb2d5;
-    background-color: rgba(31, 178, 213, 0.05);
-}
-
-.employees-table thead th.sortable i {
-    pointer-events: none; /* Prevent icon from blocking clicks */
-}
-
-.employees-table tbody tr {
-    border-bottom: 1px solid #f1f5f9;
-    transition: all 0.2s ease;
-}
-
-.employees-table tbody tr:last-child {
-    border-bottom: none;
-}
-
-.employees-table tbody td {
-    padding: 0.625rem 0.75rem;
-    vertical-align: middle;
-    color: #475569;
-    font-size: 0.875rem;
-    white-space: normal;
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-}
-
-/* Employee Info */
-.employees-table .employee-info {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.employees-table .employee-avatar {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #1fb2d5 0%, #0ea5e9 100%);
-    color: #ffffff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 600;
-    font-size: 0.75rem;
-    flex-shrink: 0;
-    box-shadow: 0 2px 8px rgba(31, 178, 213, 0.2);
-}
-
-.employees-table .employee-details {
-    flex: 1;
-    min-width: 0;
-}
-
-.employees-table .employee-name {
-    font-weight: 600;
-    color: #1e293b;
-    margin-bottom: 0.125rem;
-    line-height: 1.3;
-    font-size: 0.875rem;
-}
-
-.employees-table .employee-email {
-    color: #64748b;
-    font-size: 0.75rem;
-    line-height: 1.3;
-    margin-top: 0.125rem;
-}
-
-/* Employee Detail Modal Styling */
-.employee-row {
-    transition: all 0.2s ease;
-}
-
-.employee-row:hover {
-    background-color: #f8fafc;
-    transform: translateX(2px);
-}
-
-.license-info {
-    min-width: 180px;
-    line-height: 1.4;
-}
-
-.license-info > div {
-    margin-bottom: 0.375rem;
-}
-
-.license-info > div:last-child {
-    margin-bottom: 0;
-}
-
-.license-info small {
-    font-size: 0.6875rem;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    display: block;
-    margin-bottom: 0.125rem;
-    color: #6c757d;
-}
-
-.license-info strong {
-    font-size: 0.8125rem;
-    font-weight: 600;
-    display: block;
-    margin-bottom: 0.125rem;
-}
-
-.employment-details {
-    min-width: 150px;
-    line-height: 1.4;
-}
-
-.employment-details > div {
-    margin-bottom: 0.375rem;
-}
-
-.employment-details > div:last-child {
-    margin-bottom: 0;
-}
-
-.employment-details small {
-    font-size: 0.6875rem;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    display: block;
-    margin-bottom: 0.125rem;
-    color: #6c757d;
-}
-
-.employment-details span:not(.badge) {
-    font-size: 0.8125rem;
-    display: block;
-}
-
-/* Employee info spacing in table */
-.employees-table .employee-info {
-    gap: 0.5rem;
-}
-
-.employees-table .employee-avatar {
-    flex-shrink: 0;
-}
-
-.employees-table .employee-name {
-    margin-bottom: 0.125rem;
-    line-height: 1.3;
-}
-
-.employees-table .employee-email {
-    line-height: 1.3;
-    margin-top: 0.125rem;
-}
-
-/* Badge spacing */
-.employees-table .badge {
-    margin-top: 0.125rem;
-    margin-bottom: 0.125rem;
-    display: inline-block;
-}
-
-/* Post badge spacing */
-.employees-table td:nth-child(3) .badge {
-    margin: 0;
-}
-
-/* Status badge spacing */
-.employees-table td:nth-child(6) .status-badge {
-    margin: 0;
-}
-
-.employee-detail-view {
-    padding: 0.5rem;
-}
-
-.employee-detail-view h5 {
-    color: var(--interface-text);
-    font-weight: 600;
-    margin-bottom: 1rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 2px solid var(--interface-border);
-}
-
-.employee-detail-view label.text-muted {
-    font-size: 0.875rem;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 0.25rem;
-    display: block;
-}
-
-.employee-detail-view .fw-semibold {
-    font-weight: 600;
-    color: var(--interface-text);
-    font-size: 0.9375rem;
-}
-
-.employee-avatar-large {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 24px;
-    font-weight: bold;
-    flex-shrink: 0;
-}
-
-#employeeDetailsModal .modal-body {
-    max-height: calc(100vh - 200px);
-    overflow-y: auto;
-}
-
-#employeeDetailsModal .modal-xl {
-    max-width: 1200px;
-}
-
-/* Modern Alert Styling */
-.alert-success-modern {
-    background-color: #f0fdf4;
-    border: 1px solid #bbf7d0;
-    color: #166534;
-    border-radius: 8px;
-    padding: 0.875rem 1rem;
-    margin-bottom: 1.25rem;
-    font-size: 0.875rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-}
-
-.alert-success-modern .btn-close {
-    filter: brightness(0) saturate(100%) invert(27%) sepia(95%) saturate(1234%) hue-rotate(95deg) brightness(95%) contrast(87%);
-}
-
-/* Pagination Modern Styling */
-.pagination-controls {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 1.5rem;
-    padding: 1rem;
-    background: #ffffff;
-    border-radius: 12px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-}
-
-.pagination-controls .btn {
-    border-radius: 8px;
-    font-weight: 500;
-    transition: all 0.2s ease;
-}
-
-.pagination-controls .btn:hover:not(:disabled) {
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.pagination-controls .btn-primary {
-    background: linear-gradient(135deg, #1fb2d5 0%, #0ea5e9 100%);
-    border: none;
-    box-shadow: 0 2px 8px rgba(31, 178, 213, 0.25);
-}
-
-.pagination-controls .btn-primary:hover {
-    box-shadow: 0 4px 12px rgba(31, 178, 213, 0.35);
-}
-
-.pagination-info {
-    color: #64748b;
-    font-size: 0.875rem;
-    font-weight: 500;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-    .employees-modern {
-        padding: 1rem 1rem 2rem 1rem;
-    }
-    
-    .page-header-modern {
-        flex-direction: column;
-        gap: 1rem;
-        align-items: flex-start;
-    }
-    
-    .page-actions-modern {
-        width: 100%;
-        flex-wrap: wrap;
-    }
-    
-    .summary-cards-modern {
-        grid-template-columns: 1fr;
-    }
-    
-    .table-container {
-        overflow-x: hidden;
-    }
-}
-/* Dark theme support for Employees Table */
-html[data-theme="dark"] .table-container {
-    background: #1a1d23 !important;
-    border-color: var(--interface-border) !important;
-}
-
-html[data-theme="dark"] .employees-table {
-    background: #1a1d23 !important;
-    color: var(--interface-text) !important;
-}
-
-html[data-theme="dark"] .employees-table thead {
-    background: #1a1d23 !important;
-    color: var(--interface-text) !important;
-}
-
-html[data-theme="dark"] .employees-table thead th {
-    background: #1a1d23 !important;
-    color: var(--interface-text) !important;
-    border-bottom-color: var(--interface-border) !important;
-}
-
-html[data-theme="dark"] .employees-table thead th.sortable:hover {
-    color: #1fb2d5 !important;
-    background-color: var(--interface-hover) !important;
-}
-
-html[data-theme="dark"] .employees-table tbody {
-    background: #1a1d23 !important;
-    color: var(--interface-text) !important;
-}
-
-html[data-theme="dark"] .employees-table tbody tr {
-    background-color: #1a1d23 !important;
-    border-bottom-color: var(--interface-border) !important;
-    color: var(--interface-text) !important;
-}
-
-html[data-theme="dark"] .employees-table tbody tr:hover {
-    background-color: var(--interface-hover) !important;
-}
-
-html[data-theme="dark"] .employees-table tbody tr:nth-child(even) {
-    background-color: rgba(30, 41, 59, 0.5) !important;
-}
-
-html[data-theme="dark"] .employees-table tbody tr:nth-child(even):hover {
-    background-color: var(--interface-hover) !important;
-}
-
-html[data-theme="dark"] .employees-table tbody tr:nth-child(even) td {
-    background-color: rgba(30, 41, 59, 0.5) !important;
-}
-
-html[data-theme="dark"] .employees-table tbody tr:hover td {
-    background-color: var(--interface-hover) !important;
-}
-
-html[data-theme="dark"] .employees-table tbody td {
-    background-color: transparent !important;
-    color: var(--interface-text) !important;
-    border-bottom-color: var(--interface-border) !important;
-}
-
-html[data-theme="dark"] .employees-table .employee-name {
-    color: var(--interface-text) !important;
-}
-
-html[data-theme="dark"] .employees-table .employee-email {
-    color: var(--interface-text-muted) !important;
-}
-
-html[data-theme="dark"] .employees-table .employee-row:hover {
-    background-color: var(--interface-hover) !important;
-}
-
-html[data-theme="dark"] .license-info small {
-    color: var(--interface-text-muted) !important;
-}
-
-html[data-theme="dark"] .license-info strong {
-    color: var(--interface-text) !important;
-}
-
-html[data-theme="dark"] .employment-details small {
-    color: var(--interface-text-muted) !important;
-}
-
-html[data-theme="dark"] .employment-details span:not(.badge) {
-    color: var(--interface-text) !important;
-}
-
-</style>
 
 <script>
 // Employee Table Filtering and Sorting System

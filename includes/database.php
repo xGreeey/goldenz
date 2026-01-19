@@ -3205,16 +3205,42 @@ if (!function_exists('get_user_by_id')) {
     function get_user_by_id($user_id) {
         try {
             $pdo = get_db_connection();
+            // Check if first_name and last_name columns exist
+            $check_cols = $pdo->query("SHOW COLUMNS FROM users LIKE 'first_name'");
+            $has_first_name = $check_cols->rowCount() > 0;
+            
+            $check_cols = $pdo->query("SHOW COLUMNS FROM users LIKE 'last_name'");
+            $has_last_name = $check_cols->rowCount() > 0;
+            
+            // Build SELECT based on available columns
+            $select_fields = "u.*";
+            if ($has_first_name && $has_last_name) {
+                // Columns exist, they'll be in u.*
+            } else {
+                // Fallback: use name field if first_name/last_name don't exist
+            }
+            
             $sql = "SELECT u.*, 
                            creator.name as created_by_name,
-                           e.first_name, e.surname, e.employee_no
+                           e.first_name as employee_first_name, 
+                           e.surname as employee_surname, 
+                           e.employee_no
                     FROM users u
                     LEFT JOIN users creator ON u.created_by = creator.id
                     LEFT JOIN employees e ON u.employee_id = e.id
                     WHERE u.id = ?";
             $stmt = $pdo->prepare($sql);
             $stmt->execute([$user_id]);
-            return $stmt->fetch(PDO::FETCH_ASSOC);
+            $user = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            // If first_name/last_name don't exist in users table, try to derive from name field
+            if ($user && !$has_first_name && !empty($user['name'])) {
+                $name_parts = preg_split('/\s+/', trim($user['name']), 2);
+                $user['first_name'] = $name_parts[0] ?? '';
+                $user['last_name'] = $name_parts[1] ?? '';
+            }
+            
+            return $user;
         } catch (Exception $e) {
             error_log("Error in get_user_by_id: " . $e->getMessage());
             return null;

@@ -45,8 +45,7 @@ $users_by_role = $stats['users_by_role'] ?? [];
     <!-- Page Header -->
     <div class="page-header-modern mb-5">
         <div class="page-title-modern">
-            <h1 class="page-title-main">Super Admin Dashboard</h1>
-            <p class="page-subtitle"><?php echo $greeting; ?>! Welcome back, <?php echo htmlspecialchars($_SESSION['name'] ?? 'Super Admin'); ?>!</p>
+            <h1 class="page-title-main"><?php echo $greeting; ?>, <?php echo htmlspecialchars($_SESSION['name'] ?? $_SESSION['username'] ?? 'Super Admin'); ?>! Here's what's happening today.</h1>
         </div>
         <div class="page-actions-modern">
             <button class="btn btn-outline-modern" type="button" data-bs-toggle="collapse" data-bs-target="#filtersCollapse" aria-expanded="false">
