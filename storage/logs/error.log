@@ -13772,3 +13772,587 @@ Data: Array
 
 File: /hr-admin/index.php
 --------------------------------------------------------------------------------
+[2026-01-19 10:54:29] [phone_validation] User: hradmin (ID: 25) | IP: 192.168.1.50
+Error: Validating contact phone number
+Data: Array
+(
+    [original] => 9311231231
+    [cleaned] => 9311231231
+    [length] => 10
+    [matches_pattern] => yes
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 10:54:29] [phone_validation] User: hradmin (ID: 25) | IP: 192.168.1.50
+Error: Validating emergency contact number
+Data: Array
+(
+    [original] => 9131232132
+    [cleaned] => 9131232132
+    [length] => 10
+    [matches_pattern] => yes
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 10:54:29] [add_employee_page] User: hradmin (ID: 25) | IP: 192.168.1.50
+Error: Storing employee data in session (deferred save)
+Data: Array
+(
+    [post_data] => Array
+        (
+            [employee_no] => 32123
+            [employee_type] => LG
+            [status] => Inactive
+            [surname] => ASFSDF
+            [first_name] => ASDFSDFA
+            [middle_name] => ASFSDAF
+            [birth_date] => 2000-08-27
+            [age] => 25
+            [civil_status] => Separated
+            [birthplace] => ASDFASD
+            [citizenship] => FASDFASDF
+            [address] => JHGHJG
+            [provincial_address] => HJGHJG
+            [height] => 7'7"
+            [weight] => 78
+            [blood_type] => A-
+            [religion] => Iglesia ni Cristo
+            [special_skills] => skadfkfds
+            [spouse_name] => LKSJADF
+            [spouse_age] => 23
+            [spouse_occupation] => SADF
+            [father_name] => ASDF
+            [father_age] => 43
+            [father_occupation] => SAFD
+            [mother_name] => SADFSADF
+            [mother_age] => 23
+            [mother_occupation] => SADFSADF
+            [children_names] => safdsdaf
+            [college_course] => 
+            [college_school_name] => 
+            [college_years] => 
+            [college_school_address] => 
+            [vocational_course] => 
+            [vocational_school_name] => 
+            [vocational_years] => 
+            [vocational_school_address] => 
+            [highschool_school_name] => FASDF
+            [highschool_years] => 2020-2032
+            [highschool_school_address] => ASFD
+            [elementary_school_name] => SDFASDF
+            [elementary_years] => 2020-2032
+            [elementary_school_address] => 
+            [trainings] => Array
+                (
+                    [0] => Array
+                        (
+                            [title] => SADF
+                            [by] => ASDFSDAF
+                            [date] => 2026-01-19
+                        )
+
+                )
+
+            [employment_history] => Array
+                (
+                    [0] => Array
+                        (
+                            [position] => ASFSDAF
+                            [company_name] => FASF
+                            [company_address] => ASSDF
+                            [company_phone] => asfsad
+                            [period] => 02/2002 - 12/2004
+                            [reason] => asfasdf
+                        )
+
+                )
+
+            [character_references] => Array
+                (
+                    [0] => Array
+                        (
+                            [name] => SAFD
+                            [occupation] => ASD
+                            [company] => AS
+                            [contact] => sadf
+                        )
+
+                    [1] => Array
+                        (
+                            [name] => SADF
+                            [occupation] => FASDF
+                            [company] => FSADFSAD
+                            [contact] => sadfsaf
+                        )
+
+                    [2] => Array
+                        (
+                            [name] => ASDF
+                            [occupation] => SDFSADF
+                            [company] => FSADFSAD
+                            [contact] => fsadfsadsd
+                        )
+
+                )
+
+            [gov_exam_taken] => No
+            [cp_number] => 9311231231
+            [contact_person] => SADFASDF
+            [relationship] => Spouse
+            [contact_person_number] => 9131232132
+            [contact_person_address] => SADFASD
+            [contact_person_alt] => 
+            [relationship_alt] => 
+            [contact_person_number_alt] => 
+            [contact_person_address_alt] => 
+            [post] => UNASSIGNED
+            [date_hired] => 2026-01-19
+            [license_no] => NCR9-38929389832
+            [license_exp_date] => 2026-01-19
+            [sss_no] => 23-4324324-3
+            [pagibig_no] => 2342-3423-423
+            [tin_number] => 423-423-432-324
+            [philhealth_no] => 23-324324234-2
+            [hr_remarks] => safd
+            [status_summary] => Completed
+        )
+
+    [files] => Array
+        (
+            [employee_photo] => Array
+                (
+                    [name] => monkey.jpg
+                    [size] => 7768
+                    [error] => 0
+                )
+
+        )
+
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 10:54:29] [photo_upload] User: hradmin (ID: 25) | IP: 192.168.1.50
+Error: Photo uploaded to temp location
+Data: Array
+(
+    [temp_path] => C:\xampp\htdocs\goldenz\pages/../uploads/employees/temp/jtbrfjrfugirf0vrqbafshl9ji_1768791269.jpg
+    [filename] => jtbrfjrfugirf0vrqbafshl9ji_1768791269.jpg
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 10:54:29] [add_employee_page] User: hradmin (ID: 25) | IP: 192.168.1.50
+Error: Page 1 data stored in session, redirecting to Page 2
+Data: Array
+(
+    [employee_no] => 32123
+    [employee_name] => ASDFSDFA ASFSDF
+    [has_photo] => yes
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 10:54:30] [add_employee_page2] User: hradmin (ID: 25) | IP: 192.168.1.50
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 32123
+    [page1_name] => ASDFSDFA ASFSDF
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 10:55:29] [add_employee_page2] User: hradmin (ID: 25) | IP: 192.168.1.50
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 32123
+    [page1_name] => ASDFSDFA ASFSDF
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 10:55:29] [add_employee_page2] User: hradmin (ID: 25) | IP: 192.168.1.50
+Error: Inserting employee with combined Page 1 + Page 2 data
+Data: Array
+(
+    [employee_no] => 32123
+    [employee_name] => ASDFSDFA ASFSDF
+    [page2_fields_count] => 51
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 10:55:29] [add_employee] User: hradmin (ID: 25) | IP: 192.168.1.50
+Error: Starting employee creation (INSERT only - id field auto-generated by MySQL)
+Data: Array
+(
+    [input_data] => Array
+        (
+            [employee_no] => 32123
+            [employee_type] => LG
+            [surname] => ASFSDF
+            [first_name] => ASDFSDFA
+            [middle_name] => ASFSDAF
+            [post] => UNASSIGNED
+            [license_no] => NCR9-38929389832
+            [license_exp_date] => 2026-01-19
+            [rlm_exp] => 
+            [date_hired] => 2026-01-19
+            [cp_number] => 9311231231
+            [sss_no] => 23-4324324-3
+            [pagibig_no] => 2342-3423-423
+            [tin_number] => 423-423-432-324
+            [philhealth_no] => 23-324324234-2
+            [birth_date] => 2000-08-27
+            [gender] => 
+            [civil_status] => Separated
+            [age] => 25
+            [birthplace] => ASDFASD
+            [citizenship] => FASDFASDF
+            [provincial_address] => HJGHJG
+            [special_skills] => skadfkfds
+            [spouse_name] => LKSJADF
+            [spouse_age] => 23
+            [spouse_occupation] => SADF
+            [father_name] => ASDF
+            [father_age] => 43
+            [father_occupation] => SAFD
+            [mother_name] => SADFSADF
+            [mother_age] => 23
+            [mother_occupation] => SADFSADF
+            [children_names] => safdsdaf
+            [college_course] => 
+            [college_school_name] => 
+            [college_school_address] => 
+            [college_years] => 
+            [vocational_course] => 
+            [vocational_school_name] => 
+            [vocational_school_address] => 
+            [vocational_years] => 
+            [highschool_school_name] => FASDF
+            [highschool_school_address] => ASFD
+            [highschool_years] => 2020-2032
+            [elementary_school_name] => SDFASDF
+            [elementary_school_address] => 
+            [elementary_years] => 2020-2032
+            [trainings_json] => [{"title":"SADF","by":"ASDFSDAF","date":"2026-01-19"}]
+            [gov_exam_taken] => 0
+            [gov_exam_json] => 
+            [employment_history_json] => [{"position":"ASFSDAF","company_name":"FASF","company_address":"ASSDF","company_phone":"asfsad","period":"02\/2002 - 12\/2004","reason":"asfasdf"}]
+            [height] => 7'7"
+            [weight] => 78
+            [address] => JHGHJG
+            [contact_person] => SADFASDF
+            [relationship] => Spouse
+            [contact_person_address] => SADFASD
+            [contact_person_number] => 9131232132
+            [blood_type] => A-
+            [religion] => Iglesia ni Cristo
+            [status] => Inactive
+            [created_by] => 25
+            [created_by_name] => HR Administrator
+        )
+
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 10:55:29] [add_employee] User: hradmin (ID: 25) | IP: 192.168.1.50
+Error: Prepared SQL and parameters
+Data: Array
+(
+    [sql] => INSERT INTO employees (employee_no, employee_type, surname, first_name, middle_name, post, license_no, license_exp_date, rlm_exp, date_hired, cp_number, sss_no, pagibig_no, tin_number, philhealth_no, birth_date, gender, civil_status, age, birthplace, citizenship, provincial_address, special_skills, spouse_name, spouse_age, spouse_occupation, father_name, father_age, father_occupation, mother_name, mother_age, mother_occupation, children_names, college_course, college_school_name, college_school_address, college_years, vocational_course, vocational_school_name, vocational_school_address, vocational_years, highschool_school_name, highschool_school_address, highschool_years, elementary_school_name, elementary_school_address, elementary_years, trainings_json, gov_exam_taken, gov_exam_json, employment_history_json, height, weight, address, contact_person, relationship, contact_person_address, contact_person_number, blood_type, religion, status, created_by, created_by_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    [params_count] => 63
+    [params] => Array
+        (
+            [0] => 32123
+            [1] => LG
+            [2] => ASFSDF
+            [3] => ASDFSDFA
+            [4] => ASFSDAF
+            [5] => UNASSIGNED
+            [6] => NCR9-38929389832
+            [7] => 2026-01-19
+            [8] => 
+            [9] => 2026-01-19
+            [10] => 9311231231
+            [11] => 23-4324324-3
+            [12] => 2342-3423-423
+            [13] => 423-423-432-324
+            [14] => 23-324324234-2
+            [15] => 2000-08-27
+            [16] => 
+            [17] => Separated
+            [18] => 25
+            [19] => ASDFASD
+            [20] => FASDFASDF
+            [21] => HJGHJG
+            [22] => skadfkfds
+            [23] => LKSJADF
+            [24] => 23
+            [25] => SADF
+            [26] => ASDF
+            [27] => 43
+            [28] => SAFD
+            [29] => SADFSADF
+            [30] => 23
+            [31] => SADFSADF
+            [32] => safdsdaf
+            [33] => 
+            [34] => 
+            [35] => 
+            [36] => 
+            [37] => 
+            [38] => 
+            [39] => 
+            [40] => 
+            [41] => FASDF
+            [42] => ASFD
+            [43] => 2020-2032
+            [44] => SDFASDF
+            [45] => 
+            [46] => 2020-2032
+            [47] => [{"title":"SADF","by":"ASDFSDAF","date":"2026-01-19"}]
+            [48] => 0
+            [49] => 
+            [50] => [{"position":"ASFSDAF","company_name":"FASF","company_address":"ASSDF","company_phone":"asfsad","period":"02\/2002 - 12\/2004","reason":"asfasdf"}]
+            [51] => 7'7"
+            [52] => 78
+            [53] => JHGHJG
+            [54] => SADFASDF
+            [55] => Spouse
+            [56] => SADFASD
+            [57] => 9131232132
+            [58] => A-
+            [59] => Iglesia ni Cristo
+            [60] => Inactive
+            [61] => 25
+            [62] => HR Administrator
+        )
+
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 10:55:29] [add_employee] User: hradmin (ID: 25) | IP: 192.168.1.50
+Error: Employee created successfully with auto-generated id (primary key)
+Data: Array
+(
+    [auto_generated_id] => 9
+    [employee_no] => 32123
+    [first_name] => ASDFSDFA
+    [surname] => ASFSDF
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 10:55:29] [add_employee_page2] User: hradmin (ID: 25) | IP: 192.168.1.50
+Error: Employee created successfully
+Data: Array
+(
+    [new_employee_id] => 9
+    [employee_no] => 32123
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 10:55:29] [photo_upload] User: hradmin (ID: 25) | IP: 192.168.1.50
+Error: Photo moved from temp to permanent location
+Data: Array
+(
+    [employee_id] => 9
+    [path] => uploads/employees/9.jpg
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 10:55:29] [add_employee_page2] User: hradmin (ID: 25) | IP: 192.168.1.50
+Error: Page 2 data updated successfully
+Data: Array
+(
+    [employee_id] => 9
+    [fields_updated] => 40
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 10:55:53] [add_employee_page] User: hradmin (ID: 25) | IP: 192.168.1.50
+Error: Storing employee data in session (deferred save)
+Data: Array
+(
+    [post_data] => Array
+        (
+            [employee_no] => 32124
+            [employee_type] => 
+            [status] => 
+            [surname] => USER
+            [first_name] => TEMP
+            [middle_name] => 
+            [birth_date] => 
+            [age] => 
+            [civil_status] => 
+            [birthplace] => 
+            [citizenship] => 
+            [address] => 
+            [provincial_address] => 
+            [height] => 
+            [weight] => 
+            [blood_type] => 
+            [religion] => 
+            [special_skills] => 
+            [spouse_name] => 
+            [spouse_age] => 
+            [spouse_occupation] => 
+            [father_name] => 
+            [father_age] => 
+            [father_occupation] => 
+            [mother_name] => 
+            [mother_age] => 
+            [mother_occupation] => 
+            [children_names] => 
+            [college_course] => 
+            [college_school_name] => 
+            [college_years] => 
+            [college_school_address] => 
+            [vocational_course] => 
+            [vocational_school_name] => 
+            [vocational_years] => 
+            [vocational_school_address] => 
+            [highschool_school_name] => 
+            [highschool_years] => 
+            [highschool_school_address] => 
+            [elementary_school_name] => 
+            [elementary_years] => 
+            [elementary_school_address] => 
+            [trainings] => Array
+                (
+                    [0] => Array
+                        (
+                            [title] => 
+                            [by] => 
+                            [date] => 
+                        )
+
+                )
+
+            [employment_history] => Array
+                (
+                    [0] => Array
+                        (
+                            [position] => 
+                            [company_name] => 
+                            [company_address] => 
+                            [company_phone] => 
+                            [period] => 
+                            [reason] => 
+                        )
+
+                )
+
+            [character_references] => Array
+                (
+                    [0] => Array
+                        (
+                            [name] => 
+                            [occupation] => 
+                            [company] => 
+                            [contact] => 
+                        )
+
+                    [1] => Array
+                        (
+                            [name] => 
+                            [occupation] => 
+                            [company] => 
+                            [contact] => 
+                        )
+
+                    [2] => Array
+                        (
+                            [name] => 
+                            [occupation] => 
+                            [company] => 
+                            [contact] => 
+                        )
+
+                )
+
+            [gov_exam_taken] => No
+            [gov_exams] => Array
+                (
+                    [0] => Array
+                        (
+                            [type] => 
+                            [score] => 
+                        )
+
+                )
+
+            [cp_number] => 
+            [contact_person] => 
+            [relationship] => 
+            [contact_person_number] => 
+            [contact_person_address] => 
+            [contact_person_alt] => 
+            [relationship_alt] => 
+            [contact_person_number_alt] => 
+            [contact_person_address_alt] => 
+            [post] => 
+            [date_hired] => 
+            [license_no] => 
+            [license_exp_date] => 
+            [rlm_exp] => 
+            [sss_no] => 
+            [pagibig_no] => 
+            [tin_number] => 
+            [philhealth_no] => 
+            [hr_remarks] => 
+            [status_summary] => 
+        )
+
+    [files] => Array
+        (
+            [employee_photo] => Array
+                (
+                    [name] => 
+                    [size] => 0
+                    [error] => 4
+                )
+
+        )
+
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 10:55:53] [add_employee_page] User: hradmin (ID: 25) | IP: 192.168.1.50
+Error: Page 1 data stored in session, redirecting to Page 2
+Data: Array
+(
+    [employee_no] => 32124
+    [employee_name] => TEMP USER
+    [has_photo] => no
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 10:55:53] [add_employee_page2] User: hradmin (ID: 25) | IP: 192.168.1.50
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 9
+    [page1_employee_no] => 32124
+    [page1_name] => TEMP USER
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
