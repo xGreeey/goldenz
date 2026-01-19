@@ -29,7 +29,7 @@ function getPageTitle($page) {
         'tasks' => 'Tasks',
         'help' => 'Help & Support'
     ];
-    
+
     return $titles[$page] ?? 'Dashboard';
 }
 
@@ -48,7 +48,7 @@ function getActiveSection($page) {
         'edit_post' => 'posts',
         'post_assignments' => 'posts'
     ];
-    
+
     return $sections[$page] ?? null;
 }
 
@@ -62,12 +62,12 @@ $activeSection = getActiveSection($page);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo getPageTitle($page); ?></title>
-    
+
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="<?php echo public_url('logo.svg'); ?>">
     <link rel="icon" type="image/x-icon" href="<?php echo public_url('favicon.ico'); ?>">
     <link rel="apple-touch-icon" href="<?php echo public_url('logo.svg'); ?>">
-    
+
     <!-- CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -78,37 +78,37 @@ $activeSection = getActiveSection($page);
     <!-- number-rendering-fix.css merged into font-override.css -->
     <style>
     /* Override icon paths with absolute URLs for SVG icons */
-    <?php 
+    <?php
     $iconUrl = function($icon) { return asset_url('icons/' . $icon . '.svg'); };
     ?>
-    .hr-icon-plus { 
+    .hr-icon-plus {
         background-image: url('<?php echo asset_url('icons/plus-icon.png'); ?>') !important;
     }
-    .hr-icon-edit { 
+    .hr-icon-edit {
         background-image: url('<?php echo $iconUrl('edit-icon'); ?>') !important;
     }
-    .hr-icon-view, .hr-icon-eye { 
+    .hr-icon-view, .hr-icon-eye {
         background-image: url('<?php echo $iconUrl('view-icon_eye-icon'); ?>') !important;
     }
-    .hr-icon-check { 
+    .hr-icon-check {
         background-image: url('<?php echo $iconUrl('check-icon'); ?>') !important;
     }
-    .hr-icon-double-check { 
+    .hr-icon-double-check {
         background-image: url('<?php echo $iconUrl('double-check-icon'); ?>') !important;
     }
-    .hr-icon-dismiss, .hr-icon-remove, .hr-icon-times { 
+    .hr-icon-dismiss, .hr-icon-remove, .hr-icon-times {
         background-image: url('<?php echo $iconUrl('dismiss-icon_remove-icon'); ?>') !important;
     }
-    .hr-icon-minus { 
+    .hr-icon-minus {
         background-image: url('<?php echo asset_url('icons/minus-icon.png'); ?>') !important;
     }
-    .hr-icon-notification, .hr-icon-bell { 
+    .hr-icon-notification, .hr-icon-bell {
         background-image: url('<?php echo $iconUrl('notif-icon'); ?>') !important;
     }
-    .hr-icon-message { 
+    .hr-icon-message {
         background-image: url('<?php echo $iconUrl('message-icon'); ?>') !important;
     }
-    
+
     /* Apply filters to colorize icons for action buttons */
     .btn-action-modern.btn-info-modern .hr-icon {
         filter: brightness(0) saturate(100%) invert(27%) sepia(96%) saturate(2595%) hue-rotate(212deg) brightness(95%) contrast(91%) !important;
@@ -122,13 +122,13 @@ $activeSection = getActiveSection($page);
     .btn-action-modern.btn-primary-modern .hr-icon {
         filter: brightness(0) invert(1) !important;
     }
-    
+
     /* Ensure icons are displayed and visible */
     .hr-icon {
         display: inline-block !important;
         visibility: visible !important;
     }
-    
+
     /* Make notification and message icons visible in header buttons */
     .hrdash-welcome__icon-btn .hr-icon-notification,
     .hrdash-welcome__icon-btn .hr-icon-message {
@@ -140,23 +140,23 @@ $activeSection = getActiveSection($page);
         background-repeat: no-repeat !important;
         background-position: center !important;
     }
-    
+
     .hrdash-welcome__icon-btn:hover .hr-icon-notification,
     .hrdash-welcome__icon-btn:hover .hr-icon-message {
         filter: brightness(0) saturate(100%) invert(15%) sepia(8%) saturate(750%) hue-rotate(177deg) brightness(94%) contrast(88%) !important;
     }
     </style>
-    
+
     <!-- Enhanced Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    
+
     <?php if ($page === 'add_employee'): ?>
     <!-- Preload icon images for add employee page to prevent flashing -->
     <link rel="preload" as="image" href="<?php echo asset_url('icons/plus-icon.png'); ?>?v=2">
     <link rel="preload" as="image" href="<?php echo asset_url('icons/minus-icon.png'); ?>?v=2">
     <?php endif; ?>
-    
+
     <!-- Security Headers -->
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
     <meta http-equiv="X-Frame-Options" content="DENY">
@@ -175,14 +175,14 @@ $activeSection = getActiveSection($page);
                 <i class="fas fa-bars"></i>
             </button>
         </div>
-        
+
         <!-- Search Bar -->
         <div class="sidebar-search">
             <div class="search-input">
                 <i class="fas fa-search"></i>
-                <input type="text" 
-                       placeholder="Search..." 
-                       id="sidebarSearch" 
+                <input type="text"
+                       placeholder="Search..."
+                       id="sidebarSearch"
                        aria-label="Search menu items"
                        autocomplete="off">
                 <button class="search-clear d-none" id="searchClear" aria-label="Clear search">
@@ -191,23 +191,23 @@ $activeSection = getActiveSection($page);
             </div>
             <div class="search-results" id="searchResults" aria-live="polite" aria-atomic="true"></div>
         </div>
-        
+
         <ul class="sidebar-menu" id="sidebarMenu">
             <li class="nav-item">
-                <a href="?page=dashboard" 
+                <a href="?page=dashboard"
                    class="nav-link <?php echo ($page === 'dashboard') ? 'active' : ''; ?>"
                    data-page="dashboard">
                     <i class="fas fa-home" aria-hidden="true"></i>
                     <span>Dashboard</span>
                 </a>
             </li>
-            
+
             <!-- Teams Section -->
             <li class="nav-item nav-section <?php echo ($activeSection === 'teams') ? 'active' : ''; ?>" data-section="teams">
-                <button class="nav-toggle <?php echo ($activeSection === 'teams') ? 'active' : ''; ?>" 
+                <button class="nav-toggle <?php echo ($activeSection === 'teams') ? 'active' : ''; ?>"
                         type="button"
-                        role="button" 
-                        aria-expanded="<?php echo ($activeSection === 'teams') ? 'true' : 'false'; ?>" 
+                        role="button"
+                        aria-expanded="<?php echo ($activeSection === 'teams') ? 'true' : 'false'; ?>"
                         aria-controls="teams-submenu"
                         tabindex="0"
                         data-target="teams-submenu">
@@ -217,7 +217,7 @@ $activeSection = getActiveSection($page);
                 </button>
                 <ul class="nav-submenu <?php echo ($activeSection === 'teams') ? 'expanded' : ''; ?>" id="teams-submenu" role="menu">
                     <li class="nav-item">
-                        <a href="?page=employees" 
+                        <a href="?page=employees"
                            class="nav-link <?php echo ($page === 'employees') ? 'active' : ''; ?>"
                            data-page="employees">
                             <i class="fas fa-user" aria-hidden="true"></i>
@@ -225,7 +225,7 @@ $activeSection = getActiveSection($page);
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="?page=dtr" 
+                        <a href="?page=dtr"
                            class="nav-link <?php echo ($page === 'dtr') ? 'active' : ''; ?>"
                            data-page="dtr">
                             <i class="fas fa-clock" aria-hidden="true"></i>
@@ -233,7 +233,7 @@ $activeSection = getActiveSection($page);
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="?page=checklist" 
+                        <a href="?page=checklist"
                            class="nav-link <?php echo ($page === 'checklist') ? 'active' : ''; ?>"
                            data-page="checklist">
                             <i class="fas fa-clipboard-check" aria-hidden="true"></i>
@@ -241,7 +241,7 @@ $activeSection = getActiveSection($page);
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="?page=timeoff" 
+                        <a href="?page=timeoff"
                            class="nav-link <?php echo ($page === 'timeoff') ? 'active' : ''; ?>"
                            data-page="timeoff">
                             <i class="fas fa-calendar-times" aria-hidden="true"></i>
@@ -250,13 +250,13 @@ $activeSection = getActiveSection($page);
                     </li>
                 </ul>
             </li>
-            
+
             <!-- Hire Section -->
             <li class="nav-item nav-section <?php echo ($activeSection === 'hire') ? 'active' : ''; ?>" data-section="hire">
-                <button class="nav-toggle <?php echo ($activeSection === 'hire') ? 'active' : ''; ?>" 
+                <button class="nav-toggle <?php echo ($activeSection === 'hire') ? 'active' : ''; ?>"
                         type="button"
-                        role="button" 
-                        aria-expanded="<?php echo ($activeSection === 'hire') ? 'true' : 'false'; ?>" 
+                        role="button"
+                        aria-expanded="<?php echo ($activeSection === 'hire') ? 'true' : 'false'; ?>"
                         aria-controls="hire-submenu"
                         tabindex="0"
                         data-target="hire-submenu">
@@ -266,7 +266,7 @@ $activeSection = getActiveSection($page);
                 </button>
                 <ul class="nav-submenu <?php echo ($activeSection === 'hire') ? 'expanded' : ''; ?>" id="hire-submenu" role="menu">
                     <li class="nav-item">
-                        <a href="?page=hiring" 
+                        <a href="?page=hiring"
                            class="nav-link <?php echo ($page === 'hiring') ? 'active' : ''; ?>"
                            data-page="hiring">
                             <i class="fas fa-user-plus" aria-hidden="true"></i>
@@ -274,7 +274,7 @@ $activeSection = getActiveSection($page);
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="?page=onboarding" 
+                        <a href="?page=onboarding"
                            class="nav-link <?php echo ($page === 'onboarding') ? 'active' : ''; ?>"
                            data-page="onboarding">
                             <i class="fas fa-user-check" aria-hidden="true"></i>
@@ -282,7 +282,7 @@ $activeSection = getActiveSection($page);
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="?page=handbook" 
+                        <a href="?page=handbook"
                            class="nav-link <?php echo ($page === 'handbook') ? 'active' : ''; ?>"
                            data-page="handbook">
                             <i class="fas fa-book" aria-hidden="true"></i>
@@ -291,13 +291,13 @@ $activeSection = getActiveSection($page);
                     </li>
                 </ul>
             </li>
-            
+
             <!-- Posts Section -->
             <li class="nav-item nav-section <?php echo ($activeSection === 'posts') ? 'active' : ''; ?>" data-section="posts">
-                <button class="nav-toggle <?php echo ($activeSection === 'posts') ? 'active' : ''; ?>" 
+                <button class="nav-toggle <?php echo ($activeSection === 'posts') ? 'active' : ''; ?>"
                         type="button"
-                        role="button" 
-                        aria-expanded="<?php echo ($activeSection === 'posts') ? 'true' : 'false'; ?>" 
+                        role="button"
+                        aria-expanded="<?php echo ($activeSection === 'posts') ? 'true' : 'false'; ?>"
                         aria-controls="posts-submenu"
                         tabindex="0"
                         data-target="posts-submenu">
@@ -307,7 +307,7 @@ $activeSection = getActiveSection($page);
                 </button>
                 <ul class="nav-submenu <?php echo ($activeSection === 'posts') ? 'expanded' : ''; ?>" id="posts-submenu" role="menu">
                     <li class="nav-item">
-                        <a href="?page=posts" 
+                        <a href="?page=posts"
                            class="nav-link <?php echo ($page === 'posts') ? 'active' : ''; ?>"
                            data-page="posts">
                             <i class="fas fa-list" aria-hidden="true"></i>
@@ -315,7 +315,7 @@ $activeSection = getActiveSection($page);
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="?page=add_post" 
+                        <a href="?page=add_post"
                            class="nav-link <?php echo ($page === 'add_post') ? 'active' : ''; ?>"
                            data-page="add_post">
                             <i class="fas fa-plus" aria-hidden="true"></i>
@@ -324,10 +324,10 @@ $activeSection = getActiveSection($page);
                     </li>
                 </ul>
             </li>
-            
+
             <!-- Alerts Section -->
             <li class="nav-item">
-                <a href="?page=alerts" 
+                <a href="?page=alerts"
                    class="nav-link <?php echo ($page === 'alerts') ? 'active' : ''; ?>"
                    data-page="alerts">
                     <i class="fas fa-bell" aria-hidden="true"></i>
@@ -341,36 +341,36 @@ $activeSection = getActiveSection($page);
                 </a>
             </li>
         </ul>
-        
+
         <!-- Bottom Navigation Section -->
         <ul class="sidebar-menu sidebar-bottom" role="menubar">
             <li class="nav-item">
-                <a href="?page=settings" 
+                <a href="?page=settings"
                    class="nav-link <?php echo ($page === 'settings') ? 'active' : ''; ?>"
                    data-page="settings">
                     <i class="fas fa-cog" aria-hidden="true"></i>
                     <span>Settings</span>
                 </a>
             </li>
-            
+
             <li class="nav-item">
-                <a href="?page=tasks" 
+                <a href="?page=tasks"
                    class="nav-link <?php echo ($page === 'tasks') ? 'active' : ''; ?>"
                    data-page="tasks">
                     <i class="fas fa-tasks" aria-hidden="true"></i>
                     <span>Tasks</span>
                 </a>
             </li>
-            
+
             <li class="nav-item">
-                <a href="?page=help" 
+                <a href="?page=help"
                    class="nav-link <?php echo ($page === 'help') ? 'active' : ''; ?>"
                    data-page="help">
                     <i class="fas fa-headset" aria-hidden="true"></i>
                     <span>Help & Support</span>
                 </a>
             </li>
-            
+
             <li class="nav-item">
                 <a href="../index.php?logout=1"
                    class="nav-link"
@@ -381,7 +381,7 @@ $activeSection = getActiveSection($page);
             </li>
         </ul>
     </nav>
-    
+
     <!-- Mobile Overlay -->
     <div class="sidebar-overlay d-md-none" id="sidebarOverlay"></div>
 
