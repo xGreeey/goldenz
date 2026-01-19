@@ -1297,13 +1297,37 @@ ob_end_flush();
                 // Trigger login transition: center card + portal animation
                 document.body.classList.add('login-transition-active');
 
-                // Add fullscreen circular loader overlay (no white box)
+                // Add fullscreen circular loader overlay with smooth animations
                 let spinnerOverlay = document.querySelector('.login-spinner-overlay');
                 if (!spinnerOverlay) {
                     spinnerOverlay = document.createElement('div');
                     spinnerOverlay.className = 'login-spinner-overlay';
-                    spinnerOverlay.innerHTML = '<div class="login-spinner"></div>';
+                    spinnerOverlay.innerHTML = `
+                        <div class="login-spinner-container">
+                            <div class="login-spinner"></div>
+                            <p class="login-spinner-text">Logging in…</p>
+                        </div>
+                    `;
                     document.body.appendChild(spinnerOverlay);
+                    
+                    // Force reflow to ensure initial state
+                    void spinnerOverlay.offsetHeight;
+                    
+                    // Trigger smooth fade-in
+                    requestAnimationFrame(() => {
+                        requestAnimationFrame(() => {
+                            spinnerOverlay.classList.add('active');
+                        });
+                    });
+                } else {
+                    // Reset and reactivate if exists
+                    spinnerOverlay.classList.remove('fade-out', 'active');
+                    void spinnerOverlay.offsetHeight;
+                    requestAnimationFrame(() => {
+                        requestAnimationFrame(() => {
+                            spinnerOverlay.classList.add('active');
+                        });
+                    });
                 }
                 // Ensure any previous portal overlay exists but has no solid background
                 let existingOverlay = document.querySelector('.login-transition-overlay');
