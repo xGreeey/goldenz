@@ -50,10 +50,23 @@ if (!function_exists('get_avatar_url')) {
             return null;
         }
         
-        // Check if file exists
+        // Normalize the avatar path (ensure forward slashes)
+        $avatar_path = str_replace('\\', '/', $avatar_path);
+        
+        // Get the project root directory
         $base_dir = dirname(__DIR__);
+        // Normalize base directory path for cross-platform compatibility
+        $base_dir = str_replace('\\', '/', $base_dir);
+        
+        // Build full path and check if file exists
         $full_path = $base_dir . '/' . $avatar_path;
-        if (!file_exists($full_path)) {
+        
+        // Also try with DIRECTORY_SEPARATOR for Windows compatibility
+        $full_path_native = str_replace('/', DIRECTORY_SEPARATOR, $full_path);
+        
+        if (!file_exists($full_path) && !file_exists($full_path_native)) {
+            // Log for debugging
+            error_log("Avatar file not found: $full_path (also tried: $full_path_native)");
             return null;
         }
         

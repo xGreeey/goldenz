@@ -11,9 +11,13 @@ if (($_SESSION['user_role'] ?? '') !== 'super_admin') {
 $current_user_avatar = null;
 $current_user_data = null;
 if (!empty($_SESSION['user_id']) && function_exists('get_user_by_id')) {
-    require_once __DIR__ . '/../includes/database.php';
+    // Include database if not already included
+    if (!function_exists('get_db_connection')) {
+        require_once __DIR__ . '/database.php';
+    }
+    // Include paths helper for avatar URL resolution
     if (!function_exists('get_avatar_url')) {
-        require_once __DIR__ . '/../includes/paths.php';
+        require_once __DIR__ . '/paths.php';
     }
     $current_user_data = get_user_by_id($_SESSION['user_id']);
     if (!empty($current_user_data['avatar'])) {
