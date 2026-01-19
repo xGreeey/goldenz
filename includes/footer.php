@@ -57,6 +57,7 @@
     <script src="<?php echo asset_url('js/page-transitions.js'); ?>"></script>
     <script src="<?php echo asset_url('js/comprehensive-functionality.js'); ?>"></script>
     <script src="<?php echo asset_url('js/notifications.js'); ?>"></script>
+    <script src="<?php echo asset_url('js/notifications-handler.js'); ?>"></script>
     
     <script>
     // Enhanced Sidebar Navigation System
@@ -545,5 +546,10 @@
         include __DIR__ . '/password-expiry-modal.php';
     }
     ?>
+    
+    <!-- Scroll to Top Button -->
+    <button id="scrollToTopBtn" class="scroll-to-top-btn" title="Scroll to top" aria-label="Scroll to top">
+        <i class="fas fa-arrow-up"></i>
+    </button>
 </body>
 </html>

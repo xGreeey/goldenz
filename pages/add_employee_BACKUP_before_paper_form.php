@@ -668,9 +668,9 @@ if (isset($_SESSION['employee_redirect_url'])) {
                 </div>
                 <div class="modal-body" style="padding: 1.5rem;">
                     <div class="text-center mb-3">
-                        <i class="fas fa-circle-check text-success" style="font-size: 3rem;"></i>
+                        <i class="fas fa-circle-check text-success fs-48"></i>
                     </div>
-                    <p class="mb-0 text-center" style="font-size: 1.1rem;"><?php echo htmlspecialchars($success_message); ?></p>
+                    <p class="mb-0 text-center fs-md"><?php echo htmlspecialchars($success_message); ?></p>
                     <?php if ($created_employee_id): ?>
                         <p class="text-muted small mt-2 mb-0 text-center">Employee ID: <strong><?php echo htmlspecialchars($created_employee_id); ?></strong></p>
                     <?php endif; ?>

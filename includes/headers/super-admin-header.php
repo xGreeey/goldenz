@@ -65,7 +65,7 @@ $activeSection = getActiveSection($page);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo getPageTitle($page); ?> - Super Admin - Golden Z-5 HR System</title>
+    <title><?php echo getPageTitle($page); ?></title>
     
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="<?php echo public_url('logo.svg'); ?>">
@@ -238,14 +238,6 @@ $activeSection = getActiveSection($page);
                            data-page="add_post">
                             <i class="fas fa-plus" aria-hidden="true"></i>
                             <span>Add New Post</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="?page=post_assignments" 
-                           class="nav-link <?php echo ($page === 'post_assignments') ? 'active' : ''; ?>"
-                           data-page="post_assignments">
-                            <i class="fas fa-users-cog" aria-hidden="true"></i>
-                            <span>Assignments</span>
                         </a>
                     </li>
                 </ul>
@@ -463,7 +455,7 @@ $activeSection = getActiveSection($page);
         }
 
         wireToggle('[data-target="administration-submenu"]', 'administration-submenu', ['users', 'system_logs', 'audit_trail']);
-        wireToggle('[data-target="posts-submenu"]', 'posts-submenu', ['posts', 'add_post', 'post_assignments']);
+        wireToggle('[data-target="posts-submenu"]', 'posts-submenu', ['posts', 'add_post']);
         wireToggle('[data-target="teams-submenu"]', 'teams-submenu', ['teams', 'employees', 'dtr', 'checklist', 'timeoff']);
     });
     </script>

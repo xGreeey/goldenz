@@ -245,7 +245,7 @@ ob_end_flush();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Forgot Password - Golden Z-5 HR Management System</title>
+    <title>Forgot Password</title>
     
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="../public/logo.svg">
@@ -329,7 +329,7 @@ ob_end_flush();
                     <?php endif; ?>
 
                     <div class="text-center mt-4">
-                        <a href="index.php" class="text-decoration-none" style="color: #2563eb; font-size: 0.875rem; font-weight: 500;">
+                        <a href="index.php" class="text-decoration-none fs-sm fw-medium" style="color: #2563eb;">
                             <i class="fas fa-arrow-left me-1"></i> Back to Login
                         </a>
                     </div>

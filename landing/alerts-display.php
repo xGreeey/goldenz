@@ -108,7 +108,7 @@ ob_end_flush();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>License Alerts Display - Golden Z-5 HR System</title>
+    <title>License Alerts Display</title>
     
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="../public/logo.svg">
@@ -949,7 +949,7 @@ ob_end_flush();
             </div>
             <div class="header-right">
                 <div class="header-info">
-                    <div class="header-date-time" id="currentTime"><?php echo date('h:i A'); ?></div>
+                    <div class="header-date-time" id="currentTime"><?php echo date('g:i A'); ?></div>
                     <div class="header-date"><?php echo date('l, F d, Y'); ?></div>
                 </div>
                 <div class="compliance-summary">
@@ -1159,7 +1159,7 @@ ob_end_flush();
         function updateTime() {
             const now = new Date();
             const timeString = now.toLocaleTimeString('en-US', { 
-                hour: '2-digit', 
+                hour: 'numeric', 
                 minute: '2-digit',
                 hour12: true 
             });

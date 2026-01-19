@@ -210,7 +210,7 @@ $role_config = config('roles.roles', []);
                                             <button class="btn btn-sm btn-outline-modern view-user-btn" 
                                                     data-user-id="<?php echo $user['id']; ?>"
                                                     title="View Details">
-                                                <i class="fa-solid fa-eye" aria-hidden="true" style="font-size: 0.95rem;"></i>
+                                                <i class="fa-solid fa-eye fs-15" aria-hidden="true"></i>
                                             </button>
                                             <button class="btn btn-sm btn-outline-modern delete-user-btn"
                                                     data-user-id="<?php echo $user['id']; ?>"

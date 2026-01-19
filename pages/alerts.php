@@ -339,7 +339,6 @@ try {
             </div>
         </div>
     </div>
-    <?php endif; ?>
 
     <!-- Breadcrumb -->
     <nav class="hr-breadcrumb" aria-label="Breadcrumb">
@@ -920,6 +919,7 @@ try {
     </div>
 </div>
 </div>
+<?php endif; ?>
 
 <!-- Add Alert Modal -->
 <div class="modal fade" id="addAlertModal" tabindex="-1">
@@ -1205,7 +1205,6 @@ function loadMoreAuditLogs() {
     // Update every minute
     setInterval(updateTime, 60000);
 })();
-<?php endif; ?>
 </script>
 
 <style>
@@ -2094,3 +2093,4 @@ html[data-theme="dark"] .alert-info {
     </div>
 </div>
 
+<?php endif; ?>

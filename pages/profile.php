@@ -333,7 +333,7 @@ if (!empty($display_first_name) || !empty($display_last_name)) {
                                 <!-- Placeholder with initials (shown if no photo) -->
                                 <div class="profile-photo-placeholder" 
                                      id="avatarPlaceholder"
-                                     style="width: 120px; height: 120px; border-radius: 50%; background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1e293b 100%); color: white; display: <?php echo $profile_photo ? 'none' : 'flex'; ?>; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: 700; border: 3px solid #e2e8f0;">
+                                     class="fs-40 fw-bold" style="width: 120px; height: 120px; border-radius: 50%; background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1e293b 100%); color: white; display: <?php echo $profile_photo ? 'none' : 'flex'; ?>; align-items: center; justify-content: center; border: 3px solid #e2e8f0;">
                                     <?php echo htmlspecialchars($initials); ?>
                                 </div>
                             </div>

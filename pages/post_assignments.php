@@ -59,13 +59,11 @@ $all_employees = get_employees();
     <?php if (($_SESSION['user_role'] ?? '') === 'hr_admin'): ?>
     <div class="hrdash-welcome">
         <div class="hrdash-welcome__left">
-            <h2 class="hrdash-welcome__title">
-                <i class="fas fa-users-cog me-2"></i>Post Assignments
-            </h2>
+            <h2 class="hrdash-welcome__title">Post Assignments</h2>
             <p class="hrdash-welcome__subtitle">Manage employee assignments to posts and locations</p>
         </div>
         <div class="hrdash-welcome__actions">
-            <span id="current-time-post-assignments" class="hrdash-welcome__time"><?php echo strtolower(date('h:i A')); ?></span>
+            <span id="current-time-post-assignments" class="hrdash-welcome__time"><?php echo strtoupper(date('g:i A')); ?></span>
             
             <!-- Messages Dropdown -->
             <?php
@@ -138,7 +136,7 @@ $all_employees = get_employees();
                                             <div class="fw-semibold small"><?php echo htmlspecialchars($msg['title'] ?? 'Alert'); ?></div>
                                             <div class="text-muted small"><?php echo htmlspecialchars($employeeName); ?></div>
                                             <?php if ($timeAgo): ?>
-                                                <div class="text-muted" style="font-size: 0.7rem;"><?php echo $timeAgo; ?></div>
+                                                <div class="text-muted fs-11"><?php echo $timeAgo; ?></div>
                                             <?php endif; ?>
                                         </div>
                                     </div>
@@ -231,7 +229,7 @@ $all_employees = get_employees();
                                             <div class="fw-semibold small"><?php echo htmlspecialchars($notif['title'] ?? 'Task'); ?></div>
                                             <div class="text-muted small"><?php echo htmlspecialchars($notif['category'] ?? 'Task'); ?></div>
                                             <?php if ($timeAgo): ?>
-                                                <div class="text-muted" style="font-size: 0.7rem;"><?php echo $timeAgo; ?></div>
+                                                <div class="text-muted fs-11"><?php echo $timeAgo; ?></div>
                                             <?php endif; ?>
                                         </div>
                                     </div>
@@ -271,21 +269,6 @@ $all_employees = get_employees();
     </div>
     <?php endif; ?>
 
-    <!-- Breadcrumb -->
-    <nav class="hr-breadcrumb" aria-label="Breadcrumb">
-        <ol class="hr-breadcrumb__list">
-            <li class="hr-breadcrumb__item">
-                <a href="?page=dashboard" class="hr-breadcrumb__link">Dashboard</a>
-            </li>
-            <li class="hr-breadcrumb__item">
-                <a href="?page=posts" class="hr-breadcrumb__link">Posts &amp; Locations</a>
-            </li>
-            <li class="hr-breadcrumb__item hr-breadcrumb__current" aria-current="page">
-                Post Assignments
-            </li>
-        </ol>
-    </nav>
-
     <!-- Post Selection -->
     <div class="row g-4">
         <div class="col-12">
@@ -294,7 +277,7 @@ $all_employees = get_employees();
             <h5 class="card-title-modern">Select Post to Manage</h5>
         </div>
         <div class="card-body-modern">
-            <div class="row g-3">
+            <div class="row g-4">
                 <div class="col-md-8">
                     <label for="postSelect" class="form-label-modern">Choose a Post</label>
                     <select class="form-select-modern" id="postSelect" onchange="loadPostAssignments(this.value)">
@@ -506,7 +489,7 @@ $all_employees = get_employees();
             const ampm = hours >= 12 ? 'PM' : 'AM';
             const displayHours = hours % 12 || 12;
             const displayMinutes = minutes < 10 ? '0' + minutes : minutes;
-            timeElement.textContent = displayHours + ':' + displayMinutes + ' ' + ampm.toLowerCase();
+            timeElement.textContent = displayHours + ':' + displayMinutes + ' ' + ampm.toUpperCase();
         }
     }
     
@@ -1227,3 +1210,5 @@ if ($_POST['action'] ?? '' === 'remove') {
     }
 }
 ?>
+
+</div> <!-- /.container-fluid -->
