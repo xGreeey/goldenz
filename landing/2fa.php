@@ -118,7 +118,7 @@ ob_end_flush();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
-    <title>Two-Factor Authentication - Golden Z-5 HR</title>
+    <title>Two-Factor Authentication</title>
 
     <!-- Favicon (match login page) -->
     <link rel="icon" type="image/svg+xml" href="../public/logo.svg">

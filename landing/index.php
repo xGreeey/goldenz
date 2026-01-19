@@ -451,7 +451,7 @@ ob_end_flush();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
-    <title>Login - Golden Z-5 HR Management System</title>
+    <title>Login</title>
     
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="../public/logo.svg">
@@ -966,7 +966,7 @@ ob_end_flush();
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <button type="button" class="btn btn-link text-decoration-none p-0 me-2" onclick="window.location.href='?logout=1'" aria-label="Back" style="border: none; background: transparent; color: #6b7280; font-size: 1.25rem;">
+                    <button type="button" class="btn btn-link text-decoration-none p-0 me-2 fs-lg" onclick="window.location.href='?logout=1'" aria-label="Back" style="border: none; background: transparent; color: #6b7280;">
                         <i class="fas fa-arrow-left"></i>
                     </button>
                     <h5 class="modal-title mb-0" id="passwordChangeModalLabel">
@@ -1006,7 +1006,7 @@ ob_end_flush();
                                     <i class="fas fa-eye" id="toggleNewPasswordIcon"></i>
                                 </button>
                             </div>
-                            <small class="text-muted" style="font-size: 0.8125rem;">Must be at least 8 characters long</small>
+                            <small class="text-muted fs-13">Must be at least 8 characters long</small>
                         </div>
 
                         <div class="form-group mb-4">

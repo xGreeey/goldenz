@@ -61,7 +61,7 @@ $activeSection = getActiveSection($page);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo getPageTitle($page); ?> - HR Admin - Golden Z-5 HR System</title>
+    <title><?php echo getPageTitle($page); ?></title>
     
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="<?php echo public_url('logo.svg'); ?>">
@@ -320,14 +320,6 @@ $activeSection = getActiveSection($page);
                            data-page="add_post">
                             <i class="fas fa-plus" aria-hidden="true"></i>
                             <span>Add New Post</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="?page=post_assignments" 
-                           class="nav-link <?php echo ($page === 'post_assignments') ? 'active' : ''; ?>"
-                           data-page="post_assignments">
-                            <i class="fas fa-users-cog" aria-hidden="true"></i>
-                            <span>Assignments</span>
                         </a>
                     </li>
                 </ul>

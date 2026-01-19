@@ -42,234 +42,9 @@ if (!empty($_SESSION['user_id']) && function_exists('get_user_by_id')) {
 }
 ?>
 
-<!-- Header Section (copied from Super Admin Settings) -->
-<div class="hrdash-welcome">
-    <div class="hrdash-welcome__left">
-        <h2 class="hrdash-welcome__title">Account Settings</h2>
-        <p class="hrdash-welcome__subtitle">Manage your account security, profile, and preferences</p>
-    </div>
-    <div class="hrdash-welcome__actions">
-        <span id="current-time-settings" class="hrdash-welcome__time"><?php echo strtolower(date('h:i A')); ?></span>
-        
-        <!-- Messages Dropdown -->
-        <?php
-        // Get recent messages/alerts (last 5 active alerts)
-        $recentMessages = [];
-        if (function_exists('get_employee_alerts')) {
-            try {
-                $recentMessages = get_employee_alerts('active', null);
-                $recentMessages = array_slice($recentMessages, 0, 5);
-            } catch (Exception $e) {
-                $recentMessages = [];
-            }
-        }
-        $messageCount = count($recentMessages);
-        ?>
-        <div class="dropdown">
-            <button class="hrdash-welcome__icon-btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Messages" aria-label="Messages">
-                <i class="fas fa-envelope"></i>
-                <?php if ($messageCount > 0): ?>
-                    <span class="hrdash-welcome__badge"><?php echo $messageCount > 99 ? '99+' : $messageCount; ?></span>
-                <?php endif; ?>
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end hrdash-notification-dropdown">
-                <li class="dropdown-header">
-                    <strong>Messages</strong>
-                    <a href="?page=alerts" class="text-decoration-none ms-auto">View All</a>
-                </li>
-                <li><hr class="dropdown-divider"></li>
-                <?php if (empty($recentMessages)): ?>
-                    <li class="dropdown-item-text text-muted text-center py-3">
-                        <i class="far fa-envelope-open fa-2x mb-2 d-block"></i>
-                        <small>No new messages</small>
-                    </li>
-                <?php else: ?>
-                    <?php foreach ($recentMessages as $msg): 
-                        $priorityClass = '';
-                        $priorityIcon = 'fa-info-circle';
-                        switch(strtolower($msg['priority'] ?? '')) {
-                            case 'urgent':
-                                $priorityClass = 'text-danger';
-                                $priorityIcon = 'fa-exclamation-triangle';
-                                break;
-                            case 'high':
-                                $priorityClass = 'text-warning';
-                                $priorityIcon = 'fa-exclamation-circle';
-                                break;
-                            default:
-                                $priorityClass = 'text-info';
-                        }
-                        $employeeName = trim(($msg['surname'] ?? '') . ', ' . ($msg['first_name'] ?? '') . ' ' . ($msg['middle_name'] ?? ''));
-                        $timeAgo = '';
-                        if (!empty($msg['created_at'])) {
-                            $created = new DateTime($msg['created_at']);
-                            $now = new DateTime();
-                            $diff = $now->diff($created);
-                            if ($diff->days > 0) {
-                                $timeAgo = $diff->days . 'd ago';
-                            } elseif ($diff->h > 0) {
-                                $timeAgo = $diff->h . 'h ago';
-                            } else {
-                                $timeAgo = $diff->i . 'm ago';
-                            }
-                        }
-                    ?>
-                        <li>
-                            <a class="dropdown-item hrdash-notification-item" href="?page=alerts">
-                                <div class="d-flex align-items-start">
-                                    <i class="fas <?php echo $priorityIcon; ?> <?php echo $priorityClass; ?> me-2 mt-1"></i>
-                                    <div class="flex-grow-1">
-                                        <div class="fw-semibold small"><?php echo htmlspecialchars($msg['title'] ?? 'Alert'); ?></div>
-                                        <div class="text-muted small"><?php echo htmlspecialchars($employeeName); ?></div>
-                                        <?php if ($timeAgo): ?>
-                                            <div class="text-muted" style="font-size: 0.7rem;"><?php echo $timeAgo; ?></div>
-                                        <?php endif; ?>
-                                    </div>
-                                </div>
-                            </a>
-                        </li>
-                    <?php endforeach; ?>
-                <?php endif; ?>
-            </ul>
-        </div>
-        
-        <!-- Notifications Dropdown -->
-        <?php
-        // Get recent notifications (pending tasks)
-        $recentNotifications = [];
-        $pendingTasks = 0;
-        if (function_exists('get_all_tasks')) {
-            try {
-                $recentNotifications = get_all_tasks('pending', null, null);
-                $recentNotifications = array_slice($recentNotifications, 0, 5);
-                $pendingTasks = count($recentNotifications);
-            } catch (Exception $e) {
-                $recentNotifications = [];
-            }
-        }
-        if (function_exists('get_pending_task_count')) {
-            try {
-                $pendingTasks = (int) get_pending_task_count();
-            } catch (Exception $e) {
-                $pendingTasks = 0;
-            }
-        }
-        ?>
-        <div class="dropdown">
-            <button class="hrdash-welcome__icon-btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Notifications" aria-label="Notifications">
-                <i class="fas fa-bell"></i>
-                <?php if ($pendingTasks > 0): ?>
-                    <span class="hrdash-welcome__badge"><?php echo $pendingTasks > 99 ? '99+' : $pendingTasks; ?></span>
-                <?php endif; ?>
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end hrdash-notification-dropdown">
-                <li class="dropdown-header">
-                    <strong>Notifications</strong>
-                    <a href="?page=tasks" class="text-decoration-none ms-auto">View All</a>
-                </li>
-                <li><hr class="dropdown-divider"></li>
-                <?php if (empty($recentNotifications)): ?>
-                    <li class="dropdown-item-text text-muted text-center py-3">
-                        <i class="far fa-bell-slash fa-2x mb-2 d-block"></i>
-                        <small>No new notifications</small>
-                    </li>
-                <?php else: ?>
-                    <?php foreach ($recentNotifications as $notif): 
-                        $priorityClass = '';
-                        $priorityIcon = 'fa-circle';
-                        switch(strtolower($notif['priority'] ?? '')) {
-                            case 'urgent':
-                                $priorityClass = 'text-danger';
-                                $priorityIcon = 'fa-exclamation-triangle';
-                                break;
-                            case 'high':
-                                $priorityClass = 'text-warning';
-                                $priorityIcon = 'fa-exclamation-circle';
-                                break;
-                            case 'medium':
-                                $priorityClass = 'text-info';
-                                $priorityIcon = 'fa-info-circle';
-                                break;
-                            default:
-                                $priorityClass = 'text-muted';
-                        }
-                        $timeAgo = '';
-                        if (!empty($notif['created_at'])) {
-                            $created = new DateTime($notif['created_at']);
-                            $now = new DateTime();
-                            $diff = $now->diff($created);
-                            if ($diff->days > 0) {
-                                $timeAgo = $diff->days . 'd ago';
-                            } elseif ($diff->h > 0) {
-                                $timeAgo = $diff->h . 'h ago';
-                            } else {
-                                $timeAgo = $diff->i . 'm ago';
-                            }
-                        }
-                    ?>
-                        <li>
-                            <a class="dropdown-item hrdash-notification-item" href="?page=tasks">
-                                <div class="d-flex align-items-start">
-                                    <i class="fas <?php echo $priorityIcon; ?> <?php echo $priorityClass; ?> me-2 mt-1"></i>
-                                    <div class="flex-grow-1">
-                                        <div class="fw-semibold small"><?php echo htmlspecialchars($notif['title'] ?? 'Task'); ?></div>
-                                        <div class="text-muted small"><?php echo htmlspecialchars($notif['category'] ?? 'Task'); ?></div>
-                                        <?php if ($timeAgo): ?>
-                                            <div class="text-muted" style="font-size: 0.7rem;"><?php echo $timeAgo; ?></div>
-                                        <?php endif; ?>
-                                    </div>
-                                </div>
-                            </a>
-                        </li>
-                    <?php endforeach; ?>
-                <?php endif; ?>
-            </ul>
-        </div>
-        <div class="dropdown">
-            <button class="hrdash-welcome__profile-btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Profile menu">
-                <?php
-                // Get name from first_name and last_name if available, otherwise use session name
-                $displayName = trim((string)($_SESSION['name'] ?? ($_SESSION['username'] ?? 'HR Admin')));
-                if (!empty($current_user_data)) {
-                    $first_name = $current_user_data['first_name'] ?? '';
-                    $last_name = $current_user_data['last_name'] ?? '';
-                    if (!empty($first_name) || !empty($last_name)) {
-                        $displayName = trim($first_name . ' ' . $last_name);
-                    }
-                }
-                
-                $initials = 'HA';
-                if ($displayName) {
-                    $parts = preg_split('/\s+/', $displayName);
-                    $first = $parts[0][0] ?? 'H';
-                    $last = (count($parts) > 1) ? ($parts[count($parts) - 1][0] ?? 'A') : ($parts[0][1] ?? 'A');
-                    $initials = strtoupper($first . $last);
-                }
-                ?>
-                <?php if ($current_user_avatar): ?>
-                    <img src="<?php echo htmlspecialchars($current_user_avatar); ?>" 
-                         alt="<?php echo htmlspecialchars($displayName); ?>" 
-                         class="hrdash-welcome__avatar hrdash-welcome__avatar-img">
-                <?php else: ?>
-                    <span class="hrdash-welcome__avatar"><?php echo htmlspecialchars($initials); ?></span>
-                <?php endif; ?>
-                <i class="fas fa-chevron-down hrdash-welcome__chevron"></i>
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end">
-                <li><a class="dropdown-item" href="?page=profile"><i class="fas fa-user me-2"></i>Profile</a></li>
-                <li><a class="dropdown-item" href="?page=settings"><i class="fas fa-cog me-2"></i>Settings</a></li>
-                <li><hr class="dropdown-divider"></li>
-                <li>
-                    <a class="dropdown-item text-danger" href="<?php echo base_url(); ?>/index.php?logout=1" data-no-transition="true">
-                        <i class="fas fa-right-from-bracket me-2"></i>Logout
-                    </a>
-                </li>
-            </ul>
-        </div>
-    </div>
-</div>
+<!-- Header is now globally managed by includes/page-header.php -->
 
-<div class="container-fluid hr-admin-settings">
+<div class="container-fluid hr-admin-settings hrdash">
 
     <div class="row">
         <!-- Left: Navigation -->
@@ -297,6 +72,13 @@ if (!empty($_SESSION['user_id']) && function_exists('get_user_by_id')) {
                                 data-bs-target="#preferences"
                                 type="button" role="tab">
                             <i class="fas fa-cog me-2"></i>Preferences
+                        </button>
+                        <button class="list-group-item list-group-item-action"
+                                id="activity-log-tab"
+                                data-bs-toggle="list"
+                                data-bs-target="#activity-log"
+                                type="button" role="tab">
+                            <i class="fas fa-history me-2"></i>Activity Log
                         </button>
                     </div>
                 </div>
@@ -468,7 +250,7 @@ if (!empty($_SESSION['user_id']) && function_exists('get_user_by_id')) {
                                                      style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 3px solid #e2e8f0; display: block;">
                                             <?php else: ?>
                                                 <div class="profile-photo-placeholder" 
-                                                     style="width: 120px; height: 120px; border-radius: 50%; background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1e293b 100%); color: white; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: 700; border: 3px solid #e2e8f0;">
+                                                     class="fs-40 fw-bold" style="width: 120px; height: 120px; border-radius: 50%; background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1e293b 100%); color: white; display: flex; align-items: center; justify-content: center; border: 3px solid #e2e8f0;">
                                                     <?php echo htmlspecialchars($profile_initials); ?>
                                                 </div>
                                             <?php endif; ?>
@@ -574,10 +356,313 @@ if (!empty($_SESSION['user_id']) && function_exists('get_user_by_id')) {
                         </div>
                     </div>
                 </div>
+
+                <!-- Activity Log -->
+                <div class="tab-pane fade" id="activity-log" role="tabpanel">
+                    <?php
+                    // Get activity log for current user
+                    $activity_filters = [
+                        'user_id' => $current_user_id,
+                        'action' => trim($_GET['activity_action'] ?? ''),
+                        'table_name' => trim($_GET['activity_table'] ?? ''),
+                        'date_from' => trim($_GET['activity_date_from'] ?? ''),
+                        'date_to' => trim($_GET['activity_date_to'] ?? ''),
+                    ];
+                    
+                    $activity_page = max(1, (int)($_GET['activity_p'] ?? 1));
+                    $activity_per_page = 15;
+                    $activity_offset = ($activity_page - 1) * $activity_per_page;
+                    
+                    $activity_logs = get_audit_logs($activity_filters, $activity_per_page, $activity_offset);
+                    $activity_total = get_audit_logs_count($activity_filters);
+                    $activity_total_pages = max(1, (int)ceil($activity_total / $activity_per_page));
+                    
+                    // Get distinct actions for this user
+                    try {
+                        $user_actions_stmt = execute_query(
+                            "SELECT DISTINCT action FROM audit_logs WHERE user_id = ? ORDER BY action ASC",
+                            [$current_user_id]
+                        );
+                        $user_actions = $user_actions_stmt->fetchAll(PDO::FETCH_COLUMN) ?: [];
+                        
+                        $user_tables_stmt = execute_query(
+                            "SELECT DISTINCT table_name FROM audit_logs WHERE user_id = ? AND table_name IS NOT NULL AND table_name <> '' ORDER BY table_name ASC",
+                            [$current_user_id]
+                        );
+                        $user_tables = $user_tables_stmt->fetchAll(PDO::FETCH_COLUMN) ?: [];
+                    } catch (Exception $e) {
+                        $user_actions = [];
+                        $user_tables = [];
+                    }
+                    ?>
+                    
+                    <div class="card card-modern mb-4">
+                        <div class="card-body-modern">
+                            <div class="card-header-modern mb-3">
+                                <h5 class="card-title-modern">Your Activity History</h5>
+                                <small class="card-subtitle">Review your actions and changes in the system.</small>
+                            </div>
+
+                            <!-- Filters -->
+                            <form method="GET" action="" class="row g-3 mb-4">
+                                <input type="hidden" name="page" value="settings">
+                                
+                                <div class="col-md-3">
+                                    <label class="form-label">Action</label>
+                                    <select name="activity_action" class="form-select form-select-sm" onchange="this.form.submit()">
+                                        <option value="">All actions</option>
+                                        <?php foreach ($user_actions as $action): ?>
+                                            <option value="<?php echo htmlspecialchars($action); ?>" 
+                                                <?php echo $activity_filters['action'] === $action ? 'selected' : ''; ?>>
+                                                <?php echo htmlspecialchars($action); ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+                                
+                                <div class="col-md-3">
+                                    <label class="form-label">Table</label>
+                                    <select name="activity_table" class="form-select form-select-sm" onchange="this.form.submit()">
+                                        <option value="">All tables</option>
+                                        <?php foreach ($user_tables as $tbl): ?>
+                                            <option value="<?php echo htmlspecialchars($tbl); ?>" 
+                                                <?php echo $activity_filters['table_name'] === $tbl ? 'selected' : ''; ?>>
+                                                <?php echo htmlspecialchars($tbl); ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+                                
+                                <div class="col-md-2">
+                                    <label class="form-label">From Date</label>
+                                    <input type="date" name="activity_date_from" 
+                                           value="<?php echo htmlspecialchars($activity_filters['date_from']); ?>" 
+                                           class="form-control form-control-sm">
+                                </div>
+                                
+                                <div class="col-md-2">
+                                    <label class="form-label">To Date</label>
+                                    <input type="date" name="activity_date_to" 
+                                           value="<?php echo htmlspecialchars($activity_filters['date_to']); ?>" 
+                                           class="form-control form-control-sm">
+                                </div>
+                                
+                                <div class="col-md-2 d-flex align-items-end gap-2">
+                                    <button type="submit" class="btn btn-primary-modern btn-sm">
+                                        <i class="fas fa-filter me-1"></i>Filter
+                                    </button>
+                                    <a href="?page=settings" class="btn btn-outline-modern btn-sm">
+                                        <i class="fas fa-times"></i>
+                                    </a>
+                                </div>
+                            </form>
+
+                            <!-- Activity Stats -->
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-12">
+                                    <div class="d-flex align-items-center gap-3 flex-wrap">
+                                        <div class="badge badge-primary-modern">
+                                            <i class="fas fa-history me-1"></i>
+                                            <?php echo number_format($activity_total); ?> Total Activities
+                                        </div>
+                                        <?php if (!empty(array_filter(array_slice($activity_filters, 1)))): ?>
+                                            <div class="badge badge-warning-modern">
+                                                <i class="fas fa-filter me-1"></i>
+                                                Filtered Results
+                                            </div>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Activity Table -->
+                            <?php if (empty($activity_logs)): ?>
+                                <div class="alert alert-info mb-0">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    No activity found for the selected filters.
+                                </div>
+                            <?php else: ?>
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle mb-0" style="font-size: 0.875rem;">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th style="width: 180px;">Date & Time</th>
+                                                <th style="width: 140px;">Action</th>
+                                                <th>Table / Record</th>
+                                                <th style="width: 120px;">IP Address</th>
+                                                <th style="width: 100px;">Details</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <?php foreach ($activity_logs as $log): ?>
+                                                <tr>
+                                                    <td class="text-nowrap small">
+                                                        <?php echo htmlspecialchars(date('M d, Y', strtotime($log['created_at']))); ?>
+                                                        <br>
+                                                        <span class="text-muted"><?php echo htmlspecialchars(date('g:i A', strtotime($log['created_at']))); ?></span>
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge badge-secondary-modern text-uppercase">
+                                                            <?php echo htmlspecialchars($log['action']); ?>
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <div class="small">
+                                                            <strong><?php echo htmlspecialchars($log['table_name'] ?: 'N/A'); ?></strong>
+                                                            <?php if (!empty($log['related_record'])): ?>
+                                                                <br>
+                                                                <span class="text-muted">
+                                                                    <?php echo htmlspecialchars($log['related_record']['display_name'] ?? ''); ?>
+                                                                </span>
+                                                            <?php elseif ($log['record_id']): ?>
+                                                                <br>
+                                                                <span class="text-muted">ID: <?php echo htmlspecialchars($log['record_id']); ?></span>
+                                                            <?php endif; ?>
+                                                        </div>
+                                                    </td>
+                                                    <td class="small text-muted">
+                                                        <?php echo htmlspecialchars($log['ip_address'] ?: 'N/A'); ?>
+                                                    </td>
+                                                    <td>
+                                                        <?php
+                                                        $old = $log['old_values'] ? @json_decode($log['old_values'], true) : null;
+                                                        $new = $log['new_values'] ? @json_decode($log['new_values'], true) : null;
+                                                        ?>
+                                                        <?php if ($old || $new): ?>
+                                                            <button type="button" 
+                                                                    class="btn btn-outline-modern btn-sm" 
+                                                                    data-bs-toggle="modal" 
+                                                                    data-bs-target="#activityModal<?php echo $log['id']; ?>">
+                                                                <i class="fas fa-eye"></i>
+                                                            </button>
+                                                            
+                                                            <!-- Modal for details -->
+                                                            <div class="modal fade" id="activityModal<?php echo $log['id']; ?>" tabindex="-1">
+                                                                <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                                                                    <div class="modal-content">
+                                                                        <div class="modal-header">
+                                                                            <h5 class="modal-title">Activity Details</h5>
+                                                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                                        </div>
+                                                                        <div class="modal-body">
+                                                                            <dl class="row mb-3">
+                                                                                <dt class="col-sm-3">Date & Time:</dt>
+                                                                                <dd class="col-sm-9"><?php echo htmlspecialchars(date('F j, Y, g:i A', strtotime($log['created_at']))); ?></dd>
+                                                                                
+                                                                                <dt class="col-sm-3">Action:</dt>
+                                                                                <dd class="col-sm-9"><span class="badge badge-secondary-modern"><?php echo htmlspecialchars($log['action']); ?></span></dd>
+                                                                                
+                                                                                <dt class="col-sm-3">Table:</dt>
+                                                                                <dd class="col-sm-9"><?php echo htmlspecialchars($log['table_name'] ?: 'N/A'); ?></dd>
+                                                                                
+                                                                                <dt class="col-sm-3">Record ID:</dt>
+                                                                                <dd class="col-sm-9"><?php echo htmlspecialchars($log['record_id'] ?: 'N/A'); ?></dd>
+                                                                            </dl>
+                                                                            
+                                                                            <?php if ($old): ?>
+                                                                                <div class="mb-3">
+                                                                                    <h6 class="fw-bold">Before Changes:</h6>
+                                                                                    <pre class="bg-light p-3 rounded" style="font-size: 0.75rem; max-height: 300px; overflow-y: auto;"><?php echo htmlspecialchars(json_encode($old, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)); ?></pre>
+                                                                                </div>
+                                                                            <?php endif; ?>
+                                                                            
+                                                                            <?php if ($new): ?>
+                                                                                <div class="mb-3">
+                                                                                    <h6 class="fw-bold">After Changes:</h6>
+                                                                                    <pre class="bg-light p-3 rounded" style="font-size: 0.75rem; max-height: 300px; overflow-y: auto;"><?php echo htmlspecialchars(json_encode($new, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)); ?></pre>
+                                                                                </div>
+                                                                            <?php endif; ?>
+                                                                        </div>
+                                                                        <div class="modal-footer">
+                                                                            <button type="button" class="btn btn-secondary-modern" data-bs-dismiss="modal">Close</button>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        <?php else: ?>
+                                                            <span class="text-muted small">—</span>
+                                                        <?php endif; ?>
+                                                    </td>
+                                                </tr>
+                                            <?php endforeach; ?>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <!-- Pagination -->
+                                <?php if ($activity_total_pages > 1): ?>
+                                    <nav class="mt-4" aria-label="Activity log pagination">
+                                        <ul class="pagination pagination-sm justify-content-center mb-0">
+                                            <?php if ($activity_page > 1): ?>
+                                                <li class="page-item">
+                                                    <a class="page-link" href="?page=settings&activity_p=<?php echo $activity_page - 1; ?><?php echo !empty($activity_filters['action']) ? '&activity_action=' . urlencode($activity_filters['action']) : ''; ?><?php echo !empty($activity_filters['table_name']) ? '&activity_table=' . urlencode($activity_filters['table_name']) : ''; ?><?php echo !empty($activity_filters['date_from']) ? '&activity_date_from=' . urlencode($activity_filters['date_from']) : ''; ?><?php echo !empty($activity_filters['date_to']) ? '&activity_date_to=' . urlencode($activity_filters['date_to']) : ''; ?>">
+                                                        <i class="fas fa-chevron-left"></i> Previous
+                                                    </a>
+                                                </li>
+                                            <?php endif; ?>
+                                            
+                                            <?php
+                                            $start_page = max(1, $activity_page - 2);
+                                            $end_page = min($activity_total_pages, $activity_page + 2);
+                                            
+                                            for ($i = $start_page; $i <= $end_page; $i++):
+                                            ?>
+                                                <li class="page-item <?php echo $i === $activity_page ? 'active' : ''; ?>">
+                                                    <a class="page-link" href="?page=settings&activity_p=<?php echo $i; ?><?php echo !empty($activity_filters['action']) ? '&activity_action=' . urlencode($activity_filters['action']) : ''; ?><?php echo !empty($activity_filters['table_name']) ? '&activity_table=' . urlencode($activity_filters['table_name']) : ''; ?><?php echo !empty($activity_filters['date_from']) ? '&activity_date_from=' . urlencode($activity_filters['date_from']) : ''; ?><?php echo !empty($activity_filters['date_to']) ? '&activity_date_to=' . urlencode($activity_filters['date_to']) : ''; ?>">
+                                                        <?php echo $i; ?>
+                                                    </a>
+                                                </li>
+                                            <?php endfor; ?>
+                                            
+                                            <?php if ($activity_page < $activity_total_pages): ?>
+                                                <li class="page-item">
+                                                    <a class="page-link" href="?page=settings&activity_p=<?php echo $activity_page + 1; ?><?php echo !empty($activity_filters['action']) ? '&activity_action=' . urlencode($activity_filters['action']) : ''; ?><?php echo !empty($activity_filters['table_name']) ? '&activity_table=' . urlencode($activity_filters['table_name']) : ''; ?><?php echo !empty($activity_filters['date_from']) ? '&activity_date_from=' . urlencode($activity_filters['date_from']) : ''; ?><?php echo !empty($activity_filters['date_to']) ? '&activity_date_to=' . urlencode($activity_filters['date_to']) : ''; ?>">
+                                                        Next <i class="fas fa-chevron-right"></i>
+                                                    </a>
+                                                </li>
+                                            <?php endif; ?>
+                                        </ul>
+                                    </nav>
+                                <?php endif; ?>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+<!-- JavaScript for Activity Log Tab -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Check if there are activity filter parameters in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const hasActivityParams = urlParams.has('activity_action') || 
+                               urlParams.has('activity_table') || 
+                               urlParams.has('activity_date_from') || 
+                               urlParams.has('activity_date_to') || 
+                               urlParams.has('activity_p');
+    
+    // If activity parameters exist, switch to Activity Log tab
+    if (hasActivityParams) {
+        const activityTab = document.getElementById('activity-log-tab');
+        if (activityTab) {
+            const bsTab = new bootstrap.Tab(activityTab);
+            bsTab.show();
+        }
+    }
+    
+    // Handle hash navigation for direct tab access
+    if (window.location.hash === '#activity-log') {
+        const activityTab = document.getElementById('activity-log-tab');
+        if (activityTab) {
+            const bsTab = new bootstrap.Tab(activityTab);
+            bsTab.show();
+        }
+    }
+});
+</script>
 
 <!-- Password Expiry Modal - Forces password change when expired -->
 <?php if ($password_expired): ?>
@@ -1352,7 +1437,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const ampm = hours >= 12 ? 'PM' : 'AM';
             const displayHours = hours % 12 || 12;
             const displayMinutes = minutes < 10 ? '0' + minutes : minutes;
-            timeElement.textContent = displayHours + ':' + displayMinutes + ' ' + ampm.toLowerCase();
+            timeElement.textContent = displayHours + ':' + displayMinutes + ' ' + ampm.toUpperCase();
         }
     }
     
