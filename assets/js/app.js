@@ -243,13 +243,24 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Initialize modals without backdrops to keep background interactive
-    var modalList = [].slice.call(document.querySelectorAll('.modal'));
+    // EXCEPT for createUserModal which needs a backdrop
+    var modalList = [].slice.call(document.querySelectorAll('.modal:not(#createUserModal)'));
     var modalArray = modalList.map(function (modalEl) {
         return new bootstrap.Modal(modalEl, {
             backdrop: false,
             keyboard: true
         });
     });
+    
+    // Clean up any lingering backdrops from previous page loads
+    // This fixes issues where backdrops remain after page refresh
+    const existingBackdrops = document.querySelectorAll('.modal-backdrop');
+    if (existingBackdrops.length > 0) {
+        existingBackdrops.forEach(backdrop => backdrop.remove());
+        document.body.classList.remove('modal-open');
+        document.body.style.overflow = '';
+        document.body.style.paddingRight = '';
+    }
 });
 
 // Also re-run after AJAX-style page transitions (page-transitions.js dispatches `pageLoaded`)

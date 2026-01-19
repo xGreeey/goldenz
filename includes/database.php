@@ -3445,18 +3445,581 @@ if (!function_exists('update_password_policy')) {
     }
 }
 
+// Backup settings helpers
+if (!function_exists('get_backup_settings')) {
+    /**
+     * Get backup settings.
+     * Returns array with keys:
+     * - frequency (string: 'manual', 'daily', 'weekly')
+     * - retention_days (int)
+     * - backup_location (string)
+     */
+    function get_backup_settings() {
+        $defaults = [
+            'frequency' => 'daily',
+            'retention_days' => 90,
+            'backup_location' => 'storage/backups',
+        ];
+
+        try {
+            $pdo = get_db_connection();
+
+            // Create table if it does not exist
+            $pdo->exec("CREATE TABLE IF NOT EXISTS security_settings (
+                `key` VARCHAR(100) NOT NULL PRIMARY KEY,
+                `value` VARCHAR(255) NULL,
+                `updated_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+            $stmt = $pdo->query("SELECT `key`, `value` FROM security_settings WHERE `key` LIKE 'backup_%'");
+            $rows = $stmt ? $stmt->fetchAll(PDO::FETCH_KEY_PAIR) : [];
+
+            $settings = $defaults;
+
+            if (isset($rows['backup_frequency'])) {
+                $valid_frequencies = ['manual', 'daily', 'weekly'];
+                if (in_array($rows['backup_frequency'], $valid_frequencies)) {
+                    $settings['frequency'] = $rows['backup_frequency'];
+                }
+            }
+
+            if (isset($rows['backup_retention_days']) && is_numeric($rows['backup_retention_days'])) {
+                $settings['retention_days'] = max(1, (int)$rows['backup_retention_days']);
+            }
+
+            if (isset($rows['backup_location']) && !empty($rows['backup_location'])) {
+                $settings['backup_location'] = $rows['backup_location'];
+            }
+
+            return $settings;
+        } catch (Exception $e) {
+            error_log("Error in get_backup_settings: " . $e->getMessage());
+            return $defaults;
+        }
+    }
+}
+
+if (!function_exists('update_backup_settings')) {
+    /**
+     * Update backup settings.
+     */
+    function update_backup_settings($frequency, $retention_days, $backup_location) {
+        try {
+            $pdo = get_db_connection();
+
+            // Ensure table exists
+            $pdo->exec("CREATE TABLE IF NOT EXISTS security_settings (
+                `key` VARCHAR(100) NOT NULL PRIMARY KEY,
+                `value` VARCHAR(255) NULL,
+                `updated_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+            // Validate frequency
+            $valid_frequencies = ['manual', 'daily', 'weekly'];
+            if (!in_array($frequency, $valid_frequencies)) {
+                $frequency = 'daily';
+            }
+
+            // Validate retention days
+            $retention_days = max(1, (int)$retention_days);
+
+            // Sanitize backup location
+            $backup_location = trim($backup_location);
+            if (empty($backup_location)) {
+                $backup_location = 'storage/backups';
+            }
+
+            $settings = [
+                'backup_frequency' => $frequency,
+                'backup_retention_days' => (string)$retention_days,
+                'backup_location' => $backup_location,
+            ];
+
+            $stmt = $pdo->prepare("INSERT INTO security_settings (`key`, `value`) VALUES (:key, :value)
+                                   ON DUPLICATE KEY UPDATE `value` = VALUES(`value`)");
+
+            foreach ($settings as $key => $value) {
+                $stmt->execute([':key' => $key, ':value' => $value]);
+            }
+
+            return true;
+        } catch (Exception $e) {
+            error_log("Error in update_backup_settings: " . $e->getMessage());
+            return false;
+        }
+    }
+}
+
+if (!function_exists('create_database_backup')) {
+    /**
+     * Create a database backup.
+     * Returns array with success status and file path or error message.
+     */
+    function create_database_backup() {
+        try {
+            $pdo = get_db_connection();
+            $settings = get_backup_settings();
+            
+            // Get database config
+            $db_config = [
+                'host' => $_ENV['DB_HOST'] ?? 'localhost',
+                'username' => $_ENV['DB_USERNAME'] ?? 'root',
+                'password' => $_ENV['DB_PASSWORD'] ?? '',
+                'database' => $_ENV['DB_DATABASE'] ?? 'goldenz_hr',
+            ];
+
+            // Create backup directory if it doesn't exist
+            $backup_dir = __DIR__ . '/../' . $settings['backup_location'];
+            if (!file_exists($backup_dir)) {
+                if (!mkdir($backup_dir, 0755, true)) {
+                    return ['success' => false, 'message' => 'Failed to create backup directory'];
+                }
+            }
+
+            // Generate backup filename
+            $timestamp = date('Y-m-d_His');
+            $filename = "backup_{$db_config['database']}_{$timestamp}.sql";
+            $filepath = $backup_dir . '/' . $filename;
+
+            // Use mysqldump if available (preferred method)
+            $mysqldump_path = '';
+            if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+                // Windows - try common XAMPP paths
+                $possible_paths = [
+                    'C:\\xampp\\mysql\\bin\\mysqldump.exe',
+                    'C:\\wamp\\bin\\mysql\\mysql' . (version_compare(PHP_VERSION, '7.0', '>=') ? '5.7' : '5.6') . '\\bin\\mysqldump.exe',
+                    'mysqldump.exe', // If in PATH
+                ];
+                foreach ($possible_paths as $path) {
+                    if (file_exists($path)) {
+                        $mysqldump_path = $path;
+                        break;
+                    }
+                }
+            } else {
+                // Linux/Unix
+                $mysqldump_path = 'mysqldump'; // Assume in PATH
+            }
+
+            if (!empty($mysqldump_path) && (file_exists($mysqldump_path) || $mysqldump_path === 'mysqldump')) {
+                // Use mysqldump
+                $command = sprintf(
+                    '"%s" --host=%s --user=%s --password=%s %s > "%s" 2>&1',
+                    $mysqldump_path,
+                    escapeshellarg($db_config['host']),
+                    escapeshellarg($db_config['username']),
+                    escapeshellarg($db_config['password']),
+                    escapeshellarg($db_config['database']),
+                    escapeshellarg($filepath)
+                );
+
+                exec($command, $output, $return_var);
+
+                if ($return_var !== 0 || !file_exists($filepath) || filesize($filepath) === 0) {
+                    // Fallback to PHP-based backup
+                    return create_database_backup_php($pdo, $filepath, $db_config['database']);
+                }
+            } else {
+                // Use PHP-based backup
+                return create_database_backup_php($pdo, $filepath, $db_config['database']);
+            }
+
+            // Record backup in database
+            try {
+                $pdo->exec("CREATE TABLE IF NOT EXISTS backup_history (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    filename VARCHAR(255) NOT NULL,
+                    filepath VARCHAR(500) NOT NULL,
+                    file_size BIGINT NOT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    INDEX idx_created_at (created_at)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+                $stmt = $pdo->prepare("INSERT INTO backup_history (filename, filepath, file_size) VALUES (?, ?, ?)");
+                $stmt->execute([$filename, $settings['backup_location'] . '/' . $filename, filesize($filepath)]);
+            } catch (Exception $e) {
+                error_log("Error recording backup in database: " . $e->getMessage());
+            }
+
+            // Clean up old backups based on retention policy
+            cleanup_old_backups();
+
+            return [
+                'success' => true,
+                'message' => 'Backup created successfully',
+                'filename' => $filename,
+                'filepath' => $settings['backup_location'] . '/' . $filename,
+                'size' => filesize($filepath)
+            ];
+        } catch (Exception $e) {
+            error_log("Error in create_database_backup: " . $e->getMessage());
+            return ['success' => false, 'message' => 'Failed to create backup: ' . $e->getMessage()];
+        }
+    }
+}
+
+if (!function_exists('create_database_backup_php')) {
+    /**
+     * Create database backup using PHP (fallback method).
+     */
+    function create_database_backup_php($pdo, $filepath, $database) {
+        try {
+            $output = "-- Golden Z-5 HR System Database Backup\n";
+            $output .= "-- Generated: " . date('Y-m-d H:i:s') . "\n";
+            $output .= "-- Database: {$database}\n\n";
+            $output .= "SET SQL_MODE = \"NO_AUTO_VALUE_ON_ZERO\";\n";
+            $output .= "SET time_zone = \"+00:00\";\n\n";
+
+            // Get all tables
+            $tables = $pdo->query("SHOW TABLES")->fetchAll(PDO::FETCH_COLUMN);
+
+            foreach ($tables as $table) {
+                $output .= "\n-- Table structure for table `{$table}`\n";
+                $output .= "DROP TABLE IF EXISTS `{$table}`;\n";
+
+                // Get table structure
+                $create_table = $pdo->query("SHOW CREATE TABLE `{$table}`")->fetch(PDO::FETCH_ASSOC);
+                $output .= $create_table['Create Table'] . ";\n\n";
+
+                // Get table data
+                $rows = $pdo->query("SELECT * FROM `{$table}`")->fetchAll(PDO::FETCH_ASSOC);
+                if (count($rows) > 0) {
+                    $output .= "-- Dumping data for table `{$table}`\n";
+                    $output .= "LOCK TABLES `{$table}` WRITE;\n";
+
+                    foreach ($rows as $row) {
+                        $values = [];
+                        foreach ($row as $value) {
+                            if ($value === null) {
+                                $values[] = 'NULL';
+                            } else {
+                                $values[] = $pdo->quote($value);
+                            }
+                        }
+                        $output .= "INSERT INTO `{$table}` VALUES (" . implode(',', $values) . ");\n";
+                    }
+
+                    $output .= "UNLOCK TABLES;\n\n";
+                }
+            }
+
+            if (file_put_contents($filepath, $output) === false) {
+                return ['success' => false, 'message' => 'Failed to write backup file'];
+            }
+
+            return [
+                'success' => true,
+                'message' => 'Backup created successfully',
+                'filename' => basename($filepath),
+                'filepath' => str_replace(__DIR__ . '/../', '', $filepath),
+                'size' => filesize($filepath)
+            ];
+        } catch (Exception $e) {
+            error_log("Error in create_database_backup_php: " . $e->getMessage());
+            return ['success' => false, 'message' => 'Failed to create backup: ' . $e->getMessage()];
+        }
+    }
+}
+
+if (!function_exists('cleanup_old_backups')) {
+    /**
+     * Clean up old backups based on retention policy.
+     */
+    function cleanup_old_backups() {
+        try {
+            $settings = get_backup_settings();
+            $retention_days = (int)$settings['retention_days'];
+            
+            if ($retention_days <= 0) {
+                return; // Keep forever
+            }
+
+            $backup_dir = __DIR__ . '/../' . $settings['backup_location'];
+            if (!is_dir($backup_dir)) {
+                return;
+            }
+
+            $cutoff_time = time() - ($retention_days * 24 * 60 * 60);
+            $deleted_count = 0;
+
+            $files = glob($backup_dir . '/backup_*.sql');
+            foreach ($files as $file) {
+                if (filemtime($file) < $cutoff_time) {
+                    if (@unlink($file)) {
+                        $deleted_count++;
+                    }
+                }
+            }
+
+            // Also clean up database records
+            try {
+                $pdo = get_db_connection();
+                $pdo->exec("CREATE TABLE IF NOT EXISTS backup_history (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    filename VARCHAR(255) NOT NULL,
+                    filepath VARCHAR(500) NOT NULL,
+                    file_size BIGINT NOT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    INDEX idx_created_at (created_at)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+                $stmt = $pdo->prepare("DELETE FROM backup_history WHERE created_at < DATE_SUB(NOW(), INTERVAL ? DAY)");
+                $stmt->execute([$retention_days]);
+            } catch (Exception $e) {
+                error_log("Error cleaning up backup history: " . $e->getMessage());
+            }
+
+            return $deleted_count;
+        } catch (Exception $e) {
+            error_log("Error in cleanup_old_backups: " . $e->getMessage());
+            return 0;
+        }
+    }
+}
+
+if (!function_exists('get_backup_list')) {
+    /**
+     * Get list of available backups.
+     */
+    function get_backup_list() {
+        try {
+            $settings = get_backup_settings();
+            $backup_dir = __DIR__ . '/../' . $settings['backup_location'];
+            
+            if (!is_dir($backup_dir)) {
+                return [];
+            }
+
+            $backups = [];
+            $files = glob($backup_dir . '/backup_*.sql');
+            
+            foreach ($files as $file) {
+                $backups[] = [
+                    'filename' => basename($file),
+                    'filepath' => $settings['backup_location'] . '/' . basename($file),
+                    'size' => filesize($file),
+                    'created_at' => date('Y-m-d H:i:s', filemtime($file)),
+                    'timestamp' => filemtime($file)
+                ];
+            }
+
+            // Sort by timestamp descending (newest first)
+            usort($backups, function($a, $b) {
+                return $b['timestamp'] - $a['timestamp'];
+            });
+
+            return $backups;
+        } catch (Exception $e) {
+            error_log("Error in get_backup_list: " . $e->getMessage());
+            return [];
+        }
+    }
+}
+
 // Create new user
+// Generate secure password with mixed case, numbers, and symbols
+if (!function_exists('generate_secure_password')) {
+    function generate_secure_password($length = 12) {
+        // Character sets
+        $lowercase = 'abcdefghijklmnopqrstuvwxyz';
+        $uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $numbers = '0123456789';
+        $symbols = '!@#$%^&*()_+-=[]{}|;:,.<>?';
+        
+        // Ensure at least one character from each set
+        $password = '';
+        $password .= $lowercase[random_int(0, strlen($lowercase) - 1)];
+        $password .= $uppercase[random_int(0, strlen($uppercase) - 1)];
+        $password .= $numbers[random_int(0, strlen($numbers) - 1)];
+        $password .= $symbols[random_int(0, strlen($symbols) - 1)];
+        
+        // Fill the rest with random characters from all sets
+        $all_chars = $lowercase . $uppercase . $numbers . $symbols;
+        for ($i = strlen($password); $i < $length; $i++) {
+            $password .= $all_chars[random_int(0, strlen($all_chars) - 1)];
+        }
+        
+        // Shuffle to avoid predictable pattern
+        return str_shuffle($password);
+    }
+}
+
+// Send new user credentials email
+if (!function_exists('send_new_user_credentials_email')) {
+    function send_new_user_credentials_email($email, $username, $password, $first_name = '', $last_name = '') {
+        try {
+            // Load PHPMailer
+            $phpmailer_path = __DIR__ . '/../config/vendor/autoload.php';
+            if (!file_exists($phpmailer_path)) {
+                error_log('PHPMailer not found at: ' . $phpmailer_path);
+                return false;
+            }
+            
+            require_once $phpmailer_path;
+            
+            $mail = new \PHPMailer\PHPMailer\PHPMailer(true);
+            
+            // Get SMTP configuration from environment
+            $smtp_host = $_ENV['SMTP_HOST'] ?? null;
+            $smtp_username = $_ENV['SMTP_USERNAME'] ?? null;
+            $smtp_password = $_ENV['SMTP_PASSWORD'] ?? null;
+            $smtp_port = $_ENV['SMTP_PORT'] ?? '587';
+            $smtp_encryption_raw = $_ENV['SMTP_ENCRYPTION'] ?? 'tls';
+            $mail_from_address = $_ENV['MAIL_FROM_ADDRESS'] ?? null;
+            $mail_from_name = $_ENV['MAIL_FROM_NAME'] ?? 'Golden Z-5 HR System';
+            
+            if (empty($smtp_host) || empty($smtp_username) || empty($smtp_password) || empty($mail_from_address)) {
+                error_log('SMTP configuration incomplete. Cannot send new user credentials email.');
+                return false;
+            }
+            
+            // Map encryption string to PHPMailer constant
+            $smtp_encryption = \PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
+            if (strtolower($smtp_encryption_raw) === 'ssl') {
+                $smtp_encryption = \PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_SMTPS;
+            }
+            
+            // SMTP Configuration
+            $mail->isSMTP();
+            $mail->Host = $smtp_host;
+            $mail->SMTPAuth = true;
+            $mail->Username = $smtp_username;
+            $mail->Password = $smtp_password;
+            $mail->SMTPSecure = $smtp_encryption;
+            $mail->Port = (int)$smtp_port;
+            $mail->CharSet = 'UTF-8';
+            
+            // Email content
+            $mail->setFrom($mail_from_address, $mail_from_name);
+            $mail->addAddress($email);
+            $mail->Subject = 'Your Golden Z-5 HR System Account Credentials';
+            
+            // Build user name
+            $user_name = trim(($first_name ?? '') . ' ' . ($last_name ?? ''));
+            if (empty($user_name)) {
+                $user_name = $username;
+            }
+            
+            // Login URL
+            $login_url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http') . 
+                        '://' . $_SERVER['HTTP_HOST'] . 
+                        dirname(dirname($_SERVER['PHP_SELF'])) . 
+                        '/landing/index.php';
+            
+            // HTML body
+            $mail->isHTML(true);
+            $mail->Body = "
+                <html>
+                <head>
+                    <style>
+                        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                        .header { background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1e293b 100%); color: white; padding: 20px; border-radius: 8px 8px 0 0; }
+                        .content { background: #f8f9fa; padding: 30px; border-radius: 0 0 8px 8px; }
+                        .credentials { background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #1e3a8a; }
+                        .credential-item { margin: 10px 0; }
+                        .label { font-weight: bold; color: #1e3a8a; }
+                        .value { font-family: monospace; font-size: 14px; background: #f1f3f5; padding: 8px; border-radius: 4px; }
+                        .warning { background: #fff3cd; border: 1px solid #ffc107; padding: 15px; border-radius: 8px; margin: 20px 0; }
+                        .button { display: inline-block; background: #1e3a8a; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin: 20px 0; }
+                        .footer { text-align: center; color: #6c757d; font-size: 12px; margin-top: 30px; }
+                    </style>
+                </head>
+                <body>
+                    <div class='container'>
+                        <div class='header'>
+                            <h2>Welcome to Golden Z-5 HR System</h2>
+                        </div>
+                        <div class='content'>
+                            <p>Hello " . htmlspecialchars($user_name) . ",</p>
+                            <p>Your account has been created successfully. Please find your login credentials below:</p>
+                            
+                            <div class='credentials'>
+                                <div class='credential-item'>
+                                    <span class='label'>Username:</span><br>
+                                    <span class='value'>" . htmlspecialchars($username) . "</span>
+                                </div>
+                                <div class='credential-item'>
+                                    <span class='label'>Temporary Password:</span><br>
+                                    <span class='value'>" . htmlspecialchars($password) . "</span>
+                                </div>
+                            </div>
+                            
+                            <div class='warning'>
+                                <strong>⚠️ Important Security Notice:</strong><br>
+                                For your security, you <strong>must change your password</strong> immediately after your first login. 
+                                You will be prompted to change your password when you log in for the first time.
+                            </div>
+                            
+                            <p>
+                                <a href='" . htmlspecialchars($login_url) . "' class='button'>Login to Your Account</a>
+                            </p>
+                            
+                            <p>If you have any questions or need assistance, please contact your system administrator.</p>
+                        </div>
+                        <div class='footer'>
+                            <p>This is an automated message. Please do not reply to this email.</p>
+                            <p>&copy; " . date('Y') . " Golden Z-5 HR System. All rights reserved.</p>
+                        </div>
+                    </div>
+                </body>
+                </html>
+            ";
+            
+            // Plain text alternative
+            $mail->AltBody = "Hello " . $user_name . ",\n\n" .
+                           "Your account has been created successfully.\n\n" .
+                           "Login Credentials:\n" .
+                           "Username: " . $username . "\n" .
+                           "Temporary Password: " . $password . "\n\n" .
+                           "IMPORTANT: You must change your password immediately after your first login.\n\n" .
+                           "Login URL: " . $login_url . "\n\n" .
+                           "If you have any questions, please contact your system administrator.\n\n" .
+                           "This is an automated message. Please do not reply to this email.";
+            
+            // Send email
+            if (!$mail->send()) {
+                error_log('Failed to send new user credentials email: ' . $mail->ErrorInfo);
+                return false;
+            }
+            
+            return true;
+        } catch (Exception $e) {
+            error_log('Error sending new user credentials email: ' . $e->getMessage());
+            return false;
+        }
+    }
+}
+
 if (!function_exists('create_user')) {
     function create_user($user_data, $created_by = null) {
         try {
             $pdo = get_db_connection();
             
-            // Validate required fields
-            $required_fields = ['username', 'email', 'password', 'name', 'role'];
+            // Check if first_name and last_name columns exist
+            $check_first_name = $pdo->query("SHOW COLUMNS FROM users LIKE 'first_name'");
+            $check_last_name = $pdo->query("SHOW COLUMNS FROM users LIKE 'last_name'");
+            $has_first_name = $check_first_name->rowCount() > 0;
+            $has_last_name = $check_last_name->rowCount() > 0;
+            
+            // Validate required fields (password is now auto-generated, so not required)
+            if ($has_first_name && $has_last_name) {
+                // Use first_name and last_name if columns exist
+                $required_fields = ['username', 'email', 'first_name', 'last_name', 'role'];
+            } else {
+                // Fallback to name field for backward compatibility
+                $required_fields = ['username', 'email', 'name', 'role'];
+            }
+            
             foreach ($required_fields as $field) {
                 if (empty($user_data[$field])) {
                     return ['success' => false, 'message' => "Field '{$field}' is required"];
                 }
+            }
+            
+            // Generate password if not provided
+            if (empty($user_data['password'])) {
+                $user_data['password'] = generate_secure_password();
             }
             
             // Validate role
@@ -3500,36 +4063,91 @@ if (!function_exists('create_user')) {
             // Hash password
             $password_hash = password_hash($user_data['password'], PASSWORD_DEFAULT);
             
+            // Prepare first_name and last_name values
+            $first_name = $has_first_name ? trim($user_data['first_name'] ?? '') : null;
+            $last_name = $has_last_name ? trim($user_data['last_name'] ?? '') : null;
+            
+            // For backward compatibility, also set name field (concatenate first_name + last_name)
+            $full_name = null;
+            if ($has_first_name && $has_last_name) {
+                $full_name = trim(($first_name ?? '') . ' ' . ($last_name ?? ''));
+            } elseif (isset($user_data['name'])) {
+                $full_name = trim($user_data['name']);
+            }
+            
+            // Store plain password for email (before hashing)
+            $plain_password = $user_data['password'];
+            
             // Prepare insert statement (let MySQL handle timestamps automatically)
-            $sql = "INSERT INTO users (
-                        username, 
-                        email, 
-                        password_hash, 
-                        name, 
-                        role, 
-                        status, 
-                        employee_id, 
-                        department, 
-                        phone, 
-                        created_by
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            // Set password_changed_at to NULL to force password change on first login
+            if ($has_first_name && $has_last_name) {
+                // Use first_name and last_name columns
+                $sql = "INSERT INTO users (
+                            username, 
+                            email, 
+                            password_hash, 
+                            name,
+                            first_name, 
+                            last_name, 
+                            role, 
+                            status, 
+                            employee_id, 
+                            department, 
+                            phone, 
+                            password_changed_at,
+                            created_by
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, ?)";
+            } else {
+                // Fallback to name field only
+                $sql = "INSERT INTO users (
+                            username, 
+                            email, 
+                            password_hash, 
+                            name, 
+                            role, 
+                            status, 
+                            employee_id, 
+                            department, 
+                            phone, 
+                            password_changed_at,
+                            created_by
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, ?)";
+            }
             
             // Convert empty strings to null for optional fields
             $department = (!empty($user_data['department']) && trim($user_data['department']) !== '') ? trim($user_data['department']) : null;
             $phone = (!empty($user_data['phone']) && trim($user_data['phone']) !== '') ? trim($user_data['phone']) : null;
             
-            $params = [
-                $user_data['username'],
-                $user_data['email'],
-                $password_hash,
-                $user_data['name'],
-                $user_data['role'],
-                $status,
-                $employee_id,
-                $department,
-                $phone,
-                $created_by
-            ];
+            // Prepare parameters based on which columns exist
+            if ($has_first_name && $has_last_name) {
+                $params = [
+                    $user_data['username'],
+                    $user_data['email'],
+                    $password_hash,
+                    $full_name, // name field for backward compatibility
+                    $first_name,
+                    $last_name,
+                    $user_data['role'],
+                    $status,
+                    $employee_id,
+                    $department,
+                    $phone,
+                    $created_by
+                ];
+            } else {
+                $params = [
+                    $user_data['username'],
+                    $user_data['email'],
+                    $password_hash,
+                    $full_name,
+                    $user_data['role'],
+                    $status,
+                    $employee_id,
+                    $department,
+                    $phone,
+                    $created_by
+                ];
+            }
             
             $stmt = $pdo->prepare($sql);
             
@@ -3596,6 +4214,21 @@ if (!function_exists('create_user')) {
                 $new_user_id = null;
             }
             
+            // Send credentials email to new user
+            if ($new_user_id) {
+                $email_sent = send_new_user_credentials_email(
+                    $user_data['email'],
+                    $user_data['username'],
+                    $plain_password,
+                    $first_name ?? '',
+                    $last_name ?? ''
+                );
+                
+                if (!$email_sent) {
+                    error_log("Warning: Failed to send credentials email to {$user_data['email']} for user {$user_data['username']}");
+                }
+            }
+            
             // Log audit event if we have a user ID
             if ($new_user_id && function_exists('log_audit_event')) {
                 log_audit_event(
@@ -3606,7 +4239,9 @@ if (!function_exists('create_user')) {
                     json_encode([
                         'username' => $user_data['username'],
                         'email' => $user_data['email'],
-                        'name' => $user_data['name'],
+                        'name' => $full_name ?? ($user_data['name'] ?? ''),
+                        'first_name' => $first_name ?? '',
+                        'last_name' => $last_name ?? '',
                         'role' => $user_data['role'],
                         'status' => $status
                     ]),
@@ -3616,12 +4251,21 @@ if (!function_exists('create_user')) {
             
             // Log security event
             if (function_exists('log_security_event')) {
-                log_security_event('User Created', "New user created: {$user_data['username']} ({$user_data['name']}) - Role: {$user_data['role']} - Created by: " . ($created_by ?? 'System'));
+                $display_name = $full_name ?? ($user_data['name'] ?? ($first_name . ' ' . $last_name));
+                log_security_event('User Created', "New user created: {$user_data['username']} ({$display_name}) - Role: {$user_data['role']} - Created by: " . ($created_by ?? 'System'));
+            }
+            
+            // Build success message
+            $message = 'User created successfully';
+            if (isset($email_sent) && $email_sent) {
+                $message .= '. Credentials have been sent to ' . htmlspecialchars($user_data['email']);
+            } elseif (isset($email_sent) && !$email_sent) {
+                $message .= '. Warning: Failed to send credentials email. Please contact the user manually.';
             }
             
             return [
                 'success' => true, 
-                'message' => 'User created successfully',
+                'message' => $message,
                 'user_id' => $new_user_id
             ];
         } catch (PDOException $e) {

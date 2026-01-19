@@ -385,9 +385,69 @@ $role_config = config('roles.roles', []);
     </div>
 </div>
 
+<!-- Futuristic Role Change Confirmation Modal -->
+<div class="modal fade" id="roleChangeConfirmModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content futuristic-modal">
+            <div class="futuristic-modal-header">
+                <div class="futuristic-icon-wrapper">
+                    <i class="fas fa-user-shield futuristic-icon"></i>
+                    <div class="futuristic-pulse"></div>
+                </div>
+                <h5 class="futuristic-modal-title">Confirm Role Change</h5>
+            </div>
+            <div class="futuristic-modal-body">
+                <p class="futuristic-message" id="roleChangeConfirmMessage"></p>
+                <div class="futuristic-info-box">
+                    <i class="fas fa-info-circle"></i>
+                    <span>This action will update the user's permissions and access levels.</span>
+                </div>
+            </div>
+            <div class="futuristic-modal-footer">
+                <button type="button" class="btn futuristic-btn-cancel" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Cancel
+                </button>
+                <button type="button" class="btn futuristic-btn-confirm" id="confirmRoleChangeBtn">
+                    <i class="fas fa-check me-2"></i>Confirm Change
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Futuristic Status Change Confirmation Modal -->
+<div class="modal fade" id="statusChangeConfirmModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="false" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content futuristic-modal">
+            <div class="futuristic-modal-header">
+                <div class="futuristic-icon-wrapper">
+                    <i class="fas fa-toggle-on futuristic-icon" id="statusChangeIcon"></i>
+                    <div class="futuristic-pulse"></div>
+                </div>
+                <h5 class="futuristic-modal-title">Confirm Status Change</h5>
+            </div>
+            <div class="futuristic-modal-body">
+                <p class="futuristic-message" id="statusChangeConfirmMessage"></p>
+                <div class="futuristic-info-box" id="statusChangeInfoBox">
+                    <i class="fas fa-info-circle"></i>
+                    <span id="statusChangeInfoText">This action will change the user's access status.</span>
+                </div>
+            </div>
+            <div class="futuristic-modal-footer">
+                <button type="button" class="btn futuristic-btn-cancel" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Cancel
+                </button>
+                <button type="button" class="btn futuristic-btn-confirm" id="confirmStatusChangeBtn">
+                    <i class="fas fa-check me-2"></i>Confirm Change
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Create User Modal -->
 <div class="modal fade" id="createUserModal" tabindex="-1" aria-labelledby="createUserModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-scrollable" style="margin-top: 1rem;">
+    <div class="modal-dialog modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header bg-primary text-white">
                 <h5 class="modal-title" id="createUserModalLabel">
@@ -399,71 +459,56 @@ $role_config = config('roles.roles', []);
                 <div class="modal-body">
                     <div id="createUserAlert"></div>
                     
-                    <div class="row g-2">
-                        <!-- Required Fields -->
-                        <div class="col-12">
-                            <h6 class="text-muted mb-2 border-bottom pb-1 section-header">Required Information</h6>
-                        </div>
-                        
+                    <div class="row g-2 compact-form">
                         <div class="col-md-6">
-                            <label for="create_username" class="form-label">Username <span class="text-danger">*</span></label>
+                            <label for="create_username" class="form-label small">Username <span class="text-danger">*</span></label>
                             <input type="text" 
-                                   class="form-control" 
+                                   class="form-control form-control-sm" 
                                    id="create_username" 
                                    name="username" 
                                    required
                                    maxlength="50"
                                    autocomplete="username"
                                    placeholder="Enter username">
-                            <small class="text-muted">Must be unique (max 50 characters)</small>
                         </div>
                         
                         <div class="col-md-6">
-                            <label for="create_email" class="form-label">Email <span class="text-danger">*</span></label>
+                            <label for="create_email" class="form-label small">Email <span class="text-danger">*</span></label>
                             <input type="email" 
-                                   class="form-control" 
+                                   class="form-control form-control-sm" 
                                    id="create_email" 
                                    name="email" 
                                    required
                                    maxlength="100"
                                    autocomplete="email"
                                    placeholder="user@example.com">
-                            <small class="text-muted">Must be unique (max 100 characters)</small>
                         </div>
                         
                         <div class="col-md-6">
-                            <label for="create_password" class="form-label">Password <span class="text-danger">*</span></label>
-                            <input type="password" 
-                                   class="form-control" 
-                                   id="create_password" 
-                                   name="password" 
-                                   required
-                                   minlength="8"
-                                   autocomplete="new-password"
-                                   placeholder="Minimum 8 characters">
-                            <small class="text-muted">Minimum 8 characters</small>
-                        </div>
-                        
-                        <div class="col-md-6">
-                            <label for="create_name" class="form-label">Full Name <span class="text-danger">*</span></label>
+                            <label for="create_first_name" class="form-label small">First Name <span class="text-danger">*</span></label>
                             <input type="text" 
-                                   class="form-control" 
-                                   id="create_name" 
-                                   name="name" 
+                                   class="form-control form-control-sm" 
+                                   id="create_first_name" 
+                                   name="first_name" 
                                    required
                                    maxlength="100"
-                                   placeholder="Enter full name">
-                            <small class="text-muted">Max 100 characters</small>
-                        </div>
-                        
-                        <!-- Role & Status -->
-                        <div class="col-12 mt-2">
-                            <h6 class="text-muted mb-2 border-bottom pb-1" style="font-size: 0.9rem;">Role & Status</h6>
+                                   placeholder="Enter first name">
                         </div>
                         
                         <div class="col-md-6">
-                            <label for="create_role" class="form-label">Role <span class="text-danger">*</span></label>
-                            <select class="form-select" id="create_role" name="role" required>
+                            <label for="create_last_name" class="form-label small">Last Name <span class="text-danger">*</span></label>
+                            <input type="text" 
+                                   class="form-control form-control-sm" 
+                                   id="create_last_name" 
+                                   name="last_name" 
+                                   required
+                                   maxlength="100"
+                                   placeholder="Enter last name">
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="create_role" class="form-label small">Role <span class="text-danger">*</span></label>
+                            <select class="form-select form-select-sm" id="create_role" name="role" required>
                                 <option value="hr_admin" selected>HR Administrator</option>
                                 <option value="super_admin">Super Administrator</option>
                                 <option value="hr">HR Staff</option>
@@ -477,58 +522,49 @@ $role_config = config('roles.roles', []);
                         </div>
                         
                         <div class="col-md-6">
-                            <label for="create_status" class="form-label">Status</label>
-                            <select class="form-select" id="create_status" name="status">
+                            <label for="create_status" class="form-label small">Status</label>
+                            <select class="form-select form-select-sm" id="create_status" name="status">
                                 <option value="active" selected>Active</option>
                                 <option value="inactive">Inactive</option>
                                 <option value="suspended">Suspended</option>
                             </select>
-                            <small class="text-muted">User can login if Active</small>
-                        </div>
-                        
-                        <!-- Additional Fields -->
-                        <div class="col-12 mt-2">
-                            <h6 class="text-muted mb-2 border-bottom pb-1 section-header">Additional Information</h6>
                         </div>
                         
                         <div class="col-md-6">
-                            <label for="create_department" class="form-label">Department <span class="text-danger">*</span></label>
+                            <label for="create_department" class="form-label small">Department <span class="text-danger">*</span></label>
                             <input type="text" 
-                                   class="form-control" 
+                                   class="form-control form-control-sm" 
                                    id="create_department" 
                                    name="department" 
                                    required
                                    maxlength="100"
                                    placeholder="e.g., Human Resources">
-                            <small class="text-muted">Max 100 characters</small>
                         </div>
                         
                         <div class="col-md-6">
-                            <label for="create_phone" class="form-label">Phone <span class="text-danger">*</span></label>
+                            <label for="create_phone" class="form-label small">Phone <span class="text-danger">*</span></label>
                             <input type="tel" 
-                                   class="form-control" 
+                                   class="form-control form-control-sm" 
                                    id="create_phone" 
                                    name="phone" 
                                    required
                                    maxlength="20"
                                    placeholder="0917-123-4567">
-                            <small class="text-muted">Max 20 characters</small>
                         </div>
                         
                         <div class="col-md-6">
-                            <label for="create_employee_id" class="form-label">Employee ID</label>
+                            <label for="create_employee_id" class="form-label small">Employee ID</label>
                             <input type="number" 
-                                   class="form-control" 
+                                   class="form-control form-control-sm" 
                                    id="create_employee_id" 
                                    name="employee_id" 
-                                   placeholder="Employee ID">
-                            <small class="text-muted">Link to existing employee record (optional)</small>
+                                   placeholder="Optional">
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-modern" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary-modern" id="createUserSubmitBtn">
+                    <button type="button" class="btn btn-outline-modern btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary-modern btn-sm" id="createUserSubmitBtn">
                         <i class="fas fa-user-plus me-2"></i>Create User
                     </button>
                 </div>
@@ -679,10 +715,10 @@ $role_config = config('roles.roles', []);
 }
 
 #createUserModal .modal-dialog {
-    max-width: 700px;
+    max-width: 600px;
     width: 90%;
-    margin: 1rem auto !important;
-    margin-top: 1rem !important;
+    margin: 0.5rem auto !important;
+    margin-top: 0.5rem !important;
     align-self: flex-start !important;
 }
 
@@ -690,6 +726,13 @@ $role_config = config('roles.roles', []);
     background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1e293b 100%);
     color: white;
     border-bottom: none;
+    padding: 0.75rem 1rem;
+    flex-shrink: 0;
+}
+
+#createUserModal .modal-header .modal-title {
+    font-size: 1rem;
+    font-weight: 600;
 }
 
 #createUserModal .modal-header .btn-close-white {
@@ -701,26 +744,52 @@ $role_config = config('roles.roles', []);
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
     border-radius: 12px;
     overflow: hidden;
-    max-height: calc(100vh - 2rem);
+    max-height: calc(100vh - 1rem);
     display: flex;
     flex-direction: column;
-}
-
-#createUserModal .modal-header {
-    padding: 1rem 1.25rem;
-    flex-shrink: 0;
 }
 
 #createUserModal .modal-body {
     overflow-y: auto;
     flex: 1 1 auto;
-    padding: 1.25rem;
+    padding: 0.75rem 1rem;
 }
 
 #createUserModal .modal-footer {
-    padding: 1rem 1.25rem;
+    padding: 0.5rem 1rem;
     flex-shrink: 0;
     border-top: 1px solid #e2e8f0;
+}
+
+/* Compact form styling */
+#createUserModal .compact-form .form-label {
+    margin-bottom: 0.25rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+#createUserModal .compact-form .form-control-sm,
+#createUserModal .compact-form .form-select-sm {
+    padding: 0.35rem 0.5rem;
+    font-size: 0.875rem;
+    line-height: 1.4;
+}
+
+#createUserModal .compact-form .row {
+    margin-bottom: 0;
+}
+
+#createUserModal .compact-form .col-md-6 {
+    margin-bottom: 0.5rem;
+}
+
+#createUserModal .compact-form small {
+    display: none;
+}
+
+#createUserModal .modal-footer .btn {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.875rem;
 }
 
 @media (max-width: 768px) {
@@ -1025,6 +1094,318 @@ html[data-theme="dark"] .alert-info {
     color: var(--interface-text) !important;
 }
 
+/* Futuristic Role Change Confirmation Modal Styles */
+.futuristic-modal {
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.95) 100%);
+    border: none;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5),
+                0 0 0 1px rgba(99, 102, 241, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    overflow: hidden;
+    position: relative;
+}
+
+.futuristic-modal::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, 
+        rgba(99, 102, 241, 0.1) 0%, 
+        rgba(168, 85, 247, 0.1) 50%, 
+        rgba(236, 72, 153, 0.1) 100%);
+    opacity: 0.6;
+    z-index: 0;
+    animation: gradientShift 8s ease infinite;
+}
+
+@keyframes gradientShift {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 0.8; }
+}
+
+.futuristic-modal > * {
+    position: relative;
+    z-index: 1;
+}
+
+.futuristic-modal-header {
+    padding: 2rem 2rem 1rem;
+    text-align: center;
+    border-bottom: 1px solid rgba(99, 102, 241, 0.2);
+    background: linear-gradient(180deg, rgba(99, 102, 241, 0.1) 0%, transparent 100%);
+}
+
+.futuristic-icon-wrapper {
+    position: relative;
+    display: inline-block;
+    margin-bottom: 1rem;
+}
+
+.futuristic-icon {
+    font-size: 3rem;
+    color: #6366f1;
+    text-shadow: 0 0 20px rgba(99, 102, 241, 0.6),
+                 0 0 40px rgba(99, 102, 241, 0.4);
+    animation: iconPulse 2s ease-in-out infinite;
+    position: relative;
+    z-index: 2;
+}
+
+@keyframes iconPulse {
+    0%, 100% { 
+        transform: scale(1);
+        filter: brightness(1);
+    }
+    50% { 
+        transform: scale(1.1);
+        filter: brightness(1.3);
+    }
+}
+
+.futuristic-pulse {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80px;
+    height: 80px;
+    border: 2px solid rgba(99, 102, 241, 0.5);
+    border-radius: 50%;
+    animation: pulseRing 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulseRing {
+    0% {
+        transform: translate(-50%, -50%) scale(0.8);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(1.5);
+        opacity: 0;
+    }
+}
+
+.futuristic-modal-title {
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 1.5rem;
+    margin: 0;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+    letter-spacing: 0.5px;
+}
+
+.futuristic-modal-body {
+    padding: 2rem;
+    color: #e2e8f0;
+}
+
+.futuristic-message {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+    color: #cbd5e1;
+    text-align: center;
+}
+
+.futuristic-info-box {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: rgba(99, 102, 241, 0.1);
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    border-radius: 12px;
+    color: #a5b4fc;
+    font-size: 0.9rem;
+    backdrop-filter: blur(10px);
+}
+
+.futuristic-info-box i {
+    font-size: 1.2rem;
+    color: #818cf8;
+    flex-shrink: 0;
+}
+
+.futuristic-modal-footer {
+    padding: 1.5rem 2rem 2rem;
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    border-top: 1px solid rgba(99, 102, 241, 0.2);
+    background: linear-gradient(180deg, transparent 0%, rgba(99, 102, 241, 0.05) 100%);
+}
+
+.futuristic-btn-cancel,
+.futuristic-btn-confirm {
+    padding: 0.75rem 2rem;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: none;
+    position: relative;
+    overflow: hidden;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.futuristic-btn-cancel {
+    background: linear-gradient(135deg, rgba(71, 85, 105, 0.8) 0%, rgba(51, 65, 85, 0.8) 100%);
+    color: #cbd5e1;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.futuristic-btn-cancel:hover {
+    background: linear-gradient(135deg, rgba(71, 85, 105, 1) 0%, rgba(51, 65, 85, 1) 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+    color: #ffffff;
+}
+
+.futuristic-btn-confirm {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%);
+    color: #ffffff;
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+    background-size: 200% 200%;
+    animation: gradientMove 3s ease infinite;
+}
+
+@keyframes gradientMove {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.futuristic-btn-confirm::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.5s;
+}
+
+.futuristic-btn-confirm:hover::before {
+    left: 100%;
+}
+
+.futuristic-btn-confirm:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 6px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(139, 92, 246, 0.4);
+}
+
+.futuristic-btn-confirm:active {
+    transform: translateY(0) scale(0.98);
+}
+
+/* Ensure modal is clickable and properly positioned */
+#roleChangeConfirmModal.show,
+#statusChangeConfirmModal.show {
+    display: block !important;
+    z-index: 1060 !important;
+    padding-right: 0 !important;
+}
+
+#roleChangeConfirmModal .modal-dialog,
+#statusChangeConfirmModal .modal-dialog {
+    transform: translate(0, 0) !important;
+    max-width: 500px;
+    margin: 1.75rem auto !important;
+    position: relative;
+    pointer-events: auto;
+}
+
+#roleChangeConfirmModal .futuristic-btn-cancel,
+#roleChangeConfirmModal .futuristic-btn-confirm,
+#statusChangeConfirmModal .futuristic-btn-cancel,
+#statusChangeConfirmModal .futuristic-btn-confirm {
+    pointer-events: auto !important;
+    cursor: pointer !important;
+    z-index: 10;
+    position: relative;
+}
+
+#roleChangeConfirmModal .modal-content,
+#statusChangeConfirmModal .modal-content {
+    pointer-events: auto !important;
+}
+
+#statusChangeConfirmModal {
+    z-index: 1060 !important;
+}
+
+#statusChangeConfirmModal .modal-dialog {
+    z-index: 1061 !important;
+    position: relative;
+    margin: 1.75rem auto;
+    pointer-events: auto;
+}
+
+#statusChangeConfirmModal .modal-backdrop {
+    z-index: 1059 !important;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+}
+
+/* Fix for modal appearing below screen */
+body.modal-open {
+    overflow: hidden;
+    padding-right: 0 !important;
+}
+
+/* Ensure backdrop doesn't block clicks */
+.modal-backdrop.show {
+    z-index: 1059 !important;
+    pointer-events: auto;
+}
+
+/* CRITICAL: Hide ALL modal backdrops - we don't use them */
+.modal-backdrop {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    z-index: -1 !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 576px) {
+    .futuristic-modal-header {
+        padding: 1.5rem 1.5rem 0.75rem;
+    }
+    
+    .futuristic-icon {
+        font-size: 2.5rem;
+    }
+    
+    .futuristic-modal-title {
+        font-size: 1.25rem;
+    }
+    
+    .futuristic-modal-body {
+        padding: 1.5rem;
+    }
+    
+    .futuristic-modal-footer {
+        padding: 1rem 1.5rem 1.5rem;
+        flex-direction: column;
+    }
+    
+    .futuristic-btn-cancel,
+    .futuristic-btn-confirm {
+        width: 100%;
+    }
+}
+
 </style>
 
 <script>
@@ -1153,6 +1534,10 @@ function initializeUsersPage() {
         return;
     }
     
+    // CRITICAL: Clean up any lingering backdrops from previous page loads/refreshes
+    // This fixes the issue where backdrop blocks clicks on first login
+    cleanupAllBackdrops();
+    
     // Check if required elements exist
     const createUserModal = document.getElementById('createUserModal');
     const createUserForm = document.getElementById('createUserForm');
@@ -1181,9 +1566,9 @@ function initializeUsersPage() {
         modalInstance.dispose();
     }
   
-    // Initialize Create User modal with standard Bootstrap behavior
+    // Initialize Create User modal WITHOUT backdrop to prevent blocking issues
     modalInstance = new bootstrap.Modal(createUserModal, {
-        backdrop: true,
+        backdrop: false,
         keyboard: true,
         focus: true
     });
@@ -1224,15 +1609,6 @@ function initializeUsersPage() {
             if (!isValid) {
                 if (alertDiv) {
                     alertDiv.innerHTML = '<div class="alert alert-danger"><i class="fas fa-exclamation-circle me-2"></i>Please fill all required fields</div>';
-                }
-                return;
-            }
-            
-            // Check password length
-            const password = document.getElementById('create_password').value;
-            if (password && password.length < 8) {
-                if (alertDiv) {
-                    alertDiv.innerHTML = '<div class="alert alert-danger"><i class="fas fa-exclamation-circle me-2"></i>Password must be at least 8 characters long</div>';
                 }
                 return;
             }
@@ -1352,6 +1728,9 @@ function initializeUsersPage() {
             }
             const alertDiv = document.getElementById('createUserAlert');
             if (alertDiv) alertDiv.innerHTML = '';
+            
+            // Ensure backdrop is removed
+            cleanupAllBackdrops();
         });
         
         console.log('✅ Modal events attached');
@@ -1375,14 +1754,8 @@ function initializeUsersPage() {
                 
                 this.classList.add('changed');
                 
-                // Show confirmation
-                if (confirm(`Change user role to "${newRoleText}"?`)) {
-                    updateUserRole(userId, newRole, this);
-                } else {
-                    // Revert selection
-                    this.value = this.getAttribute('data-original-value');
-                    this.classList.remove('changed');
-                }
+                // Show futuristic confirmation modal
+                showRoleChangeConfirm(userId, newRole, newRoleText, this);
             });
         }
     });
@@ -1403,14 +1776,8 @@ function initializeUsersPage() {
                 
                 this.classList.add('changed');
                 
-                // Show confirmation
-                if (confirm(`Change user status to "${statusText}"?`)) {
-                    updateUserStatus(userId, newStatus, this);
-                } else {
-                    // Revert selection
-                    this.value = this.getAttribute('data-original-value');
-                    this.classList.remove('changed');
-                }
+                // Show futuristic confirmation modal
+                showStatusChangeConfirm(userId, newStatus, statusText, this);
             });
         }
     });
@@ -1686,6 +2053,234 @@ function deleteUser(userId, userName, buttonEl) {
     });
 }
 
+function showRoleChangeConfirm(userId, newRole, newRoleText, selectElement) {
+    const modal = document.getElementById('roleChangeConfirmModal');
+    const messageEl = document.getElementById('roleChangeConfirmMessage');
+    const confirmBtn = document.getElementById('confirmRoleChangeBtn');
+    
+    if (!modal || !messageEl || !confirmBtn) {
+        // Fallback to default confirm if modal not found
+        if (confirm(`Change user role to "${newRoleText}"?`)) {
+            updateUserRole(userId, newRole, selectElement);
+        } else {
+            selectElement.value = selectElement.getAttribute('data-original-value');
+            selectElement.classList.remove('changed');
+        }
+        return;
+    }
+    
+    // Ensure modal is in the body (not hidden in a container)
+    if (modal.parentElement !== document.body) {
+        document.body.appendChild(modal);
+    }
+    
+    // Set message
+    messageEl.textContent = `Are you sure you want to change the user's role to "${newRoleText}"?`;
+    
+    // Store original values for cleanup
+    const originalConfirmBtn = confirmBtn;
+    const originalCancelBtn = modal.querySelector('.futuristic-btn-cancel');
+    
+    // Remove previous event listeners by cloning buttons
+    const newConfirmBtn = confirmBtn.cloneNode(true);
+    confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+    
+    // Cleanup function to restore page state
+    function cleanupModal() {
+        // Remove all backdrops
+        cleanupAllBackdrops();
+        
+        // Remove show class from modal
+        modal.classList.remove('show');
+        modal.style.display = 'none';
+        modal.setAttribute('aria-hidden', 'true');
+        modal.setAttribute('aria-modal', 'false');
+    }
+    
+    // Handle confirmation
+    newConfirmBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        cleanupModal();
+        updateUserRole(userId, newRole, selectElement);
+    });
+    
+    // Handle cancellation
+    const cancelBtn = modal.querySelector('.futuristic-btn-cancel');
+    if (cancelBtn) {
+        const newCancelBtn = cancelBtn.cloneNode(true);
+        cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+        
+        newCancelBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            cleanupModal();
+            selectElement.value = selectElement.getAttribute('data-original-value');
+            selectElement.classList.remove('changed');
+        });
+    }
+    
+    // Also handle modal hidden event to ensure cleanup
+    modal.addEventListener('hidden.bs.modal', function() {
+        cleanupModal();
+    });
+    
+    // Show modal using Bootstrap WITHOUT backdrop
+    const modalInstance = new bootstrap.Modal(modal, {
+        backdrop: false,
+        keyboard: false,
+        focus: true
+    });
+    
+    modalInstance.show();
+    
+    // Ensure modal is visible and properly positioned after Bootstrap shows it
+    setTimeout(() => {
+        modal.style.display = 'block';
+        modal.style.zIndex = '1060';
+        modal.classList.add('show');
+        modal.setAttribute('aria-hidden', 'false');
+        modal.setAttribute('aria-modal', 'true');
+        
+        const modalDialog = modal.querySelector('.modal-dialog');
+        if (modalDialog) {
+            modalDialog.style.zIndex = '1061';
+            modalDialog.style.pointerEvents = 'auto';
+            modalDialog.style.margin = '1.75rem auto';
+        }
+        
+        // Remove any backdrops - we don't use them
+        cleanupAllBackdrops();
+    }, 50);
+}
+
+function showStatusChangeConfirm(userId, newStatus, statusText, selectElement) {
+    const modal = document.getElementById('statusChangeConfirmModal');
+    const messageEl = document.getElementById('statusChangeConfirmMessage');
+    const confirmBtn = document.getElementById('confirmStatusChangeBtn');
+    const infoTextEl = document.getElementById('statusChangeInfoText');
+    const iconEl = document.getElementById('statusChangeIcon');
+    const infoBoxEl = document.getElementById('statusChangeInfoBox');
+    
+    if (!modal || !messageEl || !confirmBtn) {
+        // Fallback to default confirm if modal not found
+        if (confirm(`Change user status to "${statusText}"?`)) {
+            updateUserStatus(userId, newStatus, selectElement);
+        } else {
+            selectElement.value = selectElement.getAttribute('data-original-value');
+            selectElement.classList.remove('changed');
+        }
+        return;
+    }
+    
+    // Ensure modal is in the body (not hidden in a container)
+    if (modal.parentElement !== document.body) {
+        document.body.appendChild(modal);
+    }
+    
+    // Set message and icon based on status
+    messageEl.textContent = `Are you sure you want to change the user's status to "${statusText}"?`;
+    
+    // Update icon and info text based on status
+    let iconClass = 'fas fa-toggle-on';
+    let infoMessage = 'This action will change the user\'s access status.';
+    
+    if (newStatus === 'active') {
+        iconClass = 'fas fa-check-circle';
+        infoMessage = 'The user will be able to login and access the system.';
+        infoBoxEl.style.borderColor = 'rgba(34, 197, 94, 0.3)';
+        infoBoxEl.style.background = 'rgba(34, 197, 94, 0.1)';
+        iconEl.style.color = '#22c55e';
+    } else if (newStatus === 'inactive') {
+        iconClass = 'fas fa-pause-circle';
+        infoMessage = 'The user will not be able to login. Their account will be inactive.';
+        infoBoxEl.style.borderColor = 'rgba(148, 163, 184, 0.3)';
+        infoBoxEl.style.background = 'rgba(148, 163, 184, 0.1)';
+        iconEl.style.color = '#94a3b8';
+    } else if (newStatus === 'suspended') {
+        iconClass = 'fas fa-ban';
+        infoMessage = 'The user will be suspended and cannot login. This is typically used for disciplinary actions.';
+        infoBoxEl.style.borderColor = 'rgba(239, 68, 68, 0.3)';
+        infoBoxEl.style.background = 'rgba(239, 68, 68, 0.1)';
+        iconEl.style.color = '#ef4444';
+    }
+    
+    iconEl.className = iconClass + ' futuristic-icon';
+    infoTextEl.textContent = infoMessage;
+    
+    // Cleanup function to restore page state
+    function cleanupModal() {
+        // Remove all backdrops
+        cleanupAllBackdrops();
+        
+        // Remove show class from modal
+        modal.classList.remove('show');
+        modal.style.display = 'none';
+        modal.setAttribute('aria-hidden', 'true');
+        modal.setAttribute('aria-modal', 'false');
+    }
+    
+    // Remove previous event listeners by cloning buttons
+    const newConfirmBtn = confirmBtn.cloneNode(true);
+    confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+    
+    // Handle confirmation
+    newConfirmBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        cleanupModal();
+        updateUserStatus(userId, newStatus, selectElement);
+    });
+    
+    // Handle cancellation
+    const cancelBtn = modal.querySelector('.futuristic-btn-cancel');
+    if (cancelBtn) {
+        const newCancelBtn = cancelBtn.cloneNode(true);
+        cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+        
+        newCancelBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            cleanupModal();
+            selectElement.value = selectElement.getAttribute('data-original-value');
+            selectElement.classList.remove('changed');
+        });
+    }
+    
+    // Also handle modal hidden event to ensure cleanup
+    modal.addEventListener('hidden.bs.modal', function() {
+        cleanupModal();
+    });
+    
+    // Show modal using Bootstrap WITHOUT backdrop
+    const modalInstance = new bootstrap.Modal(modal, {
+        backdrop: false,
+        keyboard: false,
+        focus: true
+    });
+    
+    modalInstance.show();
+    
+    // Ensure modal is visible and properly positioned after Bootstrap shows it
+    setTimeout(() => {
+        modal.style.display = 'block';
+        modal.style.zIndex = '1060';
+        modal.classList.add('show');
+        modal.setAttribute('aria-hidden', 'false');
+        modal.setAttribute('aria-modal', 'true');
+        
+        const modalDialog = modal.querySelector('.modal-dialog');
+        if (modalDialog) {
+            modalDialog.style.zIndex = '1061';
+            modalDialog.style.pointerEvents = 'auto';
+            modalDialog.style.margin = '1.75rem auto';
+        }
+        
+        // Remove any backdrops - we don't use them
+        cleanupAllBackdrops();
+    }, 50);
+}
+
 function showNotification(message, type) {
     // Create notification element
     const notification = document.createElement('div');
@@ -1706,6 +2301,29 @@ function showNotification(message, type) {
     }, 3000);
 }
 
+// === AGGRESSIVE BACKDROP CLEANUP ===
+// This function aggressively removes any lingering backdrops
+function cleanupAllBackdrops() {
+    // Remove ALL backdrops - we don't want any backdrops at all
+    const backdrops = document.querySelectorAll('.modal-backdrop');
+    if (backdrops.length > 0) {
+        console.log('🧹 Removing', backdrops.length, 'backdrop(s)');
+        backdrops.forEach(backdrop => {
+            backdrop.remove();
+        });
+    }
+    
+    // Remove modal-open class and restore body
+    if (document.body.classList.contains('modal-open')) {
+        document.body.classList.remove('modal-open');
+        document.body.style.overflow = '';
+        document.body.style.paddingRight = '';
+    }
+}
+
+// Run cleanup immediately on script load (before DOMContentLoaded)
+cleanupAllBackdrops();
+
 // === INITIALIZATION TRIGGERS ===
 // Initialize state object if it doesn't exist
 if (!window.usersPageState) {
@@ -1720,6 +2338,9 @@ function tryInit() {
         console.log('ℹ️ Not on users page, skipping initialization');
         return;
     }
+    
+    // Clean up any lingering backdrops immediately when page loads
+    cleanupAllBackdrops();
     
     if (typeof bootstrap === 'undefined') {
         console.log('⏳ Bootstrap not ready, retrying...');
@@ -1740,10 +2361,41 @@ function tryInit() {
 
 // Multiple initialization points
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', tryInit);
+    document.addEventListener('DOMContentLoaded', function() {
+        cleanupAllBackdrops();
+        tryInit();
+    });
 } else {
+    cleanupAllBackdrops();
     tryInit();
 }
+
+// Also run cleanup on window load
+window.addEventListener('load', function() {
+    cleanupAllBackdrops();
+});
+
+// Run cleanup periodically for the first few seconds after page load
+// This catches any backdrops that might be created after initial load
+let cleanupInterval = setInterval(function() {
+    const backdrops = document.querySelectorAll('.modal-backdrop');
+    if (backdrops.length > 0) {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('page') === 'users') {
+            // Only cleanup if we're on users page and no modal is actually showing
+            const showingModals = document.querySelectorAll('.modal.show, .modal.showing');
+            if (showingModals.length === 0) {
+                console.log('🧹 Periodic cleanup: removing', backdrops.length, 'backdrop(s)');
+                cleanupAllBackdrops();
+            }
+        }
+    }
+}, 500);
+
+// Stop the interval after 5 seconds
+setTimeout(function() {
+    clearInterval(cleanupInterval);
+}, 5000);
 
 // CRITICAL: Listen for AJAX page loads (pageContentLoaded event)
 document.addEventListener('pageContentLoaded', function(e) {
@@ -1799,4 +2451,82 @@ window.addEventListener('load', function() {
 });
 
 console.log('📜 Users page script loaded');
+
+// IMMEDIATE BACKDROP CLEANUP - Run as soon as script loads
+(function() {
+    'use strict';
+    
+    // Function to aggressively remove all backdrops
+    function removeAllBackdrops() {
+        // Remove all backdrop elements
+        const backdrops = document.querySelectorAll('.modal-backdrop');
+        backdrops.forEach(function(backdrop) {
+            try {
+                backdrop.remove();
+            } catch (e) {
+                // If remove fails, try parentNode.removeChild
+                if (backdrop.parentNode) {
+                    backdrop.parentNode.removeChild(backdrop);
+                }
+            }
+        });
+        
+        // Remove modal-open class
+        if (document.body) {
+            document.body.classList.remove('modal-open');
+            document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
+        }
+        
+        // Hide any incorrectly shown modals (unless they're actually being shown)
+        const modals = document.querySelectorAll('.modal');
+        modals.forEach(function(modal) {
+            // Only hide if it has 'show' class but isn't in the process of showing
+            if (modal.classList.contains('show') && !modal.classList.contains('showing')) {
+                // Check if this modal should actually be visible
+                const modalInstance = bootstrap?.Modal?.getInstance?.(modal);
+                if (!modalInstance || !modalInstance._isShown) {
+                    modal.classList.remove('show');
+                    modal.style.display = 'none';
+                    modal.setAttribute('aria-hidden', 'true');
+                    modal.setAttribute('aria-modal', 'false');
+                }
+            }
+        });
+    }
+    
+    // Run immediately if DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', removeAllBackdrops);
+    } else {
+        removeAllBackdrops();
+    }
+    
+    // Also run on window load
+    window.addEventListener('load', removeAllBackdrops);
+    
+    // Run periodically for the first 3 seconds to catch any late-created backdrops
+    let attempts = 0;
+    const maxAttempts = 6; // 3 seconds at 500ms intervals
+    const cleanupTimer = setInterval(function() {
+        attempts++;
+        const backdrops = document.querySelectorAll('.modal-backdrop');
+        if (backdrops.length > 0) {
+            // Check if we're on users page
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('page') === 'users') {
+                // Only remove if no modal is actually showing
+                const showingModals = document.querySelectorAll('.modal.show, .modal.showing');
+                if (showingModals.length === 0) {
+                    console.log('🧹 Immediate cleanup: removing', backdrops.length, 'backdrop(s)');
+                    removeAllBackdrops();
+                }
+            }
+        }
+        
+        if (attempts >= maxAttempts) {
+            clearInterval(cleanupTimer);
+        }
+    }, 500);
+})();
 </script>

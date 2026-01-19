@@ -9,6 +9,35 @@ if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'super_admin') 
     exit;
 }
 
+// Handle backup download
+if (isset($_GET['download_backup']) && !empty($_GET['download_backup'])) {
+    $backup_path = $_GET['download_backup'];
+    $full_path = __DIR__ . '/../' . $backup_path;
+    
+    // Security: ensure path is within project directory and is a .sql file
+    $real_backup_path = realpath($full_path);
+    $real_project_path = realpath(__DIR__ . '/../');
+    
+    if ($real_backup_path && strpos($real_backup_path, $real_project_path) === 0 && 
+        file_exists($real_backup_path) && 
+        pathinfo($real_backup_path, PATHINFO_EXTENSION) === 'sql') {
+        
+        header('Content-Type: application/octet-stream');
+        header('Content-Disposition: attachment; filename="' . basename($real_backup_path) . '"');
+        header('Content-Length: ' . filesize($real_backup_path));
+        header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+        header('Pragma: no-cache');
+        header('Expires: 0');
+        
+        readfile($real_backup_path);
+        exit;
+    } else {
+        header('HTTP/1.1 404 Not Found');
+        echo 'Backup file not found or invalid.';
+        exit;
+    }
+}
+
 // Load password policy (global for all users) and current user 2FA status
 if (!function_exists('get_password_policy') || !function_exists('get_user_by_id') || !function_exists('check_password_expiry')) {
     require_once __DIR__ . '/../includes/database.php';
@@ -18,6 +47,16 @@ $password_policy = get_password_policy();
 $password_min_length = (int)($password_policy['min_length'] ?? 8);
 $password_require_special = !empty($password_policy['require_special']);
 $password_expiry_days = (int)($password_policy['expiry_days'] ?? 90);
+
+// Load backup settings
+if (!function_exists('get_backup_settings')) {
+    require_once __DIR__ . '/../includes/database.php';
+}
+$backup_settings = get_backup_settings();
+$backup_frequency = $backup_settings['frequency'] ?? 'daily';
+$backup_retention_days = (int)($backup_settings['retention_days'] ?? 90);
+$backup_location = $backup_settings['backup_location'] ?? 'storage/backups';
+$backup_list = get_backup_list();
 
 // Check if current user's password has expired
 $password_expired = false;
@@ -88,13 +127,6 @@ if (!empty($two_factor_secret)) {
                         data-bs-target="#user-policies"
                         type="button" role="tab">
                     <i class="fas fa-file-contract me-2"></i>User Policies
-                </button>
-                <button class="list-group-item list-group-item-action"
-                        id="system-config-tab"
-                        data-bs-toggle="list"
-                        data-bs-target="#system-config"
-                        type="button" role="tab">
-                    <i class="fas fa-sliders-h me-2"></i>System Configuration
                 </button>
                 <button class="list-group-item list-group-item-action"
                         id="module-access-tab"
@@ -515,46 +547,6 @@ if (!empty($two_factor_secret)) {
                     </div>
                 </div>
 
-                <!-- System Configuration -->
-                <div class="tab-pane fade" id="system-config" role="tabpanel">
-                    <div class="card card-modern mb-4">
-                        <div class="card-body-modern">
-                            <div class="card-header-modern mb-3">
-                                <h5 class="card-title-modern">System Configuration</h5>
-                                <small class="card-subtitle">High-level system options (environment, URLs, mail, etc.).</small>
-                            </div>
-
-                            <form class="row g-3">
-                                <div class="col-md-4">
-                                    <label class="form-label">Environment</label>
-                                    <select class="form-select" disabled>
-                                        <option selected>Production</option>
-                                        <option>Staging</option>
-                                        <option>Local</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-8">
-                                    <label class="form-label">Base URL</label>
-                                    <input type="text" class="form-control" placeholder="https://your-hr-system.example.com" disabled>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Outgoing Email (From)</label>
-                                    <input type="email" class="form-control" placeholder="no-reply@goldenz5.com" disabled>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">SMTP Host</label>
-                                    <input type="text" class="form-control" placeholder="smtp.example.com" disabled>
-                                </div>
-                                <div class="col-md-12">
-                                    <small class="text-muted">
-                                        These fields are UI-only placeholders. In production, back them with a config table or `.env` file.
-                                    </small>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- Module Access -->
                 <div class="tab-pane fade" id="module-access" role="tabpanel">
                     <div class="card card-modern mb-4">
@@ -690,40 +682,99 @@ if (!empty($two_factor_secret)) {
                         <div class="card-body-modern">
                             <div class="card-header-modern mb-3">
                                 <h5 class="card-title-modern">Data Backup & Retention</h5>
-                                <small class="card-subtitle">Plan backups and data lifecycle. (UI only for now.)</small>
+                                <small class="card-subtitle">Configure backup frequency, retention period, and manage backups.</small>
                             </div>
 
-                            <form class="row g-3">
+                            <form id="backup-settings-form" class="row g-3">
                                 <div class="col-md-4">
                                     <label class="form-label">Backup Frequency</label>
-                                    <select class="form-select" disabled>
-                                        <option>Manual only</option>
-                                        <option selected>Daily</option>
-                                        <option>Weekly</option>
+                                    <select class="form-select" id="backup-frequency" name="backup_frequency">
+                                        <option value="manual" <?php echo $backup_frequency === 'manual' ? 'selected' : ''; ?>>Manual only</option>
+                                        <option value="daily" <?php echo $backup_frequency === 'daily' ? 'selected' : ''; ?>>Daily</option>
+                                        <option value="weekly" <?php echo $backup_frequency === 'weekly' ? 'selected' : ''; ?>>Weekly</option>
                                     </select>
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label">Retention Period</label>
-                                    <select class="form-select" disabled>
-                                        <option>30 days</option>
-                                        <option selected>90 days</option>
-                                        <option>1 year</option>
-                                        <option>Forever</option>
+                                    <select class="form-select" id="backup-retention" name="backup_retention_days">
+                                        <option value="30" <?php echo $backup_retention_days == 30 ? 'selected' : ''; ?>>30 days</option>
+                                        <option value="90" <?php echo $backup_retention_days == 90 ? 'selected' : ''; ?>>90 days</option>
+                                        <option value="365" <?php echo $backup_retention_days == 365 ? 'selected' : ''; ?>>1 year</option>
+                                        <option value="0" <?php echo ($backup_retention_days == 0 || $backup_retention_days < 0) ? 'selected' : ''; ?>>Forever</option>
                                     </select>
+                                    <small class="form-text text-muted">Backups older than the retention period will be automatically deleted. "Forever" keeps all backups.</small>
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label">Backup Location</label>
-                                    <input type="text" class="form-control" placeholder="/path/to/backups or S3 bucket" disabled>
+                                    <input type="text" class="form-control" id="backup-location" name="backup_location" 
+                                           value="<?php echo htmlspecialchars($backup_location); ?>" 
+                                           placeholder="storage/backups">
                                 </div>
-                                <div class="col-12">
-                                    <button type="button" class="btn btn-outline-modern btn-sm" disabled>
-                                        <i class="fas fa-download me-2"></i>Download latest backup
-                                    </button>
-                                    <button type="button" class="btn btn-outline-modern btn-sm ms-2" disabled>
-                                        <i class="fas fa-play me-2"></i>Trigger manual backup
+                                <div class="col-12 d-flex justify-content-end mt-2">
+                                    <button type="submit" class="btn btn-primary-modern">
+                                        <i class="fas fa-save me-2"></i>Save Backup Settings
                                     </button>
                                 </div>
                             </form>
+
+                            <hr class="my-4">
+
+                            <div class="card-header-modern mb-3">
+                                <h5 class="card-title-modern">Backup Actions</h5>
+                                <small class="card-subtitle">Create new backups or download existing ones.</small>
+                            </div>
+
+                            <div class="row g-3 mb-4">
+                                <div class="col-12">
+                                    <button type="button" class="btn btn-primary-modern" id="trigger-backup-btn">
+                                        <i class="fas fa-play me-2"></i>Create Manual Backup
+                                    </button>
+                                    <button type="button" class="btn btn-outline-modern ms-2" id="refresh-backup-list-btn">
+                                        <i class="fas fa-sync me-2"></i>Refresh List
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="card-header-modern mb-3">
+                                <h5 class="card-title-modern">Available Backups</h5>
+                                <small class="card-subtitle">List of all database backups.</small>
+                            </div>
+
+                            <div id="backup-list-container">
+                                <?php if (empty($backup_list)): ?>
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-info-circle me-2"></i>No backups found. Create your first backup using the button above.
+                                    </div>
+                                <?php else: ?>
+                                    <div class="table-responsive">
+                                        <table class="table table-modern">
+                                            <thead>
+                                                <tr>
+                                                    <th>Filename</th>
+                                                    <th>Created</th>
+                                                    <th>Size</th>
+                                                    <th>Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <?php foreach ($backup_list as $backup): ?>
+                                                    <tr>
+                                                        <td><?php echo htmlspecialchars($backup['filename']); ?></td>
+                                                        <td><?php echo htmlspecialchars($backup['created_at']); ?></td>
+                                                        <td><?php echo number_format($backup['size'] / 1024, 2); ?> KB</td>
+                                                        <td>
+                                                            <a href="?page=settings&download_backup=<?php echo urlencode($backup['filepath']); ?>" 
+                                                               class="btn btn-sm btn-outline-modern">
+                                                                <i class="fas fa-download me-1"></i>Download
+                                                            </a>
+                                                        </td>
+                                                    </tr>
+                                                <?php endforeach; ?>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1822,6 +1873,224 @@ document.addEventListener('DOMContentLoaded', function() {
             passwordPolicyConfirmed = true;
             passwordPolicyForm.submit();
         });
+    }
+
+    // Backup Settings Form Handler
+    const backupSettingsForm = document.getElementById('backup-settings-form');
+    if (backupSettingsForm) {
+        backupSettingsForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            formData.append('action', 'update_backup_settings');
+            formData.append('page', 'settings');
+            
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Saving...';
+            
+            fetch('', {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+                
+                if (data && data.success) {
+                    // Show success message
+                    const alertDiv = document.createElement('div');
+                    alertDiv.className = 'alert alert-success alert-dismissible fade show';
+                    alertDiv.innerHTML = '<i class="fas fa-check-circle me-2"></i>' + (data.message || 'Backup settings saved successfully') + 
+                        '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>';
+                    backupSettingsForm.insertBefore(alertDiv, backupSettingsForm.firstChild);
+                    
+                    setTimeout(() => {
+                        alertDiv.remove();
+                    }, 5000);
+                } else {
+                    // Show error message
+                    const alertDiv = document.createElement('div');
+                    alertDiv.className = 'alert alert-danger alert-dismissible fade show';
+                    alertDiv.innerHTML = '<i class="fas fa-exclamation-circle me-2"></i>' + 
+                        (data.message || 'Failed to save backup settings') + 
+                        '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>';
+                    backupSettingsForm.insertBefore(alertDiv, backupSettingsForm.firstChild);
+                    
+                    setTimeout(() => {
+                        alertDiv.remove();
+                    }, 5000);
+                }
+            })
+            .catch(error => {
+                console.error('Backup Settings Error:', error);
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+                
+                const alertDiv = document.createElement('div');
+                alertDiv.className = 'alert alert-danger alert-dismissible fade show';
+                alertDiv.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>An error occurred while saving backup settings.' + 
+                    '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>';
+                backupSettingsForm.insertBefore(alertDiv, backupSettingsForm.firstChild);
+                
+                setTimeout(() => {
+                    alertDiv.remove();
+                }, 5000);
+            });
+        });
+    }
+
+    // Trigger Backup Button Handler
+    const triggerBackupBtn = document.getElementById('trigger-backup-btn');
+    if (triggerBackupBtn) {
+        triggerBackupBtn.addEventListener('click', function() {
+            if (!confirm('Are you sure you want to create a new database backup? This may take a few moments.')) {
+                return;
+            }
+            
+            const originalText = this.innerHTML;
+            this.disabled = true;
+            this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Creating Backup...';
+            
+            const formData = new FormData();
+            formData.append('action', 'create_backup');
+            formData.append('page', 'settings');
+            
+            fetch('', {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                this.disabled = false;
+                this.innerHTML = originalText;
+                
+                if (data && data.success) {
+                    // Show success message
+                    const alertDiv = document.createElement('div');
+                    alertDiv.className = 'alert alert-success alert-dismissible fade show';
+                    alertDiv.innerHTML = '<i class="fas fa-check-circle me-2"></i>' + 
+                        (data.message || 'Backup created successfully') + 
+                        '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>';
+                    
+                    const backupContainer = document.getElementById('backup');
+                    if (backupContainer) {
+                        const cardBody = backupContainer.querySelector('.card-body-modern');
+                        if (cardBody) {
+                            cardBody.insertBefore(alertDiv, cardBody.firstChild);
+                        }
+                    }
+                    
+                    // Refresh backup list
+                    refreshBackupList();
+                    
+                    setTimeout(() => {
+                        alertDiv.remove();
+                    }, 5000);
+                } else {
+                    // Show error message
+                    const alertDiv = document.createElement('div');
+                    alertDiv.className = 'alert alert-danger alert-dismissible fade show';
+                    alertDiv.innerHTML = '<i class="fas fa-exclamation-circle me-2"></i>' + 
+                        (data.message || 'Failed to create backup') + 
+                        '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>';
+                    
+                    const backupContainer = document.getElementById('backup');
+                    if (backupContainer) {
+                        const cardBody = backupContainer.querySelector('.card-body-modern');
+                        if (cardBody) {
+                            cardBody.insertBefore(alertDiv, cardBody.firstChild);
+                        }
+                    }
+                    
+                    setTimeout(() => {
+                        alertDiv.remove();
+                    }, 5000);
+                }
+            })
+            .catch(error => {
+                console.error('Create Backup Error:', error);
+                this.disabled = false;
+                this.innerHTML = originalText;
+                
+                const alertDiv = document.createElement('div');
+                alertDiv.className = 'alert alert-danger alert-dismissible fade show';
+                alertDiv.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>An error occurred while creating the backup.' + 
+                    '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>';
+                
+                const backupContainer = document.getElementById('backup');
+                if (backupContainer) {
+                    const cardBody = backupContainer.querySelector('.card-body-modern');
+                    if (cardBody) {
+                        cardBody.insertBefore(alertDiv, cardBody.firstChild);
+                    }
+                }
+                
+                setTimeout(() => {
+                    alertDiv.remove();
+                }, 5000);
+            });
+        });
+    }
+
+    // Refresh Backup List
+    const refreshBackupListBtn = document.getElementById('refresh-backup-list-btn');
+    if (refreshBackupListBtn) {
+        refreshBackupListBtn.addEventListener('click', function() {
+            refreshBackupList();
+        });
+    }
+
+    function refreshBackupList() {
+        const formData = new FormData();
+        formData.append('action', 'get_backup_list');
+        formData.append('page', 'settings');
+        
+        fetch('', {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            const container = document.getElementById('backup-list-container');
+            if (!container) return;
+            
+            if (data && data.success && data.backups) {
+                if (data.backups.length === 0) {
+                    container.innerHTML = '<div class="alert alert-info"><i class="fas fa-info-circle me-2"></i>No backups found. Create your first backup using the button above.</div>';
+                } else {
+                    let html = '<div class="table-responsive"><table class="table table-modern"><thead><tr><th>Filename</th><th>Created</th><th>Size</th><th>Actions</th></tr></thead><tbody>';
+                    
+                    data.backups.forEach(function(backup) {
+                        const sizeKB = (backup.size / 1024).toFixed(2);
+                        html += '<tr><td>' + escapeHtml(backup.filename) + '</td><td>' + escapeHtml(backup.created_at) + '</td><td>' + sizeKB + ' KB</td><td><a href="?page=settings&download_backup=' + encodeURIComponent(backup.filepath) + '" class="btn btn-sm btn-outline-modern"><i class="fas fa-download me-1"></i>Download</a></td></tr>';
+                    });
+                    
+                    html += '</tbody></table></div>';
+                    container.innerHTML = html;
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Refresh Backup List Error:', error);
+        });
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
     }
 });
 </script>

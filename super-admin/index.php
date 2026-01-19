@@ -560,8 +560,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                     $user_data = [
                         'username' => trim($_POST['username'] ?? ''),
                         'email' => trim($_POST['email'] ?? ''),
-                        'password' => $_POST['password'] ?? '',
-                        'name' => trim($_POST['name'] ?? ''),
+                        'first_name' => trim($_POST['first_name'] ?? ''),
+                        'last_name' => trim($_POST['last_name'] ?? ''),
                         'role' => $_POST['role'] ?? 'hr_admin',
                         'status' => $_POST['status'] ?? 'active',
                         'department' => !empty(trim($_POST['department'] ?? '')) ? trim($_POST['department']) : null,
@@ -569,8 +569,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                         'employee_id' => !empty($_POST['employee_id']) ? (int)$_POST['employee_id'] : null
                     ];
                     
-                    // Validate required fields before processing
-                    if (empty($user_data['username']) || empty($user_data['email']) || empty($user_data['password']) || empty($user_data['name'])) {
+                    // Validate required fields before processing (password is auto-generated)
+                    if (empty($user_data['username']) || empty($user_data['email']) || empty($user_data['first_name']) || empty($user_data['last_name'])) {
                         echo json_encode(['success' => false, 'message' => 'All required fields must be filled']);
                         exit;
                     }
@@ -760,6 +760,52 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                     error_log('Password change error: ' . $e->getMessage());
                     echo json_encode(['success' => false, 'message' => 'An error occurred while changing password']);
                 }
+                exit;
+
+            case 'update_backup_settings':
+                if (!function_exists('update_backup_settings')) {
+                    require_once __DIR__ . '/../includes/database.php';
+                }
+                
+                $frequency = $_POST['backup_frequency'] ?? 'daily';
+                $retention_days = isset($_POST['backup_retention_days']) ? (int)$_POST['backup_retention_days'] : 90;
+                $backup_location = trim($_POST['backup_location'] ?? 'storage/backups');
+                
+                // Validate retention days
+                if ($retention_days < 0) {
+                    echo json_encode(['success' => false, 'message' => 'Retention period cannot be negative']);
+                    exit;
+                }
+                
+                // Convert retention days: 0 = forever, otherwise use the value
+                if ($_POST['backup_retention_days'] == '0') {
+                    $retention_days = 0; // Forever
+                }
+                
+                $result = update_backup_settings($frequency, $retention_days, $backup_location);
+                if ($result) {
+                    echo json_encode(['success' => true, 'message' => 'Backup settings updated successfully']);
+                } else {
+                    echo json_encode(['success' => false, 'message' => 'Failed to update backup settings']);
+                }
+                exit;
+
+            case 'create_backup':
+                if (!function_exists('create_database_backup')) {
+                    require_once __DIR__ . '/../includes/database.php';
+                }
+                
+                $result = create_database_backup();
+                echo json_encode($result);
+                exit;
+
+            case 'get_backup_list':
+                if (!function_exists('get_backup_list')) {
+                    require_once __DIR__ . '/../includes/database.php';
+                }
+                
+                $backups = get_backup_list();
+                echo json_encode(['success' => true, 'backups' => $backups]);
                 exit;
         }
     }

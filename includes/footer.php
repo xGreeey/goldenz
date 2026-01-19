@@ -9,6 +9,50 @@
         // Set current user ID for theme preference scoping
         window.GOLDENZ_USER_ID = <?php echo json_encode($_SESSION['user_id'] ?? null); ?>;
     </script>
+    
+    <!-- CRITICAL: Remove ALL modal backdrops - we don't use them -->
+    <script>
+    (function() {
+        'use strict';
+        
+        // Function to remove all backdrops
+        function removeAllBackdrops() {
+            const backdrops = document.querySelectorAll('.modal-backdrop');
+            backdrops.forEach(function(backdrop) {
+                try {
+                    backdrop.remove();
+                } catch (e) {
+                    if (backdrop.parentNode) {
+                        backdrop.parentNode.removeChild(backdrop);
+                    }
+                }
+            });
+            
+            // Also remove modal-open class to restore body
+            if (document.body) {
+                document.body.classList.remove('modal-open');
+                document.body.style.overflow = '';
+                document.body.style.paddingRight = '';
+            }
+        }
+        
+        // Run immediately
+        removeAllBackdrops();
+        
+        // Run when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', removeAllBackdrops);
+        } else {
+            removeAllBackdrops();
+        }
+        
+        // Run on window load
+        window.addEventListener('load', removeAllBackdrops);
+        
+        // Continuously remove any backdrops that get created
+        setInterval(removeAllBackdrops, 100);
+    })();
+    </script>
     <script src="<?php echo asset_url('js/app.js'); ?>"></script>
     <script src="<?php echo asset_url('js/page-transitions.js'); ?>"></script>
     <script src="<?php echo asset_url('js/comprehensive-functionality.js'); ?>"></script>
