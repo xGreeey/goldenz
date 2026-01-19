@@ -6,14 +6,14 @@
     width: 40px;
     height: 40px;
     object-fit: cover;
-    border-radius: 50%;
+    border-radius: 8px;
 }
 
 .avatar-md {
-    width: 100px;
-    height: 100px;
+    width: 40px;
+    height: 40px;
     object-fit: cover;
-    border-radius: 50%;
+    border-radius: 8px;
 }
 
 .avatar-lg {
@@ -42,19 +42,22 @@
 .avatar-placeholder-sm {
     width: 40px;
     height: 40px;
-    font-size: 1rem;
+    font-size: 0.875rem;
+    border-radius: 8px;
 }
 
 .avatar-placeholder-md {
-    width: 100px;
-    height: 100px;
-    font-size: 2.5rem;
+    width: 40px;
+    height: 40px;
+    font-size: 0.875rem;
+    border-radius: 8px;
 }
 
 .avatar-placeholder-lg {
-    width: 100px;
-    height: 100px;
-    font-size: 2.5rem;
+    width: 40px;
+    height: 40px;
+    font-size: 0.875rem;
+    border-radius: 8px;
 }
 
 /* Text Utilities */

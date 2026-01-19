@@ -67,36 +67,40 @@ $applicants = $sample_applicants;
     </div>
 
     <!-- Statistics Cards -->
-    <div class="row mb-4">
-        <div class="col-md-3">
-            <div class="card summary-card">
-                <div class="card-body text-center">
-                    <h3 class="text-primary"><?php echo count($posts); ?></h3>
-                    <p class="text-muted mb-0">Active Job Posts</p>
+    <div class="d-flex justify-content-center">
+        <div class="hiring-stats-container">
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card summary-card">
+                        <div class="card-body text-center">
+                            <h3 class="text-primary"><?php echo count($posts); ?></h3>
+                            <p class="text-muted mb-0">Active Job Posts</p>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card summary-card">
-                <div class="card-body text-center">
-                    <h3 class="text-info"><?php echo count($applicants); ?></h3>
-                    <p class="text-muted mb-0">Total Applicants</p>
+                <div class="col-md-3">
+                    <div class="card summary-card">
+                        <div class="card-body text-center">
+                            <h3 class="text-info"><?php echo count($applicants); ?></h3>
+                            <p class="text-muted mb-0">Total Applicants</p>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card summary-card">
-                <div class="card-body text-center">
-                    <h3 class="text-warning"><?php echo count(array_filter($applicants, fn($a) => $a['status'] === 'pending')); ?></h3>
-                    <p class="text-muted mb-0">Pending Review</p>
+                <div class="col-md-3">
+                    <div class="card summary-card">
+                        <div class="card-body text-center">
+                            <h3 class="text-warning"><?php echo count(array_filter($applicants, fn($a) => $a['status'] === 'pending')); ?></h3>
+                            <p class="text-muted mb-0">Pending Review</p>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card summary-card">
-                <div class="card-body text-center">
-                    <h3 class="text-success"><?php echo count(array_filter($applicants, fn($a) => $a['status'] === 'hired')); ?></h3>
-                    <p class="text-muted mb-0">Hired This Month</p>
+                <div class="col-md-3">
+                    <div class="card summary-card">
+                        <div class="card-body text-center">
+                            <h3 class="text-success"><?php echo count(array_filter($applicants, fn($a) => $a['status'] === 'hired')); ?></h3>
+                            <p class="text-muted mb-0">Hired This Month</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

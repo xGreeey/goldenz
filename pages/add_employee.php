@@ -949,7 +949,7 @@ if (isset($_SESSION['employee_redirect_url'])) {
                     </div>
                     <div class="col-md-3">
                         <div class="form-group">
-                            <label for="blood_type" class="form-label">Blood Type</label>
+                            <label for="blood_type" class="form-label">Blood Type <span class="text-danger">*</span></label>
                             <select class="form-select" id="blood_type" name="blood_type" required>
                                 <option value="">Select Blood Type</option>
                                 <option value="A+" <?php echo (($_POST['blood_type'] ?? '') === 'A+') ? 'selected' : ''; ?>>A+</option>
@@ -966,7 +966,7 @@ if (isset($_SESSION['employee_redirect_url'])) {
                     </div>
                     <div class="col-md-3">
                         <div class="form-group">
-                            <label for="religion" class="form-label">Religion</label>
+                            <label for="religion" class="form-label">Religion <span class="text-danger">*</span></label>
                             <select class="form-select" id="religion" name="religion" required>
                                 <option value="">Select Religion</option>
                                 <?php

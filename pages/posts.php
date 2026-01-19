@@ -245,68 +245,72 @@ $posts = get_posts($filters);
     </nav>
 
     <!-- Statistics Cards -->
-    <div class="row g-4">
-        <div class="col-xl-3 col-md-6">
-            <div class="card hrdash-stat hrdash-stat--primary">
-                <div class="hrdash-stat__header">
-                    <div class="hrdash-stat__label">Total Posts</div>
-                </div>
-                <div class="hrdash-stat__content">
-                    <div class="hrdash-stat__value"><?php echo number_format($post_stats['total_posts']); ?></div>
-                    <div class="hrdash-stat__trend hrdash-stat__trend--positive">
-                        <i class="fas fa-arrow-up"></i>
-                        <span>5%</span>
+    <div class="d-flex justify-content-center">
+        <div class="posts-stats-container">
+            <div class="row g-4">
+                <div class="col-xl-3 col-md-6">
+                    <div class="card hrdash-stat hrdash-stat--primary">
+                        <div class="hrdash-stat__header">
+                            <div class="hrdash-stat__label">Total Posts</div>
+                        </div>
+                        <div class="hrdash-stat__content">
+                            <div class="hrdash-stat__value"><?php echo number_format($post_stats['total_posts']); ?></div>
+                            <div class="hrdash-stat__trend hrdash-stat__trend--positive">
+                                <i class="fas fa-arrow-up"></i>
+                                <span>5%</span>
+                            </div>
+                        </div>
+                        <div class="hrdash-stat__meta">All posts tracked in the system.</div>
                     </div>
                 </div>
-                <div class="hrdash-stat__meta">All posts tracked in the system.</div>
-            </div>
-        </div>
 
-        <div class="col-xl-3 col-md-6">
-            <div class="card hrdash-stat">
-                <div class="hrdash-stat__header">
-                    <div class="hrdash-stat__label">Required Positions</div>
-                </div>
-                <div class="hrdash-stat__content">
-                    <div class="hrdash-stat__value"><?php echo number_format($post_stats['total_required']); ?></div>
-                    <div class="hrdash-stat__trend hrdash-stat__trend--positive">
-                        <i class="fas fa-arrow-up"></i>
-                        <span><?php echo $post_stats['total_filled']; ?> filled</span>
+                <div class="col-xl-3 col-md-6">
+                    <div class="card hrdash-stat">
+                        <div class="hrdash-stat__header">
+                            <div class="hrdash-stat__label">Required Positions</div>
+                        </div>
+                        <div class="hrdash-stat__content">
+                            <div class="hrdash-stat__value"><?php echo number_format($post_stats['total_required']); ?></div>
+                            <div class="hrdash-stat__trend hrdash-stat__trend--positive">
+                                <i class="fas fa-arrow-up"></i>
+                                <span><?php echo $post_stats['total_filled']; ?> filled</span>
+                            </div>
+                        </div>
+                        <div class="hrdash-stat__meta">Total staffing requirements across all posts.</div>
                     </div>
                 </div>
-                <div class="hrdash-stat__meta">Total staffing requirements across all posts.</div>
-            </div>
-        </div>
 
-        <div class="col-xl-3 col-md-6">
-            <div class="card hrdash-stat">
-                <div class="hrdash-stat__header">
-                    <div class="hrdash-stat__label">Vacant Positions</div>
-                </div>
-                <div class="hrdash-stat__content">
-                    <div class="hrdash-stat__value"><?php echo number_format($post_stats['total_vacant']); ?></div>
-                    <div class="hrdash-stat__trend hrdash-stat__trend--negative">
-                        <i class="fas fa-arrow-down"></i>
-                        <span>2%</span>
+                <div class="col-xl-3 col-md-6">
+                    <div class="card hrdash-stat">
+                        <div class="hrdash-stat__header">
+                            <div class="hrdash-stat__label">Vacant Positions</div>
+                        </div>
+                        <div class="hrdash-stat__content">
+                            <div class="hrdash-stat__value"><?php echo number_format($post_stats['total_vacant']); ?></div>
+                            <div class="hrdash-stat__trend hrdash-stat__trend--negative">
+                                <i class="fas fa-arrow-down"></i>
+                                <span>2%</span>
+                            </div>
+                        </div>
+                        <div class="hrdash-stat__meta">Open positions that need to be filled.</div>
                     </div>
                 </div>
-                <div class="hrdash-stat__meta">Open positions that need to be filled.</div>
-            </div>
-        </div>
 
-        <div class="col-xl-3 col-md-6">
-            <div class="card hrdash-stat">
-                <div class="hrdash-stat__header">
-                    <div class="hrdash-stat__label">Urgent Posts</div>
-                </div>
-                <div class="hrdash-stat__content">
-                    <div class="hrdash-stat__value"><?php echo number_format($post_stats['urgent_posts']); ?></div>
-                    <div class="hrdash-stat__trend hrdash-stat__trend--negative">
-                        <i class="fas fa-arrow-down"></i>
-                        <span>3%</span>
+                <div class="col-xl-3 col-md-6">
+                    <div class="card hrdash-stat">
+                        <div class="hrdash-stat__header">
+                            <div class="hrdash-stat__label">Urgent Posts</div>
+                        </div>
+                        <div class="hrdash-stat__content">
+                            <div class="hrdash-stat__value"><?php echo number_format($post_stats['urgent_posts']); ?></div>
+                            <div class="hrdash-stat__trend hrdash-stat__trend--negative">
+                                <i class="fas fa-arrow-down"></i>
+                                <span>3%</span>
+                            </div>
+                        </div>
+                        <div class="hrdash-stat__meta">High priority posts requiring immediate attention.</div>
                     </div>
                 </div>
-                <div class="hrdash-stat__meta">High priority posts requiring immediate attention.</div>
             </div>
         </div>
     </div>
