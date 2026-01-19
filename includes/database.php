@@ -3445,6 +3445,377 @@ if (!function_exists('update_password_policy')) {
     }
 }
 
+// Backup settings helpers
+if (!function_exists('get_backup_settings')) {
+    /**
+     * Get backup settings.
+     * Returns array with keys:
+     * - frequency (string: 'manual', 'daily', 'weekly')
+     * - retention_days (int)
+     * - backup_location (string)
+     */
+    function get_backup_settings() {
+        $defaults = [
+            'frequency' => 'daily',
+            'retention_days' => 90,
+            'backup_location' => 'storage/backups',
+        ];
+
+        try {
+            $pdo = get_db_connection();
+
+            // Create table if it does not exist
+            $pdo->exec("CREATE TABLE IF NOT EXISTS security_settings (
+                `key` VARCHAR(100) NOT NULL PRIMARY KEY,
+                `value` VARCHAR(255) NULL,
+                `updated_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+            $stmt = $pdo->query("SELECT `key`, `value` FROM security_settings WHERE `key` LIKE 'backup_%'");
+            $rows = $stmt ? $stmt->fetchAll(PDO::FETCH_KEY_PAIR) : [];
+
+            $settings = $defaults;
+
+            if (isset($rows['backup_frequency'])) {
+                $valid_frequencies = ['manual', 'daily', 'weekly'];
+                if (in_array($rows['backup_frequency'], $valid_frequencies)) {
+                    $settings['frequency'] = $rows['backup_frequency'];
+                }
+            }
+
+            if (isset($rows['backup_retention_days']) && is_numeric($rows['backup_retention_days'])) {
+                $settings['retention_days'] = max(1, (int)$rows['backup_retention_days']);
+            }
+
+            if (isset($rows['backup_location']) && !empty($rows['backup_location'])) {
+                $settings['backup_location'] = $rows['backup_location'];
+            }
+
+            return $settings;
+        } catch (Exception $e) {
+            error_log("Error in get_backup_settings: " . $e->getMessage());
+            return $defaults;
+        }
+    }
+}
+
+if (!function_exists('update_backup_settings')) {
+    /**
+     * Update backup settings.
+     */
+    function update_backup_settings($frequency, $retention_days, $backup_location) {
+        try {
+            $pdo = get_db_connection();
+
+            // Ensure table exists
+            $pdo->exec("CREATE TABLE IF NOT EXISTS security_settings (
+                `key` VARCHAR(100) NOT NULL PRIMARY KEY,
+                `value` VARCHAR(255) NULL,
+                `updated_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+            // Validate frequency
+            $valid_frequencies = ['manual', 'daily', 'weekly'];
+            if (!in_array($frequency, $valid_frequencies)) {
+                $frequency = 'daily';
+            }
+
+            // Validate retention days
+            $retention_days = max(1, (int)$retention_days);
+
+            // Sanitize backup location
+            $backup_location = trim($backup_location);
+            if (empty($backup_location)) {
+                $backup_location = 'storage/backups';
+            }
+
+            $settings = [
+                'backup_frequency' => $frequency,
+                'backup_retention_days' => (string)$retention_days,
+                'backup_location' => $backup_location,
+            ];
+
+            $stmt = $pdo->prepare("INSERT INTO security_settings (`key`, `value`) VALUES (:key, :value)
+                                   ON DUPLICATE KEY UPDATE `value` = VALUES(`value`)");
+
+            foreach ($settings as $key => $value) {
+                $stmt->execute([':key' => $key, ':value' => $value]);
+            }
+
+            return true;
+        } catch (Exception $e) {
+            error_log("Error in update_backup_settings: " . $e->getMessage());
+            return false;
+        }
+    }
+}
+
+if (!function_exists('create_database_backup')) {
+    /**
+     * Create a database backup.
+     * Returns array with success status and file path or error message.
+     */
+    function create_database_backup() {
+        try {
+            $pdo = get_db_connection();
+            $settings = get_backup_settings();
+            
+            // Get database config
+            $db_config = [
+                'host' => $_ENV['DB_HOST'] ?? 'localhost',
+                'username' => $_ENV['DB_USERNAME'] ?? 'root',
+                'password' => $_ENV['DB_PASSWORD'] ?? '',
+                'database' => $_ENV['DB_DATABASE'] ?? 'goldenz_hr',
+            ];
+
+            // Create backup directory if it doesn't exist
+            $backup_dir = __DIR__ . '/../' . $settings['backup_location'];
+            if (!file_exists($backup_dir)) {
+                if (!mkdir($backup_dir, 0755, true)) {
+                    return ['success' => false, 'message' => 'Failed to create backup directory'];
+                }
+            }
+
+            // Generate backup filename
+            $timestamp = date('Y-m-d_His');
+            $filename = "backup_{$db_config['database']}_{$timestamp}.sql";
+            $filepath = $backup_dir . '/' . $filename;
+
+            // Use mysqldump if available (preferred method)
+            $mysqldump_path = '';
+            if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+                // Windows - try common XAMPP paths
+                $possible_paths = [
+                    'C:\\xampp\\mysql\\bin\\mysqldump.exe',
+                    'C:\\wamp\\bin\\mysql\\mysql' . (version_compare(PHP_VERSION, '7.0', '>=') ? '5.7' : '5.6') . '\\bin\\mysqldump.exe',
+                    'mysqldump.exe', // If in PATH
+                ];
+                foreach ($possible_paths as $path) {
+                    if (file_exists($path)) {
+                        $mysqldump_path = $path;
+                        break;
+                    }
+                }
+            } else {
+                // Linux/Unix
+                $mysqldump_path = 'mysqldump'; // Assume in PATH
+            }
+
+            if (!empty($mysqldump_path) && (file_exists($mysqldump_path) || $mysqldump_path === 'mysqldump')) {
+                // Use mysqldump
+                $command = sprintf(
+                    '"%s" --host=%s --user=%s --password=%s %s > "%s" 2>&1',
+                    $mysqldump_path,
+                    escapeshellarg($db_config['host']),
+                    escapeshellarg($db_config['username']),
+                    escapeshellarg($db_config['password']),
+                    escapeshellarg($db_config['database']),
+                    escapeshellarg($filepath)
+                );
+
+                exec($command, $output, $return_var);
+
+                if ($return_var !== 0 || !file_exists($filepath) || filesize($filepath) === 0) {
+                    // Fallback to PHP-based backup
+                    return create_database_backup_php($pdo, $filepath, $db_config['database']);
+                }
+            } else {
+                // Use PHP-based backup
+                return create_database_backup_php($pdo, $filepath, $db_config['database']);
+            }
+
+            // Record backup in database
+            try {
+                $pdo->exec("CREATE TABLE IF NOT EXISTS backup_history (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    filename VARCHAR(255) NOT NULL,
+                    filepath VARCHAR(500) NOT NULL,
+                    file_size BIGINT NOT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    INDEX idx_created_at (created_at)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+                $stmt = $pdo->prepare("INSERT INTO backup_history (filename, filepath, file_size) VALUES (?, ?, ?)");
+                $stmt->execute([$filename, $settings['backup_location'] . '/' . $filename, filesize($filepath)]);
+            } catch (Exception $e) {
+                error_log("Error recording backup in database: " . $e->getMessage());
+            }
+
+            // Clean up old backups based on retention policy
+            cleanup_old_backups();
+
+            return [
+                'success' => true,
+                'message' => 'Backup created successfully',
+                'filename' => $filename,
+                'filepath' => $settings['backup_location'] . '/' . $filename,
+                'size' => filesize($filepath)
+            ];
+        } catch (Exception $e) {
+            error_log("Error in create_database_backup: " . $e->getMessage());
+            return ['success' => false, 'message' => 'Failed to create backup: ' . $e->getMessage()];
+        }
+    }
+}
+
+if (!function_exists('create_database_backup_php')) {
+    /**
+     * Create database backup using PHP (fallback method).
+     */
+    function create_database_backup_php($pdo, $filepath, $database) {
+        try {
+            $output = "-- Golden Z-5 HR System Database Backup\n";
+            $output .= "-- Generated: " . date('Y-m-d H:i:s') . "\n";
+            $output .= "-- Database: {$database}\n\n";
+            $output .= "SET SQL_MODE = \"NO_AUTO_VALUE_ON_ZERO\";\n";
+            $output .= "SET time_zone = \"+00:00\";\n\n";
+
+            // Get all tables
+            $tables = $pdo->query("SHOW TABLES")->fetchAll(PDO::FETCH_COLUMN);
+
+            foreach ($tables as $table) {
+                $output .= "\n-- Table structure for table `{$table}`\n";
+                $output .= "DROP TABLE IF EXISTS `{$table}`;\n";
+
+                // Get table structure
+                $create_table = $pdo->query("SHOW CREATE TABLE `{$table}`")->fetch(PDO::FETCH_ASSOC);
+                $output .= $create_table['Create Table'] . ";\n\n";
+
+                // Get table data
+                $rows = $pdo->query("SELECT * FROM `{$table}`")->fetchAll(PDO::FETCH_ASSOC);
+                if (count($rows) > 0) {
+                    $output .= "-- Dumping data for table `{$table}`\n";
+                    $output .= "LOCK TABLES `{$table}` WRITE;\n";
+
+                    foreach ($rows as $row) {
+                        $values = [];
+                        foreach ($row as $value) {
+                            if ($value === null) {
+                                $values[] = 'NULL';
+                            } else {
+                                $values[] = $pdo->quote($value);
+                            }
+                        }
+                        $output .= "INSERT INTO `{$table}` VALUES (" . implode(',', $values) . ");\n";
+                    }
+
+                    $output .= "UNLOCK TABLES;\n\n";
+                }
+            }
+
+            if (file_put_contents($filepath, $output) === false) {
+                return ['success' => false, 'message' => 'Failed to write backup file'];
+            }
+
+            return [
+                'success' => true,
+                'message' => 'Backup created successfully',
+                'filename' => basename($filepath),
+                'filepath' => str_replace(__DIR__ . '/../', '', $filepath),
+                'size' => filesize($filepath)
+            ];
+        } catch (Exception $e) {
+            error_log("Error in create_database_backup_php: " . $e->getMessage());
+            return ['success' => false, 'message' => 'Failed to create backup: ' . $e->getMessage()];
+        }
+    }
+}
+
+if (!function_exists('cleanup_old_backups')) {
+    /**
+     * Clean up old backups based on retention policy.
+     */
+    function cleanup_old_backups() {
+        try {
+            $settings = get_backup_settings();
+            $retention_days = (int)$settings['retention_days'];
+            
+            if ($retention_days <= 0) {
+                return; // Keep forever
+            }
+
+            $backup_dir = __DIR__ . '/../' . $settings['backup_location'];
+            if (!is_dir($backup_dir)) {
+                return;
+            }
+
+            $cutoff_time = time() - ($retention_days * 24 * 60 * 60);
+            $deleted_count = 0;
+
+            $files = glob($backup_dir . '/backup_*.sql');
+            foreach ($files as $file) {
+                if (filemtime($file) < $cutoff_time) {
+                    if (@unlink($file)) {
+                        $deleted_count++;
+                    }
+                }
+            }
+
+            // Also clean up database records
+            try {
+                $pdo = get_db_connection();
+                $pdo->exec("CREATE TABLE IF NOT EXISTS backup_history (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    filename VARCHAR(255) NOT NULL,
+                    filepath VARCHAR(500) NOT NULL,
+                    file_size BIGINT NOT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    INDEX idx_created_at (created_at)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+                $stmt = $pdo->prepare("DELETE FROM backup_history WHERE created_at < DATE_SUB(NOW(), INTERVAL ? DAY)");
+                $stmt->execute([$retention_days]);
+            } catch (Exception $e) {
+                error_log("Error cleaning up backup history: " . $e->getMessage());
+            }
+
+            return $deleted_count;
+        } catch (Exception $e) {
+            error_log("Error in cleanup_old_backups: " . $e->getMessage());
+            return 0;
+        }
+    }
+}
+
+if (!function_exists('get_backup_list')) {
+    /**
+     * Get list of available backups.
+     */
+    function get_backup_list() {
+        try {
+            $settings = get_backup_settings();
+            $backup_dir = __DIR__ . '/../' . $settings['backup_location'];
+            
+            if (!is_dir($backup_dir)) {
+                return [];
+            }
+
+            $backups = [];
+            $files = glob($backup_dir . '/backup_*.sql');
+            
+            foreach ($files as $file) {
+                $backups[] = [
+                    'filename' => basename($file),
+                    'filepath' => $settings['backup_location'] . '/' . basename($file),
+                    'size' => filesize($file),
+                    'created_at' => date('Y-m-d H:i:s', filemtime($file)),
+                    'timestamp' => filemtime($file)
+                ];
+            }
+
+            // Sort by timestamp descending (newest first)
+            usort($backups, function($a, $b) {
+                return $b['timestamp'] - $a['timestamp'];
+            });
+
+            return $backups;
+        } catch (Exception $e) {
+            error_log("Error in get_backup_list: " . $e->getMessage());
+            return [];
+        }
+    }
+}
+
 // Create new user
 if (!function_exists('create_user')) {
     function create_user($user_data, $created_by = null) {

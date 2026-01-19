@@ -761,6 +761,52 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                     echo json_encode(['success' => false, 'message' => 'An error occurred while changing password']);
                 }
                 exit;
+
+            case 'update_backup_settings':
+                if (!function_exists('update_backup_settings')) {
+                    require_once __DIR__ . '/../includes/database.php';
+                }
+                
+                $frequency = $_POST['backup_frequency'] ?? 'daily';
+                $retention_days = isset($_POST['backup_retention_days']) ? (int)$_POST['backup_retention_days'] : 90;
+                $backup_location = trim($_POST['backup_location'] ?? 'storage/backups');
+                
+                // Validate retention days
+                if ($retention_days < 0) {
+                    echo json_encode(['success' => false, 'message' => 'Retention period cannot be negative']);
+                    exit;
+                }
+                
+                // Convert retention days: 0 = forever, otherwise use the value
+                if ($_POST['backup_retention_days'] == '0') {
+                    $retention_days = 0; // Forever
+                }
+                
+                $result = update_backup_settings($frequency, $retention_days, $backup_location);
+                if ($result) {
+                    echo json_encode(['success' => true, 'message' => 'Backup settings updated successfully']);
+                } else {
+                    echo json_encode(['success' => false, 'message' => 'Failed to update backup settings']);
+                }
+                exit;
+
+            case 'create_backup':
+                if (!function_exists('create_database_backup')) {
+                    require_once __DIR__ . '/../includes/database.php';
+                }
+                
+                $result = create_database_backup();
+                echo json_encode($result);
+                exit;
+
+            case 'get_backup_list':
+                if (!function_exists('get_backup_list')) {
+                    require_once __DIR__ . '/../includes/database.php';
+                }
+                
+                $backups = get_backup_list();
+                echo json_encode(['success' => true, 'backups' => $backups]);
+                exit;
         }
     }
     
