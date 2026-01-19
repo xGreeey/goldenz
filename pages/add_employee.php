@@ -1215,6 +1215,7 @@ if (isset($_SESSION['employee_redirect_url'])) {
                                         <th style="min-width: 260px;">Program / Title</th>
                                         <th style="min-width: 220px;">Conducted By</th>
                                         <th style="min-width: 240px;">Date of Training</th>
+                                        <th style="width: 50px;"></th>
                                     </tr>
                                 </thead>
                                 <tbody id="trainingsTbody">
@@ -1245,34 +1246,24 @@ if (isset($_SESSION['employee_redirect_url'])) {
                                                    name="trainings[<?php echo (int)$i; ?>][date]"
                                                    value="<?php echo htmlspecialchars($date); ?>">
                                         </td>
+                                        <td class="text-center">
+                                            <?php if (count($trainings) > 1 || $i > 0): ?>
+                                            <button type="button" class="btn btn-sm btn-icon-action training-remove-btn" 
+                                                    data-training-index="<?php echo (int)$i; ?>" 
+                                                    title="Remove row" aria-label="Remove training">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                            <?php endif; ?>
+                                        </td>
                                     </tr>
                                     <?php endforeach; ?>
                                 </tbody>
                             </table>
                         </div>
 
-                        <div class="d-flex justify-content-end align-items-start gap-2">
-                            <div class="training-remove-buttons d-flex flex-column gap-1" id="trainingRemoveButtons">
-                                <?php
-                                $trainings = $_POST['trainings'] ?? [];
-                                if (!is_array($trainings)) $trainings = [];
-                                if (count($trainings) === 0) $trainings = [[]];
-                                foreach ($trainings as $i => $t):
-                                ?>
-                                <button type="button"
-                                        class="btn btn-sm btn-remove-modern training-remove-btn"
-                                        data-training-index="<?php echo (int)$i; ?>"
-                                        aria-label="Remove training">
-                                    <span class="btn-icon-circle">
-                                        <img src="<?php echo asset_url('icons/minus-icon.png'); ?>?v=2" alt="Remove" class="btn-icon-img" loading="eager">
-                                    </span>
-                                </button>
-                                <?php endforeach; ?>
-                            </div>
-                            <button type="button" class="btn btn-add-modern btn-sm" id="addTrainingBtn">
-                                <span class="btn-icon-circle">
-                                    <img src="<?php echo asset_url('icons/plus-icon.png'); ?>?v=2" alt="Add" class="btn-icon-img" loading="eager">
-                                </span>
+                        <div class="d-flex justify-content-end mt-2">
+                            <button type="button" class="btn btn-sm btn-icon-action btn-icon-action-primary" id="addTrainingBtn" title="Add training row">
+                                <i class="fas fa-plus me-1"></i> Add Training
                             </button>
                         </div>
                     </div>
@@ -1293,6 +1284,7 @@ if (isset($_SESSION['employee_redirect_url'])) {
                                         <th style="min-width: 320px;">COMPANY</th>
                                         <th style="min-width: 190px;">PERIOD COVERED</th>
                                         <th style="min-width: 260px;">REASON/S FOR LEAVING</th>
+                                        <th style="width: 50px;"></th>
                                     </tr>
                                 </thead>
                                 <tbody id="employmentTbody">
@@ -1352,34 +1344,24 @@ if (isset($_SESSION['employee_redirect_url'])) {
                                                       rows="2" maxlength="300"
                                                       placeholder="Reason for leaving"><?php echo htmlspecialchars($reason); ?></textarea>
                                         </td>
+                                        <td class="text-center">
+                                            <?php if (count($jobs) > 1 || $i > 0): ?>
+                                            <button type="button" class="btn btn-sm btn-icon-action employment-remove-btn" 
+                                                    data-employment-index="<?php echo (int)$i; ?>" 
+                                                    title="Remove row" aria-label="Remove employment record">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                            <?php endif; ?>
+                                        </td>
                                     </tr>
                                     <?php endforeach; ?>
                                 </tbody>
                             </table>
                         </div>
 
-                        <div class="d-flex justify-content-end align-items-start gap-2">
-                            <div class="employment-remove-buttons d-flex flex-column gap-1" id="employmentRemoveButtons">
-                                <?php
-                                $jobs = $_POST['employment_history'] ?? [];
-                                if (!is_array($jobs)) $jobs = [];
-                                if (count($jobs) === 0) $jobs = [[]];
-                                foreach ($jobs as $i => $j):
-                                ?>
-                                <button type="button"
-                                        class="btn btn-sm btn-remove-modern employment-remove-btn"
-                                        data-employment-index="<?php echo (int)$i; ?>"
-                                        aria-label="Remove employment record">
-                                    <span class="btn-icon-circle">
-                                        <img src="<?php echo asset_url('icons/minus-icon.png'); ?>?v=2" alt="Remove" class="btn-icon-img" loading="eager">
-                                    </span>
-                                </button>
-                                <?php endforeach; ?>
-                            </div>
-                            <button type="button" class="btn btn-add-modern btn-sm" id="addEmploymentBtn">
-                                <span class="btn-icon-circle">
-                                    <img src="<?php echo asset_url('icons/plus-icon.png'); ?>?v=2" alt="Add" class="btn-icon-img" loading="eager">
-                                </span>
+                        <div class="d-flex justify-content-end mt-2">
+                            <button type="button" class="btn btn-sm btn-icon-action btn-icon-action-primary" id="addEmploymentBtn" title="Add employment record">
+                                <i class="fas fa-plus me-1"></i> Add Employment
                             </button>
                         </div>
                     </div>
@@ -1401,6 +1383,7 @@ if (isset($_SESSION['employee_redirect_url'])) {
                                         <th style="min-width: 180px;">OCCUPATION</th>
                                         <th style="min-width: 200px;">COMPANY</th>
                                         <th style="min-width: 200px;">CONTACT NO./S</th>
+                                        <th style="width: 50px;"></th>
                                     </tr>
                                 </thead>
                                 <tbody id="characterReferencesTbody">
@@ -1439,34 +1422,24 @@ if (isset($_SESSION['employee_redirect_url'])) {
                                                    value="<?php echo htmlspecialchars($ref_contact); ?>"
                                                    maxlength="30" placeholder="Contact Number">
                                         </td>
+                                        <td class="text-center">
+                                            <?php if (count($references) > 1 || $i > 0): ?>
+                                            <button type="button" class="btn btn-sm btn-icon-action character-reference-remove-btn" 
+                                                    data-reference-index="<?php echo (int)$i; ?>" 
+                                                    title="Remove row" aria-label="Remove character reference">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                            <?php endif; ?>
+                                        </td>
                                     </tr>
                                     <?php endforeach; ?>
                                 </tbody>
                             </table>
                         </div>
 
-                        <div class="d-flex justify-content-end align-items-start gap-2">
-                            <div class="character-reference-remove-buttons d-flex flex-column gap-1" id="characterReferenceRemoveButtons">
-                                <?php
-                                $references = $_POST['character_references'] ?? [];
-                                if (!is_array($references)) $references = [];
-                                if (count($references) === 0) $references = [[], [], []];
-                                foreach ($references as $i => $ref):
-                                ?>
-                                <button type="button"
-                                        class="btn btn-sm btn-remove-modern character-reference-remove-btn"
-                                        data-reference-index="<?php echo (int)$i; ?>"
-                                        aria-label="Remove character reference">
-                                    <span class="btn-icon-circle">
-                                        <img src="<?php echo asset_url('icons/minus-icon.png'); ?>?v=2" alt="Remove" class="btn-icon-img" loading="eager">
-                                    </span>
-                                </button>
-                                <?php endforeach; ?>
-                            </div>
-                            <button type="button" class="btn btn-add-modern btn-sm" id="addCharacterReferenceBtn">
-                                <span class="btn-icon-circle">
-                                    <img src="<?php echo asset_url('icons/plus-icon.png'); ?>?v=2" alt="Add" class="btn-icon-img" loading="eager">
-                                </span>
+                        <div class="d-flex justify-content-end mt-2">
+                            <button type="button" class="btn btn-sm btn-icon-action btn-icon-action-primary" id="addCharacterReferenceBtn" title="Add character reference">
+                                <i class="fas fa-plus me-1"></i> Add Reference
                             </button>
                         </div>
                     </div>
@@ -1944,7 +1917,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const reindexTrainingRows = () => {
         if (!trainingsTbody) return;
         const rows = Array.from(trainingsTbody.querySelectorAll('.training-row'));
-        const removeButtonsContainer = document.getElementById('trainingRemoveButtons');
         
         rows.forEach((row, idx) => {
             // Update data attribute
@@ -1957,53 +1929,40 @@ document.addEventListener('DOMContentLoaded', function() {
                 const updated = name.replace(/^trainings\[\d+\]/, `trainings[${idx}]`);
                 inp.setAttribute('name', updated);
             });
-        });
-        
-        // Update remove buttons - ensure count matches rows
-        if (removeButtonsContainer) {
-            const removeButtons = Array.from(removeButtonsContainer.querySelectorAll('.training-remove-btn'));
-            const minusIconUrl = '<?php echo asset_url("icons/minus-icon.png"); ?>?v=2';
             
-            // Remove extra buttons if there are more buttons than rows
-            while (removeButtons.length > rows.length) {
-                removeButtons[removeButtons.length - 1].remove();
-                removeButtons.pop();
-            }
-            
-            // Update existing buttons' data attributes
-            removeButtons.forEach((btn, idx) => {
-                if (idx < rows.length) {
-                    btn.setAttribute('data-training-index', idx);
+            // Update remove button data attribute and visibility
+            const removeBtn = row.querySelector('.training-remove-btn');
+            if (removeBtn) {
+                removeBtn.setAttribute('data-training-index', idx);
+                // Show/hide remove button based on row count
+                if (rows.length === 1) {
+                    removeBtn.style.display = 'none';
+                } else {
+                    removeBtn.style.display = '';
                 }
-            });
-        }
+            }
+        });
     };
 
+    // Event delegation for training remove buttons
     if (trainingsTbody) {
-        // Handle remove buttons beside "Add Training"
-        const removeButtonsContainer = document.getElementById('trainingRemoveButtons');
-        if (removeButtonsContainer) {
-            removeButtonsContainer.addEventListener('click', (e) => {
-                const removeBtn = e.target.closest('.training-remove-btn');
-                if (removeBtn) {
-                    const index = parseInt(removeBtn.getAttribute('data-training-index'));
-                    const row = trainingsTbody.querySelector(`tr.training-row[data-training-index="${index}"]`);
-                    if (!row) return;
-                    
-                    const allRows = trainingsTbody.querySelectorAll('.training-row');
-                    if (allRows.length <= 1) {
-                        // Clear last record instead of removing
-                        row.querySelectorAll('input').forEach(el => el.value = '');
-                        return;
-                    }
-                    
-                    row.remove();
-                    removeBtn.remove();
-                    reindexTrainingRows();
+        trainingsTbody.addEventListener('click', (e) => {
+            const removeBtn = e.target.closest('.training-remove-btn');
+            if (removeBtn) {
+                const row = removeBtn.closest('.training-row');
+                if (!row) return;
+                
+                const allRows = trainingsTbody.querySelectorAll('.training-row');
+                if (allRows.length <= 1) {
+                    // Clear last record instead of removing
+                    row.querySelectorAll('input').forEach(el => el.value = '');
                     return;
                 }
-            });
-        }
+                
+                row.remove();
+                reindexTrainingRows();
+            }
+        });
     }
 
     if (addTrainingBtn && trainingsTbody) {
@@ -2030,29 +1989,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     <input type="date" class="form-control"
                            name="trainings[${idx}][date]">
                 </td>
+                <td class="text-center">
+                    <button type="button" class="btn btn-sm btn-icon-action training-remove-btn" 
+                            data-training-index="${idx}" 
+                            title="Remove row" aria-label="Remove training">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </td>
             `;
             
-            // Add row first
             trainingsTbody.appendChild(tr);
-            
-            // Then add remove button (only one)
-            const removeButtonsContainer = document.getElementById('trainingRemoveButtons');
-            if (removeButtonsContainer) {
-                // Check if button already exists for this index
-                const existingBtn = removeButtonsContainer.querySelector(`.training-remove-btn[data-training-index="${idx}"]`);
-                if (!existingBtn) {
-                    const removeBtn = document.createElement('button');
-                    removeBtn.type = 'button';
-                    removeBtn.className = 'btn btn-sm btn-remove-modern training-remove-btn';
-                    removeBtn.setAttribute('data-training-index', idx);
-                    removeBtn.setAttribute('aria-label', 'Remove training');
-                    const minusIconUrl = '<?php echo asset_url("icons/minus-icon.png"); ?>?v=2';
-                    removeBtn.innerHTML = `<span class="btn-icon-circle"><img src="${minusIconUrl}" alt="Remove" class="btn-icon-img"></span>`;
-                    removeButtonsContainer.appendChild(removeBtn);
-                }
-            }
-            
-            // Reindex after everything is added
             reindexTrainingRows();
         });
     }
@@ -2064,7 +2010,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const reindexEmployment = () => {
         if (!employmentTbody) return;
         const mainRows = Array.from(employmentTbody.querySelectorAll('tr.employment-row'));
-        const removeButtonsContainer = document.getElementById('employmentRemoveButtons');
         
         mainRows.forEach((mainRow, idx) => {
             // Update data attribute
@@ -2076,52 +2021,40 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (!name) return;
                 el.setAttribute('name', name.replace(/^employment_history\[\d+\]/, `employment_history[${idx}]`));
             });
-        });
-        
-        // Update remove buttons - ensure count matches rows
-        if (removeButtonsContainer) {
-            const removeButtons = Array.from(removeButtonsContainer.querySelectorAll('.employment-remove-btn'));
             
-            // Remove extra buttons if there are more buttons than rows
-            while (removeButtons.length > mainRows.length) {
-                removeButtons[removeButtons.length - 1].remove();
-                removeButtons.pop();
-            }
-            
-            // Update existing buttons' data attributes
-            removeButtons.forEach((btn, idx) => {
-                if (idx < mainRows.length) {
-                    btn.setAttribute('data-employment-index', idx);
+            // Update remove button data attribute and visibility
+            const removeBtn = mainRow.querySelector('.employment-remove-btn');
+            if (removeBtn) {
+                removeBtn.setAttribute('data-employment-index', idx);
+                // Show/hide remove button based on row count
+                if (mainRows.length === 1) {
+                    removeBtn.style.display = 'none';
+                } else {
+                    removeBtn.style.display = '';
                 }
-            });
-        }
+            }
+        });
     };
 
+    // Event delegation for employment remove buttons
     if (employmentTbody) {
-        // Handle remove buttons beside "Add Employment"
-        const removeButtonsContainer = document.getElementById('employmentRemoveButtons');
-        if (removeButtonsContainer) {
-            removeButtonsContainer.addEventListener('click', (e) => {
-                const removeBtn = e.target.closest('.employment-remove-btn');
-                if (removeBtn) {
-                    const index = parseInt(removeBtn.getAttribute('data-employment-index'));
-                    const mainRow = employmentTbody.querySelector(`tr.employment-row[data-employment-index="${index}"]`);
-                    if (!mainRow) return;
-                    
-                    const allMain = employmentTbody.querySelectorAll('tr.employment-row');
-                    if (allMain.length <= 1) {
-                        // Clear last record instead of removing
-                        mainRow.querySelectorAll('input, textarea').forEach(el => el.value = '');
-                        return;
-                    }
-                    
-                    mainRow.remove();
-                    removeBtn.remove();
-                    reindexEmployment();
+        employmentTbody.addEventListener('click', (e) => {
+            const removeBtn = e.target.closest('.employment-remove-btn');
+            if (removeBtn) {
+                const mainRow = removeBtn.closest('.employment-row');
+                if (!mainRow) return;
+                
+                const allMain = employmentTbody.querySelectorAll('tr.employment-row');
+                if (allMain.length <= 1) {
+                    // Clear last record instead of removing
+                    mainRow.querySelectorAll('input, textarea').forEach(el => el.value = '');
                     return;
                 }
-            });
-        }
+                
+                mainRow.remove();
+                reindexEmployment();
+            }
+        });
     }
 
     if (addEmploymentBtn && employmentTbody) {
@@ -2173,6 +2106,13 @@ document.addEventListener('DOMContentLoaded', function() {
                               rows="2" maxlength="300"
                               placeholder="Reason for leaving"></textarea>
                 </td>
+                <td class="text-center">
+                    <button type="button" class="btn btn-sm btn-icon-action employment-remove-btn" 
+                            data-employment-index="${idx}" 
+                            title="Remove row" aria-label="Remove employment record">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </td>
             `;
             
             // Add row first (prepend for newest first)
@@ -2185,24 +2125,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }, 50);
             
-            // Then add remove button (only one, check for duplicates)
-            const removeButtonsContainer = document.getElementById('employmentRemoveButtons');
-            if (removeButtonsContainer) {
-                // Check if button already exists for this index
-                const existingBtn = removeButtonsContainer.querySelector(`.employment-remove-btn[data-employment-index="${idx}"]`);
-                if (!existingBtn) {
-                    const removeBtn = document.createElement('button');
-                    removeBtn.type = 'button';
-                    removeBtn.className = 'btn btn-sm btn-remove-modern employment-remove-btn';
-                    removeBtn.setAttribute('data-employment-index', idx);
-                    removeBtn.setAttribute('aria-label', 'Remove employment record');
-                    const minusIconUrl = '<?php echo asset_url("icons/minus-icon.png"); ?>?v=2';
-                    removeBtn.innerHTML = `<span class="btn-icon-circle"><img src="${minusIconUrl}" alt="Remove" class="btn-icon-img"></span>`;
-                    removeButtonsContainer.insertBefore(removeBtn, removeButtonsContainer.firstChild);
-                }
-            }
-            
-            // Reindex after everything is added
             reindexEmployment();
         });
     }
@@ -2214,7 +2136,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const reindexCharacterReferences = () => {
         if (!characterReferencesTbody) return;
         const mainRows = Array.from(characterReferencesTbody.querySelectorAll('tr.character-reference-row'));
-        const removeButtonsContainer = document.getElementById('characterReferenceRemoveButtons');
         
         mainRows.forEach((mainRow, idx) => {
             // Update data attribute
@@ -2226,51 +2147,40 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (!name) return;
                 el.setAttribute('name', name.replace(/^character_references\[\d+\]/, `character_references[${idx}]`));
             });
-        });
-        
-        // Update remove buttons - ensure count matches rows
-        if (removeButtonsContainer) {
-            // Remove all existing buttons first
-            removeButtonsContainer.innerHTML = '';
             
-            // Create new buttons for each row
-            mainRows.forEach((row, idx) => {
-                const removeBtn = document.createElement('button');
-                removeBtn.type = 'button';
-                removeBtn.className = 'btn btn-sm btn-remove-modern character-reference-remove-btn';
+            // Update remove button data attribute and visibility
+            const removeBtn = mainRow.querySelector('.character-reference-remove-btn');
+            if (removeBtn) {
                 removeBtn.setAttribute('data-reference-index', idx);
-                removeBtn.setAttribute('aria-label', 'Remove character reference');
-                const minusIconUrl = '<?php echo asset_url("icons/minus-icon.png"); ?>?v=2';
-                removeBtn.innerHTML = `<span class="btn-icon-circle"><img src="${minusIconUrl}" alt="Remove" class="btn-icon-img"></span>`;
-                removeButtonsContainer.appendChild(removeBtn);
-            });
-        }
+                // Show/hide remove button based on row count
+                if (mainRows.length === 1) {
+                    removeBtn.style.display = 'none';
+                } else {
+                    removeBtn.style.display = '';
+                }
+            }
+        });
     };
 
+    // Event delegation for character reference remove buttons
     if (characterReferencesTbody) {
-        // Handle remove buttons beside "Add Character Reference"
-        const removeButtonsContainer = document.getElementById('characterReferenceRemoveButtons');
-        if (removeButtonsContainer) {
-            removeButtonsContainer.addEventListener('click', (e) => {
-                const removeBtn = e.target.closest('.character-reference-remove-btn');
-                if (removeBtn) {
-                    const index = parseInt(removeBtn.getAttribute('data-reference-index'));
-                    const mainRow = characterReferencesTbody.querySelector(`tr.character-reference-row[data-reference-index="${index}"]`);
-                    if (!mainRow) return;
-                    
-                    const allMain = characterReferencesTbody.querySelectorAll('tr.character-reference-row');
-                    if (allMain.length <= 1) {
-                        // Clear last record instead of removing
-                        mainRow.querySelectorAll('input').forEach(el => el.value = '');
-                        return;
-                    }
-                    
-                    mainRow.remove();
-                    reindexCharacterReferences();
+        characterReferencesTbody.addEventListener('click', (e) => {
+            const removeBtn = e.target.closest('.character-reference-remove-btn');
+            if (removeBtn) {
+                const mainRow = removeBtn.closest('.character-reference-row');
+                if (!mainRow) return;
+                
+                const allMain = characterReferencesTbody.querySelectorAll('tr.character-reference-row');
+                if (allMain.length <= 1) {
+                    // Clear last record instead of removing
+                    mainRow.querySelectorAll('input').forEach(el => el.value = '');
                     return;
                 }
-            });
-        }
+                
+                mainRow.remove();
+                reindexCharacterReferences();
+            }
+        });
     }
 
     if (addCharacterReferenceBtn && characterReferencesTbody) {
@@ -2303,12 +2213,16 @@ document.addEventListener('DOMContentLoaded', function() {
                            name="character_references[${idx}][contact]"
                            maxlength="30" placeholder="Contact Number">
                 </td>
+                <td class="text-center">
+                    <button type="button" class="btn btn-sm btn-icon-action character-reference-remove-btn" 
+                            data-reference-index="${idx}" 
+                            title="Remove row" aria-label="Remove character reference">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </td>
             `;
             
-            // Add row to tbody
             characterReferencesTbody.appendChild(mainRow);
-            
-            // Reindex after everything is added
             reindexCharacterReferences();
         });
     }
@@ -3435,5 +3349,7 @@ if (!function_exists('base_url')) {
 // Calculate CSS path relative to project root
 $root_prefix = root_prefix();
 $css_path = ($root_prefix ? $root_prefix : '') . '/pages/css/add_employee.css';
+$css_path_icons = ($root_prefix ? $root_prefix : '') . '/pages/css/add_employee_icon_buttons.css';
 ?>
 <link rel="stylesheet" href="<?php echo htmlspecialchars($css_path); ?>">
+<link rel="stylesheet" href="<?php echo htmlspecialchars($css_path_icons); ?>">
