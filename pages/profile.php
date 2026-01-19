@@ -23,21 +23,6 @@ if ($current_user_id && function_exists('get_user_by_id')) {
     }
 }
 
-// Get post/location data if employee has a post assignment
-$post_location = null;
-if (!empty($employee_data['post'])) {
-    try {
-        $pdo = get_db_connection();
-        $stmt = $pdo->prepare("SELECT post_name, location FROM posts WHERE post_name = ? OR post_title = ? LIMIT 1");
-        $stmt->execute([$employee_data['post'], $employee_data['post']]);
-        $post_info = $stmt->fetch(PDO::FETCH_ASSOC);
-        if ($post_info) {
-            $post_location = $post_info['location'] ?? null;
-        }
-    } catch (Exception $e) {
-        // Silently fail if post lookup fails
-    }
-}
 
 // Handle form submission
 $update_error = null;
@@ -130,12 +115,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             }
         }
         
-        // Department update (users table)
-        if (isset($_POST['department']) && !empty(trim($_POST['department']))) {
-            $user_updates[] = "department = ?";
-            $user_params[] = trim($_POST['department']);
-        }
-        
         // Contact number update (check if users table has phone field, otherwise update employee)
         if (isset($_POST['contact_number']) && !empty(trim($_POST['contact_number']))) {
             try {
@@ -157,27 +136,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             }
         }
         
-        // Employee-specific fields (only if user is linked to employee)
-        if (!empty($current_user['employee_id'])) {
-            if (isset($_POST['first_name']) && !empty(trim($_POST['first_name']))) {
-                $employee_updates[] = "first_name = ?";
-                $employee_params[] = trim($_POST['first_name']);
+        // First name and last name updates (users table - check if columns exist)
+        try {
+            $check_first_name = $pdo->query("SHOW COLUMNS FROM users LIKE 'first_name'");
+            $check_last_name = $pdo->query("SHOW COLUMNS FROM users LIKE 'last_name'");
+            $has_first_name = $check_first_name->rowCount() > 0;
+            $has_last_name = $check_last_name->rowCount() > 0;
+            
+            if ($has_first_name && isset($_POST['first_name']) && !empty(trim($_POST['first_name']))) {
+                $user_updates[] = "first_name = ?";
+                $user_params[] = trim($_POST['first_name']);
             }
             
-            if (isset($_POST['last_name']) && !empty(trim($_POST['last_name']))) {
-                $employee_updates[] = "surname = ?";
-                $employee_params[] = trim($_POST['last_name']);
+            if ($has_last_name && isset($_POST['last_name']) && !empty(trim($_POST['last_name']))) {
+                $user_updates[] = "last_name = ?";
+                $user_params[] = trim($_POST['last_name']);
             }
-            
-            if (isset($_POST['position']) && !empty(trim($_POST['position']))) {
-                $employee_updates[] = "post = ?";
-                $employee_params[] = trim($_POST['position']);
-            }
-            
-            if (isset($_POST['date_hired']) && !empty(trim($_POST['date_hired']))) {
-                $employee_updates[] = "date_hired = ?";
-                $employee_params[] = trim($_POST['date_hired']);
-            }
+        } catch (Exception $e) {
+            error_log('Error checking first_name/last_name columns: ' . $e->getMessage());
         }
         
         // Update users table
@@ -275,12 +251,6 @@ $display_last_name = $current_user['last_name'] ?? $employee_data['surname'] ?? 
 $display_username = $current_user['username'] ?? $_SESSION['username'] ?? '';
 $display_email = $current_user['email'] ?? $_SESSION['email'] ?? '';
 $display_contact = $current_user['phone'] ?? $employee_data['cp_number'] ?? '';
-$display_employee_id = $employee_data['employee_no'] ?? $current_user['employee_no'] ?? '';
-$display_company_name = 'Golden Z-5 Security and Investigation Agency, Inc.'; // Default company name
-$display_department = $current_user['department'] ?? '';
-$display_position = $employee_data['post'] ?? '';
-$display_office_location = $post_location ?? '';
-$display_date_hired = $employee_data['date_hired'] ?? '';
 
 // Get profile photo - check users.avatar first, then employee photos
 $profile_photo = null;
@@ -353,20 +323,19 @@ if (!empty($display_first_name) || !empty($display_last_name)) {
                     <div class="col-12 mb-3">
                         <label class="form-label">Profile Photo</label>
                         <div class="d-flex align-items-center gap-3">
-                            <div class="profile-photo-preview">
-                                <?php if ($profile_photo): ?>
-                                    <img src="<?php echo htmlspecialchars($profile_photo); ?>" 
-                                         alt="Profile Photo" 
-                                         id="avatarPreview"
-                                         class="profile-photo-img"
-                                         style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 3px solid #e2e8f0;">
-                                <?php else: ?>
-                                    <div class="profile-photo-placeholder" 
-                                         id="avatarPlaceholder"
-                                         style="width: 120px; height: 120px; border-radius: 50%; background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1e293b 100%); color: white; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: 700; border: 3px solid #e2e8f0;">
-                                        <?php echo htmlspecialchars($initials); ?>
-                                    </div>
-                                <?php endif; ?>
+                            <div class="profile-photo-preview" id="photoPreviewContainer">
+                                <!-- Preview image (hidden initially if no photo) -->
+                                <img src="<?php echo $profile_photo ? htmlspecialchars($profile_photo) : ''; ?>" 
+                                     alt="Profile Photo" 
+                                     id="avatarPreview"
+                                     class="profile-photo-img"
+                                     style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 3px solid #e2e8f0; <?php echo $profile_photo ? '' : 'display: none;'; ?>">
+                                <!-- Placeholder with initials (shown if no photo) -->
+                                <div class="profile-photo-placeholder" 
+                                     id="avatarPlaceholder"
+                                     style="width: 120px; height: 120px; border-radius: 50%; background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1e293b 100%); color: white; display: <?php echo $profile_photo ? 'none' : 'flex'; ?>; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: 700; border: 3px solid #e2e8f0;">
+                                    <?php echo htmlspecialchars($initials); ?>
+                                </div>
                             </div>
                             <div class="flex-grow-1">
                                 <input type="file" 
@@ -469,90 +438,6 @@ if (!empty($display_first_name) || !empty($display_last_name)) {
                                name="contact_number" 
                                value="<?php echo htmlspecialchars($display_contact); ?>"
                                placeholder="Enter your contact number">
-                    </div>
-
-                    <!-- Employee ID -->
-                    <div class="col-md-6">
-                        <label for="employee_id" class="form-label">Employee ID</label>
-                        <input type="text" 
-                               class="form-control" 
-                               id="employee_id" 
-                               value="<?php echo htmlspecialchars($display_employee_id); ?>"
-                               readonly
-                               style="background-color: #f8fafc;">
-                        <small class="text-muted">Employee ID is assigned by the system.</small>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Company & Work Information Section -->
-        <div class="card card-modern mb-4">
-            <div class="card-body-modern">
-                <div class="card-header-modern mb-3">
-                    <h5 class="card-title-modern">Company & Work Information</h5>
-                    <small class="card-subtitle">Your employment and work-related details.</small>
-                </div>
-
-                <div class="row g-3">
-                    <!-- Company Name -->
-                    <div class="col-md-6">
-                        <label for="company_name" class="form-label">Company Name</label>
-                        <input type="text" 
-                               class="form-control" 
-                               id="company_name" 
-                               value="<?php echo htmlspecialchars($display_company_name); ?>"
-                               readonly
-                               style="background-color: #f8fafc;">
-                    </div>
-
-                    <!-- Department -->
-                    <div class="col-md-6">
-                        <label for="department" class="form-label">Department</label>
-                        <select class="form-select" 
-                                id="department" 
-                                name="department">
-                            <option value="">Select Department</option>
-                            <option value="IT" <?php echo ($display_department === 'IT') ? 'selected' : ''; ?>>IT</option>
-                            <option value="HR" <?php echo ($display_department === 'HR') ? 'selected' : ''; ?>>HR</option>
-                            <option value="Finance" <?php echo ($display_department === 'Finance') ? 'selected' : ''; ?>>Finance</option>
-                            <option value="Operations" <?php echo ($display_department === 'Operations') ? 'selected' : ''; ?>>Operations</option>
-                            <option value="Accounting" <?php echo ($display_department === 'Accounting') ? 'selected' : ''; ?>>Accounting</option>
-                            <option value="Logistics" <?php echo ($display_department === 'Logistics') ? 'selected' : ''; ?>>Logistics</option>
-                            <option value="Security" <?php echo ($display_department === 'Security') ? 'selected' : ''; ?>>Security</option>
-                        </select>
-                    </div>
-
-                    <!-- Position / Job Title -->
-                    <div class="col-md-6">
-                        <label for="position" class="form-label">Position / Job Title</label>
-                        <input type="text" 
-                               class="form-control" 
-                               id="position" 
-                               name="position" 
-                               value="<?php echo htmlspecialchars($display_position); ?>"
-                               placeholder="Enter your position or job title">
-                    </div>
-
-                    <!-- Office / Branch Location -->
-                    <div class="col-md-6">
-                        <label for="office_location" class="form-label">Office / Branch Location</label>
-                        <input type="text" 
-                               class="form-control" 
-                               id="office_location" 
-                               name="office_location" 
-                               value="<?php echo htmlspecialchars($display_office_location); ?>"
-                               placeholder="Enter office or branch location">
-                    </div>
-
-                    <!-- Date Hired -->
-                    <div class="col-md-6">
-                        <label for="date_hired" class="form-label">Date Hired</label>
-                        <input type="date" 
-                               class="form-control" 
-                               id="date_hired" 
-                               name="date_hired" 
-                               value="<?php echo htmlspecialchars($display_date_hired); ?>">
                     </div>
                 </div>
             </div>
@@ -767,31 +652,22 @@ document.addEventListener('DOMContentLoaded', function() {
                     avatarFileName.style.display = 'block';
                 }
                 
-                // Create preview
+                // Create preview using FileReader
                 const reader = new FileReader();
-                reader.onload = function(e) {
-                    // Hide placeholder if exists
-                    if (avatarPlaceholder) {
-                        avatarPlaceholder.style.display = 'none';
+                reader.onload = function(readerEvent) {
+                    // Get elements fresh in case they weren't available at DOMContentLoaded
+                    const previewImg = document.getElementById('avatarPreview');
+                    const placeholder = document.getElementById('avatarPlaceholder');
+                    
+                    // Hide placeholder
+                    if (placeholder) {
+                        placeholder.style.display = 'none';
                     }
                     
-                    // Show or create preview image
-                    if (avatarPreview) {
-                        avatarPreview.src = e.target.result;
-                        avatarPreview.style.display = 'block';
-                    } else {
-                        // Create new preview image if it doesn't exist
-                        const previewImg = document.createElement('img');
-                        previewImg.id = 'avatarPreview';
-                        previewImg.src = e.target.result;
-                        previewImg.alt = 'Profile Photo';
-                        previewImg.className = 'profile-photo-img';
-                        previewImg.style.cssText = 'width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 3px solid #e2e8f0;';
-                        
-                        const previewContainer = document.querySelector('.profile-photo-preview');
-                        if (previewContainer) {
-                            previewContainer.appendChild(previewImg);
-                        }
+                    // Show preview image with the selected file
+                    if (previewImg) {
+                        previewImg.src = readerEvent.target.result;
+                        previewImg.style.display = 'block';
                     }
                 };
                 reader.readAsDataURL(file);

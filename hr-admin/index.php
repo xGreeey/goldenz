@@ -146,43 +146,75 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             $update_error = null;
             
             // Handle avatar upload
-            if (isset($_FILES['avatar']) && is_uploaded_file($_FILES['avatar']['tmp_name'])) {
+            if (isset($_FILES['avatar']) && !empty($_FILES['avatar']['tmp_name']) && is_uploaded_file($_FILES['avatar']['tmp_name'])) {
+                error_log('Avatar upload attempt - File info: ' . json_encode($_FILES['avatar']));
+                
                 if ($_FILES['avatar']['error'] === UPLOAD_ERR_OK) {
                     $upload_dir = __DIR__ . '/../uploads/users/';
                     if (!file_exists($upload_dir)) {
-                        mkdir($upload_dir, 0755, true);
+                        if (!mkdir($upload_dir, 0755, true)) {
+                            error_log('Failed to create upload directory: ' . $upload_dir);
+                            $update_error = 'Failed to create upload directory.';
+                        }
                     }
                     
-                    $file = $_FILES['avatar'];
-                    $allowed_types = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
-                    $max_size = 2 * 1024 * 1024; // 2MB
-                    
-                    if (in_array($file['type'], $allowed_types) && $file['size'] <= $max_size) {
-                        $extension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-                        $filename = 'user_' . $current_user_id . '_' . time() . '.' . $extension;
-                        $target_path = $upload_dir . $filename;
+                    if (empty($update_error)) {
+                        $file = $_FILES['avatar'];
+                        $allowed_types = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+                        $max_size = 2 * 1024 * 1024; // 2MB
                         
-                        if (move_uploaded_file($file['tmp_name'], $target_path)) {
-                            if (!empty($current_user['avatar'])) {
-                                $old_avatar_path = __DIR__ . '/../' . $current_user['avatar'];
-                                if (file_exists($old_avatar_path)) {
-                                    @unlink($old_avatar_path);
-                                }
-                            }
+                        // Also check by extension as a fallback
+                        $extension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+                        $allowed_extensions = ['jpg', 'jpeg', 'png', 'gif'];
+                        
+                        if ((in_array($file['type'], $allowed_types) || in_array($extension, $allowed_extensions)) && $file['size'] <= $max_size) {
+                            $filename = 'user_' . $current_user_id . '_' . time() . '.' . $extension;
+                            $target_path = $upload_dir . $filename;
                             
-                            $avatar_path = 'uploads/users/' . $filename;
-                            $user_updates[] = "avatar = ?";
-                            $user_params[] = $avatar_path;
+                            error_log('Attempting to move file to: ' . $target_path);
+                            
+                            if (move_uploaded_file($file['tmp_name'], $target_path)) {
+                                error_log('File moved successfully to: ' . $target_path);
+                                
+                                // Delete old avatar if exists
+                                if (!empty($current_user['avatar'])) {
+                                    $old_avatar_path = __DIR__ . '/../' . $current_user['avatar'];
+                                    if (file_exists($old_avatar_path)) {
+                                        @unlink($old_avatar_path);
+                                        error_log('Deleted old avatar: ' . $old_avatar_path);
+                                    }
+                                }
+                                
+                                $avatar_path = 'uploads/users/' . $filename;
+                                $user_updates[] = "avatar = ?";
+                                $user_params[] = $avatar_path;
+                                error_log('Avatar path set for database update: ' . $avatar_path);
+                            } else {
+                                error_log('Failed to move uploaded file from ' . $file['tmp_name'] . ' to ' . $target_path);
+                                $update_error = 'Failed to move uploaded file. Please check file permissions.';
+                            }
                         } else {
-                            $update_error = 'Failed to move uploaded file. Please check file permissions.';
-                        }
-                    } else {
-                        if (!in_array($file['type'], $allowed_types)) {
-                            $update_error = 'Invalid file type. Please upload a JPG, PNG, or GIF image.';
-                        } elseif ($file['size'] > $max_size) {
-                            $update_error = 'File size too large. Maximum size is 2MB.';
+                            if (!in_array($file['type'], $allowed_types) && !in_array($extension, $allowed_extensions)) {
+                                error_log('Invalid file type: ' . $file['type'] . ', extension: ' . $extension);
+                                $update_error = 'Invalid file type. Please upload a JPG, PNG, or GIF image.';
+                            } elseif ($file['size'] > $max_size) {
+                                error_log('File too large: ' . $file['size'] . ' bytes');
+                                $update_error = 'File size too large. Maximum size is 2MB.';
+                            }
                         }
                     }
+                } else {
+                    $upload_errors = [
+                        UPLOAD_ERR_INI_SIZE => 'File exceeds upload_max_filesize directive.',
+                        UPLOAD_ERR_FORM_SIZE => 'File exceeds MAX_FILE_SIZE directive.',
+                        UPLOAD_ERR_PARTIAL => 'File was only partially uploaded.',
+                        UPLOAD_ERR_NO_TMP_DIR => 'Missing temporary folder.',
+                        UPLOAD_ERR_CANT_WRITE => 'Failed to write file to disk.',
+                        UPLOAD_ERR_EXTENSION => 'File upload stopped by extension.'
+                    ];
+                    $error_code = $_FILES['avatar']['error'];
+                    $update_error = $upload_errors[$error_code] ?? 'Unknown upload error (code: ' . $error_code . ')';
+                    error_log('Avatar upload error: ' . $update_error);
                 }
             }
             
@@ -270,8 +302,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 try {
                     $user_params[] = $current_user_id;
                     $user_sql = "UPDATE users SET " . implode(", ", $user_updates) . ", updated_at = NOW() WHERE id = ?";
+                    
+                    error_log('Profile update SQL: ' . $user_sql);
+                    error_log('Profile update params: ' . json_encode($user_params));
+                    
                     $user_stmt = $pdo->prepare($user_sql);
-                    $user_stmt->execute($user_params);
+                    $result = $user_stmt->execute($user_params);
+                    $rows_affected = $user_stmt->rowCount();
+                    
+                    error_log('Profile update result: ' . ($result ? 'success' : 'failed') . ', rows affected: ' . $rows_affected);
+                    
+                    if (!$result) {
+                        $error_info = $user_stmt->errorInfo();
+                        error_log('Profile update error info: ' . json_encode($error_info));
+                        $update_error = 'Failed to update profile in database.';
+                    }
                     
                     // Update session
                     if (isset($_POST['email']) && filter_var($_POST['email'], FILTER_VALIDATE_EMAIL)) {
@@ -289,8 +334,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                         $_SESSION['name'] = $last_name;
                     }
                 } catch (Exception $e) {
-                    error_log('Profile update error: ' . $e->getMessage());
+                    error_log('Profile update exception: ' . $e->getMessage());
                     $update_error = 'An error occurred while updating your profile.';
+                }
+            } else {
+                if (empty($user_updates)) {
+                    error_log('Profile update: No updates to apply');
+                }
+                if (!empty($update_error)) {
+                    error_log('Profile update skipped due to error: ' . $update_error);
                 }
             }
             

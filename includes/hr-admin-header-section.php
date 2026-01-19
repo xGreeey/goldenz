@@ -11,9 +11,13 @@ if (($_SESSION['user_role'] ?? '') !== 'hr_admin') {
 $current_user_avatar = null;
 $current_user_data = null;
 if (!empty($_SESSION['user_id']) && function_exists('get_user_by_id')) {
-    require_once __DIR__ . '/../includes/database.php';
+    // Include database if not already included
+    if (!function_exists('get_db_connection')) {
+        require_once __DIR__ . '/database.php';
+    }
+    // Include paths helper for avatar URL resolution
     if (!function_exists('get_avatar_url')) {
-        require_once __DIR__ . '/../includes/paths.php';
+        require_once __DIR__ . '/paths.php';
     }
     $current_user_data = get_user_by_id($_SESSION['user_id']);
     if (!empty($current_user_data['avatar'])) {
@@ -203,27 +207,42 @@ if (!empty($_SESSION['user_id']) && function_exists('get_user_by_id')) {
                 <?php endif; ?>
             </ul>
         </div>
+        <?php
+        // Get name from first_name and last_name if available, otherwise use session name
+        $displayName = trim((string)($_SESSION['name'] ?? ($_SESSION['username'] ?? 'HR Admin')));
+        $headerFirstName = '';
+        $headerLastName = '';
+        if (!empty($current_user_data)) {
+            $headerFirstName = $current_user_data['first_name'] ?? '';
+            $headerLastName = $current_user_data['last_name'] ?? '';
+            if (!empty($headerFirstName) || !empty($headerLastName)) {
+                $displayName = trim($headerFirstName . ' ' . $headerLastName);
+            }
+        }
+        
+        // Format name as "FirstName, LastName" for header display
+        $headerDisplayName = '';
+        if (!empty($headerFirstName) && !empty($headerLastName)) {
+            $headerDisplayName = $headerFirstName . ', ' . $headerLastName;
+        } elseif (!empty($headerFirstName)) {
+            $headerDisplayName = $headerFirstName;
+        } elseif (!empty($headerLastName)) {
+            $headerDisplayName = $headerLastName;
+        } else {
+            $headerDisplayName = $displayName;
+        }
+        
+        $initials = 'HA';
+        if ($displayName) {
+            $parts = preg_split('/\s+/', $displayName);
+            $first = $parts[0][0] ?? 'H';
+            $last = (count($parts) > 1) ? ($parts[count($parts) - 1][0] ?? 'A') : ($parts[0][1] ?? 'A');
+            $initials = strtoupper($first . $last);
+        }
+        ?>
         <div class="dropdown">
             <button class="hrdash-welcome__profile-btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Profile menu">
-                <?php
-                // Get name from first_name and last_name if available, otherwise use session name
-                $displayName = trim((string)($_SESSION['name'] ?? ($_SESSION['username'] ?? 'HR Admin')));
-                if (!empty($current_user_data)) {
-                    $first_name = $current_user_data['first_name'] ?? '';
-                    $last_name = $current_user_data['last_name'] ?? '';
-                    if (!empty($first_name) || !empty($last_name)) {
-                        $displayName = trim($first_name . ' ' . $last_name);
-                    }
-                }
-                
-                $initials = 'HA';
-                if ($displayName) {
-                    $parts = preg_split('/\s+/', $displayName);
-                    $first = $parts[0][0] ?? 'H';
-                    $last = (count($parts) > 1) ? ($parts[count($parts) - 1][0] ?? 'A') : ($parts[0][1] ?? 'A');
-                    $initials = strtoupper($first . $last);
-                }
-                ?>
+                <span class="hrdash-welcome__user-name"><?php echo htmlspecialchars($headerDisplayName); ?></span>
                 <?php if ($current_user_avatar): ?>
                     <img src="<?php echo htmlspecialchars($current_user_avatar); ?>" 
                          alt="<?php echo htmlspecialchars($displayName); ?>" 
