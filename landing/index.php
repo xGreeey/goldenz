@@ -819,10 +819,6 @@ ob_end_flush();
                             <i class="fas fa-info-circle"></i>
                             <span>For assistance, contact your system administrator.</span>
                         </div>
-                        <div class="security-notice">
-                            <i class="fas fa-shield-alt"></i>
-                            <span>Secure connection established</span>
-                        </div>
                     </div>
                 </form>
                 <?php endif; ?>
