@@ -411,3 +411,102 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+
+/**
+ * Sticky Header Scroll Enhancement
+ * Adds shadow effect to header when scrolling for better visual feedback
+ */
+document.addEventListener('DOMContentLoaded', function() {
+    const stickyHeader = document.querySelector('.hrdash-welcome');
+    
+    if (!stickyHeader) return;
+    
+    let lastScrollY = window.scrollY;
+    let ticking = false;
+    
+    function updateHeader() {
+        const scrollY = window.scrollY;
+        
+        // Add 'scrolled' class when scrolled more than 10px
+        if (scrollY > 10) {
+            stickyHeader.classList.add('scrolled');
+        } else {
+            stickyHeader.classList.remove('scrolled');
+        }
+        
+        lastScrollY = scrollY;
+        ticking = false;
+    }
+    
+    function requestTick() {
+        if (!ticking) {
+            window.requestAnimationFrame(updateHeader);
+            ticking = true;
+        }
+    }
+    
+    // Listen for scroll events
+    window.addEventListener('scroll', requestTick, { passive: true });
+    
+    // Check initial state
+    updateHeader();
+});
+
+/**
+ * Scroll to Top Button
+ * Shows a button when user scrolls down, clicking it scrolls back to top
+ */
+(function() {
+    'use strict';
+    
+    // Get the button
+    const scrollToTopBtn = document.getElementById('scrollToTopBtn');
+    
+    if (!scrollToTopBtn) return;
+    
+    let ticking = false;
+    
+    // Show/hide button based on scroll position
+    function handleScroll() {
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        
+        // Show button when scrolled down more than 300px
+        if (scrollTop > 300) {
+            scrollToTopBtn.classList.add('show');
+        } else {
+            scrollToTopBtn.classList.remove('show');
+        }
+        
+        ticking = false;
+    }
+    
+    function requestTick() {
+        if (!ticking) {
+            window.requestAnimationFrame(handleScroll);
+            ticking = true;
+        }
+    }
+    
+    // Listen for scroll events
+    window.addEventListener('scroll', requestTick, { passive: true });
+    
+    // Smooth scroll to top when button is clicked
+    scrollToTopBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        
+        // Smooth scroll to top
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+        
+        // Focus on main content for accessibility
+        const mainContent = document.querySelector('.main-content');
+        if (mainContent) {
+            mainContent.focus({ preventScroll: true });
+        }
+    });
+    
+    // Check initial state
+    handleScroll();
+})();

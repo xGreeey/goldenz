@@ -1,75 +1,12 @@
 /**
- * ============================================================================
- * GOLDEN Z-5 HR SYSTEM - MAIN STYLESHEET
- * ============================================================================
- * 
- * File: font-override.css
- * Purpose: Comprehensive styling for the entire HR management system
- * Version: 2.0.0
- * Last Updated: January 19, 2026
- * 
- * ============================================================================
- * FILE ORGANIZATION
- * ============================================================================
- * 
- * This file is organized into 7 main sections:
- * 
- * 1. GLOBAL FOUNDATIONS       (Lines ~1-620)
- *    - Typography, fonts, global resets
- * 
- * 2. LAYOUT & STRUCTURE        (Lines ~621-913)
- *    - Page layout, containers, spacing system
- *    - Sidebar navigation
- *    - Header and welcome section
- *    - Breadcrumb navigation
- * 
- * 3. REUSABLE COMPONENTS       (Lines ~914-2142)
- *    - Tables, cards, stat cards
- *    - Forms, buttons, badges
- *    - Modals, alerts, notifications
- *    - Dropdowns, tooltips
- * 
- * 4. PAGE-SPECIFIC STYLES      (Lines ~2143-2660)
- *    - Dashboard, employees, posts, alerts
- *    - Add/edit forms, settings
- * 
- * 5. PORTAL-SPECIFIC OVERRIDES (Lines ~2661-3368)
- *    - HR Admin, Super Admin
- *    - Employee, Developer portals
- * 
- * 6. RESPONSIVE & MEDIA QUERIES (Lines ~3369-4204)
- *    - Mobile, tablet, desktop adjustments
- * 
- * 7. DARK THEME                (Lines ~4205-End)
- *    - Dark mode overrides for all components
- * 
- * ============================================================================
- * MAINTENANCE GUIDELINES
- * ============================================================================
- * 
- * - Before editing: Search for existing styles to avoid duplication
- * - Use BEM naming: .block__element--modifier
- * - Scope with portal: body.portal-hr-admin
- * - Follow spacing system: Use CSS variables (--hr-gutter, etc.)
- * - Test thoroughly: Changes can affect multiple pages
- * - Document changes: Update comments and CHANGELOG.md
- * 
- * See CSS_ORGANIZATION_GUIDE.md for detailed documentation
- * 
- * ============================================================================
+ * Font Override for Accessibility
+ * Ensures consistent, readable fonts throughout the entire project
+ * Optimized for users with poor eyesight
+ * Includes emoji font support to prevent rectangle display
  */
 
-/* ============================================================================
-   
-   SECTION 1: GLOBAL FOUNDATIONS
-   
-   Purpose: Base typography, fonts, and global resets
-   Scope: All pages, all portals
-   
-   ============================================================================ */
-
 /* ============================================
-   1A. GLOBAL TYPOGRAPHY
+   GLOBAL TYPOGRAPHY (CONSISTENT ACROSS ALL PAGES)
    - Single app-wide font stack to reduce confusion
    - Emoji fonts kept as fallback (but NOT forced for all text)
    - Icons (Font Awesome) kept intact
@@ -383,10 +320,9 @@ div i[class*="fa-"] {
 }
 
 /* ============================================
-   1B. NUMERIC TYPOGRAPHY
+   NUMERIC TYPOGRAPHY (MERGED FROM number-rendering-fix.css)
    - Targets numeric UI only (stats, badges, tables, numeric inputs)
    - Tabular numbers for alignment
-   - Prevents emoji rendering for numbers
    ============================================ */
 
 :where(
@@ -511,7 +447,7 @@ html[data-theme="dark"] .sidebar .nav-submenu.expanded .nav-link.active {
 }
 
 /* ============================================
-   2B. CONSISTENT SPACING SYSTEM (ALL PAGES)
+   HR-ADMIN: CONSISTENT SPACING SYSTEM (ALL PAGES)
    ============================================
    
    ⚠️ CRITICAL: DO NOT MODIFY THESE VALUES ⚠️
@@ -653,17 +589,14 @@ body.portal-hr-admin .hrdash {
     overflow-x: hidden;
 }
 
-/* Main dashboard container - consolidated spacing */
+/* Equal spacing on both sides for dashboard container */
 body.portal-hr-admin .container-fluid.hrdash {
-    padding-top: 1.75rem !important;
     padding-left: var(--hr-page-px) !important;
     padding-right: var(--hr-page-px) !important;
-    padding-bottom: var(--hr-page-py) !important;
     margin-left: 0 !important;
     margin-right: 0 !important;
     width: 100% !important;
     max-width: 100% !important;
-    scroll-behavior: smooth;
 }
 
 /* Ensure content element has equal spacing */
@@ -685,17 +618,8 @@ body.portal-hr-admin .header {
     display: none !important;
 }
 
-/* ============================================================================
-   
-   SECTION 2: LAYOUT & STRUCTURE
-   
-   Purpose: General page layout, containers, spacing, sidebar, header
-   Scope: Global layout elements used across all pages
-   
-   ============================================================================ */
-
 /* ============================================
-   2A. PAGE CONTAINERS & LAYOUT
+   HR-ADMIN: CONSISTENT PAGE LAYOUTS
    ============================================ */
 
 /* Standardize all HR-Admin page containers */
@@ -730,11 +654,6 @@ body.portal-hr-admin .hrdash-welcome {
     transition: box-shadow 0.2s ease;
 }
 
-/* ============================================
-   2D. HEADER & WELCOME SECTION
-   Permanent header with page title, breadcrumb, time, notifications
-   ============================================ */
-
 /* Sticky header scroll enhancement */
 body.portal-hr-admin .hrdash-welcome.scrolled {
     box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08);
@@ -745,7 +664,10 @@ body.portal-hr-admin .hrdash-welcome .dropdown-menu {
     z-index: 1030;
 }
 
-/* Smooth scroll behavior - already defined in Section 2A */
+/* Smooth scroll behavior for content below sticky header */
+body.portal-hr-admin .container-fluid.hrdash {
+    scroll-behavior: smooth;
+}
 
 /* ============================================
    SCROLL TO TOP BUTTON
@@ -989,17 +911,8 @@ body.portal-hr-admin .hrdash-welcome__actions {
     flex-shrink: 0;
 }
 
-/* ============================================================================
-   
-   SECTION 3: REUSABLE COMPONENTS
-   
-   Purpose: Standalone UI components used across multiple pages
-   Scope: Tables, cards, forms, buttons, badges, modals, alerts
-   
-   ============================================================================ */
-
 /* ============================================
-   3A. TABLES - Modern table styling for all tables
+   HR-ADMIN: MODERN TABLE STYLING (All Tables)
    Matches modern design with circular checkboxes, clean spacing, pill badges
    ============================================ */
 
@@ -1431,8 +1344,7 @@ body.portal-hr-admin .card-body-modern {
 }
 
 /* ============================================
-   3C. BUTTONS
-   Consistent button styling across all portals
+   HR-ADMIN: CONSISTENT BUTTON STYLING
    ============================================ */
 
 body.portal-hr-admin .btn-primary-modern {
@@ -1561,7 +1473,7 @@ body.portal-hr-admin .content .row.g-4 {
     
     /* Reduce top spacing on mobile */
     body.portal-hr-admin .container-fluid.hrdash {
-        padding-top: 1.25rem !important;
+        padding-top: 1.25rem;
     }
 }
 
@@ -1570,19 +1482,14 @@ body.portal-hr-admin .row + .row {
     margin-top: var(--hr-section-spacing);
 }
 
-/* Specific spacing between rows in dashboard - proper visual separation */
+/* Specific spacing between stats and license watchlist - increased for better visual separation */
 body.portal-hr-admin .hrdash .row.g-4 + .row.g-4 {
     margin-top: 1.75rem !important;
 }
 
-/* Spacing between stat rows and content cards */
-body.portal-hr-admin .hrdash .row.g-4 + .card-modern,
-body.portal-hr-admin .hrdash .row.g-4 + .card {
-    margin-top: 1.75rem !important;
-}
-
-/* Spacing for any subsequent section after stats */
-body.portal-hr-admin .hrdash .row.g-4 + div:not(.row) {
+/* Spacing between stat cards and content cards */
+body.portal-hr-admin .row.g-4 + .card-modern,
+body.portal-hr-admin .row.g-4 + .card {
     margin-top: 1.75rem !important;
 }
 
@@ -1603,7 +1510,10 @@ body.portal-hr-admin .content {
     padding-top: 0 !important;
 }
 
-/* Container padding already defined in Section 2A - no duplication needed */
+/* Container-fluid.hrdash no longer needs header inside */
+body.portal-hr-admin .container-fluid.hrdash {
+    padding-top: 1.75rem;
+}
 
 /* Standardize Bootstrap spacing utilities in HR-Admin */
 body.portal-hr-admin .mb-1 { margin-bottom: 0.5rem !important; }
@@ -2298,8 +2208,26 @@ body.portal-hr-admin .row.g-4 > [class*="col-"] > .card {
     margin-bottom: 0 !important;
 }
 
-/* REMOVED: These rules were conflicting with Section 2B spacing system */
-/* The proper spacing rules are defined in Section 2B (Lines ~1570-1595) */
+/* Remove top margins that conflict with row gaps */
+body.portal-hr-admin .row.g-4 + .row.g-4 {
+    margin-top: 0 !important;
+}
+
+/* Standardize section spacing */
+body.portal-hr-admin .row.g-4 + .card,
+body.portal-hr-admin .row.g-4 + .table-responsive {
+    margin-top: 0 !important;
+}
+
+/* Add spacing between employee stats and table (at least 0.5 inch / 0.75rem) */
+body.portal-hr-admin .hrdash .row.g-4 + .table-container {
+    margin-top: 1rem !important; /* 0.5 inch = approximately 0.75rem to 1rem (16px) */
+}
+
+/* Ensure consistent spacing between major sections */
+body.portal-hr-admin .page-header-modern + .row.g-4 {
+    margin-top: 0 !important;
+}
 
 /* Standardize empty state spacing */
 body.portal-hr-admin .text-center.py-4,
@@ -2782,13 +2710,9 @@ body.portal-super-admin .content {
     padding-top: 0 !important;
 }
 
-/* Super Admin: Main dashboard container - same spacing as HR Admin */
+/* Super Admin: Container-fluid.hrdash no longer needs header inside */
 body.portal-super-admin .container-fluid.hrdash {
-    padding-top: 1.75rem !important;
-    padding-left: var(--hr-page-px) !important;
-    padding-right: var(--hr-page-px) !important;
-    padding-bottom: var(--hr-page-py) !important;
-    scroll-behavior: smooth;
+    padding-top: 1.75rem;
 }
 
 /* Super Admin: Ensure main-content starts after sidebar and uses remaining width */
@@ -2850,19 +2774,9 @@ body.portal-super-admin .dashboard-modern {
     box-sizing: border-box !important;
 }
 
-/* Specific spacing between rows in dashboard - proper visual separation */
-body.portal-super-admin .hrdash .row.g-4 + .row.g-4 {
-    margin-top: 1.75rem !important;
-}
-
-/* Spacing between stat rows and content cards */
-body.portal-super-admin .hrdash .row.g-4 + .card-modern,
-body.portal-super-admin .hrdash .row.g-4 + .card {
-    margin-top: 1.75rem !important;
-}
-
-/* Spacing for any subsequent section after stats */
-body.portal-super-admin .hrdash .row.g-4 + div:not(.row) {
+/* Spacing between stat cards and content cards */
+body.portal-super-admin .row.g-4 + .card-modern,
+body.portal-super-admin .row.g-4 + .card {
     margin-top: 1.75rem !important;
 }
 
@@ -4197,7 +4111,7 @@ html {
     
     /* Reduce top spacing on mobile */
     body.portal-super-admin .container-fluid.hrdash {
-        padding-top: 1.25rem !important;
+        padding-top: 1.25rem;
     }
     
     /* Sticky header remains functional on mobile */

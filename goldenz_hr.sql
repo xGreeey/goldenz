@@ -1,8 +1,109 @@
--- MariaDB dump 10.19  Distrib 10.4.32-MariaDB, for Win64 (AMD64)
+-- ============================================================================
+-- GOLDEN Z-5 HR MANAGEMENT SYSTEM - MAIN DATABASE SCHEMA
+-- ============================================================================
 --
+-- Company: Golden Z-5 Security and Investigation Agency, Inc.
+-- Database: goldenz_hr
+-- Version: 2.0
+-- Last Updated: January 2026
+--
+-- ============================================================================
+-- DESCRIPTION
+-- ============================================================================
+--
+-- This is the complete database schema for the Golden Z-5 HR Management System.
+-- It includes all tables, views, indexes, and data necessary for managing:
+--   - Employees (Security Guards, Lady Guards, Security Officers)
+--   - Posts and Assignments
+--   - Employee Alerts and Notifications
+--   - User Management and Permissions
+--   - Audit Trails and System Logs
+--   - DTR (Daily Time Records)
+--   - Leave Management
+--   - Password Reset Functionality
+--
+-- ============================================================================
+-- APPLIED MIGRATIONS (CONSOLIDATED)
+-- ============================================================================
+--
+-- All previous migration files have been consolidated into this single file.
+-- The following migrations are already applied in this schema:
+--
+-- 1. Password Reset Migration
+--    - Added password_reset_token column to users table
+--    - Added password_reset_expires_at column to users table
+--    - Added indexes for password reset token lookups
+--
+-- 2. User Name Fields Migration  
+--    - Added first_name and last_name columns to users table
+--    - Kept name column for backward compatibility
+--
+-- 3. Employee Page 2 Fields Migration
+--    - Added vacancy_source, referral_name, agency contacts
+--    - Added physical health and defect information
+--    - Added driver's license information
+--    - Added alcohol and drug-related fields
+--    - Added security experience and conviction history
+--    - Added specimen signatures and initials (3 each)
+--    - Added fingerprint fields (10 fingers)
+--    - Added basic requirements checklist (YO/NO fields)
+--    - Added sworn statement fields
+--    - Added document tracking (doc_no, page_no, book_no, series_of)
+--
+-- 4. System Logs Tables
+--    - Created system_logs table for developer dashboard
+--    - Created security_logs table for security event tracking
+--    - Added proper indexes for performance
+--
+-- 5. Audit Logs Fix
+--    - Fixed id column to be AUTO_INCREMENT (was causing duplicate key errors)
+--    - Cleaned up any records with id=0
+--
+-- 6. Employee Auto-Increment Fix
+--    - Reset AUTO_INCREMENT counter to max(id) + 1
+--    - Prevents ID collision issues
+--
+-- ============================================================================
+-- IMPORTANT NOTES
+-- ============================================================================
+--
+-- • All tables use InnoDB engine for ACID compliance and foreign key support
+-- • Charset: utf8mb4 with unicode collation for full Unicode support
+-- • All timestamps use CURRENT_TIMESTAMP by default
+-- • Foreign keys cascade on delete for data integrity
+-- • Indexes are optimized for common query patterns
+-- • JSON columns use json_valid() constraint for data validation
+-- • AUTO_INCREMENT values are set to prevent ID conflicts
+--
+-- ============================================================================
+-- INSTALLATION INSTRUCTIONS
+-- ============================================================================
+--
+-- 1. Create database: CREATE DATABASE goldenz_hr CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+-- 2. Select database: USE goldenz_hr;
+-- 3. Import this file: SOURCE /path/to/goldenz_hr.sql;
+-- 4. Verify tables: SHOW TABLES;
+-- 5. Check for errors: SHOW WARNINGS;
+--
+-- ============================================================================
+-- MAINTENANCE
+-- ============================================================================
+--
+-- • Regular backups recommended (daily automated backups available in system)
+-- • Audit logs should be archived monthly to prevent table bloat
+-- • Monitor AUTO_INCREMENT values approaching INT(11) limit (2,147,483,647)
+-- • Review and optimize slow query log periodically
+--
+-- ============================================================================
+-- MariaDB DUMP INFORMATION
+-- ============================================================================
+--
+-- MariaDB dump 10.19  Distrib 10.4.32-MariaDB, for Win64 (AMD64)
 -- Host: localhost    Database: goldenz_hr
--- ------------------------------------------------------
--- Server version	10.4.32-MariaDB
+-- Server version: 10.4.32-MariaDB
+-- Dump Date: January 2026
+--
+-- ============================================================================
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;

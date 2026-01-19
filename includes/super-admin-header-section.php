@@ -52,7 +52,7 @@ $page_subtitle = $current_page === 'dashboard'
         <p class="hrdash-welcome__subtitle"><?php echo htmlspecialchars($page_subtitle); ?></p>
     </div>
     <div class="hrdash-welcome__actions">
-        <span id="current-time-super-admin" class="hrdash-welcome__time"><?php echo strtolower(date('h:i:s A')); ?></span>
+        <span id="current-time-super-admin" class="hrdash-welcome__time"><?php echo strtolower(date('g:i:s A')); ?></span>
         
         <!-- Messages Dropdown -->
         <?php
@@ -125,7 +125,7 @@ $page_subtitle = $current_page === 'dashboard'
                                         <div class="fw-semibold small"><?php echo htmlspecialchars($msg['title'] ?? 'Alert'); ?></div>
                                         <div class="text-muted small"><?php echo htmlspecialchars($employeeName); ?></div>
                                         <?php if ($timeAgo): ?>
-                                            <div class="text-muted" style="font-size: 0.7rem;"><?php echo $timeAgo; ?></div>
+                                            <div class="text-muted fs-11"><?php echo $timeAgo; ?></div>
                                         <?php endif; ?>
                                     </div>
                                 </div>
@@ -218,7 +218,7 @@ $page_subtitle = $current_page === 'dashboard'
                                         <div class="fw-semibold small"><?php echo htmlspecialchars($notif['title'] ?? 'Task'); ?></div>
                                         <div class="text-muted small"><?php echo htmlspecialchars($notif['category'] ?? 'Task'); ?></div>
                                         <?php if ($timeAgo): ?>
-                                            <div class="text-muted" style="font-size: 0.7rem;"><?php echo $timeAgo; ?></div>
+                                            <div class="text-muted fs-11"><?php echo $timeAgo; ?></div>
                                         <?php endif; ?>
                                     </div>
                                 </div>

@@ -339,7 +339,6 @@ try {
             </div>
         </div>
     </div>
-    <?php endif; ?>
 
     <!-- Breadcrumb -->
     <nav class="hr-breadcrumb" aria-label="Breadcrumb">
@@ -1205,7 +1204,6 @@ function loadMoreAuditLogs() {
     // Update every minute
     setInterval(updateTime, 60000);
 })();
-<?php endif; ?>
 </script>
 
 <style>

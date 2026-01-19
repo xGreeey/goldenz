@@ -265,242 +265,7 @@ $inactive_employees = $employee_stats['inactive_employees'];
 $onboarding_employees = $employee_stats['onboarding_employees'];
 ?>
 
-    <!-- Header Section with Actions -->
-    <?php if (($_SESSION['user_role'] ?? '') !== 'super_admin'): ?>
-    <div class="hrdash-welcome">
-        <div class="hrdash-welcome__left">
-            <h2 class="hrdash-welcome__title">Employee Management</h2>
-            <p class="hrdash-welcome__subtitle">Manage employee information and records</p>
-        </div>
-        <div class="hrdash-welcome__actions">
-            <span id="current-time-employees" class="hrdash-welcome__time"><?php echo strtolower(date('h:i A')); ?></span>
-            
-            <!-- Messages Dropdown -->
-            <?php
-            // Get recent messages/alerts (last 5 active alerts)
-            $recentMessages = [];
-            if (function_exists('get_employee_alerts')) {
-                try {
-                    $recentMessages = get_employee_alerts('active', null);
-                    $recentMessages = array_slice($recentMessages, 0, 5);
-                } catch (Exception $e) {
-                    $recentMessages = [];
-                }
-            }
-            $messageCount = count($recentMessages);
-            ?>
-            <div class="dropdown">
-                <button class="hrdash-welcome__icon-btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Messages" aria-label="Messages">
-                    <i class="fas fa-envelope"></i>
-                    <?php if ($messageCount > 0): ?>
-                        <span class="hrdash-welcome__badge"><?php echo $messageCount > 99 ? '99+' : $messageCount; ?></span>
-                    <?php endif; ?>
-                </button>
-                <ul class="dropdown-menu dropdown-menu-end hrdash-notification-dropdown">
-                    <li class="dropdown-header">
-                        <strong>Messages</strong>
-                        <a href="?page=alerts" class="text-decoration-none ms-auto">View All</a>
-                    </li>
-                    <li><hr class="dropdown-divider"></li>
-                    <?php if (empty($recentMessages)): ?>
-                        <li class="dropdown-item-text text-muted text-center py-3">
-                            <i class="far fa-envelope-open fa-2x mb-2 d-block"></i>
-                            <small>No new messages</small>
-                        </li>
-                    <?php else: ?>
-                        <?php foreach ($recentMessages as $msg): 
-                            $priorityClass = '';
-                            $priorityIcon = 'fa-info-circle';
-                            switch(strtolower($msg['priority'] ?? '')) {
-                                case 'urgent':
-                                    $priorityClass = 'text-danger';
-                                    $priorityIcon = 'fa-exclamation-triangle';
-                                    break;
-                                case 'high':
-                                    $priorityClass = 'text-warning';
-                                    $priorityIcon = 'fa-exclamation-circle';
-                                    break;
-                                default:
-                                    $priorityClass = 'text-info';
-                            }
-                            $employeeName = trim(($msg['surname'] ?? '') . ', ' . ($msg['first_name'] ?? '') . ' ' . ($msg['middle_name'] ?? ''));
-                            $timeAgo = '';
-                            if (!empty($msg['created_at'])) {
-                                $created = new DateTime($msg['created_at']);
-                                $now = new DateTime();
-                                $diff = $now->diff($created);
-                                if ($diff->days > 0) {
-                                    $timeAgo = $diff->days . 'd ago';
-                                } elseif ($diff->h > 0) {
-                                    $timeAgo = $diff->h . 'h ago';
-                                } else {
-                                    $timeAgo = $diff->i . 'm ago';
-                                }
-                            }
-                        ?>
-                            <li>
-                                <a class="dropdown-item hrdash-notification-item" href="?page=alerts">
-                                    <div class="d-flex align-items-start">
-                                        <i class="fas <?php echo $priorityIcon; ?> <?php echo $priorityClass; ?> me-2 mt-1"></i>
-                                        <div class="flex-grow-1">
-                                            <div class="fw-semibold small"><?php echo htmlspecialchars($msg['title'] ?? 'Alert'); ?></div>
-                                            <div class="text-muted small"><?php echo htmlspecialchars($employeeName); ?></div>
-                                            <?php if ($timeAgo): ?>
-                                                <div class="text-muted" style="font-size: 0.7rem;"><?php echo $timeAgo; ?></div>
-                                            <?php endif; ?>
-                                        </div>
-                                    </div>
-                                </a>
-                            </li>
-                        <?php endforeach; ?>
-                    <?php endif; ?>
-                </ul>
-            </div>
-            
-            <!-- Notifications Dropdown -->
-            <?php
-            // Get recent notifications (pending tasks)
-            $recentNotifications = [];
-            $pendingTasks = 0;
-            if (function_exists('get_all_tasks')) {
-                try {
-                    $recentNotifications = get_all_tasks('pending', null, null);
-                    $recentNotifications = array_slice($recentNotifications, 0, 5);
-                    $pendingTasks = count($recentNotifications);
-                } catch (Exception $e) {
-                    $recentNotifications = [];
-                }
-            }
-            if (function_exists('get_pending_task_count')) {
-                try {
-                    $pendingTasks = (int) get_pending_task_count();
-                } catch (Exception $e) {
-                    $pendingTasks = 0;
-                }
-            }
-            ?>
-            <div class="dropdown">
-                <button class="hrdash-welcome__icon-btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Notifications" aria-label="Notifications">
-                    <i class="fas fa-bell"></i>
-                    <?php if ($pendingTasks > 0): ?>
-                        <span class="hrdash-welcome__badge"><?php echo $pendingTasks > 99 ? '99+' : $pendingTasks; ?></span>
-                    <?php endif; ?>
-                </button>
-                <ul class="dropdown-menu dropdown-menu-end hrdash-notification-dropdown">
-                    <li class="dropdown-header">
-                        <strong>Notifications</strong>
-                        <a href="?page=tasks" class="text-decoration-none ms-auto">View All</a>
-                    </li>
-                    <li><hr class="dropdown-divider"></li>
-                    <?php if (empty($recentNotifications)): ?>
-                        <li class="dropdown-item-text text-muted text-center py-3">
-                            <i class="far fa-bell-slash fa-2x mb-2 d-block"></i>
-                            <small>No new notifications</small>
-                        </li>
-                    <?php else: ?>
-                        <?php foreach ($recentNotifications as $notif): 
-                            $priorityClass = '';
-                            $priorityIcon = 'fa-circle';
-                            switch(strtolower($notif['priority'] ?? '')) {
-                                case 'urgent':
-                                    $priorityClass = 'text-danger';
-                                    $priorityIcon = 'fa-exclamation-triangle';
-                                    break;
-                                case 'high':
-                                    $priorityClass = 'text-warning';
-                                    $priorityIcon = 'fa-exclamation-circle';
-                                    break;
-                                case 'medium':
-                                    $priorityClass = 'text-info';
-                                    $priorityIcon = 'fa-info-circle';
-                                    break;
-                                default:
-                                    $priorityClass = 'text-muted';
-                            }
-                            $timeAgo = '';
-                            if (!empty($notif['created_at'])) {
-                                $created = new DateTime($notif['created_at']);
-                                $now = new DateTime();
-                                $diff = $now->diff($created);
-                                if ($diff->days > 0) {
-                                    $timeAgo = $diff->days . 'd ago';
-                                } elseif ($diff->h > 0) {
-                                    $timeAgo = $diff->h . 'h ago';
-                                } else {
-                                    $timeAgo = $diff->i . 'm ago';
-                                }
-                            }
-                        ?>
-                            <li>
-                                <a class="dropdown-item hrdash-notification-item" href="?page=tasks">
-                                    <div class="d-flex align-items-start">
-                                        <i class="fas <?php echo $priorityIcon; ?> <?php echo $priorityClass; ?> me-2 mt-1"></i>
-                                        <div class="flex-grow-1">
-                                            <div class="fw-semibold small"><?php echo htmlspecialchars($notif['title'] ?? 'Task'); ?></div>
-                                            <div class="text-muted small"><?php echo htmlspecialchars($notif['category'] ?? 'Task'); ?></div>
-                                            <?php if ($timeAgo): ?>
-                                                <div class="text-muted" style="font-size: 0.7rem;"><?php echo $timeAgo; ?></div>
-                                            <?php endif; ?>
-                                        </div>
-                                    </div>
-                                </a>
-                            </li>
-                        <?php endforeach; ?>
-                    <?php endif; ?>
-                </ul>
-            </div>
-            <div class="dropdown">
-                <button class="hrdash-welcome__profile-btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Profile menu">
-                    <?php
-                    $displayName = trim((string)($_SESSION['name'] ?? ($_SESSION['username'] ?? 'HR Admin')));
-                    $initials = 'HA';
-                    if ($displayName) {
-                        $parts = preg_split('/\s+/', $displayName);
-                        $first = $parts[0][0] ?? 'H';
-                        $last = (count($parts) > 1) ? ($parts[count($parts) - 1][0] ?? 'A') : ($parts[0][1] ?? 'A');
-                        $initials = strtoupper($first . $last);
-                    }
-                    ?>
-                    <span class="hrdash-welcome__avatar"><?php echo htmlspecialchars($initials); ?></span>
-                    <i class="fas fa-chevron-down hrdash-welcome__chevron"></i>
-                </button>
-                <ul class="dropdown-menu dropdown-menu-end">
-                    <li><a class="dropdown-item" href="?page=profile"><i class="fas fa-user me-2"></i>Profile</a></li>
-                    <li><a class="dropdown-item" href="?page=settings"><i class="fas fa-cog me-2"></i>Settings</a></li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li>
-                        <a class="dropdown-item text-danger" href="<?php echo base_url(); ?>/index.php?logout=1" data-no-transition="true">
-                            <i class="fas fa-right-from-bracket me-2"></i>Logout
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </div>
-    <?php endif; ?>
-
-    <!-- Page Header for Super Admin -->
-    <?php if (($_SESSION['user_role'] ?? '') === 'super_admin'): ?>
-    <div class="page-header-modern mb-3">
-        <div class="page-title-modern">
-            <h1 class="page-title-main">Employees</h1>
-            <p class="page-subtitle">Manage employee information and records</p>
-        </div>
-    </div>
-    <?php else: ?>
-    <!-- Breadcrumb -->
-    <nav class="hr-breadcrumb" aria-label="Breadcrumb">
-        <ol class="hr-breadcrumb__list">
-            <li class="hr-breadcrumb__item">
-                <a href="?page=dashboard" class="hr-breadcrumb__link">Dashboard</a>
-            </li>
-            <li class="hr-breadcrumb__item hr-breadcrumb__current" aria-current="page">
-                Employees
-            </li>
-        </ol>
-    </nav>
-    <?php endif; ?>
-
+<div class="container-fluid hrdash">
     <!-- Employee List (single view) -->
     <div class="tab-content">
         <div class="tab-pane active" id="employee-list">
@@ -564,80 +329,70 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
     <?php endif; ?>
 
     <!-- Summary Cards -->
-    <div class="d-flex justify-content-center">
-        <div class="employee-stats-container">
-            <div class="row g-3 mb-3">
-                <div class="col-xl-4 col-md-6">
-                    <div class="card stat-card-modern h-100">
-                        <div class="card-body-modern">
-                            <div class="stat-header">
-                                <span class="stat-label">Total Employees</span>
-                                <i class="fas fa-users stat-icon"></i>
-                            </div>
-                            <div class="stat-content">
-                                <h3 class="stat-number"><?php echo number_format($total_all_employees); ?></h3>
-                                <span class="badge badge-primary-modern"><?php echo number_format($active_employees); ?> Active</span>
-                            </div>
-                            <small class="stat-footer">The total number of employees in the system</small>
-                        </div>
+    <div class="row g-4">
+        <div class="col-xl-4 col-md-6">
+            <div class="card hrdash-stat hrdash-stat--primary">
+                <div class="hrdash-stat__header">
+                    <div class="hrdash-stat__label">Total Employees</div>
+                </div>
+                <div class="hrdash-stat__content">
+                    <div class="hrdash-stat__value"><?php echo number_format($total_all_employees); ?></div>
+                    <div class="hrdash-stat__trend hrdash-stat__trend--positive">
+                        <i class="fas fa-arrow-up"></i>
+                        <span><?php echo ($total_all_employees ?? 0) > 0 ? round(($active_employees / max(1, $total_all_employees)) * 100) : 0; ?>%</span>
                     </div>
                 </div>
-
-                <div class="col-xl-4 col-md-6">
-                    <div class="card stat-card-modern h-100">
-                        <div class="card-body-modern">
-                            <div class="stat-header">
-                                <span class="stat-label">Active Employees</span>
-                                <i class="fas fa-user-check stat-icon"></i>
-                            </div>
-                            <div class="stat-content">
-                                <h3 class="stat-number"><?php echo number_format($active_employees); ?></h3>
-                                <span class="badge badge-success-modern"><?php echo ($total_all_employees ?? 0) > 0 ? round(($active_employees / max(1, $total_all_employees)) * 100) : 0; ?>%</span>
-                            </div>
-                            <small class="stat-footer">Employees currently active and on roster</small>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-xl-4 col-md-6">
-                    <div class="card stat-card-modern h-100">
-                        <div class="card-body-modern">
-                            <div class="stat-header">
-                                <span class="stat-label">Inactive Employees</span>
-                                <i class="fas fa-user-slash stat-icon"></i>
-                            </div>
-                            <div class="stat-content">
-                                <h3 class="stat-number"><?php echo number_format($inactive_employees); ?></h3>
-                                <span class="badge badge-secondary"><?php echo ($total_all_employees ?? 0) > 0 ? round(($inactive_employees / max(1, $total_all_employees)) * 100) : 0; ?>%</span>
-                            </div>
-                            <small class="stat-footer">Employees currently inactive or off roster</small>
-                        </div>
-                    </div>
-                </div>
+                <div class="hrdash-stat__meta">The total number of employees in the system.</div>
             </div>
         </div>
-    </div>
-
-    <!-- Action Buttons -->
-    <div class="row g-4 mb-4">
-        <div class="col-12">
-            <div class="d-flex justify-content-end gap-2">
-                <button class="btn btn-outline-modern" id="exportBtn" title="Export employee list">
-                    <i class="fas fa-download me-2"></i>Export CSV
-                </button>
-                <a href="?page=add_employee" class="btn btn-primary-modern">
-                    <span class="hr-icon hr-icon-plus me-2"></span>Add New Employee
-                </a>
+        <div class="col-xl-4 col-md-6">
+            <div class="card hrdash-stat">
+                <div class="hrdash-stat__header">
+                    <div class="hrdash-stat__label">Active Employees</div>
+                </div>
+                <div class="hrdash-stat__content">
+                    <div class="hrdash-stat__value"><?php echo number_format($active_employees); ?></div>
+                    <div class="hrdash-stat__trend hrdash-stat__trend--positive">
+                        <i class="fas fa-user-check"></i>
+                        <span><?php echo number_format($active_employees); ?></span>
+                    </div>
+                </div>
+                <div class="hrdash-stat__meta">Employees currently active and on roster.</div>
+            </div>
+        </div>
+        <div class="col-xl-4 col-md-6">
+            <div class="card hrdash-stat">
+                <div class="hrdash-stat__header">
+                    <div class="hrdash-stat__label">Inactive Employees</div>
+                </div>
+                <div class="hrdash-stat__content">
+                    <div class="hrdash-stat__value"><?php echo number_format($inactive_employees); ?></div>
+                    <div class="hrdash-stat__trend hrdash-stat__trend--negative">
+                        <i class="fas fa-user-slash"></i>
+                        <span><?php echo number_format($inactive_employees); ?></span>
+                    </div>
+                </div>
+                <div class="hrdash-stat__meta">Employees currently inactive or off roster.</div>
             </div>
         </div>
     </div>
 
     <!-- Employee Table -->
-    <div class="card card-modern mb-2">
+    <div class="card card-modern mb-4 mt-4">
         <div class="card-body-modern">
-            <div class="card-header-modern mb-3">
-                <h5 class="card-title-modern">Employee List</h5>
-                <small class="card-subtitle">View and manage all employees</small>
+            <div class="card-header-modern mb-4 d-flex justify-content-between align-items-start">
+                <div>
+                    <h5 class="card-title-modern">Employee List</h5>
+                    <small class="card-subtitle">View and manage all employees</small>
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-modern" id="exportBtn" title="Export employee list">
+                        <i class="fas fa-download me-2"></i>Export
+                    </button>
+                    <a href="?page=add_employee" class="btn btn-primary-modern">
+                        <span class="hr-icon hr-icon-plus me-2"></span>Add Employee
+                    </a>
+                </div>
             </div>
             <div class="table-container">
                 <table class="employees-table">
@@ -710,7 +465,7 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
                                             echo implode(' | ', $info_parts);
                                             ?>
                                         </div>
-                                        <div class="employee-post text-muted" style="font-size: 0.8125rem; margin-top: 0.25rem;">
+                                        <div class="employee-post text-muted fs-13 mt-1">
                                             <?php echo htmlspecialchars($employee['post'] ?? 'Unassigned'); ?>
                                         </div>
                                         <div class="employee-status-badge" style="margin-top: 0.25rem;">
@@ -718,7 +473,7 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
                                             $status_class = ($employment_status === 'Probationary') ? 'bg-warning text-dark' : 'bg-info text-white';
                                             $status_text = $employment_status;
                                             ?>
-                                            <span class="badge <?php echo $status_class; ?>" style="font-size: 0.6875rem; padding: 0.25rem 0.5rem;">
+                                            <span class="badge <?php echo $status_class; ?> fs-11 px-2 py-1">
                                                 <?php echo htmlspecialchars($status_text); ?>
                                             </span>
                                         </div>
@@ -730,22 +485,22 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
                                         <!-- Top line: License number or No License -->
                                         <div class="employee-info-line fw-semibold">
                                             <?php if (!empty($employee['license_no'])): ?>
-                                                <span style="font-size: 0.6875rem; font-weight: 600; color: #64748b; text-transform: uppercase; margin-right: 0.25rem;">
+                                                <span class="fs-11 fw-semibold text-muted text-uppercase me-1">
                                                     License No
                                                 </span>
-                                                <span style="font-size: 0.8125rem; color: #1e293b;">
+                                                <span class="fs-13 text-dark">
                                                     <?php echo htmlspecialchars($employee['license_no']); ?>
                                                 </span>
                                             <?php else: ?>
-                                                <span class="text-danger" style="font-size: 0.8125rem;">
+                                                <span class="text-danger fs-13">
                                                     No License
                                                 </span>
                                             <?php endif; ?>
                                         </div>
 
                                         <!-- Second line: License expiration -->
-                                        <div class="employee-post text-muted" style="font-size: 0.8125rem; margin-top: 0.125rem;">
-                                            <span style="font-size: 0.6875rem; font-weight: 600; text-transform: uppercase; color: #9ca3af; margin-right: 0.25rem;">
+                                        <div class="employee-post text-muted fs-13 mt-1">
+                                            <span class="fs-11 fw-semibold text-uppercase text-muted me-1">
                                                 Expiration
                                             </span>
                                             <?php if ($license_formatted): ?>
@@ -761,11 +516,11 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
                                         <?php if (!empty($employee['rlm_exp'])): ?>
                                             <div class="employee-status-badge" style="margin-top: 0.125rem;">
                                                 <?php if ($rlm_formatted): ?>
-                                                    <span class="badge <?php echo ($rlm_formatted['days'] < 0 || $rlm_formatted['days'] <= 30) ? 'bg-danger' : 'bg-info'; ?>" style="font-size: 0.6875rem; padding: 0.25rem 0.5rem;">
+                                                    <span class="badge <?php echo ($rlm_formatted['days'] < 0 || $rlm_formatted['days'] <= 30) ? 'bg-danger' : 'bg-info'; ?> fs-11 px-2 py-1">
                                                         RLM <?php echo htmlspecialchars($rlm_formatted['text']); ?>
                                                     </span>
                                                 <?php else: ?>
-                                                    <span class="badge bg-info" style="font-size: 0.6875rem; padding: 0.25rem 0.5rem;">
+                                                    <span class="badge bg-info fs-11 px-2 py-1">
                                                         RLM Present
                                                     </span>
                                                 <?php endif; ?>
@@ -775,7 +530,7 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
                                 </td>
                                 <!-- Status -->
                                 <td>
-                                    <span class="status-badge <?php echo strtolower($employee['status'] ?? ''); ?>" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;">
+                                    <span class="status-badge <?php echo strtolower($employee['status'] ?? ''); ?> fs-xs px-2 py-1">
                                         <i class="fas"></i>
                                         <?php echo htmlspecialchars($employee['status'] ?? 'N/A'); ?>
                                     </span>
@@ -915,7 +670,7 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
             const ampm = hours >= 12 ? 'PM' : 'AM';
             const displayHours = hours % 12 || 12;
             const displayMinutes = minutes < 10 ? '0' + minutes : minutes;
-            timeElement.textContent = displayHours + ':' + displayMinutes + ' ' + ampm.toLowerCase();
+            timeElement.textContent = displayHours + ':' + displayMinutes + ' ' + ampm.toUpperCase();
         }
     }
     
@@ -1595,7 +1350,7 @@ function displayEmployeeDetails(emp) {
             <div class="row mb-4 pb-3 border-bottom">
                 <div class="col-md-8">
                     <div class="d-flex align-items-center">
-                        <div class="employee-avatar-large me-3" style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: bold;">
+                        <div class="employee-avatar-large me-3 fs-24" style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; display: flex; align-items: center; justify-content: center; font-weight: bold;">
                             ${(emp.first_name?.[0] || '') + (emp.surname?.[0] || '')}
                         </div>
                         <div>
@@ -1806,3 +1561,5 @@ function contactEmployee(id, email = '', phone = '') {
     }
 }
 </script>
+
+</div> <!-- /.container-fluid -->

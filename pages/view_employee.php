@@ -507,8 +507,8 @@ function renderField($label, $name, $value, $type = 'text', $required = false, $
                                             </div>
                                         <?php endif; ?>
                                     </div>
-                                    <input type="file" name="employee_photo" id="employee_photo" accept="image/jpeg,image/jpg,image/png" class="form-control form-control-sm mt-2" style="font-size: 0.75rem; width: 140px;" onchange="previewPhoto(this)">
-                                    <small class="text-muted d-block mt-1" style="font-size: 0.7rem;">Max 2MB (JPG/PNG)</small>
+                                    <input type="file" name="employee_photo" id="employee_photo" accept="image/jpeg,image/jpg,image/png" class="form-control form-control-sm mt-2 fs-xs" style="width: 140px;" onchange="previewPhoto(this)">
+                                    <small class="text-muted d-block mt-1 fs-11">Max 2MB (JPG/PNG)</small>
                                 </div>
                             </div>
                         </div>

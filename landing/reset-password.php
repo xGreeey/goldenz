@@ -197,7 +197,7 @@ ob_end_flush();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reset Password - Golden Z-5 HR Management System</title>
+    <title>Reset Password</title>
     
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="../public/logo.svg">
@@ -322,7 +322,7 @@ ob_end_flush();
                                     <i class="fas fa-eye" id="toggleNewPasswordIcon"></i>
                                 </button>
                             </div>
-                            <small class="text-muted" style="font-size: 0.8125rem;">Must be at least 8 characters long</small>
+                            <small class="text-muted fs-13">Must be at least 8 characters long</small>
                         </div>
 
                         <div class="form-group">
@@ -358,7 +358,7 @@ ob_end_flush();
                     <?php endif; ?>
 
                     <div class="text-center mt-4">
-                        <a href="index.php" class="text-decoration-none" style="color: #2563eb; font-size: 0.875rem; font-weight: 500;">
+                        <a href="index.php" class="text-decoration-none fs-sm fw-medium" style="color: #2563eb;">
                             <i class="fas fa-arrow-left me-1"></i> Back to Login
                         </a>
                     </div>
