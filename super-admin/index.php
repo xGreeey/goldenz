@@ -851,6 +851,112 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     // For profile page, continue to include the page normally
 }
 
+// Handle GET request for user details BEFORE header is included (to avoid sidebar)
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && $page === 'users' && isset($_GET['action']) && $_GET['action'] === 'get_details' && isset($_GET['user_id'])) {
+    require_once __DIR__ . '/../includes/database.php';
+    require_once __DIR__ . '/../includes/paths.php';
+    
+    $user_id = (int)$_GET['user_id'];
+    $user = get_user_by_id($user_id);
+    
+    if (!$user) {
+        header('Content-Type: text/html; charset=utf-8');
+        echo '<div class="alert alert-danger">User not found</div>';
+        exit;
+    }
+    
+    $role_config = config('roles.roles', []);
+    $user_role_config = $role_config[$user['role']] ?? [];
+    
+    header('Content-Type: text/html; charset=utf-8');
+    ?>
+    <div class="user-details">
+        <div class="row mb-4">
+            <div class="col-md-3 text-center">
+                <?php 
+                $avatar_url = !empty($user['avatar']) ? get_avatar_url($user['avatar']) : null;
+                if ($avatar_url): ?>
+                    <img src="<?php echo htmlspecialchars($avatar_url); ?>" 
+                         alt="<?php echo htmlspecialchars($user['name']); ?>" 
+                         class="mb-3 avatar-md">
+                <?php else: ?>
+                    <div class="avatar-placeholder avatar-placeholder-lg mx-auto mb-3">
+                        <?php echo strtoupper(substr($user['name'], 0, 1)); ?>
+                    </div>
+                <?php endif; ?>
+                <h5 class="mb-0"><?php echo htmlspecialchars($user['name']); ?></h5>
+                <small class="text-muted"><?php echo htmlspecialchars($user['username']); ?></small>
+            </div>
+            <div class="col-md-9">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label text-muted small">Email</label>
+                        <div class="fw-semibold"><?php echo htmlspecialchars($user['email']); ?></div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label text-muted small">Phone</label>
+                        <div class="fw-semibold"><?php echo htmlspecialchars($user['phone'] ?? '—'); ?></div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label text-muted small">Role</label>
+                        <div>
+                            <span class="badge badge-primary-modern">
+                                <?php echo htmlspecialchars($user_role_config['name'] ?? ucfirst($user['role'])); ?>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label text-muted small">Status</label>
+                        <div>
+                            <span class="badge badge-<?php echo $user['status'] === 'active' ? 'success' : ($user['status'] === 'suspended' ? 'danger' : 'secondary'); ?>-modern">
+                                <?php echo ucfirst($user['status']); ?>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label text-muted small">Department</label>
+                        <div class="fw-semibold"><?php echo htmlspecialchars($user['department'] ?? '—'); ?></div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label text-muted small">Last Login</label>
+                        <div class="fw-semibold">
+                            <?php echo $user['last_login'] ? date('M d, Y H:i', strtotime($user['last_login'])) : 'Never'; ?>
+                        </div>
+                    </div>
+                    <?php if ($user['employee_id']): ?>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted small">Linked Employee</label>
+                            <div class="fw-semibold">
+                                #<?php echo htmlspecialchars($user['employee_no'] ?? $user['employee_id']); ?>
+                                - <?php echo htmlspecialchars(trim(($user['first_name'] ?? '') . ' ' . ($user['surname'] ?? ''))); ?>
+                            </div>
+                        </div>
+                    <?php endif; ?>
+                    <div class="col-md-6">
+                        <label class="form-label text-muted small">Account Created</label>
+                        <div class="fw-semibold"><?php echo date('M d, Y', strtotime($user['created_at'])); ?></div>
+                    </div>
+                    <?php if ($user['created_by_name']): ?>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted small">Created By</label>
+                            <div class="fw-semibold"><?php echo htmlspecialchars($user['created_by_name']); ?></div>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+        
+        <?php if (!empty($user_role_config['description'])): ?>
+            <div class="mt-4">
+                <h6>Role Description</h6>
+                <p class="text-muted"><?php echo htmlspecialchars($user_role_config['description']); ?></p>
+            </div>
+        <?php endif; ?>
+    </div>
+    <?php
+    exit;
+}
+
 // Redirect to dashboard if no page parameter is set (only for GET requests)
 if (!isset($_GET['page']) && $_SERVER['REQUEST_METHOD'] === 'GET') {
     header('Location: ?page=dashboard');
