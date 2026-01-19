@@ -2455,17 +2455,16 @@ if (form) {
             errors.push('Emergency Contact Number is required');
         }
         
-        // VALIDATION DISABLED - Allow form to submit regardless of validation errors
-        // This allows you to proceed to page 2 even if some fields are missing
-        // if (hasErrors) {
-        //     e.preventDefault();
-        //     e.stopPropagation();
-        //     
-        //     // Show custom validation error popup
-        //     showValidationErrorPopup(errors, firstErrorField);
-        //     
-        //     return false;
-        // }
+        // If there are validation errors, prevent form submission
+        if (hasErrors) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Show custom validation error popup
+            showValidationErrorPopup(errors, firstErrorField);
+            
+            return false;
+        }
         
         // Validation passed - disable submit button
         const submitButton = form.querySelector('button[type="submit"]');
