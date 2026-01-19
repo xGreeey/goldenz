@@ -862,6 +862,13 @@ $display_employees = array_slice($all_employees, 0, 10); // Show first 10 employ
     color: #64748b;
     margin-left: 0.25rem;
 }
+.hrdash-welcome__user-name {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin-right: 0.5rem;
+    white-space: nowrap;
+}
 
 /* Profile & Settings Modal Styles */
 .profile-avatar-large {
