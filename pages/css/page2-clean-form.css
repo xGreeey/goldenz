@@ -1,0 +1,405 @@
+/* ========================================================================
+   CLEAN PAPER FORM STYLE - PAGE 2 GENERAL INFORMATION
+   Modern, structured, professional application form layout
+   ======================================================================== */
+
+/* Page Container */
+.clean-form-page {
+    max-width: 900px;
+    margin: 2rem auto;
+    background: #fff;
+    border: 1px solid #d9dee7;
+    border-radius: 8px;
+    padding: 2.5rem 3rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.clean-form-page * {
+    box-sizing: border-box;
+}
+
+/* Header Section */
+.clean-form-header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.clean-form-company {
+    font-size: 15px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #1f2937;
+    margin: 0 0 0.25rem 0;
+}
+
+.clean-form-title {
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    color: #4b5563;
+    margin: 0 0 0.75rem 0;
+}
+
+.clean-form-recorded {
+    font-size: 11px;
+    color: #6b7280;
+    margin: 0;
+}
+
+.clean-form-recorded strong {
+    font-weight: 600;
+    color: #374151;
+}
+
+/* Section Title */
+.clean-section-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0 0 1.5rem 0;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid #d1d5db;
+    text-align: left;
+}
+
+/* Override inline styles if section title is centered */
+h1.clean-section-title[style*="text-align: center"],
+h1.clean-section-title[style*="text-align:center"] {
+    text-align: center !important;
+    border-bottom: 2px solid #d1d5db !important;
+}
+
+/* Question List */
+.clean-question-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    counter-reset: none;
+}
+
+.clean-question-item {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #f3f4f6;
+    list-style: none;
+    list-style-type: none;
+}
+
+.clean-question-item:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+/* Question Header (number + text + options) */
+.clean-question-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    margin-bottom: 0;
+    min-height: 24px;
+}
+
+.clean-question-text {
+    flex: 1;
+    font-size: 12px;
+    font-weight: 500;
+    color: #374151;
+    line-height: 1.5;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.clean-question-number {
+    font-weight: 700;
+    color: #1f2937;
+    flex-shrink: 0;
+    line-height: 1.5;
+}
+
+.clean-question-required {
+    color: #dc2626;
+    margin-left: 0.25rem;
+    line-height: 1.5;
+}
+
+/* Options Group (checkboxes/radios on same line) */
+.clean-options-group {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+    row-gap: 0.75rem;
+}
+
+.clean-option-item {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.5rem;
+    white-space: nowrap;
+    margin: 0;
+    padding: 0;
+}
+
+.clean-option-item input[type="checkbox"],
+.clean-option-item input[type="radio"] {
+    width: 16px;
+    height: 16px;
+    min-width: 16px;
+    min-height: 16px;
+    margin: 0 !important;
+    padding: 0 !important;
+    cursor: pointer;
+    border: 1.5px solid #d1d5db;
+    border-radius: 3px;
+    flex-shrink: 0;
+    align-self: center;
+    display: inline-block;
+}
+
+.clean-option-item input[type="radio"] {
+    border-radius: 50%;
+}
+
+.clean-option-item input[type="checkbox"]:checked,
+.clean-option-item input[type="radio"]:checked {
+    background-color: #2563eb;
+    border-color: #2563eb;
+}
+
+.clean-option-label {
+    font-size: 12px;
+    font-weight: 400;
+    color: #4b5563;
+    cursor: pointer;
+    margin: 0;
+    padding: 0;
+    line-height: 1.33;
+    display: inline-block;
+    user-select: none;
+}
+
+/* Detail Input (appears below question when needed) */
+.clean-detail-input {
+    margin-top: 0.75rem;
+}
+
+.clean-detail-input .form-control,
+.clean-detail-input input[type="text"],
+.clean-detail-input input[type="date"],
+.clean-detail-input textarea {
+    width: 100%;
+    height: 38px;
+    padding: 0.5rem 0.75rem;
+    font-size: 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    background: #fff;
+    transition: all 0.15s ease;
+}
+
+.clean-detail-input .form-control:focus,
+.clean-detail-input input:focus,
+.clean-detail-input textarea:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.clean-detail-input textarea {
+    height: 70px;
+    resize: vertical;
+}
+
+.clean-detail-input .form-text {
+    font-size: 10px;
+    color: #6b7280;
+    margin-top: 0.25rem;
+}
+
+/* Inline Input Group (for multiple inputs on same line) */
+.clean-inline-inputs {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-top: 0.75rem;
+}
+
+.clean-inline-inputs input[type="text"],
+.clean-inline-inputs input[type="date"] {
+    height: 38px;
+    padding: 0.5rem 0.75rem;
+    font-size: 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    background: #fff;
+    transition: all 0.15s ease;
+}
+
+.clean-inline-inputs input:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.clean-inline-label {
+    font-size: 11px;
+    color: #6b7280;
+    white-space: nowrap;
+}
+
+/* Validation States */
+.clean-detail-input .is-invalid,
+.clean-inline-inputs .is-invalid {
+    border-color: #dc2626;
+}
+
+.clean-detail-input .is-invalid:focus,
+.clean-inline-inputs .is-invalid:focus {
+    border-color: #dc2626;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+}
+
+.invalid-feedback {
+    font-size: 11px;
+    color: #dc2626;
+    margin-top: 0.25rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .clean-form-page {
+        margin: 1rem;
+        padding: 1.5rem;
+    }
+    
+    .clean-question-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+    
+    .clean-options-group {
+        margin-top: 0;
+        width: 100%;
+        gap: 1rem;
+    }
+    
+    .clean-inline-inputs {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.5rem;
+    }
+    
+    .clean-inline-inputs input[type="text"],
+    .clean-inline-inputs input[type="date"] {
+        width: 100% !important;
+    }
+    
+    .clean-inline-label {
+        margin-bottom: 0.25rem;
+    }
+}
+
+@media (min-width: 769px) {
+    .clean-question-header {
+        align-items: center;
+    }
+    
+    .clean-options-group {
+        justify-content: flex-end;
+    }
+}
+
+/* Ensure Bootstrap form elements work with clean style */
+.clean-form-page .form-check {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: flex-start;
+    gap: 0.5rem;
+    margin: 0 !important;
+    padding: 0 !important;
+    min-height: auto;
+}
+
+.clean-form-page .form-check-input {
+    width: 16px !important;
+    height: 16px !important;
+    min-width: 16px;
+    min-height: 16px;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 1.5px solid #d1d5db !important;
+    flex-shrink: 0;
+    align-self: center;
+    display: inline-block;
+    float: none !important;
+}
+
+.clean-form-page .form-check-input:checked {
+    background-color: #2563eb !important;
+    border-color: #2563eb !important;
+}
+
+.clean-form-page .form-check-input:focus {
+    border-color: #2563eb !important;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1) !important;
+}
+
+.clean-form-page .form-check-label {
+    font-size: 12px !important;
+    font-weight: 400;
+    color: #4b5563;
+    margin: 0 !important;
+    padding: 0 !important;
+    line-height: 1.33;
+    cursor: pointer;
+    display: inline-block;
+    user-select: none;
+}
+
+/* Remove validation icons */
+.clean-form-page .form-control.is-invalid,
+.clean-form-page .form-control.is-valid {
+    background-image: none;
+    padding-right: 0.75rem;
+}
+
+/* Additional alignment fixes for all form inputs */
+.clean-form-page input[type="checkbox"],
+.clean-form-page input[type="radio"] {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    vertical-align: middle;
+}
+
+/* Ensure consistent baseline alignment */
+.clean-option-item,
+.clean-form-page .form-check {
+    line-height: 1.33;
+}
+
+/* Fix any floating or positioning issues */
+.clean-form-page .d-flex.gap-3,
+.clean-form-page .d-flex.flex-wrap {
+    align-items: center;
+}
+
+/* Ensure checkboxes don't inherit conflicting styles */
+.clean-form-page .form-check-input[type="checkbox"],
+.clean-form-page .form-check-input[type="radio"],
+.clean-option-item input[type="checkbox"],
+.clean-option-item input[type="radio"] {
+    position: static !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}
