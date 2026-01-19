@@ -564,51 +564,55 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
     <?php endif; ?>
 
     <!-- Summary Cards -->
-    <div class="row g-3 mb-3">
-        <div class="col-xl-4 col-md-6">
-            <div class="card stat-card-modern h-100">
-                <div class="card-body-modern">
-                    <div class="stat-header">
-                        <span class="stat-label">Total Employees</span>
-                        <i class="fas fa-users stat-icon"></i>
+    <div class="d-flex justify-content-center">
+        <div class="employee-stats-container">
+            <div class="row g-3 mb-3">
+                <div class="col-xl-4 col-md-6">
+                    <div class="card stat-card-modern h-100">
+                        <div class="card-body-modern">
+                            <div class="stat-header">
+                                <span class="stat-label">Total Employees</span>
+                                <i class="fas fa-users stat-icon"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3 class="stat-number"><?php echo number_format($total_all_employees); ?></h3>
+                                <span class="badge badge-primary-modern"><?php echo number_format($active_employees); ?> Active</span>
+                            </div>
+                            <small class="stat-footer">The total number of employees in the system</small>
+                        </div>
                     </div>
-                    <div class="stat-content">
-                        <h3 class="stat-number"><?php echo number_format($total_all_employees); ?></h3>
-                        <span class="badge badge-primary-modern"><?php echo number_format($active_employees); ?> Active</span>
-                    </div>
-                    <small class="stat-footer">The total number of employees in the system</small>
                 </div>
-            </div>
-        </div>
 
-        <div class="col-xl-4 col-md-6">
-            <div class="card stat-card-modern h-100">
-                <div class="card-body-modern">
-                    <div class="stat-header">
-                        <span class="stat-label">Active Employees</span>
-                        <i class="fas fa-user-check stat-icon"></i>
+                <div class="col-xl-4 col-md-6">
+                    <div class="card stat-card-modern h-100">
+                        <div class="card-body-modern">
+                            <div class="stat-header">
+                                <span class="stat-label">Active Employees</span>
+                                <i class="fas fa-user-check stat-icon"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3 class="stat-number"><?php echo number_format($active_employees); ?></h3>
+                                <span class="badge badge-success-modern"><?php echo ($total_all_employees ?? 0) > 0 ? round(($active_employees / max(1, $total_all_employees)) * 100) : 0; ?>%</span>
+                            </div>
+                            <small class="stat-footer">Employees currently active and on roster</small>
+                        </div>
                     </div>
-                    <div class="stat-content">
-                        <h3 class="stat-number"><?php echo number_format($active_employees); ?></h3>
-                        <span class="badge badge-success-modern"><?php echo ($total_all_employees ?? 0) > 0 ? round(($active_employees / max(1, $total_all_employees)) * 100) : 0; ?>%</span>
-                    </div>
-                    <small class="stat-footer">Employees currently active and on roster</small>
                 </div>
-            </div>
-        </div>
 
-        <div class="col-xl-4 col-md-6">
-            <div class="card stat-card-modern h-100">
-                <div class="card-body-modern">
-                    <div class="stat-header">
-                        <span class="stat-label">Inactive Employees</span>
-                        <i class="fas fa-user-slash stat-icon"></i>
+                <div class="col-xl-4 col-md-6">
+                    <div class="card stat-card-modern h-100">
+                        <div class="card-body-modern">
+                            <div class="stat-header">
+                                <span class="stat-label">Inactive Employees</span>
+                                <i class="fas fa-user-slash stat-icon"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3 class="stat-number"><?php echo number_format($inactive_employees); ?></h3>
+                                <span class="badge badge-secondary"><?php echo ($total_all_employees ?? 0) > 0 ? round(($inactive_employees / max(1, $total_all_employees)) * 100) : 0; ?>%</span>
+                            </div>
+                            <small class="stat-footer">Employees currently inactive or off roster</small>
+                        </div>
                     </div>
-                    <div class="stat-content">
-                        <h3 class="stat-number"><?php echo number_format($inactive_employees); ?></h3>
-                        <span class="badge badge-secondary"><?php echo ($total_all_employees ?? 0) > 0 ? round(($inactive_employees / max(1, $total_all_employees)) * 100) : 0; ?>%</span>
-                    </div>
-                    <small class="stat-footer">Employees currently inactive or off roster</small>
                 </div>
             </div>
         </div>

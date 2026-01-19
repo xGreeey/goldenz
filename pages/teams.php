@@ -23,64 +23,68 @@ if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'super_admin') 
     </div>
 
     <!-- Team Statistics -->
-    <div class="row g-3 mb-3">
-        <div class="col-md-3 col-sm-6">
-            <div class="card stat-card-modern h-100">
-                <div class="card-body-modern">
-                    <div class="stat-header">
-                        <span class="stat-label">Total Teams</span>
-                        <i class="fas fa-users stat-icon"></i>
+    <div class="d-flex justify-content-center">
+        <div class="team-stats-container">
+            <div class="row g-3 mb-3">
+                <div class="col-md-3 col-sm-6">
+                    <div class="card stat-card-modern h-100">
+                        <div class="card-body-modern">
+                            <div class="stat-header">
+                                <span class="stat-label">Total Teams</span>
+                                <i class="fas fa-users stat-icon"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3 class="stat-number">2</h3>
+                                <span class="badge badge-primary-modern">2 Active</span>
+                            </div>
+                            <small class="stat-footer">All teams in system</small>
+                        </div>
                     </div>
-                    <div class="stat-content">
-                        <h3 class="stat-number">2</h3>
-                        <span class="badge badge-primary-modern">2 Active</span>
-                    </div>
-                    <small class="stat-footer">All teams in system</small>
                 </div>
-            </div>
-        </div>
-        <div class="col-md-3 col-sm-6">
-            <div class="card stat-card-modern h-100">
-                <div class="card-body-modern">
-                    <div class="stat-header">
-                        <span class="stat-label">Total Members</span>
-                        <i class="fas fa-user-friends stat-icon"></i>
+                <div class="col-md-3 col-sm-6">
+                    <div class="card stat-card-modern h-100">
+                        <div class="card-body-modern">
+                            <div class="stat-header">
+                                <span class="stat-label">Total Members</span>
+                                <i class="fas fa-user-friends stat-icon"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3 class="stat-number">20</h3>
+                                <span class="badge badge-success-modern">18 Active</span>
+                            </div>
+                            <small class="stat-footer">Across all teams</small>
+                        </div>
                     </div>
-                    <div class="stat-content">
-                        <h3 class="stat-number">20</h3>
-                        <span class="badge badge-success-modern">18 Active</span>
-                    </div>
-                    <small class="stat-footer">Across all teams</small>
                 </div>
-            </div>
-        </div>
-        <div class="col-md-3 col-sm-6">
-            <div class="card stat-card-modern h-100">
-                <div class="card-body-modern">
-                    <div class="stat-header">
-                        <span class="stat-label">Team Leads</span>
-                        <i class="fas fa-user-tie stat-icon"></i>
+                <div class="col-md-3 col-sm-6">
+                    <div class="card stat-card-modern h-100">
+                        <div class="card-body-modern">
+                            <div class="stat-header">
+                                <span class="stat-label">Team Leads</span>
+                                <i class="fas fa-user-tie stat-icon"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3 class="stat-number">2</h3>
+                                <span class="badge badge-primary-modern">2 Assigned</span>
+                            </div>
+                            <small class="stat-footer">Active team leaders</small>
+                        </div>
                     </div>
-                    <div class="stat-content">
-                        <h3 class="stat-number">2</h3>
-                        <span class="badge badge-primary-modern">2 Assigned</span>
-                    </div>
-                    <small class="stat-footer">Active team leaders</small>
                 </div>
-            </div>
-        </div>
-        <div class="col-md-3 col-sm-6">
-            <div class="card stat-card-modern h-100">
-                <div class="card-body-modern">
-                    <div class="stat-header">
-                        <span class="stat-label">Avg Team Size</span>
-                        <i class="fas fa-chart-line stat-icon"></i>
+                <div class="col-md-3 col-sm-6">
+                    <div class="card stat-card-modern h-100">
+                        <div class="card-body-modern">
+                            <div class="stat-header">
+                                <span class="stat-label">Avg Team Size</span>
+                                <i class="fas fa-chart-line stat-icon"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3 class="stat-number">10</h3>
+                                <span class="badge badge-warning-modern">±2 members</span>
+                            </div>
+                            <small class="stat-footer">Average per team</small>
+                        </div>
                     </div>
-                    <div class="stat-content">
-                        <h3 class="stat-number">10</h3>
-                        <span class="badge badge-warning-modern">±2 members</span>
-                    </div>
-                    <small class="stat-footer">Average per team</small>
                 </div>
             </div>
         </div>
