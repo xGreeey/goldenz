@@ -24,25 +24,56 @@ $db_config = [
 // Create database connection
 if (!function_exists('get_db_connection')) {
     function get_db_connection() {
+        // Use cached connection if available
+        static $db_connection = null;
+        
+        if ($db_connection !== null) {
+            // Check if connection is still alive
+            try {
+                $db_connection->query('SELECT 1');
+                return $db_connection;
+            } catch (PDOException $e) {
+                // Connection is dead, reset it
+                $db_connection = null;
+            }
+        }
+        
         // Try to use new Database class if available
         if (class_exists('App\Core\Database')) {
-            return \App\Core\Database::getInstance()->getConnection();
+            try {
+                $db_connection = \App\Core\Database::getInstance()->getConnection();
+                return $db_connection;
+            } catch (Exception $e) {
+                // Fall through to fallback method
+            }
         }
         
         // Fallback to old method
         global $db_config;
         
+        if (!isset($db_config) || empty($db_config)) {
+            // Try to load config if not available
+            $config_file = __DIR__ . '/../config/database.php';
+            if (file_exists($config_file)) {
+                $db_config = include $config_file;
+            } else {
+                error_log('Database configuration not found');
+                throw new Exception('Database configuration not found');
+            }
+        }
+        
         try {
             $dsn = "mysql:host={$db_config['host']};dbname={$db_config['database']};charset={$db_config['charset']}";
-            $pdo = new PDO($dsn, $db_config['username'], $db_config['password'], [
+            $db_connection = new PDO($dsn, $db_config['username'], $db_config['password'], [
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
                 PDO::ATTR_EMULATE_PREPARES => false,
+                PDO::ATTR_PERSISTENT => false, // Don't use persistent connections to avoid memory issues
             ]);
-            return $pdo;
+            return $db_connection;
         } catch (PDOException $e) {
             error_log('Database connection failed: ' . $e->getMessage());
-            die('Database connection failed: ' . $e->getMessage());
+            throw new Exception('Database connection failed: ' . $e->getMessage());
         }
     }
 }
@@ -1675,15 +1706,70 @@ if (!function_exists('log_system_event')) {
 
 // Log security event (enhanced version that also logs to database)
 if (!function_exists('log_security_event_db')) {
+    // Use global variable to prevent recursion between log_security_event and log_security_event_db
+    $GLOBALS['_security_logging_in_progress'] = false;
+    
     function log_security_event_db($type, $details, $metadata = null) {
+        // Prevent infinite recursion - check global flag
+        if (isset($GLOBALS['_security_logging_in_progress']) && $GLOBALS['_security_logging_in_progress']) {
+            // If we're already logging, just write to file directly to prevent recursion
+            $log_entry = date('Y-m-d H:i:s') . " - " . $type . " - " . $details . " - IP: " . ($_SERVER['REMOTE_ADDR'] ?? 'Unknown') . "\n";
+            $log_file = __DIR__ . '/../storage/logs/security.log';
+            if (!is_dir(dirname($log_file))) {
+                $log_file = __DIR__ . '/../logs/security.log';
+            }
+            if (file_exists(dirname($log_file)) || mkdir(dirname($log_file), 0755, true)) {
+                @file_put_contents($log_file, $log_entry, FILE_APPEND | LOCK_EX);
+            }
+            return false;
+        }
+        
+        $GLOBALS['_security_logging_in_progress'] = true;
+        
         try {
-            // Check if security_logs table exists
-            $pdo = get_db_connection();
-            $checkTable = $pdo->query("SHOW TABLES LIKE 'security_logs'");
-            if ($checkTable->rowCount() === 0) {
-                // Table doesn't exist, fallback to file logging
-                if (function_exists('log_security_event')) {
-                    log_security_event($type, $details);
+            // Check if security_logs table exists (cache the result to avoid repeated queries)
+            static $table_exists = null;
+            static $table_checked = false;
+            
+            if (!$table_checked) {
+                try {
+                    $pdo = get_db_connection();
+                    if ($pdo) {
+                        // Use a more efficient query with error handling
+                        $checkTable = $pdo->query("SELECT COUNT(*) as cnt FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'security_logs'");
+                        if ($checkTable) {
+                            $result = $checkTable->fetch(PDO::FETCH_ASSOC);
+                            $table_exists = ($result && isset($result['cnt']) && $result['cnt'] > 0);
+                        } else {
+                            $table_exists = false;
+                        }
+                        $table_checked = true;
+                    } else {
+                        $table_exists = false;
+                        $table_checked = true;
+                    }
+                } catch (Exception $e) {
+                    // If we can't check, assume table doesn't exist
+                    $table_exists = false;
+                    $table_checked = true;
+                } catch (Error $e) {
+                    // Handle fatal errors (like memory exhaustion)
+                    $table_exists = false;
+                    $table_checked = true;
+                }
+            }
+            
+            if (!$table_exists) {
+                // Table doesn't exist, fallback to file logging directly (don't call log_security_event to avoid recursion)
+                $GLOBALS['_security_logging_in_progress'] = false;
+                // Write directly to file to avoid recursion
+                $log_entry = date('Y-m-d H:i:s') . " - " . $type . " - " . $details . " - IP: " . ($_SERVER['REMOTE_ADDR'] ?? 'Unknown') . "\n";
+                $log_file = __DIR__ . '/../storage/logs/security.log';
+                if (!is_dir(dirname($log_file))) {
+                    $log_file = __DIR__ . '/../logs/security.log';
+                }
+                if (file_exists(dirname($log_file)) || mkdir(dirname($log_file), 0755, true)) {
+                    @file_put_contents($log_file, $log_entry, FILE_APPEND | LOCK_EX);
                 }
                 return false;
             }
@@ -1708,20 +1794,44 @@ if (!function_exists('log_security_event_db')) {
                 $metadata
             ];
             
-            $result = execute_query($sql, $params);
-            
-            // Also log to file as backup
-            if (function_exists('log_security_event')) {
-                log_security_event($type, $details);
+            // Use direct PDO instead of execute_query to avoid potential recursion
+            try {
+                $pdo = get_db_connection();
+                $stmt = $pdo->prepare($sql);
+                $result = $stmt->execute($params);
+            } catch (PDOException $e) {
+                // If database insert fails, just log to file
+                $result = false;
             }
             
+            // Also log to file as backup (but only if not already logging to avoid recursion)
+            // Write directly to file instead of calling log_security_event
+            $log_entry = date('Y-m-d H:i:s') . " - " . $type . " - " . $details . " - IP: " . ($_SERVER['REMOTE_ADDR'] ?? 'Unknown') . "\n";
+            $log_file = __DIR__ . '/../storage/logs/security.log';
+            if (!is_dir(dirname($log_file))) {
+                $log_file = __DIR__ . '/../logs/security.log';
+            }
+            if (file_exists(dirname($log_file)) || mkdir(dirname($log_file), 0755, true)) {
+                @file_put_contents($log_file, $log_entry, FILE_APPEND | LOCK_EX);
+            }
+            
+            $logging_in_progress = false;
             return $result;
         } catch (Exception $e) {
-            // Fallback to file logging
-            if (function_exists('log_security_event')) {
-                log_security_event($type, $details);
+            $logging_in_progress = false;
+            // Fallback to file logging directly (don't call log_security_event to avoid recursion)
+            $log_entry = date('Y-m-d H:i:s') . " - " . $type . " - " . $details . " - IP: " . ($_SERVER['REMOTE_ADDR'] ?? 'Unknown') . "\n";
+            $log_file = __DIR__ . '/../storage/logs/security.log';
+            if (!is_dir(dirname($log_file))) {
+                $log_file = __DIR__ . '/../logs/security.log';
             }
-            error_log("Error logging security event: " . $e->getMessage());
+            if (file_exists(dirname($log_file)) || mkdir(dirname($log_file), 0755, true)) {
+                @file_put_contents($log_file, $log_entry, FILE_APPEND | LOCK_EX);
+            }
+            // Only log to error_log if it's not a memory issue
+            if (strpos($e->getMessage(), 'memory') === false) {
+                error_log("Error logging security event: " . $e->getMessage());
+            }
             return false;
         }
     }
