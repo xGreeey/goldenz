@@ -618,6 +618,79 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
         </div>
     </div>
 
+    <!-- Search and Filter Bar -->
+    <div class="card card-modern mb-4">
+        <div class="card-body-modern">
+            <form method="GET" action="" id="employeeFilterForm" class="row g-3">
+                <input type="hidden" name="page" value="employees">
+                <div class="col-md-4">
+                    <label class="form-label">Search Employees</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        <input type="text" 
+                               name="search" 
+                               id="employeeSearch"
+                               class="form-control" 
+                               placeholder="Search by name, employee number, post, or email..."
+                               value="<?php echo htmlspecialchars($search); ?>"
+                               autocomplete="off">
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Status</label>
+                    <select name="status" id="statusFilter" class="form-select">
+                        <option value="">All Statuses</option>
+                        <option value="Active" <?php echo $status_filter === 'Active' ? 'selected' : ''; ?>>Active</option>
+                        <option value="Inactive" <?php echo $status_filter === 'Inactive' ? 'selected' : ''; ?>>Inactive</option>
+                        <option value="Onboarding" <?php echo $status_filter === 'Onboarding' ? 'selected' : ''; ?>>Onboarding</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Employee Type</label>
+                    <select name="type" id="departmentFilter" class="form-select">
+                        <option value="">All Types</option>
+                        <?php
+                        // Get unique employee types
+                        $unique_types = [];
+                        foreach ($all_employees as $emp) {
+                            if (!empty($emp['employee_type'])) {
+                                $unique_types[$emp['employee_type']] = true;
+                            }
+                        }
+                        ksort($unique_types);
+                        foreach ($unique_types as $type => $val):
+                        ?>
+                            <option value="<?php echo htmlspecialchars($type); ?>" <?php echo $type_filter === $type ? 'selected' : ''; ?>>
+                                <?php echo htmlspecialchars($type); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Sort By</label>
+                    <select name="sort_by" id="sortBy" class="form-select">
+                        <option value="name" <?php echo $sort_by === 'name' ? 'selected' : ''; ?>>Name</option>
+                        <option value="license_exp" <?php echo $sort_by === 'license_exp' ? 'selected' : ''; ?>>License Expiration</option>
+                        <option value="status" <?php echo $sort_by === 'status' ? 'selected' : ''; ?>>Status</option>
+                        <option value="date_hired" <?php echo $sort_by === 'date_hired' ? 'selected' : ''; ?>>Date Hired</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Order</label>
+                    <select name="sort_order" id="sortOrder" class="form-select">
+                        <option value="asc" <?php echo $sort_order === 'asc' ? 'selected' : ''; ?>>Ascending</option>
+                        <option value="desc" <?php echo $sort_order === 'desc' ? 'selected' : ''; ?>>Descending</option>
+                    </select>
+                </div>
+                <div class="col-md-12 d-flex justify-content-end gap-2 mt-4">
+                    <button type="button" class="btn btn-outline-modern" id="clearFilters">
+                        <i class="fas fa-times me-2"></i>Clear Filters
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Action Buttons -->
     <div class="row g-4 mb-4">
         <div class="col-12">
@@ -659,6 +732,7 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
                                 <i class="fas fa-sort"></i>
                             </th>
                             <th>CREATED BY</th>
+                            <th>ACTIONS</th>
                             </tr>
                         </thead>
                     <tbody>
@@ -687,7 +761,7 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
                                 $rlm_indicator = !empty($employee['rlm_exp']) ? getLicenseExpirationIndicator($employee['rlm_exp']) : null;
                                 $rlm_formatted = !empty($employee['rlm_exp']) ? formatRLMExpiration($employee['rlm_exp']) : null;
                             ?>
-                            <tr class="employee-row" data-employee-id="<?php echo $employee['id']; ?>" style="cursor: pointer;">
+                            <tr class="employee-row" data-employee-id="<?php echo $employee['id']; ?>">
                                 <td onclick="event.stopPropagation();">
                                     <input type="checkbox" class="form-check-input employee-checkbox" value="<?php echo $employee['id']; ?>">
                                 </td>
@@ -807,6 +881,14 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
                                         }
                                         ?>
                                     </small>
+                                </td>
+                                <!-- Actions -->
+                                <td>
+                                    <a href="?page=view_employee&id=<?php echo $employee['id']; ?>" 
+                                       class="btn btn-sm btn-outline-modern" 
+                                       title="View Employee Details">
+                                        <i class="fas fa-eye me-1"></i>View
+                                    </a>
                                 </td>
                                 </tr>
                                 <?php endforeach; ?>
@@ -1481,25 +1563,21 @@ document.addEventListener('DOMContentLoaded', () => {
     if (document.getElementById('org-chart')?.classList.contains('active')) {
         tabManager.orgChartManager = new OrgChartManager();
     }
-    
-    // Handle employee row clicks to navigate to employee view page
-    document.querySelectorAll('.employee-row').forEach(row => {
-        row.addEventListener('click', function(e) {
-            // Don't trigger if clicking checkbox or other interactive elements
-            if (e.target.closest('input[type="checkbox"]') || 
-                e.target.closest('a') ||
-                e.target.closest('button')) {
-                return;
-            }
-            
-            const employeeId = this.dataset.employeeId;
-            if (employeeId) {
-                // Navigate to employee view page
-                window.location.href = `?page=view_employee&id=${employeeId}`;
-            }
-        });
-    });
 });
+
+// Also initialize immediately if DOM is already loaded (for cached pages)
+if (document.readyState !== 'loading') {
+    if (document.querySelector('.employees-table')) {
+        new EmployeeTableManager();
+    }
+    const tabManager = new TabManager();
+    if (document.getElementById('directory')?.classList.contains('active')) {
+        tabManager.directoryManager = new DirectoryManager();
+    }
+    if (document.getElementById('org-chart')?.classList.contains('active')) {
+        tabManager.orgChartManager = new OrgChartManager();
+    }
+}
 
 // Pagination functions
 function changePage(page) {
