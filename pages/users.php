@@ -385,6 +385,36 @@ $role_config = config('roles.roles', []);
     </div>
 </div>
 
+<!-- Futuristic Role Change Confirmation Modal -->
+<div class="modal fade" id="roleChangeConfirmModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content futuristic-modal">
+            <div class="futuristic-modal-header">
+                <div class="futuristic-icon-wrapper">
+                    <i class="fas fa-user-shield futuristic-icon"></i>
+                    <div class="futuristic-pulse"></div>
+                </div>
+                <h5 class="futuristic-modal-title">Confirm Role Change</h5>
+            </div>
+            <div class="futuristic-modal-body">
+                <p class="futuristic-message" id="roleChangeConfirmMessage"></p>
+                <div class="futuristic-info-box">
+                    <i class="fas fa-info-circle"></i>
+                    <span>This action will update the user's permissions and access levels.</span>
+                </div>
+            </div>
+            <div class="futuristic-modal-footer">
+                <button type="button" class="btn futuristic-btn-cancel" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Cancel
+                </button>
+                <button type="button" class="btn futuristic-btn-confirm" id="confirmRoleChangeBtn">
+                    <i class="fas fa-check me-2"></i>Confirm Change
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Create User Modal -->
 <div class="modal fade" id="createUserModal" tabindex="-1" aria-labelledby="createUserModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-scrollable" style="margin-top: 1rem;">
@@ -1025,6 +1055,287 @@ html[data-theme="dark"] .alert-info {
     color: var(--interface-text) !important;
 }
 
+/* Futuristic Role Change Confirmation Modal Styles */
+.futuristic-modal {
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.95) 100%);
+    border: none;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5),
+                0 0 0 1px rgba(99, 102, 241, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    overflow: hidden;
+    position: relative;
+}
+
+.futuristic-modal::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, 
+        rgba(99, 102, 241, 0.1) 0%, 
+        rgba(168, 85, 247, 0.1) 50%, 
+        rgba(236, 72, 153, 0.1) 100%);
+    opacity: 0.6;
+    z-index: 0;
+    animation: gradientShift 8s ease infinite;
+}
+
+@keyframes gradientShift {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 0.8; }
+}
+
+.futuristic-modal > * {
+    position: relative;
+    z-index: 1;
+}
+
+.futuristic-modal-header {
+    padding: 2rem 2rem 1rem;
+    text-align: center;
+    border-bottom: 1px solid rgba(99, 102, 241, 0.2);
+    background: linear-gradient(180deg, rgba(99, 102, 241, 0.1) 0%, transparent 100%);
+}
+
+.futuristic-icon-wrapper {
+    position: relative;
+    display: inline-block;
+    margin-bottom: 1rem;
+}
+
+.futuristic-icon {
+    font-size: 3rem;
+    color: #6366f1;
+    text-shadow: 0 0 20px rgba(99, 102, 241, 0.6),
+                 0 0 40px rgba(99, 102, 241, 0.4);
+    animation: iconPulse 2s ease-in-out infinite;
+    position: relative;
+    z-index: 2;
+}
+
+@keyframes iconPulse {
+    0%, 100% { 
+        transform: scale(1);
+        filter: brightness(1);
+    }
+    50% { 
+        transform: scale(1.1);
+        filter: brightness(1.3);
+    }
+}
+
+.futuristic-pulse {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80px;
+    height: 80px;
+    border: 2px solid rgba(99, 102, 241, 0.5);
+    border-radius: 50%;
+    animation: pulseRing 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulseRing {
+    0% {
+        transform: translate(-50%, -50%) scale(0.8);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(1.5);
+        opacity: 0;
+    }
+}
+
+.futuristic-modal-title {
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 1.5rem;
+    margin: 0;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+    letter-spacing: 0.5px;
+}
+
+.futuristic-modal-body {
+    padding: 2rem;
+    color: #e2e8f0;
+}
+
+.futuristic-message {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+    color: #cbd5e1;
+    text-align: center;
+}
+
+.futuristic-info-box {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: rgba(99, 102, 241, 0.1);
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    border-radius: 12px;
+    color: #a5b4fc;
+    font-size: 0.9rem;
+    backdrop-filter: blur(10px);
+}
+
+.futuristic-info-box i {
+    font-size: 1.2rem;
+    color: #818cf8;
+    flex-shrink: 0;
+}
+
+.futuristic-modal-footer {
+    padding: 1.5rem 2rem 2rem;
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    border-top: 1px solid rgba(99, 102, 241, 0.2);
+    background: linear-gradient(180deg, transparent 0%, rgba(99, 102, 241, 0.05) 100%);
+}
+
+.futuristic-btn-cancel,
+.futuristic-btn-confirm {
+    padding: 0.75rem 2rem;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: none;
+    position: relative;
+    overflow: hidden;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.futuristic-btn-cancel {
+    background: linear-gradient(135deg, rgba(71, 85, 105, 0.8) 0%, rgba(51, 65, 85, 0.8) 100%);
+    color: #cbd5e1;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.futuristic-btn-cancel:hover {
+    background: linear-gradient(135deg, rgba(71, 85, 105, 1) 0%, rgba(51, 65, 85, 1) 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+    color: #ffffff;
+}
+
+.futuristic-btn-confirm {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%);
+    color: #ffffff;
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4),
+                0 0 20px rgba(99, 102, 241, 0.2);
+    background-size: 200% 200%;
+    animation: gradientMove 3s ease infinite;
+}
+
+@keyframes gradientMove {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.futuristic-btn-confirm::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.5s;
+}
+
+.futuristic-btn-confirm:hover::before {
+    left: 100%;
+}
+
+.futuristic-btn-confirm:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 6px 25px rgba(99, 102, 241, 0.6),
+                0 0 30px rgba(139, 92, 246, 0.4);
+}
+
+.futuristic-btn-confirm:active {
+    transform: translateY(0) scale(0.98);
+}
+
+/* Ensure modal is clickable and properly positioned */
+#roleChangeConfirmModal.show {
+    display: block !important;
+    z-index: 1060 !important;
+    padding-right: 0 !important;
+}
+
+#roleChangeConfirmModal .modal-dialog {
+    transform: translate(0, 0) !important;
+    max-width: 500px;
+    margin: 1.75rem auto !important;
+    position: relative;
+    pointer-events: auto;
+}
+
+#roleChangeConfirmModal .futuristic-btn-cancel,
+#roleChangeConfirmModal .futuristic-btn-confirm {
+    pointer-events: auto !important;
+    cursor: pointer !important;
+    z-index: 10;
+    position: relative;
+}
+
+#roleChangeConfirmModal .modal-content {
+    pointer-events: auto !important;
+}
+
+/* Fix for modal appearing below screen */
+body.modal-open {
+    overflow: hidden;
+    padding-right: 0 !important;
+}
+
+/* Ensure backdrop doesn't block clicks */
+.modal-backdrop.show {
+    z-index: 1059 !important;
+    pointer-events: auto;
+}
+
+/* Responsive adjustments */
+@media (max-width: 576px) {
+    .futuristic-modal-header {
+        padding: 1.5rem 1.5rem 0.75rem;
+    }
+    
+    .futuristic-icon {
+        font-size: 2.5rem;
+    }
+    
+    .futuristic-modal-title {
+        font-size: 1.25rem;
+    }
+    
+    .futuristic-modal-body {
+        padding: 1.5rem;
+    }
+    
+    .futuristic-modal-footer {
+        padding: 1rem 1.5rem 1.5rem;
+        flex-direction: column;
+    }
+    
+    .futuristic-btn-cancel,
+    .futuristic-btn-confirm {
+        width: 100%;
+    }
+}
+
 </style>
 
 <script>
@@ -1375,14 +1686,8 @@ function initializeUsersPage() {
                 
                 this.classList.add('changed');
                 
-                // Show confirmation
-                if (confirm(`Change user role to "${newRoleText}"?`)) {
-                    updateUserRole(userId, newRole, this);
-                } else {
-                    // Revert selection
-                    this.value = this.getAttribute('data-original-value');
-                    this.classList.remove('changed');
-                }
+                // Show futuristic confirmation modal
+                showRoleChangeConfirm(userId, newRole, newRoleText, this);
             });
         }
     });
@@ -1684,6 +1989,117 @@ function deleteUser(userId, userName, buttonEl) {
         if (buttonEl) buttonEl.disabled = false;
         showNotification('An error occurred while deleting the user', 'error');
     });
+}
+
+function showRoleChangeConfirm(userId, newRole, newRoleText, selectElement) {
+    const modal = document.getElementById('roleChangeConfirmModal');
+    const messageEl = document.getElementById('roleChangeConfirmMessage');
+    const confirmBtn = document.getElementById('confirmRoleChangeBtn');
+    
+    if (!modal || !messageEl || !confirmBtn) {
+        // Fallback to default confirm if modal not found
+        if (confirm(`Change user role to "${newRoleText}"?`)) {
+            updateUserRole(userId, newRole, selectElement);
+        } else {
+            selectElement.value = selectElement.getAttribute('data-original-value');
+            selectElement.classList.remove('changed');
+        }
+        return;
+    }
+    
+    // Ensure modal is in the body (not hidden in a container)
+    if (modal.parentElement !== document.body) {
+        document.body.appendChild(modal);
+    }
+    
+    // Set message
+    messageEl.textContent = `Are you sure you want to change the user's role to "${newRoleText}"?`;
+    
+    // Store original values for cleanup
+    const originalConfirmBtn = confirmBtn;
+    const originalCancelBtn = modal.querySelector('.futuristic-btn-cancel');
+    
+    // Remove previous event listeners by cloning buttons
+    const newConfirmBtn = confirmBtn.cloneNode(true);
+    confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+    
+    // Handle confirmation
+    newConfirmBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        const modalInstance = bootstrap.Modal.getInstance(modal);
+        if (modalInstance) {
+            modalInstance.hide();
+        }
+        // Clean up backdrop
+        const backdrop = document.querySelector('.modal-backdrop');
+        if (backdrop) {
+            backdrop.remove();
+        }
+        updateUserRole(userId, newRole, selectElement);
+    });
+    
+    // Handle cancellation
+    const cancelBtn = modal.querySelector('.futuristic-btn-cancel');
+    if (cancelBtn) {
+        const newCancelBtn = cancelBtn.cloneNode(true);
+        cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+        
+        newCancelBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const modalInstance = bootstrap.Modal.getInstance(modal);
+            if (modalInstance) {
+                modalInstance.hide();
+            }
+            // Clean up backdrop
+            const backdrop = document.querySelector('.modal-backdrop');
+            if (backdrop) {
+                backdrop.remove();
+            }
+            selectElement.value = selectElement.getAttribute('data-original-value');
+            selectElement.classList.remove('changed');
+        });
+    }
+    
+    // Show modal using Bootstrap
+    const modalInstance = new bootstrap.Modal(modal, {
+        backdrop: 'static',
+        keyboard: false,
+        focus: true
+    });
+    
+    modalInstance.show();
+    
+    // Ensure modal is visible and properly positioned after Bootstrap shows it
+    setTimeout(() => {
+        modal.style.display = 'block';
+        modal.style.zIndex = '1060';
+        modal.classList.add('show');
+        modal.setAttribute('aria-hidden', 'false');
+        modal.setAttribute('aria-modal', 'true');
+        
+        const modalDialog = modal.querySelector('.modal-dialog');
+        if (modalDialog) {
+            modalDialog.style.zIndex = '1061';
+            modalDialog.style.pointerEvents = 'auto';
+            modalDialog.style.margin = '1.75rem auto';
+        }
+        
+        // Ensure backdrop exists and is properly positioned
+        let backdrop = document.querySelector('.modal-backdrop');
+        if (!backdrop) {
+            backdrop = document.createElement('div');
+            backdrop.className = 'modal-backdrop fade show';
+            document.body.appendChild(backdrop);
+        }
+        backdrop.style.zIndex = '1059';
+        backdrop.classList.add('show');
+        
+        // Add body class for modal-open
+        document.body.classList.add('modal-open');
+        document.body.style.overflow = 'hidden';
+    }, 50);
 }
 
 function showNotification(message, type) {

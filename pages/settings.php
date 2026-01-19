@@ -129,13 +129,6 @@ if (!empty($two_factor_secret)) {
                     <i class="fas fa-file-contract me-2"></i>User Policies
                 </button>
                 <button class="list-group-item list-group-item-action"
-                        id="system-config-tab"
-                        data-bs-toggle="list"
-                        data-bs-target="#system-config"
-                        type="button" role="tab">
-                    <i class="fas fa-sliders-h me-2"></i>System Configuration
-                </button>
-                <button class="list-group-item list-group-item-action"
                         id="module-access-tab"
                         data-bs-toggle="list"
                         data-bs-target="#module-access"
@@ -549,46 +542,6 @@ if (!empty($two_factor_secret)) {
                                 <button type="button" class="btn btn-primary-modern" disabled>
                                     <i class="fas fa-save me-2"></i>Save Policies (wire later)
                                 </button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- System Configuration -->
-                <div class="tab-pane fade" id="system-config" role="tabpanel">
-                    <div class="card card-modern mb-4">
-                        <div class="card-body-modern">
-                            <div class="card-header-modern mb-3">
-                                <h5 class="card-title-modern">System Configuration</h5>
-                                <small class="card-subtitle">High-level system options (environment, URLs, mail, etc.).</small>
-                            </div>
-
-                            <form class="row g-3">
-                                <div class="col-md-4">
-                                    <label class="form-label">Environment</label>
-                                    <select class="form-select" disabled>
-                                        <option selected>Production</option>
-                                        <option>Staging</option>
-                                        <option>Local</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-8">
-                                    <label class="form-label">Base URL</label>
-                                    <input type="text" class="form-control" placeholder="https://your-hr-system.example.com" disabled>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Outgoing Email (From)</label>
-                                    <input type="email" class="form-control" placeholder="no-reply@goldenz5.com" disabled>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">SMTP Host</label>
-                                    <input type="text" class="form-control" placeholder="smtp.example.com" disabled>
-                                </div>
-                                <div class="col-md-12">
-                                    <small class="text-muted">
-                                        These fields are UI-only placeholders. In production, back them with a config table or `.env` file.
-                                    </small>
-                                </div>
                             </form>
                         </div>
                     </div>
