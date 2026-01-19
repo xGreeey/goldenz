@@ -509,180 +509,227 @@ if (isset($_SESSION['employee_redirect_url'])) {
         </div>
     <?php endif; ?>
 
+    <!-- Clean Form CSS -->
+    <link rel="stylesheet" href="<?php echo asset_url('pages/css/page2-clean-form.css'); ?>">
+    
     <!-- Page 2 Form -->
     <div class="add-employee-form-wrapper">
-        <div class="form-header-compact">
-            <h3 class="form-title-compact">Employee Application Form - Page 2</h3>
-        </div>
         <form method="POST" id="page2EmployeeForm" enctype="multipart/form-data" action="?page=add_employee_page2" class="add-employee-form-compact" novalidate>
             <!-- Page 1 data is stored in session, will be combined with Page 2 data on save -->
                 
-                <!-- Employee Created By Info -->
-                <div class="alert alert-info">
-                    <span class="hr-icon hr-icon-message me-2"></span>
-                    <strong>Recorded By:</strong>&nbsp;<?php echo htmlspecialchars($current_user_name); ?><?php if ($current_user_department): ?> <?php echo htmlspecialchars($current_user_department); ?><?php endif; ?>
-                </div>
-
-                <!-- General Information Section -->
-                <div class="row g-3 mb-2">
-                    <div class="col-12">
-                        <h4 class="form-section-title">GENERAL INFORMATION</h4>
-                    </div>
+                <!-- General Information Section - Clean Layout -->
+                <div class="clean-form-page">
+                    <!-- Main Header -->
+                    <h1 class="clean-section-title" style="text-align: center; font-size: 16px; font-weight: 700; margin-bottom: 1.5rem; padding-bottom: 0.75rem; border-bottom: 2px solid #d1d5db;">General Information</h1>
                     
-                    <div class="col-12">
-                        <div class="form-group">
-                            <label class="form-label">1. How did you know of the vacancy in the AGENCY? <span class="text-danger">*</span></label>
-                            <div class="d-flex flex-wrap gap-3 align-items-baseline mb-2">
-                                <div class="form-check">
-                                    <input class="form-check-input vacancy-source-checkbox" type="checkbox" name="vacancy_source[]" id="vacancy_ads" value="Ads">
-                                    <label class="form-check-label" for="vacancy_ads">Ads</label>
+                    <!-- Question List -->
+                    <ul class="clean-question-list">
+                        <!-- Question 1 -->
+                        <li class="clean-question-item">
+                            <div class="clean-question-header">
+                                <div class="clean-question-text">
+                                    <span class="clean-question-number">1.</span>
+                                    <span>How did you know of the vacancy in the AGENCY?<span class="clean-question-required">*</span></span>
                                 </div>
-                                <div class="form-check">
-                                    <input class="form-check-input vacancy-source-checkbox" type="checkbox" name="vacancy_source[]" id="vacancy_walkin" value="Walk-in">
-                                    <label class="form-check-label" for="vacancy_walkin">Walk-in</label>
+                                <div class="clean-options-group">
+                                    <div class="clean-option-item">
+                                        <input class="form-check-input vacancy-source-checkbox" type="checkbox" name="vacancy_source[]" id="vacancy_ads" value="Ads">
+                                        <label class="clean-option-label" for="vacancy_ads">Ads</label>
+                                    </div>
+                                    <div class="clean-option-item">
+                                        <input class="form-check-input vacancy-source-checkbox" type="checkbox" name="vacancy_source[]" id="vacancy_walkin" value="Walk-in">
+                                        <label class="clean-option-label" for="vacancy_walkin">Walk-in</label>
+                                    </div>
+                                    <div class="clean-option-item">
+                                        <input class="form-check-input vacancy-source-checkbox" type="checkbox" name="vacancy_source[]" id="vacancy_referral" value="Referral">
+                                        <label class="clean-option-label" for="vacancy_referral">Referral</label>
+                                    </div>
                                 </div>
-                                <div class="form-check">
-                                    <input class="form-check-input vacancy-source-checkbox" type="checkbox" name="vacancy_source[]" id="vacancy_referral" value="Referral">
-                                    <label class="form-check-label" for="vacancy_referral">Referral (Name)</label>
-                                </div>
-                                <input type="text" class="form-control" id="referral_name" name="referral_name" placeholder="Name" style="max-width: 300px;">
                             </div>
-                            <small class="form-text text-muted">Please select at least one option.</small>
-                            <div class="invalid-feedback" id="vacancy_source_error" style="display: none;">Please select at least one option.</div>
-                        </div>
-                    </div>
+                            <div class="clean-detail-input">
+                                <input type="text" class="form-control" id="referral_name" name="referral_name" placeholder="If Referral, state name">
+                                <small class="form-text text-muted">Please select at least one option</small>
+                                <div class="invalid-feedback" id="vacancy_source_error" style="display: none;">Please select at least one option.</div>
+                            </div>
+                        </li>
 
-                    <div class="col-12">
-                        <div class="form-group">
-                            <label class="form-label">2. Do you know anyone from the AGENCY prior to your application? <span class="text-danger">*</span></label>
-                            <div class="d-flex flex-wrap gap-3 align-items-baseline mb-2">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="knows_agency_person" id="knows_yes" value="Yes" required>
-                                    <label class="form-check-label" for="knows_yes">Yes, state his/her name and your relationship with him/her</label>
+                        <!-- Question 2 -->
+                        <li class="clean-question-item">
+                            <div class="clean-question-header">
+                                <div class="clean-question-text">
+                                    <span class="clean-question-number">2.</span>
+                                    <span>Do you know anyone from the AGENCY prior to your application?<span class="clean-question-required">*</span></span>
                                 </div>
-                                <input type="text" class="form-control" id="agency_person_name" name="agency_person_name" placeholder="Name and relationship" style="max-width: 400px;">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="knows_agency_person" id="knows_no" value="No" required>
-                                    <label class="form-check-label" for="knows_no">No.</label>
+                                <div class="clean-options-group">
+                                    <div class="clean-option-item">
+                                        <input class="form-check-input" type="radio" name="knows_agency_person" id="knows_yes" value="Yes" required>
+                                        <label class="clean-option-label" for="knows_yes">Yes</label>
+                                    </div>
+                                    <div class="clean-option-item">
+                                        <input class="form-check-input" type="radio" name="knows_agency_person" id="knows_no" value="No" required>
+                                        <label class="clean-option-label" for="knows_no">No</label>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
+                            <div class="clean-detail-input">
+                                <input type="text" class="form-control" id="agency_person_name" name="agency_person_name" placeholder="If Yes, state his/her name and your relationship with him/her">
+                            </div>
+                        </li>
 
-                    <div class="col-12">
-                        <div class="form-group">
-                            <label class="form-label">3. Do you have any physical defect/s or chronic ailments? <span class="text-danger">*</span></label>
-                            <div class="d-flex flex-wrap gap-3 align-items-baseline mb-2">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="physical_defect" id="defect_yes" value="Yes" required>
-                                    <label class="form-check-label" for="defect_yes">Yes, please specify</label>
+                        <!-- Question 3 -->
+                        <li class="clean-question-item">
+                            <div class="clean-question-header">
+                                <div class="clean-question-text">
+                                    <span class="clean-question-number">3.</span>
+                                    <span>Do you have any physical defect/s or chronic ailments?<span class="clean-question-required">*</span></span>
                                 </div>
-                                <input type="text" class="form-control" id="physical_defect_specify" name="physical_defect_specify" placeholder="Specify" style="max-width: 400px;">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="physical_defect" id="defect_no" value="No" required>
-                                    <label class="form-check-label" for="defect_no">No.</label>
+                                <div class="clean-options-group">
+                                    <div class="clean-option-item">
+                                        <input class="form-check-input" type="radio" name="physical_defect" id="defect_yes" value="Yes" required>
+                                        <label class="clean-option-label" for="defect_yes">Yes</label>
+                                    </div>
+                                    <div class="clean-option-item">
+                                        <input class="form-check-input" type="radio" name="physical_defect" id="defect_no" value="No" required>
+                                        <label class="clean-option-label" for="defect_no">No</label>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
+                            <div class="clean-detail-input">
+                                <input type="text" class="form-control" id="physical_defect_specify" name="physical_defect_specify" placeholder="If Yes, please specify">
+                            </div>
+                        </li>
 
-                    <div class="col-12">
-                        <div class="form-group">
-                            <label class="form-label">4. Do you drive? <span class="text-danger">*</span></label>
-                            <div class="d-flex flex-wrap gap-3 align-items-baseline mb-2">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="drives" id="drives_yes" value="Yes" required>
-                                    <label class="form-check-label" for="drives_yes">Yes, Driver's License no. / Expiration Date:</label>
+                        <!-- Question 4 -->
+                        <li class="clean-question-item">
+                            <div class="clean-question-header">
+                                <div class="clean-question-text">
+                                    <span class="clean-question-number">4.</span>
+                                    <span>Do you drive?<span class="clean-question-required">*</span></span>
                                 </div>
-                                <input type="text" class="form-control" id="drivers_license_no" name="drivers_license_no" placeholder="License No." style="max-width: 180px;">
-                                <span style="margin: 0 5px;">/</span>
-                                <input type="text" class="form-control" id="drivers_license_exp" name="drivers_license_exp" placeholder="Expiration Date" style="max-width: 180px;">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="drives" id="drives_no" value="No" required>
-                                    <label class="form-check-label" for="drives_no">No.</label>
+                                <div class="clean-options-group">
+                                    <div class="clean-option-item">
+                                        <input class="form-check-input" type="radio" name="drives" id="drives_yes" value="Yes" required>
+                                        <label class="clean-option-label" for="drives_yes">Yes</label>
+                                    </div>
+                                    <div class="clean-option-item">
+                                        <input class="form-check-input" type="radio" name="drives" id="drives_no" value="No" required>
+                                        <label class="clean-option-label" for="drives_no">No</label>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
+                            <div class="clean-inline-inputs">
+                                <span class="clean-inline-label">If Yes, Driver's License No.</span>
+                                <input type="text" class="form-control" id="drivers_license_no" name="drivers_license_no" placeholder="License No." style="width: 200px;">
+                                <span class="clean-inline-label">Expiration Date</span>
+                                <input type="text" class="form-control" id="drivers_license_exp" name="drivers_license_exp" placeholder="MM/DD/YYYY" style="width: 150px;">
+                            </div>
+                        </li>
 
-                    <div class="col-12">
-                        <div class="form-group">
-                            <label class="form-label">5. Do you drink alcoholic beverages? <span class="text-danger">*</span></label>
-                            <div class="d-flex flex-wrap gap-3 align-items-baseline mb-2">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="drinks_alcohol" id="alcohol_yes" value="Yes" required>
-                                    <label class="form-check-label" for="alcohol_yes">Yes, how frequent?</label>
+                        <!-- Question 5 -->
+                        <li class="clean-question-item">
+                            <div class="clean-question-header">
+                                <div class="clean-question-text">
+                                    <span class="clean-question-number">5.</span>
+                                    <span>Do you drink alcoholic beverages?<span class="clean-question-required">*</span></span>
                                 </div>
-                                <input type="text" class="form-control" id="alcohol_frequency" name="alcohol_frequency" placeholder="Frequency" style="max-width: 300px;">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="drinks_alcohol" id="alcohol_no" value="No" required>
-                                    <label class="form-check-label" for="alcohol_no">No.</label>
+                                <div class="clean-options-group">
+                                    <div class="clean-option-item">
+                                        <input class="form-check-input" type="radio" name="drinks_alcohol" id="alcohol_yes" value="Yes" required>
+                                        <label class="clean-option-label" for="alcohol_yes">Yes</label>
+                                    </div>
+                                    <div class="clean-option-item">
+                                        <input class="form-check-input" type="radio" name="drinks_alcohol" id="alcohol_no" value="No" required>
+                                        <label class="clean-option-label" for="alcohol_no">No</label>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
+                            <div class="clean-detail-input">
+                                <input type="text" class="form-control" id="alcohol_frequency" name="alcohol_frequency" placeholder="If Yes, how frequent?">
+                            </div>
+                        </li>
 
-                    <div class="col-12">
-                        <div class="form-group">
-                            <label class="form-label">6. Are you taking prohibited drugs? <span class="text-danger">*</span></label>
-                            <div class="d-flex gap-3 align-items-baseline">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="prohibited_drugs" id="drugs_yes" value="Yes" required>
-                                    <label class="form-check-label" for="drugs_yes">Yes</label>
+                        <!-- Question 6 -->
+                        <li class="clean-question-item">
+                            <div class="clean-question-header">
+                                <div class="clean-question-text">
+                                    <span class="clean-question-number">6.</span>
+                                    <span>Are you taking prohibited drugs?<span class="clean-question-required">*</span></span>
                                 </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="prohibited_drugs" id="drugs_no" value="No" required>
-                                    <label class="form-check-label" for="drugs_no">No</label>
+                                <div class="clean-options-group">
+                                    <div class="clean-option-item">
+                                        <input class="form-check-input" type="radio" name="prohibited_drugs" id="drugs_yes" value="Yes" required>
+                                        <label class="clean-option-label" for="drugs_yes">Yes</label>
+                                    </div>
+                                    <div class="clean-option-item">
+                                        <input class="form-check-input" type="radio" name="prohibited_drugs" id="drugs_no" value="No" required>
+                                        <label class="clean-option-label" for="drugs_no">No</label>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
+                        </li>
 
-                    <div class="col-12">
-                        <div class="form-group">
-                            <label for="security_guard_experience" class="form-label">7. How long have you worked as a Security Guard?</label>
-                            <input type="text" class="form-control" id="security_guard_experience" name="security_guard_experience" placeholder="e.g., 2 years">
-                        </div>
-                    </div>
+                        <!-- Question 7 -->
+                        <li class="clean-question-item">
+                            <div class="clean-question-header">
+                                <div class="clean-question-text">
+                                    <span class="clean-question-number">7.</span>
+                                    <span>How long have you worked as a Security Guard?</span>
+                                </div>
+                            </div>
+                            <div class="clean-detail-input">
+                                <input type="text" class="form-control" id="security_guard_experience" name="security_guard_experience" placeholder="e.g., 2 years, 6 months">
+                            </div>
+                        </li>
 
-                    <div class="col-12">
-                        <div class="form-group">
-                            <label class="form-label">8. Have you ever been convicted of any <strong>OFFENSE (criminal or civil)</strong> before a court competent jurisdiction? <span class="text-danger">*</span></label>
-                            <div class="d-flex flex-wrap gap-3 align-items-baseline mb-2">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="convicted" id="convicted_yes" value="Yes" required>
-                                    <label class="form-check-label" for="convicted_yes">Yes, please specify</label>
+                        <!-- Question 8 -->
+                        <li class="clean-question-item">
+                            <div class="clean-question-header">
+                                <div class="clean-question-text">
+                                    <span class="clean-question-number">8.</span>
+                                    <span>Have you ever been convicted of any <strong>OFFENSE (criminal or civil)</strong> before a court competent jurisdiction?<span class="clean-question-required">*</span></span>
                                 </div>
-                                <input type="text" class="form-control" id="conviction_details" name="conviction_details" placeholder="Specify" style="max-width: 400px;">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="convicted" id="convicted_no" value="No" required>
-                                    <label class="form-check-label" for="convicted_no">No.</label>
+                                <div class="clean-options-group">
+                                    <div class="clean-option-item">
+                                        <input class="form-check-input" type="radio" name="convicted" id="convicted_yes" value="Yes" required>
+                                        <label class="clean-option-label" for="convicted_yes">Yes</label>
+                                    </div>
+                                    <div class="clean-option-item">
+                                        <input class="form-check-input" type="radio" name="convicted" id="convicted_no" value="No" required>
+                                        <label class="clean-option-label" for="convicted_no">No</label>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
+                            <div class="clean-detail-input">
+                                <input type="text" class="form-control" id="conviction_details" name="conviction_details" placeholder="If Yes, please specify">
+                            </div>
+                        </li>
 
-                    <div class="col-12">
-                        <div class="form-group">
-                            <label class="form-label">9. Have you filed any <strong>CRIMINAL / CIVIL CASE (labor)</strong> against any of your previous employer? <span class="text-danger">*</span></label>
-                            <div class="d-flex flex-wrap gap-3 align-items-baseline mb-2">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="filed_case" id="case_yes" value="Yes" required>
-                                    <label class="form-check-label" for="case_yes">Yes</label>
+                        <!-- Question 9 -->
+                        <li class="clean-question-item">
+                            <div class="clean-question-header">
+                                <div class="clean-question-text">
+                                    <span class="clean-question-number">9.</span>
+                                    <span>Have you filed any <strong>CRIMINAL / CIVIL CASE (labor)</strong> against any of your previous employer?<span class="clean-question-required">*</span></span>
                                 </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="filed_case" id="case_no" value="No" required>
-                                    <label class="form-check-label" for="case_no">No.</label>
+                                <div class="clean-options-group">
+                                    <div class="clean-option-item">
+                                        <input class="form-check-input" type="radio" name="filed_case" id="case_yes" value="Yes" required>
+                                        <label class="clean-option-label" for="case_yes">Yes</label>
+                                    </div>
+                                    <div class="clean-option-item">
+                                        <input class="form-check-input" type="radio" name="filed_case" id="case_no" value="No" required>
+                                        <label class="clean-option-label" for="case_no">No</label>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="d-flex flex-wrap gap-3 align-items-baseline">
-                                <label class="form-label mb-0">If YES, please specify:</label>
-                                <input type="text" class="form-control" id="case_specify" name="case_specify" placeholder="Specify case" style="max-width: 300px;">
-                                <label class="form-label mb-0">and what was your action after your termination?</label>
-                                <input type="text" class="form-control" id="action_after_termination" name="action_after_termination" placeholder="Action taken" style="max-width: 300px;">
+                            <div class="clean-inline-inputs">
+                                <span class="clean-inline-label">If YES, please specify:</span>
+                                <input type="text" class="form-control" id="case_specify" name="case_specify" placeholder="Specify case" style="flex: 1; min-width: 200px;">
+                                <span class="clean-inline-label">and what was your action after your termination?</span>
+                                <input type="text" class="form-control" id="action_after_termination" name="action_after_termination" placeholder="Action taken" style="flex: 1; min-width: 200px;">
                             </div>
-                        </div>
-                    </div>
+                        </li>
+                    </ul>
                 </div>
 
                 <!-- Specimen Signature and Initial Section -->
