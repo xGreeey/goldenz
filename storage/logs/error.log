@@ -9498,3 +9498,347 @@ Data: Array
 
 File: /hr-admin/index.php
 --------------------------------------------------------------------------------
+[2026-01-19 09:20:46] [add_employee_page] User: hradmin (ID: 25) | IP: 192.168.1.50
+Error: Storing employee data in session (deferred save)
+Data: Array
+(
+    [post_data] => Array
+        (
+            [employee_no] => 24328
+            [employee_type] => 
+            [status] => 
+            [surname] => USER
+            [first_name] => TEMP
+            [middle_name] => 
+            [birth_date] => 
+            [age] => 
+            [civil_status] => 
+            [birthplace] => 
+            [citizenship] => 
+            [address] => 
+            [provincial_address] => 
+            [height] => 
+            [weight] => 
+            [blood_type] => 
+            [religion] => 
+            [special_skills] => 
+            [spouse_name] => 
+            [spouse_age] => 
+            [spouse_occupation] => 
+            [father_name] => 
+            [father_age] => 
+            [father_occupation] => 
+            [mother_name] => 
+            [mother_age] => 
+            [mother_occupation] => 
+            [children_names] => 
+            [college_course] => 
+            [college_school_name] => 
+            [college_years] => 
+            [college_school_address] => 
+            [vocational_course] => 
+            [vocational_school_name] => 
+            [vocational_years] => 
+            [vocational_school_address] => 
+            [highschool_school_name] => 
+            [highschool_years] => 
+            [highschool_school_address] => 
+            [elementary_school_name] => 
+            [elementary_years] => 
+            [elementary_school_address] => 
+            [trainings] => Array
+                (
+                    [0] => Array
+                        (
+                            [title] => 
+                            [by] => 
+                            [date] => 
+                        )
+
+                )
+
+            [employment_history] => Array
+                (
+                    [0] => Array
+                        (
+                            [position] => 
+                            [company_name] => 
+                            [company_address] => 
+                            [company_phone] => 
+                            [period] => 
+                            [reason] => 
+                        )
+
+                )
+
+            [character_references] => Array
+                (
+                    [0] => Array
+                        (
+                            [name] => 
+                            [occupation] => 
+                            [company] => 
+                            [contact] => 
+                        )
+
+                    [1] => Array
+                        (
+                            [name] => 
+                            [occupation] => 
+                            [company] => 
+                            [contact] => 
+                        )
+
+                    [2] => Array
+                        (
+                            [name] => 
+                            [occupation] => 
+                            [company] => 
+                            [contact] => 
+                        )
+
+                )
+
+            [gov_exam_taken] => No
+            [gov_exams] => Array
+                (
+                    [0] => Array
+                        (
+                            [type] => 
+                            [score] => 
+                        )
+
+                )
+
+            [cp_number] => 
+            [contact_person] => 
+            [relationship] => 
+            [contact_person_number] => 
+            [contact_person_address] => 
+            [contact_person_alt] => 
+            [relationship_alt] => 
+            [contact_person_number_alt] => 
+            [contact_person_address_alt] => 
+            [post] => 
+            [date_hired] => 
+            [license_no] => 
+            [license_exp_date] => 
+            [rlm_exp] => 
+            [sss_no] => 
+            [pagibig_no] => 
+            [tin_number] => 
+            [philhealth_no] => 
+            [hr_remarks] => 
+            [status_summary] => 
+        )
+
+    [files] => Array
+        (
+            [employee_photo] => Array
+                (
+                    [name] => 
+                    [size] => 0
+                    [error] => 4
+                )
+
+        )
+
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 09:20:46] [add_employee_page] User: hradmin (ID: 25) | IP: 192.168.1.50
+Error: Page 1 data stored in session, redirecting to Page 2
+Data: Array
+(
+    [employee_no] => 24328
+    [employee_name] => TEMP USER
+    [has_photo] => no
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 09:20:46] [add_employee_page2] User: hradmin (ID: 25) | IP: 192.168.1.50
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 09:36:37] [add_employee_page] User: hradmin (ID: 25) | IP: 192.168.1.50
+Error: Storing employee data in session (deferred save)
+Data: Array
+(
+    [post_data] => Array
+        (
+            [employee_no] => 24328
+            [employee_type] => 
+            [status] => 
+            [surname] => USER
+            [first_name] => TEMP
+            [middle_name] => 
+            [birth_date] => 
+            [age] => 
+            [civil_status] => 
+            [birthplace] => 
+            [citizenship] => 
+            [address] => 
+            [provincial_address] => 
+            [height] => 
+            [weight] => 
+            [blood_type] => 
+            [religion] => 
+            [special_skills] => 
+            [spouse_name] => 
+            [spouse_age] => 
+            [spouse_occupation] => 
+            [father_name] => 
+            [father_age] => 
+            [father_occupation] => 
+            [mother_name] => 
+            [mother_age] => 
+            [mother_occupation] => 
+            [children_names] => 
+            [college_course] => 
+            [college_school_name] => 
+            [college_years] => 
+            [college_school_address] => 
+            [vocational_course] => 
+            [vocational_school_name] => 
+            [vocational_years] => 
+            [vocational_school_address] => 
+            [highschool_school_name] => 
+            [highschool_years] => 
+            [highschool_school_address] => 
+            [elementary_school_name] => 
+            [elementary_years] => 
+            [elementary_school_address] => 
+            [trainings] => Array
+                (
+                    [0] => Array
+                        (
+                            [title] => 
+                            [by] => 
+                            [date] => 
+                        )
+
+                )
+
+            [employment_history] => Array
+                (
+                    [0] => Array
+                        (
+                            [position] => 
+                            [company_name] => 
+                            [company_address] => 
+                            [company_phone] => 
+                            [period] => 
+                            [reason] => 
+                        )
+
+                )
+
+            [character_references] => Array
+                (
+                    [0] => Array
+                        (
+                            [name] => 
+                            [occupation] => 
+                            [company] => 
+                            [contact] => 
+                        )
+
+                    [1] => Array
+                        (
+                            [name] => 
+                            [occupation] => 
+                            [company] => 
+                            [contact] => 
+                        )
+
+                    [2] => Array
+                        (
+                            [name] => 
+                            [occupation] => 
+                            [company] => 
+                            [contact] => 
+                        )
+
+                )
+
+            [gov_exam_taken] => No
+            [gov_exams] => Array
+                (
+                    [0] => Array
+                        (
+                            [type] => 
+                            [score] => 
+                        )
+
+                )
+
+            [cp_number] => 
+            [contact_person] => 
+            [relationship] => 
+            [contact_person_number] => 
+            [contact_person_address] => 
+            [contact_person_alt] => 
+            [relationship_alt] => 
+            [contact_person_number_alt] => 
+            [contact_person_address_alt] => 
+            [post] => 
+            [date_hired] => 
+            [license_no] => 
+            [license_exp_date] => 
+            [rlm_exp] => 
+            [sss_no] => 
+            [pagibig_no] => 
+            [tin_number] => 
+            [philhealth_no] => 
+            [hr_remarks] => 
+            [status_summary] => 
+        )
+
+    [files] => Array
+        (
+            [employee_photo] => Array
+                (
+                    [name] => 
+                    [size] => 0
+                    [error] => 4
+                )
+
+        )
+
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 09:36:37] [add_employee_page] User: hradmin (ID: 25) | IP: 192.168.1.50
+Error: Page 1 data stored in session, redirecting to Page 2
+Data: Array
+(
+    [employee_no] => 24328
+    [employee_name] => TEMP USER
+    [has_photo] => no
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 09:36:37] [add_employee_page2] User: hradmin (ID: 25) | IP: 192.168.1.50
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
