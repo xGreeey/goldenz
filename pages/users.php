@@ -8,108 +8,8 @@ if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'super_admin') 
     exit;
 }
 
-// NOTE: POST/AJAX requests are handled by super-admin/index.php before this file is included
+// NOTE: POST/AJAX requests and GET requests for user details are handled by super-admin/index.php before this file is included
 // This file should only handle GET requests for displaying the page
-
-// Handle GET request for user details
-if (isset($_GET['action']) && $_GET['action'] === 'get_details' && isset($_GET['user_id'])) {
-    $user_id = (int)$_GET['user_id'];
-    $user = get_user_by_id($user_id);
-    
-    if (!$user) {
-        echo '<div class="alert alert-danger">User not found</div>';
-        exit;
-    }
-    
-    $role_config = config('roles.roles', []);
-    $user_role_config = $role_config[$user['role']] ?? [];
-    ?>
-    <div class="user-details">
-        <div class="row mb-4">
-            <div class="col-md-3 text-center">
-                <?php 
-                $avatar_url = !empty($user['avatar']) ? get_avatar_url($user['avatar']) : null;
-                if ($avatar_url): ?>
-                    <img src="<?php echo htmlspecialchars($avatar_url); ?>" 
-                         alt="<?php echo htmlspecialchars($user['name']); ?>" 
-                         class="mb-3 avatar-md">
-                <?php else: ?>
-                    <div class="avatar-placeholder avatar-placeholder-lg mx-auto mb-3">
-                        <?php echo strtoupper(substr($user['name'], 0, 1)); ?>
-                    </div>
-                <?php endif; ?>
-                <h5 class="mb-0"><?php echo htmlspecialchars($user['name']); ?></h5>
-                <small class="text-muted"><?php echo htmlspecialchars($user['username']); ?></small>
-            </div>
-            <div class="col-md-9">
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <label class="form-label text-muted small">Email</label>
-                        <div class="fw-semibold"><?php echo htmlspecialchars($user['email']); ?></div>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label text-muted small">Phone</label>
-                        <div class="fw-semibold"><?php echo htmlspecialchars($user['phone'] ?? '—'); ?></div>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label text-muted small">Role</label>
-                        <div>
-                            <span class="badge badge-primary-modern">
-                                <?php echo htmlspecialchars($user_role_config['name'] ?? ucfirst($user['role'])); ?>
-                            </span>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label text-muted small">Status</label>
-                        <div>
-                            <span class="badge badge-<?php echo $user['status'] === 'active' ? 'success' : ($user['status'] === 'suspended' ? 'danger' : 'secondary'); ?>-modern">
-                                <?php echo ucfirst($user['status']); ?>
-                            </span>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label text-muted small">Department</label>
-                        <div class="fw-semibold"><?php echo htmlspecialchars($user['department'] ?? '—'); ?></div>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label text-muted small">Last Login</label>
-                        <div class="fw-semibold">
-                            <?php echo $user['last_login'] ? date('M d, Y H:i', strtotime($user['last_login'])) : 'Never'; ?>
-                        </div>
-                    </div>
-                    <?php if ($user['employee_id']): ?>
-                        <div class="col-md-6">
-                            <label class="form-label text-muted small">Linked Employee</label>
-                            <div class="fw-semibold">
-                                #<?php echo htmlspecialchars($user['employee_no'] ?? $user['employee_id']); ?>
-                                - <?php echo htmlspecialchars(trim(($user['first_name'] ?? '') . ' ' . ($user['surname'] ?? ''))); ?>
-                            </div>
-                        </div>
-                    <?php endif; ?>
-                    <div class="col-md-6">
-                        <label class="form-label text-muted small">Account Created</label>
-                        <div class="fw-semibold"><?php echo date('M d, Y', strtotime($user['created_at'])); ?></div>
-                    </div>
-                    <?php if ($user['created_by_name']): ?>
-                        <div class="col-md-6">
-                            <label class="form-label text-muted small">Created By</label>
-                            <div class="fw-semibold"><?php echo htmlspecialchars($user['created_by_name']); ?></div>
-                        </div>
-                    <?php endif; ?>
-                </div>
-            </div>
-        </div>
-        
-        <?php if (!empty($user_role_config['description'])): ?>
-            <div class="mt-4">
-                <h6>Role Description</h6>
-                <p class="text-muted"><?php echo htmlspecialchars($user_role_config['description']); ?></p>
-            </div>
-        <?php endif; ?>
-    </div>
-    <?php
-    exit;
-}
 
 // Get filters from request
 $filters = [
@@ -380,6 +280,11 @@ $role_config = config('roles.roles', []);
                         <span class="visually-hidden">Loading...</span>
                     </div>
                 </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Close
+                </button>
             </div>
         </div>
     </div>
@@ -1309,7 +1214,8 @@ html[data-theme="dark"] .alert-info {
 
 /* Ensure modal is clickable and properly positioned */
 #roleChangeConfirmModal.show,
-#statusChangeConfirmModal.show {
+#statusChangeConfirmModal.show,
+#userDetailsModal.show {
     display: block !important;
     z-index: 1060 !important;
     padding-right: 0 !important;
@@ -1322,6 +1228,138 @@ html[data-theme="dark"] .alert-info {
     margin: 1.75rem auto !important;
     position: relative;
     pointer-events: auto;
+}
+
+#userDetailsModal .modal-dialog {
+    transform: translate(0, 0) !important;
+    margin: 1.75rem auto !important;
+    position: relative;
+    pointer-events: auto;
+    max-width: 900px;
+}
+
+#userDetailsModal {
+    z-index: 1060 !important;
+}
+
+#userDetailsModal .modal-content {
+    pointer-events: auto !important;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+#userDetailsModal .modal-header {
+    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1e293b 100%);
+    color: white;
+    border-bottom: none;
+    padding: 1rem 1.5rem;
+    border-radius: 12px 12px 0 0;
+}
+
+#userDetailsModal .modal-header .modal-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: white;
+}
+
+#userDetailsModal .modal-header .btn-close {
+    filter: invert(1) grayscale(100%) brightness(200%);
+    opacity: 1;
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    padding: 0.5rem;
+    width: 2rem;
+    height: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+#userDetailsModal .modal-header .btn-close:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+#userDetailsModal .modal-header .btn-close:focus {
+    box-shadow: 0 0 0 0.25rem rgba(255, 255, 255, 0.5);
+    outline: none;
+}
+
+#userDetailsModal .modal-body {
+    padding: 1.5rem;
+    max-height: calc(100vh - 250px);
+    overflow-y: auto;
+}
+
+#userDetailsModal .modal-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: flex-end;
+}
+
+#userDetailsModal .modal-footer .btn {
+    padding: 0.5rem 1.25rem;
+    font-size: 0.875rem;
+    border-radius: 6px;
+}
+
+#userDetailsModal .modal-footer .btn-secondary {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    color: white;
+}
+
+#userDetailsModal .modal-footer .btn-secondary:hover {
+    background-color: #5a6268;
+    border-color: #545b62;
+    color: white;
+}
+
+/* Ensure user details modal is properly centered and doesn't overlap header */
+#userDetailsModal.modal {
+    align-items: center !important;
+    padding-top: 2rem !important;
+    padding-bottom: 2rem !important;
+}
+
+#userDetailsModal .modal-dialog {
+    max-width: 900px;
+    width: 90%;
+    margin: 2rem auto !important;
+}
+
+/* Dark theme support for user details modal */
+html[data-theme="dark"] #userDetailsModal .modal-content {
+    background-color: #1a1d23 !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] #userDetailsModal .modal-header {
+    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1e293b 100%) !important;
+    border-bottom-color: var(--interface-border) !important;
+}
+
+html[data-theme="dark"] #userDetailsModal .modal-body {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] #userDetailsModal .modal-footer {
+    border-top-color: var(--interface-border) !important;
+    background-color: #1a1d23 !important;
+}
+
+html[data-theme="dark"] #userDetailsModal .modal-footer .btn-secondary {
+    background-color: #475569 !important;
+    border-color: #475569 !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] #userDetailsModal .modal-footer .btn-secondary:hover {
+    background-color: #334155 !important;
+    border-color: #334155 !important;
 }
 
 #roleChangeConfirmModal .futuristic-btn-cancel,
@@ -1976,16 +2014,57 @@ function updateUserStatus(userId, newStatus, selectElement) {
 function viewUserDetails(userId) {
     console.log('👁️ Viewing user details:', userId);
     
-    const modal = new bootstrap.Modal(document.getElementById('userDetailsModal'));
+    const modalElement = document.getElementById('userDetailsModal');
     const content = document.getElementById('userDetailsContent');
     
-    if (!content) {
-        console.error('User details content element not found');
+    if (!modalElement || !content) {
+        console.error('User details modal or content element not found');
         return;
     }
     
+    // Ensure modal is in the body (not hidden in a container)
+    if (modalElement.parentElement !== document.body) {
+        document.body.appendChild(modalElement);
+    }
+    
+    // Show loading state
     content.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>';
-    modal.show();
+    
+    // Get or create modal instance
+    let modalInstance = bootstrap.Modal.getInstance(modalElement);
+    if (modalInstance) {
+        modalInstance.dispose();
+    }
+    
+    // Create new modal instance WITHOUT backdrop to prevent blocking issues
+    modalInstance = new bootstrap.Modal(modalElement, {
+        backdrop: false,
+        keyboard: true,
+        focus: true
+    });
+    
+    // Show modal
+    modalInstance.show();
+    
+    // Ensure modal is visible and properly positioned after Bootstrap shows it
+    setTimeout(() => {
+        modalElement.style.display = 'block';
+        modalElement.style.zIndex = '1060';
+        modalElement.classList.add('show');
+        modalElement.setAttribute('aria-hidden', 'false');
+        modalElement.setAttribute('aria-modal', 'true');
+        
+        const modalDialog = modalElement.querySelector('.modal-dialog');
+        if (modalDialog) {
+            modalDialog.style.zIndex = '1061';
+            modalDialog.style.pointerEvents = 'auto';
+            modalDialog.style.margin = '1.75rem auto';
+            modalDialog.style.position = 'relative';
+        }
+        
+        // Remove any backdrops - we don't use them
+        cleanupAllBackdrops();
+    }, 50);
     
     // Fetch user details
     const url = window.location.pathname + '?page=users&action=get_details&user_id=' + userId;
