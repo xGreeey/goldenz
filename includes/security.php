@@ -179,30 +179,65 @@ if (!function_exists('generate_secure_string')) {
 
 // Log security events
 if (!function_exists('log_security_event')) {
+    // Initialize global flag if not set
+    if (!isset($GLOBALS['_security_logging_in_progress'])) {
+        $GLOBALS['_security_logging_in_progress'] = false;
+    }
+    
     function log_security_event($event, $details = '') {
-        // Try database logging first (for developer dashboard)
-        if (function_exists('log_security_event_db')) {
-            log_security_event_db($event, $details);
-        }
-        
-        // Also log system event
-        if (function_exists('log_system_event')) {
-            log_system_event('security', $event . ': ' . $details, 'security');
-        }
-        
-        if (class_exists('App\Core\Security')) {
-            \App\Core\Security::logSecurityEvent($event, $details);
+        // Prevent infinite recursion - check global flag (shared with log_security_event_db)
+        if (isset($GLOBALS['_security_logging_in_progress']) && $GLOBALS['_security_logging_in_progress']) {
+            // If already logging, just write to file directly
+            $log_entry = date('Y-m-d H:i:s') . " - " . $event . " - " . $details . " - IP: " . ($_SERVER['REMOTE_ADDR'] ?? 'Unknown') . "\n";
+            $log_file = __DIR__ . '/../storage/logs/security.log';
+            if (!is_dir(dirname($log_file))) {
+                $log_file = __DIR__ . '/../logs/security.log';
+            }
+            if (file_exists(dirname($log_file)) || mkdir(dirname($log_file), 0755, true)) {
+                @file_put_contents($log_file, $log_entry, FILE_APPEND | LOCK_EX);
+            }
             return;
         }
         
-        // Fallback to old file method
-        $log_entry = date('Y-m-d H:i:s') . " - " . $event . " - " . $details . " - IP: " . ($_SERVER['REMOTE_ADDR'] ?? 'Unknown') . "\n";
-        $log_file = __DIR__ . '/../storage/logs/security.log';
-        if (!is_dir(dirname($log_file))) {
-            $log_file = __DIR__ . '/../logs/security.log'; // Fallback to old location
-        }
-        if (file_exists(dirname($log_file)) || mkdir(dirname($log_file), 0755, true)) {
-            file_put_contents($log_file, $log_entry, FILE_APPEND | LOCK_EX);
+        $GLOBALS['_security_logging_in_progress'] = true;
+        
+        try {
+            // Try database logging first (for developer dashboard)
+            // Note: log_security_event_db will check the global flag and handle recursion
+            if (function_exists('log_security_event_db')) {
+                log_security_event_db($event, $details);
+            }
+            
+            // Also log system event (but check for recursion)
+            if (function_exists('log_system_event')) {
+                try {
+                    log_system_event('security', $event . ': ' . $details, 'security');
+                } catch (Exception $e) {
+                    // Silently fail to avoid recursion
+                }
+            }
+            
+            if (class_exists('App\Core\Security')) {
+                try {
+                    \App\Core\Security::logSecurityEvent($event, $details);
+                } catch (Exception $e) {
+                    // Silently fail to avoid recursion
+                }
+            }
+            
+            // Always log to file as backup
+            $log_entry = date('Y-m-d H:i:s') . " - " . $event . " - " . $details . " - IP: " . ($_SERVER['REMOTE_ADDR'] ?? 'Unknown') . "\n";
+            $log_file = __DIR__ . '/../storage/logs/security.log';
+            if (!is_dir(dirname($log_file))) {
+                $log_file = __DIR__ . '/../logs/security.log'; // Fallback to old location
+            }
+            if (file_exists(dirname($log_file)) || mkdir(dirname($log_file), 0755, true)) {
+                @file_put_contents($log_file, $log_entry, FILE_APPEND | LOCK_EX);
+            }
+        } catch (Exception $e) {
+            // Silently fail to avoid recursion
+        } finally {
+            $GLOBALS['_security_logging_in_progress'] = false;
         }
     }
 }
