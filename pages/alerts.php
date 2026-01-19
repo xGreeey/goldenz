@@ -354,68 +354,72 @@ try {
     </nav>
 
     <!-- Alert Statistics -->
-    <div class="row g-4">
-        <div class="col-xl-3 col-md-6">
-            <div class="card hrdash-stat hrdash-stat--primary">
-                <div class="hrdash-stat__header">
-                    <div class="hrdash-stat__label">Total Active</div>
-                </div>
-                <div class="hrdash-stat__content">
-                    <div class="hrdash-stat__value"><?php echo number_format($stats['total_active'] ?? 0); ?></div>
-                    <div class="hrdash-stat__trend hrdash-stat__trend--positive">
-                        <i class="fas fa-arrow-up"></i>
-                        <span>5%</span>
+    <div class="d-flex justify-content-center">
+        <div class="alert-stats-container">
+            <div class="row g-4">
+                <div class="col-xl-3 col-md-6">
+                    <div class="card hrdash-stat hrdash-stat--primary">
+                        <div class="hrdash-stat__header">
+                            <div class="hrdash-stat__label">Total Active</div>
+                        </div>
+                        <div class="hrdash-stat__content">
+                            <div class="hrdash-stat__value"><?php echo number_format($stats['total_active'] ?? 0); ?></div>
+                            <div class="hrdash-stat__trend hrdash-stat__trend--positive">
+                                <i class="fas fa-arrow-up"></i>
+                                <span>5%</span>
+                            </div>
+                        </div>
+                        <div class="hrdash-stat__meta">Open alerts currently active in the system.</div>
                     </div>
                 </div>
-                <div class="hrdash-stat__meta">Open alerts currently active in the system.</div>
-            </div>
-        </div>
-        
-        <div class="col-xl-3 col-md-6">
-            <div class="card hrdash-stat">
-                <div class="hrdash-stat__header">
-                    <div class="hrdash-stat__label">Urgent</div>
-                </div>
-                <div class="hrdash-stat__content">
-                    <div class="hrdash-stat__value"><?php echo number_format($stats['urgent'] ?? 0); ?></div>
-                    <div class="hrdash-stat__trend hrdash-stat__trend--negative">
-                        <i class="fas fa-arrow-down"></i>
-                        <span>2%</span>
+                
+                <div class="col-xl-3 col-md-6">
+                    <div class="card hrdash-stat">
+                        <div class="hrdash-stat__header">
+                            <div class="hrdash-stat__label">Urgent</div>
+                        </div>
+                        <div class="hrdash-stat__content">
+                            <div class="hrdash-stat__value"><?php echo number_format($stats['urgent'] ?? 0); ?></div>
+                            <div class="hrdash-stat__trend hrdash-stat__trend--negative">
+                                <i class="fas fa-arrow-down"></i>
+                                <span>2%</span>
+                            </div>
+                        </div>
+                        <div class="hrdash-stat__meta">Alerts that require immediate attention.</div>
                     </div>
                 </div>
-                <div class="hrdash-stat__meta">Alerts that require immediate attention.</div>
-            </div>
-        </div>
-        
-        <div class="col-xl-3 col-md-6">
-            <div class="card hrdash-stat">
-                <div class="hrdash-stat__header">
-                    <div class="hrdash-stat__label">High Priority</div>
-                </div>
-                <div class="hrdash-stat__content">
-                    <div class="hrdash-stat__value"><?php echo number_format($stats['high'] ?? 0); ?></div>
-                    <div class="hrdash-stat__trend hrdash-stat__trend--positive">
-                        <i class="fas fa-arrow-up"></i>
-                        <span>4%</span>
+                
+                <div class="col-xl-3 col-md-6">
+                    <div class="card hrdash-stat">
+                        <div class="hrdash-stat__header">
+                            <div class="hrdash-stat__label">High Priority</div>
+                        </div>
+                        <div class="hrdash-stat__content">
+                            <div class="hrdash-stat__value"><?php echo number_format($stats['high'] ?? 0); ?></div>
+                            <div class="hrdash-stat__trend hrdash-stat__trend--positive">
+                                <i class="fas fa-arrow-up"></i>
+                                <span>4%</span>
+                            </div>
+                        </div>
+                        <div class="hrdash-stat__meta">High priority alerts that need monitoring.</div>
                     </div>
                 </div>
-                <div class="hrdash-stat__meta">High priority alerts that need monitoring.</div>
-            </div>
-        </div>
-        
-        <div class="col-xl-3 col-md-6">
-            <div class="card hrdash-stat">
-                <div class="hrdash-stat__header">
-                    <div class="hrdash-stat__label">Overdue</div>
-                </div>
-                <div class="hrdash-stat__content">
-                    <div class="hrdash-stat__value"><?php echo number_format($stats['overdue'] ?? 0); ?></div>
-                    <div class="hrdash-stat__trend hrdash-stat__trend--negative">
-                        <i class="fas fa-arrow-down"></i>
-                        <span>3%</span>
+                
+                <div class="col-xl-3 col-md-6">
+                    <div class="card hrdash-stat">
+                        <div class="hrdash-stat__header">
+                            <div class="hrdash-stat__label">Overdue</div>
+                        </div>
+                        <div class="hrdash-stat__content">
+                            <div class="hrdash-stat__value"><?php echo number_format($stats['overdue'] ?? 0); ?></div>
+                            <div class="hrdash-stat__trend hrdash-stat__trend--negative">
+                                <i class="fas fa-arrow-down"></i>
+                                <span>3%</span>
+                            </div>
+                        </div>
+                        <div class="hrdash-stat__meta">Alerts that are past their due date.</div>
                     </div>
                 </div>
-                <div class="hrdash-stat__meta">Alerts that are past their due date.</div>
             </div>
         </div>
     </div>
@@ -1221,6 +1225,13 @@ body.portal-hr-admin .alerts-modern {
 }
 
 /* Header removal handled globally for HR-Admin (includes/header.php) */
+
+/* Alert Statistics Container - Centered and Compressed */
+.alert-stats-container {
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
+}
 
 /* Page Header */
 .page-header-modern {

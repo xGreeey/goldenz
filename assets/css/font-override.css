@@ -1254,18 +1254,19 @@ body.portal-hr-admin .filter-section {
    ============================================ */
 
 body.portal-hr-admin .hrdash-stat {
-    border: 1px solid #e2e8f0;
-    border-radius: 14px;
-    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+    border: 1.5px solid #e2e8f0;
+    border-radius: 20px;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08), 0 4px 16px rgba(15, 23, 42, 0.06);
     padding: 1.5rem;
     background: #ffffff;
     position: relative;
     overflow: hidden;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 body.portal-hr-admin .hrdash-stat:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.1);
+    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.12), 0 8px 24px rgba(15, 23, 42, 0.08);
+    border-color: #cbd5e1;
 }
 /* Primary card with blue gradient */
 body.portal-hr-admin .hrdash-stat--primary {
@@ -2314,8 +2315,7 @@ body.portal-super-admin .dashboard-modern .row [class*="col-"] {
 }
 
 /* Super Admin: Apply same card styling as HR Admin */
-body.portal-super-admin .card-modern,
-body.portal-super-admin .stat-card-modern {
+body.portal-super-admin .card-modern {
     border: none !important;
     border-radius: 16px !important;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.04) !important;
@@ -2324,10 +2324,67 @@ body.portal-super-admin .stat-card-modern {
     transition: all 0.3s ease !important;
 }
 
-body.portal-super-admin .card-modern:hover,
-body.portal-super-admin .stat-card-modern:hover {
+body.portal-super-admin .card-modern:hover {
     transform: translateY(-2px) !important;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08), 0 8px 24px rgba(0, 0, 0, 0.06) !important;
+}
+
+/* Team Statistics Cards - Box Style with Rounded Corners */
+body.portal-super-admin .stat-card-modern {
+    border: 1.5px solid #e2e8f0 !important;
+    border-radius: 20px !important;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08), 0 4px 16px rgba(15, 23, 42, 0.06) !important;
+    background: #ffffff !important;
+    overflow: hidden !important;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease !important;
+}
+
+body.portal-super-admin .stat-card-modern:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.12), 0 8px 24px rgba(15, 23, 42, 0.08) !important;
+    border-color: #cbd5e1 !important;
+}
+
+/* Team Statistics Container - Centered and Compressed */
+.team-stats-container {
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+/* Employee Statistics Container - Centered and Compressed */
+.employee-stats-container {
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+/* Checklist Statistics Container - Centered and Compressed */
+.checklist-stats-container {
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+/* Hiring Statistics Container - Centered and Compressed */
+.hiring-stats-container {
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+/* Onboarding Statistics Container - Centered and Compressed */
+.onboarding-stats-container {
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+/* Posts Statistics Container - Centered and Compressed */
+.posts-stats-container {
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
 }
 
 body.portal-super-admin .card-body-modern {
@@ -2963,6 +3020,163 @@ body.portal-super-admin .hrdash-welcome__subtitle {
     margin: 0 !important;
     color: #64748b !important;
     font-size: 0.9375rem !important;
+}
+
+/* Super Admin Breadcrumb Styles (inside container-fluid hrdash) */
+body.portal-super-admin .hr-breadcrumb {
+    margin-bottom: 1.5rem;
+    padding: 0 var(--hr-page-px);
+}
+
+body.portal-super-admin .hr-breadcrumb__list {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+body.portal-super-admin .hr-breadcrumb__item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+body.portal-super-admin .hr-breadcrumb__item + .hr-breadcrumb__item::before {
+    content: "/";
+    color: #9ca3af;
+    margin: 0 0.35rem;
+    font-size: 0.8rem;
+    line-height: 1;
+}
+
+body.portal-super-admin .hr-breadcrumb__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.75rem;
+    border-radius: 9999px;
+    border: none;
+    background: #f3f4f6;
+    color: #374151;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.8125rem;
+    line-height: 1;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+body.portal-super-admin .hr-breadcrumb__link:hover {
+    color: #111827;
+    background: #e5e7eb;
+    text-decoration: none;
+}
+
+body.portal-super-admin .hr-breadcrumb__current {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0;
+    border-radius: 0;
+    border: none;
+    background: transparent;
+    color: #2563eb;
+    font-weight: 600;
+    font-size: 0.8125rem;
+    line-height: 1;
+}
+
+/* Super Admin Alert Statistics Cards - Box Style with Rounded Corners */
+body.portal-super-admin .hrdash-stat {
+    border: 1.5px solid #e2e8f0;
+    border-radius: 20px;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08), 0 4px 16px rgba(15, 23, 42, 0.06);
+    padding: 1.5rem;
+    background: #ffffff;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+body.portal-super-admin .hrdash-stat:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.12), 0 8px 24px rgba(15, 23, 42, 0.08);
+    border-color: #cbd5e1;
+}
+
+/* Primary card with blue gradient */
+body.portal-super-admin .hrdash-stat--primary {
+    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1e293b 100%);
+    border: none;
+    color: #ffffff;
+    box-shadow: 0 2px 8px rgba(30, 58, 138, 0.15), 0 4px 16px rgba(30, 58, 138, 0.12);
+}
+
+body.portal-super-admin .hrdash-stat--primary:hover {
+    box-shadow: 0 4px 16px rgba(30, 58, 138, 0.2), 0 8px 24px rgba(30, 58, 138, 0.15);
+}
+
+body.portal-super-admin .hrdash-stat--primary .hrdash-stat__label,
+body.portal-super-admin .hrdash-stat--primary .hrdash-stat__value,
+body.portal-super-admin .hrdash-stat--primary .hrdash-stat__meta {
+    color: #ffffff;
+}
+
+body.portal-super-admin .hrdash-stat__header {
+    margin-bottom: 1rem;
+}
+
+body.portal-super-admin .hrdash-stat__label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #64748b;
+    margin: 0;
+}
+
+body.portal-super-admin .hrdash-stat__content {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+body.portal-super-admin .hrdash-stat__value {
+    font-size: 2.5rem;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    color: #0f172a;
+    margin: 0;
+}
+
+body.portal-super-admin .hrdash-stat__trend {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+body.portal-super-admin .hrdash-stat__trend--positive {
+    background: #dcfce7;
+    color: #16a34a;
+}
+
+body.portal-super-admin .hrdash-stat__trend--negative {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+body.portal-super-admin .hrdash-stat__meta {
+    margin: 0;
+    color: #64748b;
+    font-size: 0.8125rem;
+    line-height: 1.5;
 }
 
 body.portal-super-admin .hrdash-welcome__actions {
