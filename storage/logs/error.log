@@ -79042,3 +79042,2434 @@ Data: Array
 
 File: /golden/goldenz/hr-admin/index.php
 --------------------------------------------------------------------------------
+[2026-01-19 16:43:32] [execute_query] User: hradmin (ID: 25) | IP: ::1
+Error: PDO Error [42S22]: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ns.is_read' in 'field list'
+Data: Array
+(
+    [sql] => SELECT ea.*, e.employee_no, e.surname, e.first_name, e.middle_name, e.post, 
+                        u1.name as created_by_name, u2.name as acknowledged_by_name,
+                        ns.is_read, ns.is_dismissed, ns.read_at, ns.dismissed_at
+                 FROM employee_alerts ea
+                 JOIN employees e ON ea.employee_id = e.id
+                 LEFT JOIN users u1 ON ea.created_by = u1.id
+                 LEFT JOIN users u2 ON ea.acknowledged_by = u2.id WHERE ea.status = ? ORDER BY ea.priority DESC, ea.due_date ASC, ea.created_at DESC
+    [params] => Array
+        (
+            [0] => active
+        )
+
+    [trace] => #0 C:\xampp\htdocs\golden\goldenz\includes\database.php(117): PDO->prepare('SELECT ea.*, e....')
+#1 C:\xampp\htdocs\golden\goldenz\includes\database.php(1251): execute_query('SELECT ea.*, e....', Array)
+#2 C:\xampp\htdocs\golden\goldenz\includes\page-header.php(196): get_employee_alerts('active', NULL)
+#3 C:\xampp\htdocs\golden\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\golden\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /golden/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 16:43:32] [execute_query] User: hradmin (ID: 25) | IP: ::1
+Error: PDO Error [42S02]: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'goldenz_hr.notification_status' doesn't exist
+Data: Array
+(
+    [sql] => SELECT 
+                    e.id as employee_id,
+                    e.employee_no,
+                    e.surname,
+                    e.first_name,
+                    e.middle_name,
+                    e.post,
+                    e.license_no,
+                    e.license_exp_date,
+                    DATEDIFF(e.license_exp_date, ?) as days_until_expiry,
+                    CASE 
+                        WHEN e.license_exp_date < ? THEN 'expired'
+                        WHEN DATEDIFF(e.license_exp_date, ?) <= 7 THEN 'urgent'
+                        WHEN DATEDIFF(e.license_exp_date, ?) <= 15 THEN 'high'
+                        WHEN DATEDIFF(e.license_exp_date, ?) <= 30 THEN 'medium'
+                        ELSE 'low'
+                    END as priority,
+                    ns.is_read,
+                    ns.is_dismissed,
+                    ns.read_at,
+                    ns.dismissed_at
+                FROM employees e LEFT JOIN notification_status ns ON 
+                      CONCAT('license_', e.id) = ns.notification_id 
+                      AND ns.user_id = ? 
+                      AND ns.notification_type = 'license' WHERE e.status = 'Active'
+                  AND e.license_exp_date IS NOT NULL
+                  AND e.license_exp_date <= ? AND (ns.is_dismissed IS NULL OR ns.is_dismissed = 0) ORDER BY e.license_exp_date ASC
+    [params] => Array
+        (
+            [0] => 2026-01-19
+            [1] => 2026-01-19
+            [2] => 2026-01-19
+            [3] => 2026-01-19
+            [4] => 2026-01-19
+            [5] => 25
+            [6] => 2026-03-20
+        )
+
+    [trace] => #0 C:\xampp\htdocs\golden\goldenz\includes\database.php(117): PDO->prepare('SELECT \n       ...')
+#1 C:\xampp\htdocs\golden\goldenz\includes\database.php(4740): execute_query('SELECT \n       ...', Array)
+#2 C:\xampp\htdocs\golden\goldenz\includes\page-header.php(286): get_license_notifications(25, 60)
+#3 C:\xampp\htdocs\golden\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\golden\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /golden/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 16:43:32] [execute_query] User: hradmin (ID: 25) | IP: ::1
+Error: PDO Error [42S02]: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'goldenz_hr.notification_status' doesn't exist
+Data: Array
+(
+    [sql] => SELECT 
+                    e.id as employee_id,
+                    e.employee_no,
+                    e.surname,
+                    e.first_name,
+                    e.middle_name,
+                    e.post,
+                    e.rlm_exp,
+                    STR_TO_DATE(e.rlm_exp, '%m/%d/%Y') as rlm_exp_date,
+                    DATEDIFF(STR_TO_DATE(e.rlm_exp, '%m/%d/%Y'), ?) as days_until_expiry,
+                    CASE 
+                        WHEN STR_TO_DATE(e.rlm_exp, '%m/%d/%Y') < ? THEN 'expired'
+                        WHEN DATEDIFF(STR_TO_DATE(e.rlm_exp, '%m/%d/%Y'), ?) <= 14 THEN 'urgent'
+                        WHEN DATEDIFF(STR_TO_DATE(e.rlm_exp, '%m/%d/%Y'), ?) <= 30 THEN 'high'
+                        WHEN DATEDIFF(STR_TO_DATE(e.rlm_exp, '%m/%d/%Y'), ?) <= 45 THEN 'medium'
+                        ELSE 'low'
+                    END as priority,
+                    ns.is_read,
+                    ns.is_dismissed,
+                    ns.read_at,
+                    ns.dismissed_at
+                FROM employees e LEFT JOIN notification_status ns ON 
+                      CONCAT('clearance_', e.id) = ns.notification_id 
+                      AND ns.user_id = ? 
+                      AND ns.notification_type = 'clearance' WHERE e.status = 'Active'
+                  AND e.rlm_exp IS NOT NULL
+                  AND e.rlm_exp != ''
+                  AND STR_TO_DATE(e.rlm_exp, '%m/%d/%Y') IS NOT NULL
+                  AND STR_TO_DATE(e.rlm_exp, '%m/%d/%Y') <= ? AND (ns.is_dismissed IS NULL OR ns.is_dismissed = 0) ORDER BY STR_TO_DATE(e.rlm_exp, '%m/%d/%Y') ASC
+    [params] => Array
+        (
+            [0] => 2026-01-19
+            [1] => 2026-01-19
+            [2] => 2026-01-19
+            [3] => 2026-01-19
+            [4] => 2026-01-19
+            [5] => 25
+            [6] => 2026-03-20
+        )
+
+    [trace] => #0 C:\xampp\htdocs\golden\goldenz\includes\database.php(117): PDO->prepare('SELECT \n       ...')
+#1 C:\xampp\htdocs\golden\goldenz\includes\database.php(4804): execute_query('SELECT \n       ...', Array)
+#2 C:\xampp\htdocs\golden\goldenz\includes\page-header.php(296): get_clearance_notifications(25, 60)
+#3 C:\xampp\htdocs\golden\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\golden\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /golden/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 16:43:32] [execute_query] User: hradmin (ID: 25) | IP: ::1
+Error: PDO Error [42S02]: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'goldenz_hr.notification_status' doesn't exist
+Data: Array
+(
+    [sql] => SELECT ea.*, e.employee_no, e.surname, e.first_name, e.middle_name, e.post, 
+                        u1.name as created_by_name, u2.name as acknowledged_by_name,
+                        ns.is_read, ns.is_dismissed, ns.read_at, ns.dismissed_at
+                 FROM employee_alerts ea
+                 JOIN employees e ON ea.employee_id = e.id
+                 LEFT JOIN users u1 ON ea.created_by = u1.id
+                 LEFT JOIN users u2 ON ea.acknowledged_by = u2.id LEFT JOIN notification_status ns ON ea.id = ns.notification_id 
+                      AND ns.user_id = ? AND ns.notification_type = 'alert' WHERE ea.status = ? AND (ns.is_dismissed IS NULL OR ns.is_dismissed = 0) ORDER BY ea.priority DESC, ea.due_date ASC, ea.created_at DESC
+    [params] => Array
+        (
+            [0] => 25
+            [1] => active
+        )
+
+    [trace] => #0 C:\xampp\htdocs\golden\goldenz\includes\database.php(117): PDO->prepare('SELECT ea.*, e....')
+#1 C:\xampp\htdocs\golden\goldenz\includes\database.php(1251): execute_query('SELECT ea.*, e....', Array)
+#2 C:\xampp\htdocs\golden\goldenz\includes\page-header.php(306): get_employee_alerts('active', NULL, 25)
+#3 C:\xampp\htdocs\golden\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\golden\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /golden/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 16:43:32] [execute_query] User: hradmin (ID: 25) | IP: ::1
+Error: PDO Error [42S02]: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'goldenz_hr.notification_status' doesn't exist
+Data: Array
+(
+    [sql] => SELECT COUNT(*) as count
+                FROM employee_alerts ea
+                LEFT JOIN notification_status ns ON ea.id = ns.notification_id 
+                    AND ns.user_id = ? 
+                    AND ns.notification_type = 'alert'
+                WHERE ea.status = 'active' 
+                AND (ns.is_read IS NULL OR ns.is_read = 0)
+                AND (ns.is_dismissed IS NULL OR ns.is_dismissed = 0)
+    [params] => Array
+        (
+            [0] => 25
+        )
+
+    [trace] => #0 C:\xampp\htdocs\golden\goldenz\includes\database.php(117): PDO->prepare('SELECT COUNT(*)...')
+#1 C:\xampp\htdocs\golden\goldenz\includes\database.php(4828): execute_query('SELECT COUNT(*)...', Array)
+#2 C:\xampp\htdocs\golden\goldenz\includes\page-header.php(316): get_unread_notification_count(25)
+#3 C:\xampp\htdocs\golden\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\golden\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /golden/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 16:43:53] [execute_query] User: hradmin (ID: 25) | IP: ::1
+Error: PDO Error [42S22]: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ns.is_read' in 'field list'
+Data: Array
+(
+    [sql] => SELECT ea.*, e.employee_no, e.surname, e.first_name, e.middle_name, e.post, 
+                        u1.name as created_by_name, u2.name as acknowledged_by_name,
+                        ns.is_read, ns.is_dismissed, ns.read_at, ns.dismissed_at
+                 FROM employee_alerts ea
+                 JOIN employees e ON ea.employee_id = e.id
+                 LEFT JOIN users u1 ON ea.created_by = u1.id
+                 LEFT JOIN users u2 ON ea.acknowledged_by = u2.id WHERE ea.status = ? ORDER BY ea.priority DESC, ea.due_date ASC, ea.created_at DESC
+    [params] => Array
+        (
+            [0] => active
+        )
+
+    [trace] => #0 C:\xampp\htdocs\golden\goldenz\includes\database.php(117): PDO->prepare('SELECT ea.*, e....')
+#1 C:\xampp\htdocs\golden\goldenz\includes\database.php(1251): execute_query('SELECT ea.*, e....', Array)
+#2 C:\xampp\htdocs\golden\goldenz\includes\page-header.php(196): get_employee_alerts('active', NULL)
+#3 C:\xampp\htdocs\golden\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\golden\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /golden/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 16:43:53] [execute_query] User: hradmin (ID: 25) | IP: ::1
+Error: PDO Error [42S02]: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'goldenz_hr.notification_status' doesn't exist
+Data: Array
+(
+    [sql] => SELECT 
+                    e.id as employee_id,
+                    e.employee_no,
+                    e.surname,
+                    e.first_name,
+                    e.middle_name,
+                    e.post,
+                    e.license_no,
+                    e.license_exp_date,
+                    DATEDIFF(e.license_exp_date, ?) as days_until_expiry,
+                    CASE 
+                        WHEN e.license_exp_date < ? THEN 'expired'
+                        WHEN DATEDIFF(e.license_exp_date, ?) <= 7 THEN 'urgent'
+                        WHEN DATEDIFF(e.license_exp_date, ?) <= 15 THEN 'high'
+                        WHEN DATEDIFF(e.license_exp_date, ?) <= 30 THEN 'medium'
+                        ELSE 'low'
+                    END as priority,
+                    ns.is_read,
+                    ns.is_dismissed,
+                    ns.read_at,
+                    ns.dismissed_at
+                FROM employees e LEFT JOIN notification_status ns ON 
+                      CONCAT('license_', e.id) = ns.notification_id 
+                      AND ns.user_id = ? 
+                      AND ns.notification_type = 'license' WHERE e.status = 'Active'
+                  AND e.license_exp_date IS NOT NULL
+                  AND e.license_exp_date <= ? AND (ns.is_dismissed IS NULL OR ns.is_dismissed = 0) ORDER BY e.license_exp_date ASC
+    [params] => Array
+        (
+            [0] => 2026-01-19
+            [1] => 2026-01-19
+            [2] => 2026-01-19
+            [3] => 2026-01-19
+            [4] => 2026-01-19
+            [5] => 25
+            [6] => 2026-03-20
+        )
+
+    [trace] => #0 C:\xampp\htdocs\golden\goldenz\includes\database.php(117): PDO->prepare('SELECT \n       ...')
+#1 C:\xampp\htdocs\golden\goldenz\includes\database.php(4740): execute_query('SELECT \n       ...', Array)
+#2 C:\xampp\htdocs\golden\goldenz\includes\page-header.php(286): get_license_notifications(25, 60)
+#3 C:\xampp\htdocs\golden\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\golden\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /golden/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 16:43:53] [execute_query] User: hradmin (ID: 25) | IP: ::1
+Error: PDO Error [42S02]: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'goldenz_hr.notification_status' doesn't exist
+Data: Array
+(
+    [sql] => SELECT 
+                    e.id as employee_id,
+                    e.employee_no,
+                    e.surname,
+                    e.first_name,
+                    e.middle_name,
+                    e.post,
+                    e.rlm_exp,
+                    STR_TO_DATE(e.rlm_exp, '%m/%d/%Y') as rlm_exp_date,
+                    DATEDIFF(STR_TO_DATE(e.rlm_exp, '%m/%d/%Y'), ?) as days_until_expiry,
+                    CASE 
+                        WHEN STR_TO_DATE(e.rlm_exp, '%m/%d/%Y') < ? THEN 'expired'
+                        WHEN DATEDIFF(STR_TO_DATE(e.rlm_exp, '%m/%d/%Y'), ?) <= 14 THEN 'urgent'
+                        WHEN DATEDIFF(STR_TO_DATE(e.rlm_exp, '%m/%d/%Y'), ?) <= 30 THEN 'high'
+                        WHEN DATEDIFF(STR_TO_DATE(e.rlm_exp, '%m/%d/%Y'), ?) <= 45 THEN 'medium'
+                        ELSE 'low'
+                    END as priority,
+                    ns.is_read,
+                    ns.is_dismissed,
+                    ns.read_at,
+                    ns.dismissed_at
+                FROM employees e LEFT JOIN notification_status ns ON 
+                      CONCAT('clearance_', e.id) = ns.notification_id 
+                      AND ns.user_id = ? 
+                      AND ns.notification_type = 'clearance' WHERE e.status = 'Active'
+                  AND e.rlm_exp IS NOT NULL
+                  AND e.rlm_exp != ''
+                  AND STR_TO_DATE(e.rlm_exp, '%m/%d/%Y') IS NOT NULL
+                  AND STR_TO_DATE(e.rlm_exp, '%m/%d/%Y') <= ? AND (ns.is_dismissed IS NULL OR ns.is_dismissed = 0) ORDER BY STR_TO_DATE(e.rlm_exp, '%m/%d/%Y') ASC
+    [params] => Array
+        (
+            [0] => 2026-01-19
+            [1] => 2026-01-19
+            [2] => 2026-01-19
+            [3] => 2026-01-19
+            [4] => 2026-01-19
+            [5] => 25
+            [6] => 2026-03-20
+        )
+
+    [trace] => #0 C:\xampp\htdocs\golden\goldenz\includes\database.php(117): PDO->prepare('SELECT \n       ...')
+#1 C:\xampp\htdocs\golden\goldenz\includes\database.php(4804): execute_query('SELECT \n       ...', Array)
+#2 C:\xampp\htdocs\golden\goldenz\includes\page-header.php(296): get_clearance_notifications(25, 60)
+#3 C:\xampp\htdocs\golden\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\golden\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /golden/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 16:43:53] [execute_query] User: hradmin (ID: 25) | IP: ::1
+Error: PDO Error [42S02]: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'goldenz_hr.notification_status' doesn't exist
+Data: Array
+(
+    [sql] => SELECT ea.*, e.employee_no, e.surname, e.first_name, e.middle_name, e.post, 
+                        u1.name as created_by_name, u2.name as acknowledged_by_name,
+                        ns.is_read, ns.is_dismissed, ns.read_at, ns.dismissed_at
+                 FROM employee_alerts ea
+                 JOIN employees e ON ea.employee_id = e.id
+                 LEFT JOIN users u1 ON ea.created_by = u1.id
+                 LEFT JOIN users u2 ON ea.acknowledged_by = u2.id LEFT JOIN notification_status ns ON ea.id = ns.notification_id 
+                      AND ns.user_id = ? AND ns.notification_type = 'alert' WHERE ea.status = ? AND (ns.is_dismissed IS NULL OR ns.is_dismissed = 0) ORDER BY ea.priority DESC, ea.due_date ASC, ea.created_at DESC
+    [params] => Array
+        (
+            [0] => 25
+            [1] => active
+        )
+
+    [trace] => #0 C:\xampp\htdocs\golden\goldenz\includes\database.php(117): PDO->prepare('SELECT ea.*, e....')
+#1 C:\xampp\htdocs\golden\goldenz\includes\database.php(1251): execute_query('SELECT ea.*, e....', Array)
+#2 C:\xampp\htdocs\golden\goldenz\includes\page-header.php(306): get_employee_alerts('active', NULL, 25)
+#3 C:\xampp\htdocs\golden\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\golden\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /golden/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 16:43:53] [execute_query] User: hradmin (ID: 25) | IP: ::1
+Error: PDO Error [42S02]: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'goldenz_hr.notification_status' doesn't exist
+Data: Array
+(
+    [sql] => SELECT COUNT(*) as count
+                FROM employee_alerts ea
+                LEFT JOIN notification_status ns ON ea.id = ns.notification_id 
+                    AND ns.user_id = ? 
+                    AND ns.notification_type = 'alert'
+                WHERE ea.status = 'active' 
+                AND (ns.is_read IS NULL OR ns.is_read = 0)
+                AND (ns.is_dismissed IS NULL OR ns.is_dismissed = 0)
+    [params] => Array
+        (
+            [0] => 25
+        )
+
+    [trace] => #0 C:\xampp\htdocs\golden\goldenz\includes\database.php(117): PDO->prepare('SELECT COUNT(*)...')
+#1 C:\xampp\htdocs\golden\goldenz\includes\database.php(4828): execute_query('SELECT COUNT(*)...', Array)
+#2 C:\xampp\htdocs\golden\goldenz\includes\page-header.php(316): get_unread_notification_count(25)
+#3 C:\xampp\htdocs\golden\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\golden\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /golden/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 16:43:54] [execute_query] User: hradmin (ID: 25) | IP: ::1
+Error: PDO Error [42S22]: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ns.is_read' in 'field list'
+Data: Array
+(
+    [sql] => SELECT ea.*, e.employee_no, e.surname, e.first_name, e.middle_name, e.post, 
+                        u1.name as created_by_name, u2.name as acknowledged_by_name,
+                        ns.is_read, ns.is_dismissed, ns.read_at, ns.dismissed_at
+                 FROM employee_alerts ea
+                 JOIN employees e ON ea.employee_id = e.id
+                 LEFT JOIN users u1 ON ea.created_by = u1.id
+                 LEFT JOIN users u2 ON ea.acknowledged_by = u2.id WHERE ea.status = ? ORDER BY ea.priority DESC, ea.due_date ASC, ea.created_at DESC
+    [params] => Array
+        (
+            [0] => active
+        )
+
+    [trace] => #0 C:\xampp\htdocs\golden\goldenz\includes\database.php(117): PDO->prepare('SELECT ea.*, e....')
+#1 C:\xampp\htdocs\golden\goldenz\includes\database.php(1251): execute_query('SELECT ea.*, e....', Array)
+#2 C:\xampp\htdocs\golden\goldenz\includes\page-header.php(196): get_employee_alerts('active', NULL)
+#3 C:\xampp\htdocs\golden\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\golden\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /golden/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 16:43:55] [execute_query] User: hradmin (ID: 25) | IP: ::1
+Error: PDO Error [42S02]: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'goldenz_hr.notification_status' doesn't exist
+Data: Array
+(
+    [sql] => SELECT 
+                    e.id as employee_id,
+                    e.employee_no,
+                    e.surname,
+                    e.first_name,
+                    e.middle_name,
+                    e.post,
+                    e.license_no,
+                    e.license_exp_date,
+                    DATEDIFF(e.license_exp_date, ?) as days_until_expiry,
+                    CASE 
+                        WHEN e.license_exp_date < ? THEN 'expired'
+                        WHEN DATEDIFF(e.license_exp_date, ?) <= 7 THEN 'urgent'
+                        WHEN DATEDIFF(e.license_exp_date, ?) <= 15 THEN 'high'
+                        WHEN DATEDIFF(e.license_exp_date, ?) <= 30 THEN 'medium'
+                        ELSE 'low'
+                    END as priority,
+                    ns.is_read,
+                    ns.is_dismissed,
+                    ns.read_at,
+                    ns.dismissed_at
+                FROM employees e LEFT JOIN notification_status ns ON 
+                      CONCAT('license_', e.id) = ns.notification_id 
+                      AND ns.user_id = ? 
+                      AND ns.notification_type = 'license' WHERE e.status = 'Active'
+                  AND e.license_exp_date IS NOT NULL
+                  AND e.license_exp_date <= ? AND (ns.is_dismissed IS NULL OR ns.is_dismissed = 0) ORDER BY e.license_exp_date ASC
+    [params] => Array
+        (
+            [0] => 2026-01-19
+            [1] => 2026-01-19
+            [2] => 2026-01-19
+            [3] => 2026-01-19
+            [4] => 2026-01-19
+            [5] => 25
+            [6] => 2026-03-20
+        )
+
+    [trace] => #0 C:\xampp\htdocs\golden\goldenz\includes\database.php(117): PDO->prepare('SELECT \n       ...')
+#1 C:\xampp\htdocs\golden\goldenz\includes\database.php(4740): execute_query('SELECT \n       ...', Array)
+#2 C:\xampp\htdocs\golden\goldenz\includes\page-header.php(286): get_license_notifications(25, 60)
+#3 C:\xampp\htdocs\golden\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\golden\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /golden/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 16:43:55] [execute_query] User: hradmin (ID: 25) | IP: ::1
+Error: PDO Error [42S02]: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'goldenz_hr.notification_status' doesn't exist
+Data: Array
+(
+    [sql] => SELECT 
+                    e.id as employee_id,
+                    e.employee_no,
+                    e.surname,
+                    e.first_name,
+                    e.middle_name,
+                    e.post,
+                    e.rlm_exp,
+                    STR_TO_DATE(e.rlm_exp, '%m/%d/%Y') as rlm_exp_date,
+                    DATEDIFF(STR_TO_DATE(e.rlm_exp, '%m/%d/%Y'), ?) as days_until_expiry,
+                    CASE 
+                        WHEN STR_TO_DATE(e.rlm_exp, '%m/%d/%Y') < ? THEN 'expired'
+                        WHEN DATEDIFF(STR_TO_DATE(e.rlm_exp, '%m/%d/%Y'), ?) <= 14 THEN 'urgent'
+                        WHEN DATEDIFF(STR_TO_DATE(e.rlm_exp, '%m/%d/%Y'), ?) <= 30 THEN 'high'
+                        WHEN DATEDIFF(STR_TO_DATE(e.rlm_exp, '%m/%d/%Y'), ?) <= 45 THEN 'medium'
+                        ELSE 'low'
+                    END as priority,
+                    ns.is_read,
+                    ns.is_dismissed,
+                    ns.read_at,
+                    ns.dismissed_at
+                FROM employees e LEFT JOIN notification_status ns ON 
+                      CONCAT('clearance_', e.id) = ns.notification_id 
+                      AND ns.user_id = ? 
+                      AND ns.notification_type = 'clearance' WHERE e.status = 'Active'
+                  AND e.rlm_exp IS NOT NULL
+                  AND e.rlm_exp != ''
+                  AND STR_TO_DATE(e.rlm_exp, '%m/%d/%Y') IS NOT NULL
+                  AND STR_TO_DATE(e.rlm_exp, '%m/%d/%Y') <= ? AND (ns.is_dismissed IS NULL OR ns.is_dismissed = 0) ORDER BY STR_TO_DATE(e.rlm_exp, '%m/%d/%Y') ASC
+    [params] => Array
+        (
+            [0] => 2026-01-19
+            [1] => 2026-01-19
+            [2] => 2026-01-19
+            [3] => 2026-01-19
+            [4] => 2026-01-19
+            [5] => 25
+            [6] => 2026-03-20
+        )
+
+    [trace] => #0 C:\xampp\htdocs\golden\goldenz\includes\database.php(117): PDO->prepare('SELECT \n       ...')
+#1 C:\xampp\htdocs\golden\goldenz\includes\database.php(4804): execute_query('SELECT \n       ...', Array)
+#2 C:\xampp\htdocs\golden\goldenz\includes\page-header.php(296): get_clearance_notifications(25, 60)
+#3 C:\xampp\htdocs\golden\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\golden\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /golden/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 16:43:55] [execute_query] User: hradmin (ID: 25) | IP: ::1
+Error: PDO Error [42S02]: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'goldenz_hr.notification_status' doesn't exist
+Data: Array
+(
+    [sql] => SELECT ea.*, e.employee_no, e.surname, e.first_name, e.middle_name, e.post, 
+                        u1.name as created_by_name, u2.name as acknowledged_by_name,
+                        ns.is_read, ns.is_dismissed, ns.read_at, ns.dismissed_at
+                 FROM employee_alerts ea
+                 JOIN employees e ON ea.employee_id = e.id
+                 LEFT JOIN users u1 ON ea.created_by = u1.id
+                 LEFT JOIN users u2 ON ea.acknowledged_by = u2.id LEFT JOIN notification_status ns ON ea.id = ns.notification_id 
+                      AND ns.user_id = ? AND ns.notification_type = 'alert' WHERE ea.status = ? AND (ns.is_dismissed IS NULL OR ns.is_dismissed = 0) ORDER BY ea.priority DESC, ea.due_date ASC, ea.created_at DESC
+    [params] => Array
+        (
+            [0] => 25
+            [1] => active
+        )
+
+    [trace] => #0 C:\xampp\htdocs\golden\goldenz\includes\database.php(117): PDO->prepare('SELECT ea.*, e....')
+#1 C:\xampp\htdocs\golden\goldenz\includes\database.php(1251): execute_query('SELECT ea.*, e....', Array)
+#2 C:\xampp\htdocs\golden\goldenz\includes\page-header.php(306): get_employee_alerts('active', NULL, 25)
+#3 C:\xampp\htdocs\golden\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\golden\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /golden/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 16:43:55] [execute_query] User: hradmin (ID: 25) | IP: ::1
+Error: PDO Error [42S02]: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'goldenz_hr.notification_status' doesn't exist
+Data: Array
+(
+    [sql] => SELECT COUNT(*) as count
+                FROM employee_alerts ea
+                LEFT JOIN notification_status ns ON ea.id = ns.notification_id 
+                    AND ns.user_id = ? 
+                    AND ns.notification_type = 'alert'
+                WHERE ea.status = 'active' 
+                AND (ns.is_read IS NULL OR ns.is_read = 0)
+                AND (ns.is_dismissed IS NULL OR ns.is_dismissed = 0)
+    [params] => Array
+        (
+            [0] => 25
+        )
+
+    [trace] => #0 C:\xampp\htdocs\golden\goldenz\includes\database.php(117): PDO->prepare('SELECT COUNT(*)...')
+#1 C:\xampp\htdocs\golden\goldenz\includes\database.php(4828): execute_query('SELECT COUNT(*)...', Array)
+#2 C:\xampp\htdocs\golden\goldenz\includes\page-header.php(316): get_unread_notification_count(25)
+#3 C:\xampp\htdocs\golden\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\golden\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /golden/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 16:43:57] [execute_query] User: hradmin (ID: 25) | IP: ::1
+Error: PDO Error [42S22]: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ns.is_read' in 'field list'
+Data: Array
+(
+    [sql] => SELECT ea.*, e.employee_no, e.surname, e.first_name, e.middle_name, e.post, 
+                        u1.name as created_by_name, u2.name as acknowledged_by_name,
+                        ns.is_read, ns.is_dismissed, ns.read_at, ns.dismissed_at
+                 FROM employee_alerts ea
+                 JOIN employees e ON ea.employee_id = e.id
+                 LEFT JOIN users u1 ON ea.created_by = u1.id
+                 LEFT JOIN users u2 ON ea.acknowledged_by = u2.id WHERE ea.status = ? ORDER BY ea.priority DESC, ea.due_date ASC, ea.created_at DESC
+    [params] => Array
+        (
+            [0] => active
+        )
+
+    [trace] => #0 C:\xampp\htdocs\golden\goldenz\includes\database.php(117): PDO->prepare('SELECT ea.*, e....')
+#1 C:\xampp\htdocs\golden\goldenz\includes\database.php(1251): execute_query('SELECT ea.*, e....', Array)
+#2 C:\xampp\htdocs\golden\goldenz\includes\page-header.php(196): get_employee_alerts('active', NULL)
+#3 C:\xampp\htdocs\golden\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\golden\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /golden/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 16:43:57] [execute_query] User: hradmin (ID: 25) | IP: ::1
+Error: PDO Error [42S02]: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'goldenz_hr.notification_status' doesn't exist
+Data: Array
+(
+    [sql] => SELECT 
+                    e.id as employee_id,
+                    e.employee_no,
+                    e.surname,
+                    e.first_name,
+                    e.middle_name,
+                    e.post,
+                    e.license_no,
+                    e.license_exp_date,
+                    DATEDIFF(e.license_exp_date, ?) as days_until_expiry,
+                    CASE 
+                        WHEN e.license_exp_date < ? THEN 'expired'
+                        WHEN DATEDIFF(e.license_exp_date, ?) <= 7 THEN 'urgent'
+                        WHEN DATEDIFF(e.license_exp_date, ?) <= 15 THEN 'high'
+                        WHEN DATEDIFF(e.license_exp_date, ?) <= 30 THEN 'medium'
+                        ELSE 'low'
+                    END as priority,
+                    ns.is_read,
+                    ns.is_dismissed,
+                    ns.read_at,
+                    ns.dismissed_at
+                FROM employees e LEFT JOIN notification_status ns ON 
+                      CONCAT('license_', e.id) = ns.notification_id 
+                      AND ns.user_id = ? 
+                      AND ns.notification_type = 'license' WHERE e.status = 'Active'
+                  AND e.license_exp_date IS NOT NULL
+                  AND e.license_exp_date <= ? AND (ns.is_dismissed IS NULL OR ns.is_dismissed = 0) ORDER BY e.license_exp_date ASC
+    [params] => Array
+        (
+            [0] => 2026-01-19
+            [1] => 2026-01-19
+            [2] => 2026-01-19
+            [3] => 2026-01-19
+            [4] => 2026-01-19
+            [5] => 25
+            [6] => 2026-03-20
+        )
+
+    [trace] => #0 C:\xampp\htdocs\golden\goldenz\includes\database.php(117): PDO->prepare('SELECT \n       ...')
+#1 C:\xampp\htdocs\golden\goldenz\includes\database.php(4740): execute_query('SELECT \n       ...', Array)
+#2 C:\xampp\htdocs\golden\goldenz\includes\page-header.php(286): get_license_notifications(25, 60)
+#3 C:\xampp\htdocs\golden\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\golden\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /golden/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 16:43:57] [execute_query] User: hradmin (ID: 25) | IP: ::1
+Error: PDO Error [42S02]: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'goldenz_hr.notification_status' doesn't exist
+Data: Array
+(
+    [sql] => SELECT 
+                    e.id as employee_id,
+                    e.employee_no,
+                    e.surname,
+                    e.first_name,
+                    e.middle_name,
+                    e.post,
+                    e.rlm_exp,
+                    STR_TO_DATE(e.rlm_exp, '%m/%d/%Y') as rlm_exp_date,
+                    DATEDIFF(STR_TO_DATE(e.rlm_exp, '%m/%d/%Y'), ?) as days_until_expiry,
+                    CASE 
+                        WHEN STR_TO_DATE(e.rlm_exp, '%m/%d/%Y') < ? THEN 'expired'
+                        WHEN DATEDIFF(STR_TO_DATE(e.rlm_exp, '%m/%d/%Y'), ?) <= 14 THEN 'urgent'
+                        WHEN DATEDIFF(STR_TO_DATE(e.rlm_exp, '%m/%d/%Y'), ?) <= 30 THEN 'high'
+                        WHEN DATEDIFF(STR_TO_DATE(e.rlm_exp, '%m/%d/%Y'), ?) <= 45 THEN 'medium'
+                        ELSE 'low'
+                    END as priority,
+                    ns.is_read,
+                    ns.is_dismissed,
+                    ns.read_at,
+                    ns.dismissed_at
+                FROM employees e LEFT JOIN notification_status ns ON 
+                      CONCAT('clearance_', e.id) = ns.notification_id 
+                      AND ns.user_id = ? 
+                      AND ns.notification_type = 'clearance' WHERE e.status = 'Active'
+                  AND e.rlm_exp IS NOT NULL
+                  AND e.rlm_exp != ''
+                  AND STR_TO_DATE(e.rlm_exp, '%m/%d/%Y') IS NOT NULL
+                  AND STR_TO_DATE(e.rlm_exp, '%m/%d/%Y') <= ? AND (ns.is_dismissed IS NULL OR ns.is_dismissed = 0) ORDER BY STR_TO_DATE(e.rlm_exp, '%m/%d/%Y') ASC
+    [params] => Array
+        (
+            [0] => 2026-01-19
+            [1] => 2026-01-19
+            [2] => 2026-01-19
+            [3] => 2026-01-19
+            [4] => 2026-01-19
+            [5] => 25
+            [6] => 2026-03-20
+        )
+
+    [trace] => #0 C:\xampp\htdocs\golden\goldenz\includes\database.php(117): PDO->prepare('SELECT \n       ...')
+#1 C:\xampp\htdocs\golden\goldenz\includes\database.php(4804): execute_query('SELECT \n       ...', Array)
+#2 C:\xampp\htdocs\golden\goldenz\includes\page-header.php(296): get_clearance_notifications(25, 60)
+#3 C:\xampp\htdocs\golden\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\golden\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /golden/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 16:43:57] [execute_query] User: hradmin (ID: 25) | IP: ::1
+Error: PDO Error [42S02]: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'goldenz_hr.notification_status' doesn't exist
+Data: Array
+(
+    [sql] => SELECT ea.*, e.employee_no, e.surname, e.first_name, e.middle_name, e.post, 
+                        u1.name as created_by_name, u2.name as acknowledged_by_name,
+                        ns.is_read, ns.is_dismissed, ns.read_at, ns.dismissed_at
+                 FROM employee_alerts ea
+                 JOIN employees e ON ea.employee_id = e.id
+                 LEFT JOIN users u1 ON ea.created_by = u1.id
+                 LEFT JOIN users u2 ON ea.acknowledged_by = u2.id LEFT JOIN notification_status ns ON ea.id = ns.notification_id 
+                      AND ns.user_id = ? AND ns.notification_type = 'alert' WHERE ea.status = ? AND (ns.is_dismissed IS NULL OR ns.is_dismissed = 0) ORDER BY ea.priority DESC, ea.due_date ASC, ea.created_at DESC
+    [params] => Array
+        (
+            [0] => 25
+            [1] => active
+        )
+
+    [trace] => #0 C:\xampp\htdocs\golden\goldenz\includes\database.php(117): PDO->prepare('SELECT ea.*, e....')
+#1 C:\xampp\htdocs\golden\goldenz\includes\database.php(1251): execute_query('SELECT ea.*, e....', Array)
+#2 C:\xampp\htdocs\golden\goldenz\includes\page-header.php(306): get_employee_alerts('active', NULL, 25)
+#3 C:\xampp\htdocs\golden\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\golden\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /golden/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 16:43:57] [execute_query] User: hradmin (ID: 25) | IP: ::1
+Error: PDO Error [42S02]: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'goldenz_hr.notification_status' doesn't exist
+Data: Array
+(
+    [sql] => SELECT COUNT(*) as count
+                FROM employee_alerts ea
+                LEFT JOIN notification_status ns ON ea.id = ns.notification_id 
+                    AND ns.user_id = ? 
+                    AND ns.notification_type = 'alert'
+                WHERE ea.status = 'active' 
+                AND (ns.is_read IS NULL OR ns.is_read = 0)
+                AND (ns.is_dismissed IS NULL OR ns.is_dismissed = 0)
+    [params] => Array
+        (
+            [0] => 25
+        )
+
+    [trace] => #0 C:\xampp\htdocs\golden\goldenz\includes\database.php(117): PDO->prepare('SELECT COUNT(*)...')
+#1 C:\xampp\htdocs\golden\goldenz\includes\database.php(4828): execute_query('SELECT COUNT(*)...', Array)
+#2 C:\xampp\htdocs\golden\goldenz\includes\page-header.php(316): get_unread_notification_count(25)
+#3 C:\xampp\htdocs\golden\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\golden\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /golden/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 16:43:58] [execute_query] User: hradmin (ID: 25) | IP: ::1
+Error: PDO Error [42S22]: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ns.is_read' in 'field list'
+Data: Array
+(
+    [sql] => SELECT ea.*, e.employee_no, e.surname, e.first_name, e.middle_name, e.post, 
+                        u1.name as created_by_name, u2.name as acknowledged_by_name,
+                        ns.is_read, ns.is_dismissed, ns.read_at, ns.dismissed_at
+                 FROM employee_alerts ea
+                 JOIN employees e ON ea.employee_id = e.id
+                 LEFT JOIN users u1 ON ea.created_by = u1.id
+                 LEFT JOIN users u2 ON ea.acknowledged_by = u2.id WHERE ea.status = ? ORDER BY ea.priority DESC, ea.due_date ASC, ea.created_at DESC
+    [params] => Array
+        (
+            [0] => active
+        )
+
+    [trace] => #0 C:\xampp\htdocs\golden\goldenz\includes\database.php(117): PDO->prepare('SELECT ea.*, e....')
+#1 C:\xampp\htdocs\golden\goldenz\includes\database.php(1251): execute_query('SELECT ea.*, e....', Array)
+#2 C:\xampp\htdocs\golden\goldenz\includes\page-header.php(196): get_employee_alerts('active', NULL)
+#3 C:\xampp\htdocs\golden\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\golden\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /golden/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 16:43:58] [execute_query] User: hradmin (ID: 25) | IP: ::1
+Error: PDO Error [42S02]: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'goldenz_hr.notification_status' doesn't exist
+Data: Array
+(
+    [sql] => SELECT 
+                    e.id as employee_id,
+                    e.employee_no,
+                    e.surname,
+                    e.first_name,
+                    e.middle_name,
+                    e.post,
+                    e.license_no,
+                    e.license_exp_date,
+                    DATEDIFF(e.license_exp_date, ?) as days_until_expiry,
+                    CASE 
+                        WHEN e.license_exp_date < ? THEN 'expired'
+                        WHEN DATEDIFF(e.license_exp_date, ?) <= 7 THEN 'urgent'
+                        WHEN DATEDIFF(e.license_exp_date, ?) <= 15 THEN 'high'
+                        WHEN DATEDIFF(e.license_exp_date, ?) <= 30 THEN 'medium'
+                        ELSE 'low'
+                    END as priority,
+                    ns.is_read,
+                    ns.is_dismissed,
+                    ns.read_at,
+                    ns.dismissed_at
+                FROM employees e LEFT JOIN notification_status ns ON 
+                      CONCAT('license_', e.id) = ns.notification_id 
+                      AND ns.user_id = ? 
+                      AND ns.notification_type = 'license' WHERE e.status = 'Active'
+                  AND e.license_exp_date IS NOT NULL
+                  AND e.license_exp_date <= ? AND (ns.is_dismissed IS NULL OR ns.is_dismissed = 0) ORDER BY e.license_exp_date ASC
+    [params] => Array
+        (
+            [0] => 2026-01-19
+            [1] => 2026-01-19
+            [2] => 2026-01-19
+            [3] => 2026-01-19
+            [4] => 2026-01-19
+            [5] => 25
+            [6] => 2026-03-20
+        )
+
+    [trace] => #0 C:\xampp\htdocs\golden\goldenz\includes\database.php(117): PDO->prepare('SELECT \n       ...')
+#1 C:\xampp\htdocs\golden\goldenz\includes\database.php(4740): execute_query('SELECT \n       ...', Array)
+#2 C:\xampp\htdocs\golden\goldenz\includes\page-header.php(286): get_license_notifications(25, 60)
+#3 C:\xampp\htdocs\golden\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\golden\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /golden/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 16:43:58] [execute_query] User: hradmin (ID: 25) | IP: ::1
+Error: PDO Error [42S02]: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'goldenz_hr.notification_status' doesn't exist
+Data: Array
+(
+    [sql] => SELECT 
+                    e.id as employee_id,
+                    e.employee_no,
+                    e.surname,
+                    e.first_name,
+                    e.middle_name,
+                    e.post,
+                    e.rlm_exp,
+                    STR_TO_DATE(e.rlm_exp, '%m/%d/%Y') as rlm_exp_date,
+                    DATEDIFF(STR_TO_DATE(e.rlm_exp, '%m/%d/%Y'), ?) as days_until_expiry,
+                    CASE 
+                        WHEN STR_TO_DATE(e.rlm_exp, '%m/%d/%Y') < ? THEN 'expired'
+                        WHEN DATEDIFF(STR_TO_DATE(e.rlm_exp, '%m/%d/%Y'), ?) <= 14 THEN 'urgent'
+                        WHEN DATEDIFF(STR_TO_DATE(e.rlm_exp, '%m/%d/%Y'), ?) <= 30 THEN 'high'
+                        WHEN DATEDIFF(STR_TO_DATE(e.rlm_exp, '%m/%d/%Y'), ?) <= 45 THEN 'medium'
+                        ELSE 'low'
+                    END as priority,
+                    ns.is_read,
+                    ns.is_dismissed,
+                    ns.read_at,
+                    ns.dismissed_at
+                FROM employees e LEFT JOIN notification_status ns ON 
+                      CONCAT('clearance_', e.id) = ns.notification_id 
+                      AND ns.user_id = ? 
+                      AND ns.notification_type = 'clearance' WHERE e.status = 'Active'
+                  AND e.rlm_exp IS NOT NULL
+                  AND e.rlm_exp != ''
+                  AND STR_TO_DATE(e.rlm_exp, '%m/%d/%Y') IS NOT NULL
+                  AND STR_TO_DATE(e.rlm_exp, '%m/%d/%Y') <= ? AND (ns.is_dismissed IS NULL OR ns.is_dismissed = 0) ORDER BY STR_TO_DATE(e.rlm_exp, '%m/%d/%Y') ASC
+    [params] => Array
+        (
+            [0] => 2026-01-19
+            [1] => 2026-01-19
+            [2] => 2026-01-19
+            [3] => 2026-01-19
+            [4] => 2026-01-19
+            [5] => 25
+            [6] => 2026-03-20
+        )
+
+    [trace] => #0 C:\xampp\htdocs\golden\goldenz\includes\database.php(117): PDO->prepare('SELECT \n       ...')
+#1 C:\xampp\htdocs\golden\goldenz\includes\database.php(4804): execute_query('SELECT \n       ...', Array)
+#2 C:\xampp\htdocs\golden\goldenz\includes\page-header.php(296): get_clearance_notifications(25, 60)
+#3 C:\xampp\htdocs\golden\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\golden\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /golden/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 16:43:58] [execute_query] User: hradmin (ID: 25) | IP: ::1
+Error: PDO Error [42S02]: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'goldenz_hr.notification_status' doesn't exist
+Data: Array
+(
+    [sql] => SELECT ea.*, e.employee_no, e.surname, e.first_name, e.middle_name, e.post, 
+                        u1.name as created_by_name, u2.name as acknowledged_by_name,
+                        ns.is_read, ns.is_dismissed, ns.read_at, ns.dismissed_at
+                 FROM employee_alerts ea
+                 JOIN employees e ON ea.employee_id = e.id
+                 LEFT JOIN users u1 ON ea.created_by = u1.id
+                 LEFT JOIN users u2 ON ea.acknowledged_by = u2.id LEFT JOIN notification_status ns ON ea.id = ns.notification_id 
+                      AND ns.user_id = ? AND ns.notification_type = 'alert' WHERE ea.status = ? AND (ns.is_dismissed IS NULL OR ns.is_dismissed = 0) ORDER BY ea.priority DESC, ea.due_date ASC, ea.created_at DESC
+    [params] => Array
+        (
+            [0] => 25
+            [1] => active
+        )
+
+    [trace] => #0 C:\xampp\htdocs\golden\goldenz\includes\database.php(117): PDO->prepare('SELECT ea.*, e....')
+#1 C:\xampp\htdocs\golden\goldenz\includes\database.php(1251): execute_query('SELECT ea.*, e....', Array)
+#2 C:\xampp\htdocs\golden\goldenz\includes\page-header.php(306): get_employee_alerts('active', NULL, 25)
+#3 C:\xampp\htdocs\golden\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\golden\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /golden/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 16:43:58] [execute_query] User: hradmin (ID: 25) | IP: ::1
+Error: PDO Error [42S02]: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'goldenz_hr.notification_status' doesn't exist
+Data: Array
+(
+    [sql] => SELECT COUNT(*) as count
+                FROM employee_alerts ea
+                LEFT JOIN notification_status ns ON ea.id = ns.notification_id 
+                    AND ns.user_id = ? 
+                    AND ns.notification_type = 'alert'
+                WHERE ea.status = 'active' 
+                AND (ns.is_read IS NULL OR ns.is_read = 0)
+                AND (ns.is_dismissed IS NULL OR ns.is_dismissed = 0)
+    [params] => Array
+        (
+            [0] => 25
+        )
+
+    [trace] => #0 C:\xampp\htdocs\golden\goldenz\includes\database.php(117): PDO->prepare('SELECT COUNT(*)...')
+#1 C:\xampp\htdocs\golden\goldenz\includes\database.php(4828): execute_query('SELECT COUNT(*)...', Array)
+#2 C:\xampp\htdocs\golden\goldenz\includes\page-header.php(316): get_unread_notification_count(25)
+#3 C:\xampp\htdocs\golden\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\golden\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /golden/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 16:44:01] [execute_query] User: hradmin (ID: 25) | IP: ::1
+Error: PDO Error [42S22]: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ns.is_read' in 'field list'
+Data: Array
+(
+    [sql] => SELECT ea.*, e.employee_no, e.surname, e.first_name, e.middle_name, e.post, 
+                        u1.name as created_by_name, u2.name as acknowledged_by_name,
+                        ns.is_read, ns.is_dismissed, ns.read_at, ns.dismissed_at
+                 FROM employee_alerts ea
+                 JOIN employees e ON ea.employee_id = e.id
+                 LEFT JOIN users u1 ON ea.created_by = u1.id
+                 LEFT JOIN users u2 ON ea.acknowledged_by = u2.id WHERE ea.status = ? ORDER BY ea.priority DESC, ea.due_date ASC, ea.created_at DESC
+    [params] => Array
+        (
+            [0] => active
+        )
+
+    [trace] => #0 C:\xampp\htdocs\golden\goldenz\includes\database.php(117): PDO->prepare('SELECT ea.*, e....')
+#1 C:\xampp\htdocs\golden\goldenz\includes\database.php(1251): execute_query('SELECT ea.*, e....', Array)
+#2 C:\xampp\htdocs\golden\goldenz\includes\page-header.php(196): get_employee_alerts('active', NULL)
+#3 C:\xampp\htdocs\golden\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\golden\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /golden/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 16:44:01] [execute_query] User: hradmin (ID: 25) | IP: ::1
+Error: PDO Error [42S02]: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'goldenz_hr.notification_status' doesn't exist
+Data: Array
+(
+    [sql] => SELECT 
+                    e.id as employee_id,
+                    e.employee_no,
+                    e.surname,
+                    e.first_name,
+                    e.middle_name,
+                    e.post,
+                    e.license_no,
+                    e.license_exp_date,
+                    DATEDIFF(e.license_exp_date, ?) as days_until_expiry,
+                    CASE 
+                        WHEN e.license_exp_date < ? THEN 'expired'
+                        WHEN DATEDIFF(e.license_exp_date, ?) <= 7 THEN 'urgent'
+                        WHEN DATEDIFF(e.license_exp_date, ?) <= 15 THEN 'high'
+                        WHEN DATEDIFF(e.license_exp_date, ?) <= 30 THEN 'medium'
+                        ELSE 'low'
+                    END as priority,
+                    ns.is_read,
+                    ns.is_dismissed,
+                    ns.read_at,
+                    ns.dismissed_at
+                FROM employees e LEFT JOIN notification_status ns ON 
+                      CONCAT('license_', e.id) = ns.notification_id 
+                      AND ns.user_id = ? 
+                      AND ns.notification_type = 'license' WHERE e.status = 'Active'
+                  AND e.license_exp_date IS NOT NULL
+                  AND e.license_exp_date <= ? AND (ns.is_dismissed IS NULL OR ns.is_dismissed = 0) ORDER BY e.license_exp_date ASC
+    [params] => Array
+        (
+            [0] => 2026-01-19
+            [1] => 2026-01-19
+            [2] => 2026-01-19
+            [3] => 2026-01-19
+            [4] => 2026-01-19
+            [5] => 25
+            [6] => 2026-03-20
+        )
+
+    [trace] => #0 C:\xampp\htdocs\golden\goldenz\includes\database.php(117): PDO->prepare('SELECT \n       ...')
+#1 C:\xampp\htdocs\golden\goldenz\includes\database.php(4740): execute_query('SELECT \n       ...', Array)
+#2 C:\xampp\htdocs\golden\goldenz\includes\page-header.php(286): get_license_notifications(25, 60)
+#3 C:\xampp\htdocs\golden\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\golden\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /golden/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 16:44:01] [execute_query] User: hradmin (ID: 25) | IP: ::1
+Error: PDO Error [42S02]: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'goldenz_hr.notification_status' doesn't exist
+Data: Array
+(
+    [sql] => SELECT 
+                    e.id as employee_id,
+                    e.employee_no,
+                    e.surname,
+                    e.first_name,
+                    e.middle_name,
+                    e.post,
+                    e.rlm_exp,
+                    STR_TO_DATE(e.rlm_exp, '%m/%d/%Y') as rlm_exp_date,
+                    DATEDIFF(STR_TO_DATE(e.rlm_exp, '%m/%d/%Y'), ?) as days_until_expiry,
+                    CASE 
+                        WHEN STR_TO_DATE(e.rlm_exp, '%m/%d/%Y') < ? THEN 'expired'
+                        WHEN DATEDIFF(STR_TO_DATE(e.rlm_exp, '%m/%d/%Y'), ?) <= 14 THEN 'urgent'
+                        WHEN DATEDIFF(STR_TO_DATE(e.rlm_exp, '%m/%d/%Y'), ?) <= 30 THEN 'high'
+                        WHEN DATEDIFF(STR_TO_DATE(e.rlm_exp, '%m/%d/%Y'), ?) <= 45 THEN 'medium'
+                        ELSE 'low'
+                    END as priority,
+                    ns.is_read,
+                    ns.is_dismissed,
+                    ns.read_at,
+                    ns.dismissed_at
+                FROM employees e LEFT JOIN notification_status ns ON 
+                      CONCAT('clearance_', e.id) = ns.notification_id 
+                      AND ns.user_id = ? 
+                      AND ns.notification_type = 'clearance' WHERE e.status = 'Active'
+                  AND e.rlm_exp IS NOT NULL
+                  AND e.rlm_exp != ''
+                  AND STR_TO_DATE(e.rlm_exp, '%m/%d/%Y') IS NOT NULL
+                  AND STR_TO_DATE(e.rlm_exp, '%m/%d/%Y') <= ? AND (ns.is_dismissed IS NULL OR ns.is_dismissed = 0) ORDER BY STR_TO_DATE(e.rlm_exp, '%m/%d/%Y') ASC
+    [params] => Array
+        (
+            [0] => 2026-01-19
+            [1] => 2026-01-19
+            [2] => 2026-01-19
+            [3] => 2026-01-19
+            [4] => 2026-01-19
+            [5] => 25
+            [6] => 2026-03-20
+        )
+
+    [trace] => #0 C:\xampp\htdocs\golden\goldenz\includes\database.php(117): PDO->prepare('SELECT \n       ...')
+#1 C:\xampp\htdocs\golden\goldenz\includes\database.php(4804): execute_query('SELECT \n       ...', Array)
+#2 C:\xampp\htdocs\golden\goldenz\includes\page-header.php(296): get_clearance_notifications(25, 60)
+#3 C:\xampp\htdocs\golden\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\golden\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /golden/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 16:44:01] [execute_query] User: hradmin (ID: 25) | IP: ::1
+Error: PDO Error [42S02]: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'goldenz_hr.notification_status' doesn't exist
+Data: Array
+(
+    [sql] => SELECT ea.*, e.employee_no, e.surname, e.first_name, e.middle_name, e.post, 
+                        u1.name as created_by_name, u2.name as acknowledged_by_name,
+                        ns.is_read, ns.is_dismissed, ns.read_at, ns.dismissed_at
+                 FROM employee_alerts ea
+                 JOIN employees e ON ea.employee_id = e.id
+                 LEFT JOIN users u1 ON ea.created_by = u1.id
+                 LEFT JOIN users u2 ON ea.acknowledged_by = u2.id LEFT JOIN notification_status ns ON ea.id = ns.notification_id 
+                      AND ns.user_id = ? AND ns.notification_type = 'alert' WHERE ea.status = ? AND (ns.is_dismissed IS NULL OR ns.is_dismissed = 0) ORDER BY ea.priority DESC, ea.due_date ASC, ea.created_at DESC
+    [params] => Array
+        (
+            [0] => 25
+            [1] => active
+        )
+
+    [trace] => #0 C:\xampp\htdocs\golden\goldenz\includes\database.php(117): PDO->prepare('SELECT ea.*, e....')
+#1 C:\xampp\htdocs\golden\goldenz\includes\database.php(1251): execute_query('SELECT ea.*, e....', Array)
+#2 C:\xampp\htdocs\golden\goldenz\includes\page-header.php(306): get_employee_alerts('active', NULL, 25)
+#3 C:\xampp\htdocs\golden\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\golden\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /golden/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 16:44:01] [execute_query] User: hradmin (ID: 25) | IP: ::1
+Error: PDO Error [42S02]: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'goldenz_hr.notification_status' doesn't exist
+Data: Array
+(
+    [sql] => SELECT COUNT(*) as count
+                FROM employee_alerts ea
+                LEFT JOIN notification_status ns ON ea.id = ns.notification_id 
+                    AND ns.user_id = ? 
+                    AND ns.notification_type = 'alert'
+                WHERE ea.status = 'active' 
+                AND (ns.is_read IS NULL OR ns.is_read = 0)
+                AND (ns.is_dismissed IS NULL OR ns.is_dismissed = 0)
+    [params] => Array
+        (
+            [0] => 25
+        )
+
+    [trace] => #0 C:\xampp\htdocs\golden\goldenz\includes\database.php(117): PDO->prepare('SELECT COUNT(*)...')
+#1 C:\xampp\htdocs\golden\goldenz\includes\database.php(4828): execute_query('SELECT COUNT(*)...', Array)
+#2 C:\xampp\htdocs\golden\goldenz\includes\page-header.php(316): get_unread_notification_count(25)
+#3 C:\xampp\htdocs\golden\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\golden\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /golden/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 16:44:13] [execute_query] User: hradmin (ID: 25) | IP: ::1
+Error: PDO Error [42S22]: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ns.is_read' in 'field list'
+Data: Array
+(
+    [sql] => SELECT ea.*, e.employee_no, e.surname, e.first_name, e.middle_name, e.post, 
+                        u1.name as created_by_name, u2.name as acknowledged_by_name,
+                        ns.is_read, ns.is_dismissed, ns.read_at, ns.dismissed_at
+                 FROM employee_alerts ea
+                 JOIN employees e ON ea.employee_id = e.id
+                 LEFT JOIN users u1 ON ea.created_by = u1.id
+                 LEFT JOIN users u2 ON ea.acknowledged_by = u2.id WHERE ea.status = ? ORDER BY ea.priority DESC, ea.due_date ASC, ea.created_at DESC
+    [params] => Array
+        (
+            [0] => active
+        )
+
+    [trace] => #0 C:\xampp\htdocs\golden\goldenz\includes\database.php(117): PDO->prepare('SELECT ea.*, e....')
+#1 C:\xampp\htdocs\golden\goldenz\includes\database.php(1251): execute_query('SELECT ea.*, e....', Array)
+#2 C:\xampp\htdocs\golden\goldenz\includes\page-header.php(196): get_employee_alerts('active', NULL)
+#3 C:\xampp\htdocs\golden\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\golden\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /golden/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 16:44:13] [execute_query] User: hradmin (ID: 25) | IP: ::1
+Error: PDO Error [42S02]: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'goldenz_hr.notification_status' doesn't exist
+Data: Array
+(
+    [sql] => SELECT 
+                    e.id as employee_id,
+                    e.employee_no,
+                    e.surname,
+                    e.first_name,
+                    e.middle_name,
+                    e.post,
+                    e.license_no,
+                    e.license_exp_date,
+                    DATEDIFF(e.license_exp_date, ?) as days_until_expiry,
+                    CASE 
+                        WHEN e.license_exp_date < ? THEN 'expired'
+                        WHEN DATEDIFF(e.license_exp_date, ?) <= 7 THEN 'urgent'
+                        WHEN DATEDIFF(e.license_exp_date, ?) <= 15 THEN 'high'
+                        WHEN DATEDIFF(e.license_exp_date, ?) <= 30 THEN 'medium'
+                        ELSE 'low'
+                    END as priority,
+                    ns.is_read,
+                    ns.is_dismissed,
+                    ns.read_at,
+                    ns.dismissed_at
+                FROM employees e LEFT JOIN notification_status ns ON 
+                      CONCAT('license_', e.id) = ns.notification_id 
+                      AND ns.user_id = ? 
+                      AND ns.notification_type = 'license' WHERE e.status = 'Active'
+                  AND e.license_exp_date IS NOT NULL
+                  AND e.license_exp_date <= ? AND (ns.is_dismissed IS NULL OR ns.is_dismissed = 0) ORDER BY e.license_exp_date ASC
+    [params] => Array
+        (
+            [0] => 2026-01-19
+            [1] => 2026-01-19
+            [2] => 2026-01-19
+            [3] => 2026-01-19
+            [4] => 2026-01-19
+            [5] => 25
+            [6] => 2026-03-20
+        )
+
+    [trace] => #0 C:\xampp\htdocs\golden\goldenz\includes\database.php(117): PDO->prepare('SELECT \n       ...')
+#1 C:\xampp\htdocs\golden\goldenz\includes\database.php(4740): execute_query('SELECT \n       ...', Array)
+#2 C:\xampp\htdocs\golden\goldenz\includes\page-header.php(286): get_license_notifications(25, 60)
+#3 C:\xampp\htdocs\golden\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\golden\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /golden/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 16:44:13] [execute_query] User: hradmin (ID: 25) | IP: ::1
+Error: PDO Error [42S02]: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'goldenz_hr.notification_status' doesn't exist
+Data: Array
+(
+    [sql] => SELECT 
+                    e.id as employee_id,
+                    e.employee_no,
+                    e.surname,
+                    e.first_name,
+                    e.middle_name,
+                    e.post,
+                    e.rlm_exp,
+                    STR_TO_DATE(e.rlm_exp, '%m/%d/%Y') as rlm_exp_date,
+                    DATEDIFF(STR_TO_DATE(e.rlm_exp, '%m/%d/%Y'), ?) as days_until_expiry,
+                    CASE 
+                        WHEN STR_TO_DATE(e.rlm_exp, '%m/%d/%Y') < ? THEN 'expired'
+                        WHEN DATEDIFF(STR_TO_DATE(e.rlm_exp, '%m/%d/%Y'), ?) <= 14 THEN 'urgent'
+                        WHEN DATEDIFF(STR_TO_DATE(e.rlm_exp, '%m/%d/%Y'), ?) <= 30 THEN 'high'
+                        WHEN DATEDIFF(STR_TO_DATE(e.rlm_exp, '%m/%d/%Y'), ?) <= 45 THEN 'medium'
+                        ELSE 'low'
+                    END as priority,
+                    ns.is_read,
+                    ns.is_dismissed,
+                    ns.read_at,
+                    ns.dismissed_at
+                FROM employees e LEFT JOIN notification_status ns ON 
+                      CONCAT('clearance_', e.id) = ns.notification_id 
+                      AND ns.user_id = ? 
+                      AND ns.notification_type = 'clearance' WHERE e.status = 'Active'
+                  AND e.rlm_exp IS NOT NULL
+                  AND e.rlm_exp != ''
+                  AND STR_TO_DATE(e.rlm_exp, '%m/%d/%Y') IS NOT NULL
+                  AND STR_TO_DATE(e.rlm_exp, '%m/%d/%Y') <= ? AND (ns.is_dismissed IS NULL OR ns.is_dismissed = 0) ORDER BY STR_TO_DATE(e.rlm_exp, '%m/%d/%Y') ASC
+    [params] => Array
+        (
+            [0] => 2026-01-19
+            [1] => 2026-01-19
+            [2] => 2026-01-19
+            [3] => 2026-01-19
+            [4] => 2026-01-19
+            [5] => 25
+            [6] => 2026-03-20
+        )
+
+    [trace] => #0 C:\xampp\htdocs\golden\goldenz\includes\database.php(117): PDO->prepare('SELECT \n       ...')
+#1 C:\xampp\htdocs\golden\goldenz\includes\database.php(4804): execute_query('SELECT \n       ...', Array)
+#2 C:\xampp\htdocs\golden\goldenz\includes\page-header.php(296): get_clearance_notifications(25, 60)
+#3 C:\xampp\htdocs\golden\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\golden\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /golden/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 16:44:13] [execute_query] User: hradmin (ID: 25) | IP: ::1
+Error: PDO Error [42S02]: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'goldenz_hr.notification_status' doesn't exist
+Data: Array
+(
+    [sql] => SELECT ea.*, e.employee_no, e.surname, e.first_name, e.middle_name, e.post, 
+                        u1.name as created_by_name, u2.name as acknowledged_by_name,
+                        ns.is_read, ns.is_dismissed, ns.read_at, ns.dismissed_at
+                 FROM employee_alerts ea
+                 JOIN employees e ON ea.employee_id = e.id
+                 LEFT JOIN users u1 ON ea.created_by = u1.id
+                 LEFT JOIN users u2 ON ea.acknowledged_by = u2.id LEFT JOIN notification_status ns ON ea.id = ns.notification_id 
+                      AND ns.user_id = ? AND ns.notification_type = 'alert' WHERE ea.status = ? AND (ns.is_dismissed IS NULL OR ns.is_dismissed = 0) ORDER BY ea.priority DESC, ea.due_date ASC, ea.created_at DESC
+    [params] => Array
+        (
+            [0] => 25
+            [1] => active
+        )
+
+    [trace] => #0 C:\xampp\htdocs\golden\goldenz\includes\database.php(117): PDO->prepare('SELECT ea.*, e....')
+#1 C:\xampp\htdocs\golden\goldenz\includes\database.php(1251): execute_query('SELECT ea.*, e....', Array)
+#2 C:\xampp\htdocs\golden\goldenz\includes\page-header.php(306): get_employee_alerts('active', NULL, 25)
+#3 C:\xampp\htdocs\golden\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\golden\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /golden/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 16:44:13] [execute_query] User: hradmin (ID: 25) | IP: ::1
+Error: PDO Error [42S02]: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'goldenz_hr.notification_status' doesn't exist
+Data: Array
+(
+    [sql] => SELECT COUNT(*) as count
+                FROM employee_alerts ea
+                LEFT JOIN notification_status ns ON ea.id = ns.notification_id 
+                    AND ns.user_id = ? 
+                    AND ns.notification_type = 'alert'
+                WHERE ea.status = 'active' 
+                AND (ns.is_read IS NULL OR ns.is_read = 0)
+                AND (ns.is_dismissed IS NULL OR ns.is_dismissed = 0)
+    [params] => Array
+        (
+            [0] => 25
+        )
+
+    [trace] => #0 C:\xampp\htdocs\golden\goldenz\includes\database.php(117): PDO->prepare('SELECT COUNT(*)...')
+#1 C:\xampp\htdocs\golden\goldenz\includes\database.php(4828): execute_query('SELECT COUNT(*)...', Array)
+#2 C:\xampp\htdocs\golden\goldenz\includes\page-header.php(316): get_unread_notification_count(25)
+#3 C:\xampp\htdocs\golden\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\golden\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /golden/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 16:44:16] [execute_query] User: hradmin (ID: 25) | IP: ::1
+Error: PDO Error [42S22]: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ns.is_read' in 'field list'
+Data: Array
+(
+    [sql] => SELECT ea.*, e.employee_no, e.surname, e.first_name, e.middle_name, e.post, 
+                        u1.name as created_by_name, u2.name as acknowledged_by_name,
+                        ns.is_read, ns.is_dismissed, ns.read_at, ns.dismissed_at
+                 FROM employee_alerts ea
+                 JOIN employees e ON ea.employee_id = e.id
+                 LEFT JOIN users u1 ON ea.created_by = u1.id
+                 LEFT JOIN users u2 ON ea.acknowledged_by = u2.id WHERE ea.status = ? ORDER BY ea.priority DESC, ea.due_date ASC, ea.created_at DESC
+    [params] => Array
+        (
+            [0] => active
+        )
+
+    [trace] => #0 C:\xampp\htdocs\golden\goldenz\includes\database.php(117): PDO->prepare('SELECT ea.*, e....')
+#1 C:\xampp\htdocs\golden\goldenz\includes\database.php(1251): execute_query('SELECT ea.*, e....', Array)
+#2 C:\xampp\htdocs\golden\goldenz\includes\page-header.php(196): get_employee_alerts('active', NULL)
+#3 C:\xampp\htdocs\golden\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\golden\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /golden/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 16:44:16] [execute_query] User: hradmin (ID: 25) | IP: ::1
+Error: PDO Error [42S02]: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'goldenz_hr.notification_status' doesn't exist
+Data: Array
+(
+    [sql] => SELECT 
+                    e.id as employee_id,
+                    e.employee_no,
+                    e.surname,
+                    e.first_name,
+                    e.middle_name,
+                    e.post,
+                    e.license_no,
+                    e.license_exp_date,
+                    DATEDIFF(e.license_exp_date, ?) as days_until_expiry,
+                    CASE 
+                        WHEN e.license_exp_date < ? THEN 'expired'
+                        WHEN DATEDIFF(e.license_exp_date, ?) <= 7 THEN 'urgent'
+                        WHEN DATEDIFF(e.license_exp_date, ?) <= 15 THEN 'high'
+                        WHEN DATEDIFF(e.license_exp_date, ?) <= 30 THEN 'medium'
+                        ELSE 'low'
+                    END as priority,
+                    ns.is_read,
+                    ns.is_dismissed,
+                    ns.read_at,
+                    ns.dismissed_at
+                FROM employees e LEFT JOIN notification_status ns ON 
+                      CONCAT('license_', e.id) = ns.notification_id 
+                      AND ns.user_id = ? 
+                      AND ns.notification_type = 'license' WHERE e.status = 'Active'
+                  AND e.license_exp_date IS NOT NULL
+                  AND e.license_exp_date <= ? AND (ns.is_dismissed IS NULL OR ns.is_dismissed = 0) ORDER BY e.license_exp_date ASC
+    [params] => Array
+        (
+            [0] => 2026-01-19
+            [1] => 2026-01-19
+            [2] => 2026-01-19
+            [3] => 2026-01-19
+            [4] => 2026-01-19
+            [5] => 25
+            [6] => 2026-03-20
+        )
+
+    [trace] => #0 C:\xampp\htdocs\golden\goldenz\includes\database.php(117): PDO->prepare('SELECT \n       ...')
+#1 C:\xampp\htdocs\golden\goldenz\includes\database.php(4740): execute_query('SELECT \n       ...', Array)
+#2 C:\xampp\htdocs\golden\goldenz\includes\page-header.php(286): get_license_notifications(25, 60)
+#3 C:\xampp\htdocs\golden\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\golden\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /golden/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 16:44:16] [execute_query] User: hradmin (ID: 25) | IP: ::1
+Error: PDO Error [42S02]: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'goldenz_hr.notification_status' doesn't exist
+Data: Array
+(
+    [sql] => SELECT 
+                    e.id as employee_id,
+                    e.employee_no,
+                    e.surname,
+                    e.first_name,
+                    e.middle_name,
+                    e.post,
+                    e.rlm_exp,
+                    STR_TO_DATE(e.rlm_exp, '%m/%d/%Y') as rlm_exp_date,
+                    DATEDIFF(STR_TO_DATE(e.rlm_exp, '%m/%d/%Y'), ?) as days_until_expiry,
+                    CASE 
+                        WHEN STR_TO_DATE(e.rlm_exp, '%m/%d/%Y') < ? THEN 'expired'
+                        WHEN DATEDIFF(STR_TO_DATE(e.rlm_exp, '%m/%d/%Y'), ?) <= 14 THEN 'urgent'
+                        WHEN DATEDIFF(STR_TO_DATE(e.rlm_exp, '%m/%d/%Y'), ?) <= 30 THEN 'high'
+                        WHEN DATEDIFF(STR_TO_DATE(e.rlm_exp, '%m/%d/%Y'), ?) <= 45 THEN 'medium'
+                        ELSE 'low'
+                    END as priority,
+                    ns.is_read,
+                    ns.is_dismissed,
+                    ns.read_at,
+                    ns.dismissed_at
+                FROM employees e LEFT JOIN notification_status ns ON 
+                      CONCAT('clearance_', e.id) = ns.notification_id 
+                      AND ns.user_id = ? 
+                      AND ns.notification_type = 'clearance' WHERE e.status = 'Active'
+                  AND e.rlm_exp IS NOT NULL
+                  AND e.rlm_exp != ''
+                  AND STR_TO_DATE(e.rlm_exp, '%m/%d/%Y') IS NOT NULL
+                  AND STR_TO_DATE(e.rlm_exp, '%m/%d/%Y') <= ? AND (ns.is_dismissed IS NULL OR ns.is_dismissed = 0) ORDER BY STR_TO_DATE(e.rlm_exp, '%m/%d/%Y') ASC
+    [params] => Array
+        (
+            [0] => 2026-01-19
+            [1] => 2026-01-19
+            [2] => 2026-01-19
+            [3] => 2026-01-19
+            [4] => 2026-01-19
+            [5] => 25
+            [6] => 2026-03-20
+        )
+
+    [trace] => #0 C:\xampp\htdocs\golden\goldenz\includes\database.php(117): PDO->prepare('SELECT \n       ...')
+#1 C:\xampp\htdocs\golden\goldenz\includes\database.php(4804): execute_query('SELECT \n       ...', Array)
+#2 C:\xampp\htdocs\golden\goldenz\includes\page-header.php(296): get_clearance_notifications(25, 60)
+#3 C:\xampp\htdocs\golden\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\golden\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /golden/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 16:44:16] [execute_query] User: hradmin (ID: 25) | IP: ::1
+Error: PDO Error [42S02]: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'goldenz_hr.notification_status' doesn't exist
+Data: Array
+(
+    [sql] => SELECT ea.*, e.employee_no, e.surname, e.first_name, e.middle_name, e.post, 
+                        u1.name as created_by_name, u2.name as acknowledged_by_name,
+                        ns.is_read, ns.is_dismissed, ns.read_at, ns.dismissed_at
+                 FROM employee_alerts ea
+                 JOIN employees e ON ea.employee_id = e.id
+                 LEFT JOIN users u1 ON ea.created_by = u1.id
+                 LEFT JOIN users u2 ON ea.acknowledged_by = u2.id LEFT JOIN notification_status ns ON ea.id = ns.notification_id 
+                      AND ns.user_id = ? AND ns.notification_type = 'alert' WHERE ea.status = ? AND (ns.is_dismissed IS NULL OR ns.is_dismissed = 0) ORDER BY ea.priority DESC, ea.due_date ASC, ea.created_at DESC
+    [params] => Array
+        (
+            [0] => 25
+            [1] => active
+        )
+
+    [trace] => #0 C:\xampp\htdocs\golden\goldenz\includes\database.php(117): PDO->prepare('SELECT ea.*, e....')
+#1 C:\xampp\htdocs\golden\goldenz\includes\database.php(1251): execute_query('SELECT ea.*, e....', Array)
+#2 C:\xampp\htdocs\golden\goldenz\includes\page-header.php(306): get_employee_alerts('active', NULL, 25)
+#3 C:\xampp\htdocs\golden\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\golden\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /golden/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 16:44:16] [execute_query] User: hradmin (ID: 25) | IP: ::1
+Error: PDO Error [42S02]: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'goldenz_hr.notification_status' doesn't exist
+Data: Array
+(
+    [sql] => SELECT COUNT(*) as count
+                FROM employee_alerts ea
+                LEFT JOIN notification_status ns ON ea.id = ns.notification_id 
+                    AND ns.user_id = ? 
+                    AND ns.notification_type = 'alert'
+                WHERE ea.status = 'active' 
+                AND (ns.is_read IS NULL OR ns.is_read = 0)
+                AND (ns.is_dismissed IS NULL OR ns.is_dismissed = 0)
+    [params] => Array
+        (
+            [0] => 25
+        )
+
+    [trace] => #0 C:\xampp\htdocs\golden\goldenz\includes\database.php(117): PDO->prepare('SELECT COUNT(*)...')
+#1 C:\xampp\htdocs\golden\goldenz\includes\database.php(4828): execute_query('SELECT COUNT(*)...', Array)
+#2 C:\xampp\htdocs\golden\goldenz\includes\page-header.php(316): get_unread_notification_count(25)
+#3 C:\xampp\htdocs\golden\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\golden\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /golden/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 16:44:27] [execute_query] User: hradmin (ID: 25) | IP: ::1
+Error: PDO Error [42S22]: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ns.is_read' in 'field list'
+Data: Array
+(
+    [sql] => SELECT ea.*, e.employee_no, e.surname, e.first_name, e.middle_name, e.post, 
+                        u1.name as created_by_name, u2.name as acknowledged_by_name,
+                        ns.is_read, ns.is_dismissed, ns.read_at, ns.dismissed_at
+                 FROM employee_alerts ea
+                 JOIN employees e ON ea.employee_id = e.id
+                 LEFT JOIN users u1 ON ea.created_by = u1.id
+                 LEFT JOIN users u2 ON ea.acknowledged_by = u2.id WHERE ea.status = ? ORDER BY ea.priority DESC, ea.due_date ASC, ea.created_at DESC
+    [params] => Array
+        (
+            [0] => active
+        )
+
+    [trace] => #0 C:\xampp\htdocs\golden\goldenz\includes\database.php(117): PDO->prepare('SELECT ea.*, e....')
+#1 C:\xampp\htdocs\golden\goldenz\includes\database.php(1251): execute_query('SELECT ea.*, e....', Array)
+#2 C:\xampp\htdocs\golden\goldenz\includes\page-header.php(196): get_employee_alerts('active', NULL)
+#3 C:\xampp\htdocs\golden\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\golden\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /golden/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 16:44:27] [execute_query] User: hradmin (ID: 25) | IP: ::1
+Error: PDO Error [42S02]: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'goldenz_hr.notification_status' doesn't exist
+Data: Array
+(
+    [sql] => SELECT 
+                    e.id as employee_id,
+                    e.employee_no,
+                    e.surname,
+                    e.first_name,
+                    e.middle_name,
+                    e.post,
+                    e.license_no,
+                    e.license_exp_date,
+                    DATEDIFF(e.license_exp_date, ?) as days_until_expiry,
+                    CASE 
+                        WHEN e.license_exp_date < ? THEN 'expired'
+                        WHEN DATEDIFF(e.license_exp_date, ?) <= 7 THEN 'urgent'
+                        WHEN DATEDIFF(e.license_exp_date, ?) <= 15 THEN 'high'
+                        WHEN DATEDIFF(e.license_exp_date, ?) <= 30 THEN 'medium'
+                        ELSE 'low'
+                    END as priority,
+                    ns.is_read,
+                    ns.is_dismissed,
+                    ns.read_at,
+                    ns.dismissed_at
+                FROM employees e LEFT JOIN notification_status ns ON 
+                      CONCAT('license_', e.id) = ns.notification_id 
+                      AND ns.user_id = ? 
+                      AND ns.notification_type = 'license' WHERE e.status = 'Active'
+                  AND e.license_exp_date IS NOT NULL
+                  AND e.license_exp_date <= ? AND (ns.is_dismissed IS NULL OR ns.is_dismissed = 0) ORDER BY e.license_exp_date ASC
+    [params] => Array
+        (
+            [0] => 2026-01-19
+            [1] => 2026-01-19
+            [2] => 2026-01-19
+            [3] => 2026-01-19
+            [4] => 2026-01-19
+            [5] => 25
+            [6] => 2026-03-20
+        )
+
+    [trace] => #0 C:\xampp\htdocs\golden\goldenz\includes\database.php(117): PDO->prepare('SELECT \n       ...')
+#1 C:\xampp\htdocs\golden\goldenz\includes\database.php(4740): execute_query('SELECT \n       ...', Array)
+#2 C:\xampp\htdocs\golden\goldenz\includes\page-header.php(286): get_license_notifications(25, 60)
+#3 C:\xampp\htdocs\golden\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\golden\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /golden/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 16:44:27] [execute_query] User: hradmin (ID: 25) | IP: ::1
+Error: PDO Error [42S02]: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'goldenz_hr.notification_status' doesn't exist
+Data: Array
+(
+    [sql] => SELECT 
+                    e.id as employee_id,
+                    e.employee_no,
+                    e.surname,
+                    e.first_name,
+                    e.middle_name,
+                    e.post,
+                    e.rlm_exp,
+                    STR_TO_DATE(e.rlm_exp, '%m/%d/%Y') as rlm_exp_date,
+                    DATEDIFF(STR_TO_DATE(e.rlm_exp, '%m/%d/%Y'), ?) as days_until_expiry,
+                    CASE 
+                        WHEN STR_TO_DATE(e.rlm_exp, '%m/%d/%Y') < ? THEN 'expired'
+                        WHEN DATEDIFF(STR_TO_DATE(e.rlm_exp, '%m/%d/%Y'), ?) <= 14 THEN 'urgent'
+                        WHEN DATEDIFF(STR_TO_DATE(e.rlm_exp, '%m/%d/%Y'), ?) <= 30 THEN 'high'
+                        WHEN DATEDIFF(STR_TO_DATE(e.rlm_exp, '%m/%d/%Y'), ?) <= 45 THEN 'medium'
+                        ELSE 'low'
+                    END as priority,
+                    ns.is_read,
+                    ns.is_dismissed,
+                    ns.read_at,
+                    ns.dismissed_at
+                FROM employees e LEFT JOIN notification_status ns ON 
+                      CONCAT('clearance_', e.id) = ns.notification_id 
+                      AND ns.user_id = ? 
+                      AND ns.notification_type = 'clearance' WHERE e.status = 'Active'
+                  AND e.rlm_exp IS NOT NULL
+                  AND e.rlm_exp != ''
+                  AND STR_TO_DATE(e.rlm_exp, '%m/%d/%Y') IS NOT NULL
+                  AND STR_TO_DATE(e.rlm_exp, '%m/%d/%Y') <= ? AND (ns.is_dismissed IS NULL OR ns.is_dismissed = 0) ORDER BY STR_TO_DATE(e.rlm_exp, '%m/%d/%Y') ASC
+    [params] => Array
+        (
+            [0] => 2026-01-19
+            [1] => 2026-01-19
+            [2] => 2026-01-19
+            [3] => 2026-01-19
+            [4] => 2026-01-19
+            [5] => 25
+            [6] => 2026-03-20
+        )
+
+    [trace] => #0 C:\xampp\htdocs\golden\goldenz\includes\database.php(117): PDO->prepare('SELECT \n       ...')
+#1 C:\xampp\htdocs\golden\goldenz\includes\database.php(4804): execute_query('SELECT \n       ...', Array)
+#2 C:\xampp\htdocs\golden\goldenz\includes\page-header.php(296): get_clearance_notifications(25, 60)
+#3 C:\xampp\htdocs\golden\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\golden\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /golden/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 16:44:27] [execute_query] User: hradmin (ID: 25) | IP: ::1
+Error: PDO Error [42S02]: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'goldenz_hr.notification_status' doesn't exist
+Data: Array
+(
+    [sql] => SELECT ea.*, e.employee_no, e.surname, e.first_name, e.middle_name, e.post, 
+                        u1.name as created_by_name, u2.name as acknowledged_by_name,
+                        ns.is_read, ns.is_dismissed, ns.read_at, ns.dismissed_at
+                 FROM employee_alerts ea
+                 JOIN employees e ON ea.employee_id = e.id
+                 LEFT JOIN users u1 ON ea.created_by = u1.id
+                 LEFT JOIN users u2 ON ea.acknowledged_by = u2.id LEFT JOIN notification_status ns ON ea.id = ns.notification_id 
+                      AND ns.user_id = ? AND ns.notification_type = 'alert' WHERE ea.status = ? AND (ns.is_dismissed IS NULL OR ns.is_dismissed = 0) ORDER BY ea.priority DESC, ea.due_date ASC, ea.created_at DESC
+    [params] => Array
+        (
+            [0] => 25
+            [1] => active
+        )
+
+    [trace] => #0 C:\xampp\htdocs\golden\goldenz\includes\database.php(117): PDO->prepare('SELECT ea.*, e....')
+#1 C:\xampp\htdocs\golden\goldenz\includes\database.php(1251): execute_query('SELECT ea.*, e....', Array)
+#2 C:\xampp\htdocs\golden\goldenz\includes\page-header.php(306): get_employee_alerts('active', NULL, 25)
+#3 C:\xampp\htdocs\golden\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\golden\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /golden/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 16:44:27] [execute_query] User: hradmin (ID: 25) | IP: ::1
+Error: PDO Error [42S02]: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'goldenz_hr.notification_status' doesn't exist
+Data: Array
+(
+    [sql] => SELECT COUNT(*) as count
+                FROM employee_alerts ea
+                LEFT JOIN notification_status ns ON ea.id = ns.notification_id 
+                    AND ns.user_id = ? 
+                    AND ns.notification_type = 'alert'
+                WHERE ea.status = 'active' 
+                AND (ns.is_read IS NULL OR ns.is_read = 0)
+                AND (ns.is_dismissed IS NULL OR ns.is_dismissed = 0)
+    [params] => Array
+        (
+            [0] => 25
+        )
+
+    [trace] => #0 C:\xampp\htdocs\golden\goldenz\includes\database.php(117): PDO->prepare('SELECT COUNT(*)...')
+#1 C:\xampp\htdocs\golden\goldenz\includes\database.php(4828): execute_query('SELECT COUNT(*)...', Array)
+#2 C:\xampp\htdocs\golden\goldenz\includes\page-header.php(316): get_unread_notification_count(25)
+#3 C:\xampp\htdocs\golden\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\golden\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /golden/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 16:44:28] [execute_query] User: hradmin (ID: 25) | IP: ::1
+Error: PDO Error [42S22]: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ns.is_read' in 'field list'
+Data: Array
+(
+    [sql] => SELECT ea.*, e.employee_no, e.surname, e.first_name, e.middle_name, e.post, 
+                        u1.name as created_by_name, u2.name as acknowledged_by_name,
+                        ns.is_read, ns.is_dismissed, ns.read_at, ns.dismissed_at
+                 FROM employee_alerts ea
+                 JOIN employees e ON ea.employee_id = e.id
+                 LEFT JOIN users u1 ON ea.created_by = u1.id
+                 LEFT JOIN users u2 ON ea.acknowledged_by = u2.id WHERE ea.status = ? ORDER BY ea.priority DESC, ea.due_date ASC, ea.created_at DESC
+    [params] => Array
+        (
+            [0] => active
+        )
+
+    [trace] => #0 C:\xampp\htdocs\golden\goldenz\includes\database.php(117): PDO->prepare('SELECT ea.*, e....')
+#1 C:\xampp\htdocs\golden\goldenz\includes\database.php(1251): execute_query('SELECT ea.*, e....', Array)
+#2 C:\xampp\htdocs\golden\goldenz\includes\page-header.php(196): get_employee_alerts('active', NULL)
+#3 C:\xampp\htdocs\golden\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\golden\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /golden/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 16:44:29] [execute_query] User: hradmin (ID: 25) | IP: ::1
+Error: PDO Error [42S02]: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'goldenz_hr.notification_status' doesn't exist
+Data: Array
+(
+    [sql] => SELECT 
+                    e.id as employee_id,
+                    e.employee_no,
+                    e.surname,
+                    e.first_name,
+                    e.middle_name,
+                    e.post,
+                    e.license_no,
+                    e.license_exp_date,
+                    DATEDIFF(e.license_exp_date, ?) as days_until_expiry,
+                    CASE 
+                        WHEN e.license_exp_date < ? THEN 'expired'
+                        WHEN DATEDIFF(e.license_exp_date, ?) <= 7 THEN 'urgent'
+                        WHEN DATEDIFF(e.license_exp_date, ?) <= 15 THEN 'high'
+                        WHEN DATEDIFF(e.license_exp_date, ?) <= 30 THEN 'medium'
+                        ELSE 'low'
+                    END as priority,
+                    ns.is_read,
+                    ns.is_dismissed,
+                    ns.read_at,
+                    ns.dismissed_at
+                FROM employees e LEFT JOIN notification_status ns ON 
+                      CONCAT('license_', e.id) = ns.notification_id 
+                      AND ns.user_id = ? 
+                      AND ns.notification_type = 'license' WHERE e.status = 'Active'
+                  AND e.license_exp_date IS NOT NULL
+                  AND e.license_exp_date <= ? AND (ns.is_dismissed IS NULL OR ns.is_dismissed = 0) ORDER BY e.license_exp_date ASC
+    [params] => Array
+        (
+            [0] => 2026-01-19
+            [1] => 2026-01-19
+            [2] => 2026-01-19
+            [3] => 2026-01-19
+            [4] => 2026-01-19
+            [5] => 25
+            [6] => 2026-03-20
+        )
+
+    [trace] => #0 C:\xampp\htdocs\golden\goldenz\includes\database.php(117): PDO->prepare('SELECT \n       ...')
+#1 C:\xampp\htdocs\golden\goldenz\includes\database.php(4740): execute_query('SELECT \n       ...', Array)
+#2 C:\xampp\htdocs\golden\goldenz\includes\page-header.php(286): get_license_notifications(25, 60)
+#3 C:\xampp\htdocs\golden\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\golden\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /golden/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 16:44:29] [execute_query] User: hradmin (ID: 25) | IP: ::1
+Error: PDO Error [42S02]: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'goldenz_hr.notification_status' doesn't exist
+Data: Array
+(
+    [sql] => SELECT 
+                    e.id as employee_id,
+                    e.employee_no,
+                    e.surname,
+                    e.first_name,
+                    e.middle_name,
+                    e.post,
+                    e.rlm_exp,
+                    STR_TO_DATE(e.rlm_exp, '%m/%d/%Y') as rlm_exp_date,
+                    DATEDIFF(STR_TO_DATE(e.rlm_exp, '%m/%d/%Y'), ?) as days_until_expiry,
+                    CASE 
+                        WHEN STR_TO_DATE(e.rlm_exp, '%m/%d/%Y') < ? THEN 'expired'
+                        WHEN DATEDIFF(STR_TO_DATE(e.rlm_exp, '%m/%d/%Y'), ?) <= 14 THEN 'urgent'
+                        WHEN DATEDIFF(STR_TO_DATE(e.rlm_exp, '%m/%d/%Y'), ?) <= 30 THEN 'high'
+                        WHEN DATEDIFF(STR_TO_DATE(e.rlm_exp, '%m/%d/%Y'), ?) <= 45 THEN 'medium'
+                        ELSE 'low'
+                    END as priority,
+                    ns.is_read,
+                    ns.is_dismissed,
+                    ns.read_at,
+                    ns.dismissed_at
+                FROM employees e LEFT JOIN notification_status ns ON 
+                      CONCAT('clearance_', e.id) = ns.notification_id 
+                      AND ns.user_id = ? 
+                      AND ns.notification_type = 'clearance' WHERE e.status = 'Active'
+                  AND e.rlm_exp IS NOT NULL
+                  AND e.rlm_exp != ''
+                  AND STR_TO_DATE(e.rlm_exp, '%m/%d/%Y') IS NOT NULL
+                  AND STR_TO_DATE(e.rlm_exp, '%m/%d/%Y') <= ? AND (ns.is_dismissed IS NULL OR ns.is_dismissed = 0) ORDER BY STR_TO_DATE(e.rlm_exp, '%m/%d/%Y') ASC
+    [params] => Array
+        (
+            [0] => 2026-01-19
+            [1] => 2026-01-19
+            [2] => 2026-01-19
+            [3] => 2026-01-19
+            [4] => 2026-01-19
+            [5] => 25
+            [6] => 2026-03-20
+        )
+
+    [trace] => #0 C:\xampp\htdocs\golden\goldenz\includes\database.php(117): PDO->prepare('SELECT \n       ...')
+#1 C:\xampp\htdocs\golden\goldenz\includes\database.php(4804): execute_query('SELECT \n       ...', Array)
+#2 C:\xampp\htdocs\golden\goldenz\includes\page-header.php(296): get_clearance_notifications(25, 60)
+#3 C:\xampp\htdocs\golden\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\golden\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /golden/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 16:44:29] [execute_query] User: hradmin (ID: 25) | IP: ::1
+Error: PDO Error [42S02]: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'goldenz_hr.notification_status' doesn't exist
+Data: Array
+(
+    [sql] => SELECT ea.*, e.employee_no, e.surname, e.first_name, e.middle_name, e.post, 
+                        u1.name as created_by_name, u2.name as acknowledged_by_name,
+                        ns.is_read, ns.is_dismissed, ns.read_at, ns.dismissed_at
+                 FROM employee_alerts ea
+                 JOIN employees e ON ea.employee_id = e.id
+                 LEFT JOIN users u1 ON ea.created_by = u1.id
+                 LEFT JOIN users u2 ON ea.acknowledged_by = u2.id LEFT JOIN notification_status ns ON ea.id = ns.notification_id 
+                      AND ns.user_id = ? AND ns.notification_type = 'alert' WHERE ea.status = ? AND (ns.is_dismissed IS NULL OR ns.is_dismissed = 0) ORDER BY ea.priority DESC, ea.due_date ASC, ea.created_at DESC
+    [params] => Array
+        (
+            [0] => 25
+            [1] => active
+        )
+
+    [trace] => #0 C:\xampp\htdocs\golden\goldenz\includes\database.php(117): PDO->prepare('SELECT ea.*, e....')
+#1 C:\xampp\htdocs\golden\goldenz\includes\database.php(1251): execute_query('SELECT ea.*, e....', Array)
+#2 C:\xampp\htdocs\golden\goldenz\includes\page-header.php(306): get_employee_alerts('active', NULL, 25)
+#3 C:\xampp\htdocs\golden\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\golden\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /golden/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 16:44:29] [execute_query] User: hradmin (ID: 25) | IP: ::1
+Error: PDO Error [42S02]: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'goldenz_hr.notification_status' doesn't exist
+Data: Array
+(
+    [sql] => SELECT COUNT(*) as count
+                FROM employee_alerts ea
+                LEFT JOIN notification_status ns ON ea.id = ns.notification_id 
+                    AND ns.user_id = ? 
+                    AND ns.notification_type = 'alert'
+                WHERE ea.status = 'active' 
+                AND (ns.is_read IS NULL OR ns.is_read = 0)
+                AND (ns.is_dismissed IS NULL OR ns.is_dismissed = 0)
+    [params] => Array
+        (
+            [0] => 25
+        )
+
+    [trace] => #0 C:\xampp\htdocs\golden\goldenz\includes\database.php(117): PDO->prepare('SELECT COUNT(*)...')
+#1 C:\xampp\htdocs\golden\goldenz\includes\database.php(4828): execute_query('SELECT COUNT(*)...', Array)
+#2 C:\xampp\htdocs\golden\goldenz\includes\page-header.php(316): get_unread_notification_count(25)
+#3 C:\xampp\htdocs\golden\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\golden\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /golden/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 16:50:39] [execute_query] User: hradmin (ID: 25) | IP: ::1
+Error: PDO Error [42S22]: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ns.is_read' in 'field list'
+Data: Array
+(
+    [sql] => SELECT ea.*, e.employee_no, e.surname, e.first_name, e.middle_name, e.post, 
+                        u1.name as created_by_name, u2.name as acknowledged_by_name,
+                        ns.is_read, ns.is_dismissed, ns.read_at, ns.dismissed_at
+                 FROM employee_alerts ea
+                 JOIN employees e ON ea.employee_id = e.id
+                 LEFT JOIN users u1 ON ea.created_by = u1.id
+                 LEFT JOIN users u2 ON ea.acknowledged_by = u2.id WHERE ea.status = ? ORDER BY ea.priority DESC, ea.due_date ASC, ea.created_at DESC
+    [params] => Array
+        (
+            [0] => active
+        )
+
+    [trace] => #0 C:\xampp\htdocs\golden\goldenz\includes\database.php(117): PDO->prepare('SELECT ea.*, e....')
+#1 C:\xampp\htdocs\golden\goldenz\includes\database.php(1251): execute_query('SELECT ea.*, e....', Array)
+#2 C:\xampp\htdocs\golden\goldenz\includes\page-header.php(196): get_employee_alerts('active', NULL)
+#3 C:\xampp\htdocs\golden\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\golden\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /golden/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 16:50:39] [execute_query] User: hradmin (ID: 25) | IP: ::1
+Error: PDO Error [42S02]: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'goldenz_hr.notification_status' doesn't exist
+Data: Array
+(
+    [sql] => SELECT 
+                    e.id as employee_id,
+                    e.employee_no,
+                    e.surname,
+                    e.first_name,
+                    e.middle_name,
+                    e.post,
+                    e.license_no,
+                    e.license_exp_date,
+                    DATEDIFF(e.license_exp_date, ?) as days_until_expiry,
+                    CASE 
+                        WHEN e.license_exp_date < ? THEN 'expired'
+                        WHEN DATEDIFF(e.license_exp_date, ?) <= 7 THEN 'urgent'
+                        WHEN DATEDIFF(e.license_exp_date, ?) <= 15 THEN 'high'
+                        WHEN DATEDIFF(e.license_exp_date, ?) <= 30 THEN 'medium'
+                        ELSE 'low'
+                    END as priority,
+                    ns.is_read,
+                    ns.is_dismissed,
+                    ns.read_at,
+                    ns.dismissed_at
+                FROM employees e LEFT JOIN notification_status ns ON 
+                      CONCAT('license_', e.id) = ns.notification_id 
+                      AND ns.user_id = ? 
+                      AND ns.notification_type = 'license' WHERE e.status = 'Active'
+                  AND e.license_exp_date IS NOT NULL
+                  AND e.license_exp_date <= ? AND (ns.is_dismissed IS NULL OR ns.is_dismissed = 0) ORDER BY e.license_exp_date ASC
+    [params] => Array
+        (
+            [0] => 2026-01-19
+            [1] => 2026-01-19
+            [2] => 2026-01-19
+            [3] => 2026-01-19
+            [4] => 2026-01-19
+            [5] => 25
+            [6] => 2026-03-20
+        )
+
+    [trace] => #0 C:\xampp\htdocs\golden\goldenz\includes\database.php(117): PDO->prepare('SELECT \n       ...')
+#1 C:\xampp\htdocs\golden\goldenz\includes\database.php(4740): execute_query('SELECT \n       ...', Array)
+#2 C:\xampp\htdocs\golden\goldenz\includes\page-header.php(286): get_license_notifications(25, 60)
+#3 C:\xampp\htdocs\golden\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\golden\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /golden/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 16:50:39] [execute_query] User: hradmin (ID: 25) | IP: ::1
+Error: PDO Error [42S02]: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'goldenz_hr.notification_status' doesn't exist
+Data: Array
+(
+    [sql] => SELECT 
+                    e.id as employee_id,
+                    e.employee_no,
+                    e.surname,
+                    e.first_name,
+                    e.middle_name,
+                    e.post,
+                    e.rlm_exp,
+                    STR_TO_DATE(e.rlm_exp, '%m/%d/%Y') as rlm_exp_date,
+                    DATEDIFF(STR_TO_DATE(e.rlm_exp, '%m/%d/%Y'), ?) as days_until_expiry,
+                    CASE 
+                        WHEN STR_TO_DATE(e.rlm_exp, '%m/%d/%Y') < ? THEN 'expired'
+                        WHEN DATEDIFF(STR_TO_DATE(e.rlm_exp, '%m/%d/%Y'), ?) <= 14 THEN 'urgent'
+                        WHEN DATEDIFF(STR_TO_DATE(e.rlm_exp, '%m/%d/%Y'), ?) <= 30 THEN 'high'
+                        WHEN DATEDIFF(STR_TO_DATE(e.rlm_exp, '%m/%d/%Y'), ?) <= 45 THEN 'medium'
+                        ELSE 'low'
+                    END as priority,
+                    ns.is_read,
+                    ns.is_dismissed,
+                    ns.read_at,
+                    ns.dismissed_at
+                FROM employees e LEFT JOIN notification_status ns ON 
+                      CONCAT('clearance_', e.id) = ns.notification_id 
+                      AND ns.user_id = ? 
+                      AND ns.notification_type = 'clearance' WHERE e.status = 'Active'
+                  AND e.rlm_exp IS NOT NULL
+                  AND e.rlm_exp != ''
+                  AND STR_TO_DATE(e.rlm_exp, '%m/%d/%Y') IS NOT NULL
+                  AND STR_TO_DATE(e.rlm_exp, '%m/%d/%Y') <= ? AND (ns.is_dismissed IS NULL OR ns.is_dismissed = 0) ORDER BY STR_TO_DATE(e.rlm_exp, '%m/%d/%Y') ASC
+    [params] => Array
+        (
+            [0] => 2026-01-19
+            [1] => 2026-01-19
+            [2] => 2026-01-19
+            [3] => 2026-01-19
+            [4] => 2026-01-19
+            [5] => 25
+            [6] => 2026-03-20
+        )
+
+    [trace] => #0 C:\xampp\htdocs\golden\goldenz\includes\database.php(117): PDO->prepare('SELECT \n       ...')
+#1 C:\xampp\htdocs\golden\goldenz\includes\database.php(4804): execute_query('SELECT \n       ...', Array)
+#2 C:\xampp\htdocs\golden\goldenz\includes\page-header.php(296): get_clearance_notifications(25, 60)
+#3 C:\xampp\htdocs\golden\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\golden\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /golden/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 16:50:39] [execute_query] User: hradmin (ID: 25) | IP: ::1
+Error: PDO Error [42S02]: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'goldenz_hr.notification_status' doesn't exist
+Data: Array
+(
+    [sql] => SELECT ea.*, e.employee_no, e.surname, e.first_name, e.middle_name, e.post, 
+                        u1.name as created_by_name, u2.name as acknowledged_by_name,
+                        ns.is_read, ns.is_dismissed, ns.read_at, ns.dismissed_at
+                 FROM employee_alerts ea
+                 JOIN employees e ON ea.employee_id = e.id
+                 LEFT JOIN users u1 ON ea.created_by = u1.id
+                 LEFT JOIN users u2 ON ea.acknowledged_by = u2.id LEFT JOIN notification_status ns ON ea.id = ns.notification_id 
+                      AND ns.user_id = ? AND ns.notification_type = 'alert' WHERE ea.status = ? AND (ns.is_dismissed IS NULL OR ns.is_dismissed = 0) ORDER BY ea.priority DESC, ea.due_date ASC, ea.created_at DESC
+    [params] => Array
+        (
+            [0] => 25
+            [1] => active
+        )
+
+    [trace] => #0 C:\xampp\htdocs\golden\goldenz\includes\database.php(117): PDO->prepare('SELECT ea.*, e....')
+#1 C:\xampp\htdocs\golden\goldenz\includes\database.php(1251): execute_query('SELECT ea.*, e....', Array)
+#2 C:\xampp\htdocs\golden\goldenz\includes\page-header.php(306): get_employee_alerts('active', NULL, 25)
+#3 C:\xampp\htdocs\golden\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\golden\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /golden/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 16:50:39] [execute_query] User: hradmin (ID: 25) | IP: ::1
+Error: PDO Error [42S02]: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'goldenz_hr.notification_status' doesn't exist
+Data: Array
+(
+    [sql] => SELECT COUNT(*) as count
+                FROM employee_alerts ea
+                LEFT JOIN notification_status ns ON ea.id = ns.notification_id 
+                    AND ns.user_id = ? 
+                    AND ns.notification_type = 'alert'
+                WHERE ea.status = 'active' 
+                AND (ns.is_read IS NULL OR ns.is_read = 0)
+                AND (ns.is_dismissed IS NULL OR ns.is_dismissed = 0)
+    [params] => Array
+        (
+            [0] => 25
+        )
+
+    [trace] => #0 C:\xampp\htdocs\golden\goldenz\includes\database.php(117): PDO->prepare('SELECT COUNT(*)...')
+#1 C:\xampp\htdocs\golden\goldenz\includes\database.php(4828): execute_query('SELECT COUNT(*)...', Array)
+#2 C:\xampp\htdocs\golden\goldenz\includes\page-header.php(316): get_unread_notification_count(25)
+#3 C:\xampp\htdocs\golden\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\golden\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /golden/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 16:52:02] [execute_query] User: hradmin (ID: 25) | IP: ::1
+Error: PDO Error [42S22]: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ns.is_read' in 'field list'
+Data: Array
+(
+    [sql] => SELECT ea.*, e.employee_no, e.surname, e.first_name, e.middle_name, e.post, 
+                        u1.name as created_by_name, u2.name as acknowledged_by_name,
+                        ns.is_read, ns.is_dismissed, ns.read_at, ns.dismissed_at
+                 FROM employee_alerts ea
+                 JOIN employees e ON ea.employee_id = e.id
+                 LEFT JOIN users u1 ON ea.created_by = u1.id
+                 LEFT JOIN users u2 ON ea.acknowledged_by = u2.id WHERE ea.status = ? ORDER BY ea.priority DESC, ea.due_date ASC, ea.created_at DESC
+    [params] => Array
+        (
+            [0] => active
+        )
+
+    [trace] => #0 C:\xampp\htdocs\golden\goldenz\includes\database.php(117): PDO->prepare('SELECT ea.*, e....')
+#1 C:\xampp\htdocs\golden\goldenz\includes\database.php(1251): execute_query('SELECT ea.*, e....', Array)
+#2 C:\xampp\htdocs\golden\goldenz\includes\page-header.php(196): get_employee_alerts('active', NULL)
+#3 C:\xampp\htdocs\golden\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\golden\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /golden/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 16:52:02] [execute_query] User: hradmin (ID: 25) | IP: ::1
+Error: PDO Error [42S02]: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'goldenz_hr.notification_status' doesn't exist
+Data: Array
+(
+    [sql] => SELECT 
+                    e.id as employee_id,
+                    e.employee_no,
+                    e.surname,
+                    e.first_name,
+                    e.middle_name,
+                    e.post,
+                    e.license_no,
+                    e.license_exp_date,
+                    DATEDIFF(e.license_exp_date, ?) as days_until_expiry,
+                    CASE 
+                        WHEN e.license_exp_date < ? THEN 'expired'
+                        WHEN DATEDIFF(e.license_exp_date, ?) <= 7 THEN 'urgent'
+                        WHEN DATEDIFF(e.license_exp_date, ?) <= 15 THEN 'high'
+                        WHEN DATEDIFF(e.license_exp_date, ?) <= 30 THEN 'medium'
+                        ELSE 'low'
+                    END as priority,
+                    ns.is_read,
+                    ns.is_dismissed,
+                    ns.read_at,
+                    ns.dismissed_at
+                FROM employees e LEFT JOIN notification_status ns ON 
+                      CONCAT('license_', e.id) = ns.notification_id 
+                      AND ns.user_id = ? 
+                      AND ns.notification_type = 'license' WHERE e.status = 'Active'
+                  AND e.license_exp_date IS NOT NULL
+                  AND e.license_exp_date <= ? AND (ns.is_dismissed IS NULL OR ns.is_dismissed = 0) ORDER BY e.license_exp_date ASC
+    [params] => Array
+        (
+            [0] => 2026-01-19
+            [1] => 2026-01-19
+            [2] => 2026-01-19
+            [3] => 2026-01-19
+            [4] => 2026-01-19
+            [5] => 25
+            [6] => 2026-03-20
+        )
+
+    [trace] => #0 C:\xampp\htdocs\golden\goldenz\includes\database.php(117): PDO->prepare('SELECT \n       ...')
+#1 C:\xampp\htdocs\golden\goldenz\includes\database.php(4740): execute_query('SELECT \n       ...', Array)
+#2 C:\xampp\htdocs\golden\goldenz\includes\page-header.php(286): get_license_notifications(25, 60)
+#3 C:\xampp\htdocs\golden\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\golden\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /golden/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 16:52:02] [execute_query] User: hradmin (ID: 25) | IP: ::1
+Error: PDO Error [42S02]: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'goldenz_hr.notification_status' doesn't exist
+Data: Array
+(
+    [sql] => SELECT 
+                    e.id as employee_id,
+                    e.employee_no,
+                    e.surname,
+                    e.first_name,
+                    e.middle_name,
+                    e.post,
+                    e.rlm_exp,
+                    STR_TO_DATE(e.rlm_exp, '%m/%d/%Y') as rlm_exp_date,
+                    DATEDIFF(STR_TO_DATE(e.rlm_exp, '%m/%d/%Y'), ?) as days_until_expiry,
+                    CASE 
+                        WHEN STR_TO_DATE(e.rlm_exp, '%m/%d/%Y') < ? THEN 'expired'
+                        WHEN DATEDIFF(STR_TO_DATE(e.rlm_exp, '%m/%d/%Y'), ?) <= 14 THEN 'urgent'
+                        WHEN DATEDIFF(STR_TO_DATE(e.rlm_exp, '%m/%d/%Y'), ?) <= 30 THEN 'high'
+                        WHEN DATEDIFF(STR_TO_DATE(e.rlm_exp, '%m/%d/%Y'), ?) <= 45 THEN 'medium'
+                        ELSE 'low'
+                    END as priority,
+                    ns.is_read,
+                    ns.is_dismissed,
+                    ns.read_at,
+                    ns.dismissed_at
+                FROM employees e LEFT JOIN notification_status ns ON 
+                      CONCAT('clearance_', e.id) = ns.notification_id 
+                      AND ns.user_id = ? 
+                      AND ns.notification_type = 'clearance' WHERE e.status = 'Active'
+                  AND e.rlm_exp IS NOT NULL
+                  AND e.rlm_exp != ''
+                  AND STR_TO_DATE(e.rlm_exp, '%m/%d/%Y') IS NOT NULL
+                  AND STR_TO_DATE(e.rlm_exp, '%m/%d/%Y') <= ? AND (ns.is_dismissed IS NULL OR ns.is_dismissed = 0) ORDER BY STR_TO_DATE(e.rlm_exp, '%m/%d/%Y') ASC
+    [params] => Array
+        (
+            [0] => 2026-01-19
+            [1] => 2026-01-19
+            [2] => 2026-01-19
+            [3] => 2026-01-19
+            [4] => 2026-01-19
+            [5] => 25
+            [6] => 2026-03-20
+        )
+
+    [trace] => #0 C:\xampp\htdocs\golden\goldenz\includes\database.php(117): PDO->prepare('SELECT \n       ...')
+#1 C:\xampp\htdocs\golden\goldenz\includes\database.php(4804): execute_query('SELECT \n       ...', Array)
+#2 C:\xampp\htdocs\golden\goldenz\includes\page-header.php(296): get_clearance_notifications(25, 60)
+#3 C:\xampp\htdocs\golden\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\golden\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /golden/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 16:52:02] [execute_query] User: hradmin (ID: 25) | IP: ::1
+Error: PDO Error [42S02]: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'goldenz_hr.notification_status' doesn't exist
+Data: Array
+(
+    [sql] => SELECT ea.*, e.employee_no, e.surname, e.first_name, e.middle_name, e.post, 
+                        u1.name as created_by_name, u2.name as acknowledged_by_name,
+                        ns.is_read, ns.is_dismissed, ns.read_at, ns.dismissed_at
+                 FROM employee_alerts ea
+                 JOIN employees e ON ea.employee_id = e.id
+                 LEFT JOIN users u1 ON ea.created_by = u1.id
+                 LEFT JOIN users u2 ON ea.acknowledged_by = u2.id LEFT JOIN notification_status ns ON ea.id = ns.notification_id 
+                      AND ns.user_id = ? AND ns.notification_type = 'alert' WHERE ea.status = ? AND (ns.is_dismissed IS NULL OR ns.is_dismissed = 0) ORDER BY ea.priority DESC, ea.due_date ASC, ea.created_at DESC
+    [params] => Array
+        (
+            [0] => 25
+            [1] => active
+        )
+
+    [trace] => #0 C:\xampp\htdocs\golden\goldenz\includes\database.php(117): PDO->prepare('SELECT ea.*, e....')
+#1 C:\xampp\htdocs\golden\goldenz\includes\database.php(1251): execute_query('SELECT ea.*, e....', Array)
+#2 C:\xampp\htdocs\golden\goldenz\includes\page-header.php(306): get_employee_alerts('active', NULL, 25)
+#3 C:\xampp\htdocs\golden\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\golden\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /golden/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 16:52:02] [execute_query] User: hradmin (ID: 25) | IP: ::1
+Error: PDO Error [42S02]: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'goldenz_hr.notification_status' doesn't exist
+Data: Array
+(
+    [sql] => SELECT COUNT(*) as count
+                FROM employee_alerts ea
+                LEFT JOIN notification_status ns ON ea.id = ns.notification_id 
+                    AND ns.user_id = ? 
+                    AND ns.notification_type = 'alert'
+                WHERE ea.status = 'active' 
+                AND (ns.is_read IS NULL OR ns.is_read = 0)
+                AND (ns.is_dismissed IS NULL OR ns.is_dismissed = 0)
+    [params] => Array
+        (
+            [0] => 25
+        )
+
+    [trace] => #0 C:\xampp\htdocs\golden\goldenz\includes\database.php(117): PDO->prepare('SELECT COUNT(*)...')
+#1 C:\xampp\htdocs\golden\goldenz\includes\database.php(4828): execute_query('SELECT COUNT(*)...', Array)
+#2 C:\xampp\htdocs\golden\goldenz\includes\page-header.php(316): get_unread_notification_count(25)
+#3 C:\xampp\htdocs\golden\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\golden\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /golden/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 16:52:14] [execute_query] User: hradmin (ID: 25) | IP: ::1
+Error: PDO Error [42S22]: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ns.is_read' in 'field list'
+Data: Array
+(
+    [sql] => SELECT ea.*, e.employee_no, e.surname, e.first_name, e.middle_name, e.post, 
+                        u1.name as created_by_name, u2.name as acknowledged_by_name,
+                        ns.is_read, ns.is_dismissed, ns.read_at, ns.dismissed_at
+                 FROM employee_alerts ea
+                 JOIN employees e ON ea.employee_id = e.id
+                 LEFT JOIN users u1 ON ea.created_by = u1.id
+                 LEFT JOIN users u2 ON ea.acknowledged_by = u2.id WHERE ea.status = ? ORDER BY ea.priority DESC, ea.due_date ASC, ea.created_at DESC
+    [params] => Array
+        (
+            [0] => active
+        )
+
+    [trace] => #0 C:\xampp\htdocs\golden\goldenz\includes\database.php(117): PDO->prepare('SELECT ea.*, e....')
+#1 C:\xampp\htdocs\golden\goldenz\includes\database.php(1251): execute_query('SELECT ea.*, e....', Array)
+#2 C:\xampp\htdocs\golden\goldenz\includes\page-header.php(196): get_employee_alerts('active', NULL)
+#3 C:\xampp\htdocs\golden\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\golden\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /golden/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 16:52:14] [execute_query] User: hradmin (ID: 25) | IP: ::1
+Error: PDO Error [42S02]: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'goldenz_hr.notification_status' doesn't exist
+Data: Array
+(
+    [sql] => SELECT 
+                    e.id as employee_id,
+                    e.employee_no,
+                    e.surname,
+                    e.first_name,
+                    e.middle_name,
+                    e.post,
+                    e.license_no,
+                    e.license_exp_date,
+                    DATEDIFF(e.license_exp_date, ?) as days_until_expiry,
+                    CASE 
+                        WHEN e.license_exp_date < ? THEN 'expired'
+                        WHEN DATEDIFF(e.license_exp_date, ?) <= 7 THEN 'urgent'
+                        WHEN DATEDIFF(e.license_exp_date, ?) <= 15 THEN 'high'
+                        WHEN DATEDIFF(e.license_exp_date, ?) <= 30 THEN 'medium'
+                        ELSE 'low'
+                    END as priority,
+                    ns.is_read,
+                    ns.is_dismissed,
+                    ns.read_at,
+                    ns.dismissed_at
+                FROM employees e LEFT JOIN notification_status ns ON 
+                      CONCAT('license_', e.id) = ns.notification_id 
+                      AND ns.user_id = ? 
+                      AND ns.notification_type = 'license' WHERE e.status = 'Active'
+                  AND e.license_exp_date IS NOT NULL
+                  AND e.license_exp_date <= ? AND (ns.is_dismissed IS NULL OR ns.is_dismissed = 0) ORDER BY e.license_exp_date ASC
+    [params] => Array
+        (
+            [0] => 2026-01-19
+            [1] => 2026-01-19
+            [2] => 2026-01-19
+            [3] => 2026-01-19
+            [4] => 2026-01-19
+            [5] => 25
+            [6] => 2026-03-20
+        )
+
+    [trace] => #0 C:\xampp\htdocs\golden\goldenz\includes\database.php(117): PDO->prepare('SELECT \n       ...')
+#1 C:\xampp\htdocs\golden\goldenz\includes\database.php(4740): execute_query('SELECT \n       ...', Array)
+#2 C:\xampp\htdocs\golden\goldenz\includes\page-header.php(286): get_license_notifications(25, 60)
+#3 C:\xampp\htdocs\golden\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\golden\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /golden/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 16:52:14] [execute_query] User: hradmin (ID: 25) | IP: ::1
+Error: PDO Error [42S02]: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'goldenz_hr.notification_status' doesn't exist
+Data: Array
+(
+    [sql] => SELECT 
+                    e.id as employee_id,
+                    e.employee_no,
+                    e.surname,
+                    e.first_name,
+                    e.middle_name,
+                    e.post,
+                    e.rlm_exp,
+                    STR_TO_DATE(e.rlm_exp, '%m/%d/%Y') as rlm_exp_date,
+                    DATEDIFF(STR_TO_DATE(e.rlm_exp, '%m/%d/%Y'), ?) as days_until_expiry,
+                    CASE 
+                        WHEN STR_TO_DATE(e.rlm_exp, '%m/%d/%Y') < ? THEN 'expired'
+                        WHEN DATEDIFF(STR_TO_DATE(e.rlm_exp, '%m/%d/%Y'), ?) <= 14 THEN 'urgent'
+                        WHEN DATEDIFF(STR_TO_DATE(e.rlm_exp, '%m/%d/%Y'), ?) <= 30 THEN 'high'
+                        WHEN DATEDIFF(STR_TO_DATE(e.rlm_exp, '%m/%d/%Y'), ?) <= 45 THEN 'medium'
+                        ELSE 'low'
+                    END as priority,
+                    ns.is_read,
+                    ns.is_dismissed,
+                    ns.read_at,
+                    ns.dismissed_at
+                FROM employees e LEFT JOIN notification_status ns ON 
+                      CONCAT('clearance_', e.id) = ns.notification_id 
+                      AND ns.user_id = ? 
+                      AND ns.notification_type = 'clearance' WHERE e.status = 'Active'
+                  AND e.rlm_exp IS NOT NULL
+                  AND e.rlm_exp != ''
+                  AND STR_TO_DATE(e.rlm_exp, '%m/%d/%Y') IS NOT NULL
+                  AND STR_TO_DATE(e.rlm_exp, '%m/%d/%Y') <= ? AND (ns.is_dismissed IS NULL OR ns.is_dismissed = 0) ORDER BY STR_TO_DATE(e.rlm_exp, '%m/%d/%Y') ASC
+    [params] => Array
+        (
+            [0] => 2026-01-19
+            [1] => 2026-01-19
+            [2] => 2026-01-19
+            [3] => 2026-01-19
+            [4] => 2026-01-19
+            [5] => 25
+            [6] => 2026-03-20
+        )
+
+    [trace] => #0 C:\xampp\htdocs\golden\goldenz\includes\database.php(117): PDO->prepare('SELECT \n       ...')
+#1 C:\xampp\htdocs\golden\goldenz\includes\database.php(4804): execute_query('SELECT \n       ...', Array)
+#2 C:\xampp\htdocs\golden\goldenz\includes\page-header.php(296): get_clearance_notifications(25, 60)
+#3 C:\xampp\htdocs\golden\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\golden\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /golden/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 16:52:14] [execute_query] User: hradmin (ID: 25) | IP: ::1
+Error: PDO Error [42S02]: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'goldenz_hr.notification_status' doesn't exist
+Data: Array
+(
+    [sql] => SELECT ea.*, e.employee_no, e.surname, e.first_name, e.middle_name, e.post, 
+                        u1.name as created_by_name, u2.name as acknowledged_by_name,
+                        ns.is_read, ns.is_dismissed, ns.read_at, ns.dismissed_at
+                 FROM employee_alerts ea
+                 JOIN employees e ON ea.employee_id = e.id
+                 LEFT JOIN users u1 ON ea.created_by = u1.id
+                 LEFT JOIN users u2 ON ea.acknowledged_by = u2.id LEFT JOIN notification_status ns ON ea.id = ns.notification_id 
+                      AND ns.user_id = ? AND ns.notification_type = 'alert' WHERE ea.status = ? AND (ns.is_dismissed IS NULL OR ns.is_dismissed = 0) ORDER BY ea.priority DESC, ea.due_date ASC, ea.created_at DESC
+    [params] => Array
+        (
+            [0] => 25
+            [1] => active
+        )
+
+    [trace] => #0 C:\xampp\htdocs\golden\goldenz\includes\database.php(117): PDO->prepare('SELECT ea.*, e....')
+#1 C:\xampp\htdocs\golden\goldenz\includes\database.php(1251): execute_query('SELECT ea.*, e....', Array)
+#2 C:\xampp\htdocs\golden\goldenz\includes\page-header.php(306): get_employee_alerts('active', NULL, 25)
+#3 C:\xampp\htdocs\golden\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\golden\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /golden/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 16:52:14] [execute_query] User: hradmin (ID: 25) | IP: ::1
+Error: PDO Error [42S02]: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'goldenz_hr.notification_status' doesn't exist
+Data: Array
+(
+    [sql] => SELECT COUNT(*) as count
+                FROM employee_alerts ea
+                LEFT JOIN notification_status ns ON ea.id = ns.notification_id 
+                    AND ns.user_id = ? 
+                    AND ns.notification_type = 'alert'
+                WHERE ea.status = 'active' 
+                AND (ns.is_read IS NULL OR ns.is_read = 0)
+                AND (ns.is_dismissed IS NULL OR ns.is_dismissed = 0)
+    [params] => Array
+        (
+            [0] => 25
+        )
+
+    [trace] => #0 C:\xampp\htdocs\golden\goldenz\includes\database.php(117): PDO->prepare('SELECT COUNT(*)...')
+#1 C:\xampp\htdocs\golden\goldenz\includes\database.php(4828): execute_query('SELECT COUNT(*)...', Array)
+#2 C:\xampp\htdocs\golden\goldenz\includes\page-header.php(316): get_unread_notification_count(25)
+#3 C:\xampp\htdocs\golden\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\golden\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /golden/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
