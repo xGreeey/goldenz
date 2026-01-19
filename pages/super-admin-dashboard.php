@@ -105,7 +105,7 @@ $users_by_role = $stats['users_by_role'] ?? [];
     <div class="row g-4 mb-5">
         <!-- Total Users -->
         <div class="col-md-3 col-sm-6">
-            <div class="card stat-card-modern h-100">
+            <div class="card stat-card-modern stat-card-primary h-100">
                 <div class="card-body-modern">
                     <div class="stat-header">
                         <span class="stat-label">Total Users</span>
