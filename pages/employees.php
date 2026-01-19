@@ -455,7 +455,7 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
         <div class="card-body-modern">
             <div class="card-header-modern mb-4">
                 <h5 class="card-title-modern">Employee List</h5>
-                <small class="card-subtitle">Viewing <?php echo count($employees); ?> of <?php echo number_format($total_all_employees); ?> total employees</small>
+                <small class="card-subtitle">Viewing <?php echo count($paginated_employees); ?> of <?php echo number_format($total_all_employees); ?> total employees</small>
             </div>
             <div class="table-container">
                 <table class="employees-table">

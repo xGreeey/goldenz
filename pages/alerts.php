@@ -713,14 +713,13 @@ try {
                     <table class="table table-hover table-sm">
                         <thead>
                             <tr>
-                                <th style="width: 12%;">Timestamp</th>
-                                <th style="width: 12%;">User</th>
-                                <th style="width: 10%;">Action</th>
-                                <th style="width: 10%;">Table</th>
-                                <th style="width: 12%;">Record</th>
-                                <th style="width: 28%;">Changes</th>
+                                <th style="width: 14%;">Timestamp</th>
+                                <th style="width: 14%;">User</th>
+                                <th style="width: 12%;">Action</th>
+                                <th style="width: 14%;">Record</th>
+                                <th style="width: 32%;">Changes</th>
                                 <th style="width: 10%;">IP Address</th>
-                                <th style="width: 6%;">Details</th>
+                                <th style="width: 4%;">Details</th>
                             </tr>
                         </thead>
                         <tbody id="auditTrailBody">
@@ -753,7 +752,7 @@ try {
                             if (empty($audit_logs)):
                             ?>
                             <tr>
-                                <td colspan="8" class="text-center py-4">
+                                <td colspan="7" class="text-center py-4">
                                     <div class="text-muted">
                                         <i class="fas fa-inbox fa-2x mb-2"></i>
                                         <p class="mb-0">No audit logs found</p>
@@ -784,9 +783,6 @@ try {
                                         ?>">
                                             <?php echo htmlspecialchars($log['action']); ?>
                                         </span>
-                                    </td>
-                                    <td>
-                                        <code><?php echo htmlspecialchars($log['table_name'] ?? 'N/A'); ?></code>
                                     </td>
                                     <td>
                                         <?php if ($log['record_id']): ?>
@@ -1146,22 +1142,21 @@ function refreshAuditTrail() {
 function exportAuditTrail() {
     // Export audit trail to CSV
     const table = document.querySelector('#auditTrailBody').closest('table');
-    let csv = 'Timestamp,User,Action,Table,Record,Changes,IP Address,Details\n';
+    let csv = 'Timestamp,User,Action,Record,Changes,IP Address,Details\n';
     
     const rows = table.querySelectorAll('tbody tr');
     rows.forEach(row => {
         const cells = row.querySelectorAll('td');
-        if (cells.length >= 8) {
+        if (cells.length >= 7) {
             const timestamp = cells[0].textContent.trim().replace(/\n/g, ' ');
             const user = cells[1].textContent.trim().replace(/\n/g, ' ');
             const action = cells[2].textContent.trim();
-            const tableName = cells[3].textContent.trim();
-            const record = cells[4].textContent.trim();
-            const changes = cells[5].textContent.trim();
-            const ip = cells[6].textContent.trim();
-            const details = cells[7].textContent.trim();
+            const record = cells[3].textContent.trim();
+            const changes = cells[4].textContent.trim();
+            const ip = cells[5].textContent.trim();
+            const details = cells[6].textContent.trim();
             
-            csv += `"${timestamp}","${user}","${action}","${tableName}","${record}","${changes}","${ip}","${details}"\n`;
+            csv += `"${timestamp}","${user}","${action}","${record}","${changes}","${ip}","${details}"\n`;
         }
     });
     
