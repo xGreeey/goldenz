@@ -2940,6 +2940,14 @@ body.portal-super-admin .hrdash-welcome__chevron {
     margin-left: 0.25rem !important;
 }
 
+body.portal-super-admin .hrdash-welcome__user-name {
+    font-size: 0.875rem !important;
+    font-weight: 600 !important;
+    color: #1e293b !important;
+    margin-right: 0.5rem !important;
+    white-space: nowrap !important;
+}
+
 /* Super Admin: Notification dropdown menu - match HR Admin exactly */
 body.portal-super-admin .hrdash-notification-dropdown {
     min-width: 320px !important;
@@ -3169,6 +3177,10 @@ html[data-theme="dark"] body.portal-super-admin .hrdash-welcome__icon-btn:hover 
 
 html[data-theme="dark"] body.portal-super-admin .hrdash-welcome__chevron {
     color: var(--interface-text-muted) !important;
+}
+
+html[data-theme="dark"] body.portal-super-admin .hrdash-welcome__user-name {
+    color: var(--interface-text) !important;
 }
 
 /* Dark theme: page headers */
