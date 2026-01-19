@@ -28,63 +28,218 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Form Validation and Submission
+    // Professional Form Validation System
     const loginForm = document.getElementById('loginForm');
+    const usernameInput = document.getElementById('username');
+    const passwordInput = document.getElementById('password');
+    const submitBtn = document.getElementById('submitBtn');
+    const validationAlert = document.getElementById('validationAlert');
+    const closeAlertBtn = document.getElementById('closeAlert');
+    
+    // System Alert Functions
+    function showSystemAlert(title, message) {
+        if (validationAlert) {
+            document.getElementById('alertTitle').textContent = title;
+            document.getElementById('alertMessage').textContent = message;
+            validationAlert.classList.remove('d-none');
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                hideSystemAlert();
+            }, 5000);
+        }
+    }
+    
+    function hideSystemAlert() {
+        if (validationAlert) {
+            validationAlert.classList.add('d-none');
+        }
+    }
+    
+    // Close alert button
+    if (closeAlertBtn) {
+        closeAlertBtn.addEventListener('click', hideSystemAlert);
+    }
+    
+    // Validation Rules
+    const validationRules = {
+        username: {
+            required: true,
+            minLength: 3,
+            maxLength: 100,
+            pattern: /^[a-zA-Z0-9._@+-]+$/,
+            messages: {
+                required: 'Username is required',
+                minLength: 'Username must be at least 3 characters',
+                maxLength: 'Username cannot exceed 100 characters',
+                pattern: 'Username contains invalid characters'
+            }
+        },
+        password: {
+            required: true,
+            minLength: 8,
+            maxLength: 255,
+            messages: {
+                required: 'Password is required',
+                minLength: 'Password must be at least 8 characters',
+                maxLength: 'Password is too long'
+            }
+        }
+    };
+    
+    // Validation Function
+    function validateField(input, rules) {
+        const value = input.value.trim();
+        const errorElement = document.getElementById(input.id + '-error');
+        let isValid = true;
+        let errorMessage = '';
+        
+        // Required check
+        if (rules.required && value === '') {
+            isValid = false;
+            errorMessage = rules.messages.required;
+        }
+        
+        // Min length check
+        else if (rules.minLength && value.length > 0 && value.length < rules.minLength) {
+            isValid = false;
+            errorMessage = rules.messages.minLength;
+        }
+        
+        // Max length check
+        else if (rules.maxLength && value.length > rules.maxLength) {
+            isValid = false;
+            errorMessage = rules.messages.maxLength;
+        }
+        
+        // Pattern check
+        else if (rules.pattern && value.length > 0 && !rules.pattern.test(value)) {
+            isValid = false;
+            errorMessage = rules.messages.pattern;
+        }
+        
+        // Update UI
+        if (!isValid) {
+            input.classList.add('is-invalid');
+            input.classList.remove('is-valid');
+            input.setAttribute('aria-invalid', 'true');
+            if (errorElement) {
+                errorElement.textContent = errorMessage;
+            }
+        } else {
+            input.classList.remove('is-invalid');
+            if (value.length > 0) {
+                input.classList.add('is-valid');
+            }
+            input.setAttribute('aria-invalid', 'false');
+            if (errorElement) {
+                errorElement.textContent = '';
+            }
+        }
+        
+        return isValid;
+    }
+    
+    // Real-time validation on blur
+    if (usernameInput) {
+        usernameInput.addEventListener('blur', function() {
+            validateField(this, validationRules.username);
+        });
+        
+        // Clear error on input
+        usernameInput.addEventListener('input', function() {
+            if (this.classList.contains('is-invalid')) {
+                validateField(this, validationRules.username);
+            }
+        });
+    }
+    
+    if (passwordInput) {
+        passwordInput.addEventListener('blur', function() {
+            validateField(this, validationRules.password);
+        });
+        
+        // Clear error on input
+        passwordInput.addEventListener('input', function() {
+            if (this.classList.contains('is-invalid')) {
+                validateField(this, validationRules.password);
+            }
+        });
+    }
+    
+    // Form Submission with Complete Validation
     if (loginForm) {
         loginForm.addEventListener('submit', function(e) {
             console.log('Form submit event triggered');
             
-            const username = document.getElementById('username');
-            const password = document.getElementById('password');
+            let isFormValid = true;
             
-            // Basic validation - only prevent if fields are empty
-            if (!username || !username.value.trim()) {
-                e.preventDefault();
-                console.log('Validation failed: username empty');
-                showAlert('Please enter your username', 'warning');
-                if (username) username.focus();
-                return false;
+            // Validate all fields
+            if (usernameInput) {
+                if (!validateField(usernameInput, validationRules.username)) {
+                    isFormValid = false;
+                }
             }
             
-            if (!password || !password.value) {
+            if (passwordInput) {
+                if (!validateField(passwordInput, validationRules.password)) {
+                    isFormValid = false;
+                }
+            }
+            
+            // Prevent submission if validation fails
+            if (!isFormValid) {
                 e.preventDefault();
-                console.log('Validation failed: password empty');
-                showAlert('Please enter your password', 'warning');
-                if (password) password.focus();
+                console.log('Validation failed, form submission prevented');
+                
+                // Show professional system alert
+                showSystemAlert(
+                    'Required Fields Missing',
+                    'Please enter both username and password to continue.'
+                );
+                
+                // Focus on first invalid field
+                const firstInvalid = loginForm.querySelector('.is-invalid');
+                if (firstInvalid) {
+                    firstInvalid.focus();
+                }
+                
                 return false;
             }
             
             console.log('Validation passed, allowing form submission');
             
-            // Show loading state (but DON'T prevent form submission)
-            const submitBtn = loginForm.querySelector('button[type="submit"]');
+            // Show loading state
             if (submitBtn) {
                 submitBtn.disabled = true;
+                submitBtn.setAttribute('aria-busy', 'true');
+                
                 const btnText = submitBtn.querySelector('.btn-text');
+                const btnSpinner = submitBtn.querySelector('.btn-spinner');
+                
                 if (btnText) {
-                    btnText.textContent = 'Signing in...';
+                    btnText.style.opacity = '0';
                 }
-                const spinner = submitBtn.querySelector('.spinner-border');
-                if (spinner) {
-                    spinner.classList.remove('d-none');
+                if (btnSpinner) {
+                    btnSpinner.classList.remove('d-none');
                 }
                 
-                // Re-enable after 15 seconds as fallback (in case form doesn't submit)
+                // Re-enable after 15 seconds as fallback
                 setTimeout(() => {
                     if (submitBtn.disabled) {
                         submitBtn.disabled = false;
+                        submitBtn.setAttribute('aria-busy', 'false');
                         if (btnText) {
-                            btnText.textContent = 'Sign in';
+                            btnText.style.opacity = '1';
                         }
-                        if (spinner) {
-                            spinner.classList.add('d-none');
+                        if (btnSpinner) {
+                            btnSpinner.classList.add('d-none');
                         }
                     }
                 }, 15000);
             }
             
-            // IMPORTANT: Don't call e.preventDefault() here - allow form to submit!
-            // The form will POST to server and PHP will handle the redirect
+            // Allow form to submit
             console.log('Form will submit to:', loginForm.action || window.location.href);
         });
     }

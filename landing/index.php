@@ -441,6 +441,7 @@ ob_end_flush();
     <link href="assets/landing.css" rel="stylesheet">
     <!-- font-override.css moved after landing.css to allow overrides -->
     <link href="../assets/css/font-override.css" rel="stylesheet">
+    <link href="../assets/css/notifications.css" rel="stylesheet">
     <!-- Number rendering fix for Windows 10/11 -->
     <!-- number-rendering-fix.css merged into font-override.css -->
     
@@ -601,102 +602,339 @@ ob_end_flush();
     <meta http-equiv="X-XSS-Protection" content="1; mode=block">
 </head>
 <body>
+    <!-- Floating Background Elements - Professional Design -->
+    <div class="floating-elements">
+        <!-- Strategic Placement: Left Panel Area -->
+        <i class="fas fa-shield-alt floating-icon shield size-xl" style="top: 18%; left: 8%; --float-duration: 32s;"></i>
+        <i class="fas fa-star floating-icon star size-lg" style="top: 68%; left: 15%; --float-duration: 28s;"></i>
+        <i class="fas fa-certificate floating-icon badge size-md" style="top: 42%; left: 12%; --float-duration: 26s;"></i>
+        
+        <!-- Center Accent Elements -->
+        <div class="floating-icon circle size-xl" style="top: 25%; left: 48%; --float-duration: 22s;"></div>
+        <i class="fas fa-user-shield floating-icon cap size-lg" style="top: 55%; left: 45%; --float-duration: 30s;"></i>
+        <div class="floating-icon circle size-lg" style="top: 78%; left: 42%; --float-duration: 24s;"></div>
+        
+        <!-- Strategic Placement: Right Panel Area -->
+        <i class="fas fa-award floating-icon badge size-lg" style="top: 15%; left: 82%; --float-duration: 29s;"></i>
+        <i class="fas fa-star floating-icon star size-md" style="top: 48%; left: 88%; --float-duration: 27s;"></i>
+        <i class="fas fa-shield-alt floating-icon shield size-md" style="top: 72%; left: 85%; --float-duration: 25s;"></i>
+        
+        <!-- Accent Highlights -->
+        <i class="fas fa-star floating-icon star size-sm" style="top: 8%; left: 35%; --float-duration: 26s;"></i>
+        <i class="fas fa-id-badge floating-icon badge size-sm" style="top: 88%; left: 28%; --float-duration: 28s;"></i>
+        <div class="floating-icon circle size-md" style="top: 35%; left: 92%; --float-duration: 23s;"></div>
+    </div>
+    
+    <!-- 
+    ================================================================
+    RESPONSIVE LOGIN LAYOUT - ORIENTATION-FIRST DESIGN
+    ================================================================
+    
+    DESKTOP (Landscape):
+    - Two-column layout: 55% branding (left) | 45% login (right)
+    - Full content visibility
+    
+    TABLET (Portrait):
+    - Vertical stacking: Branding (top) | Login (bottom)
+    - Reduced content, centered login
+    
+    TABLET (Landscape):
+    - Horizontal layout: 40% branding | 60% login
+    - Full content visibility
+    
+    MOBILE (≤767px Portrait):
+    - Single-column, task-focused
+    - Minimal branding (logo + name)
+    - Hidden: description, social links, buttons
+    - Full-width login form priority
+    
+    MOBILE (≤767px Landscape, Short Height):
+    - Compact horizontal: 35% branding | 65% login
+    - Minimal content
+    
+    The layout adapts to ACTUAL device orientation and capabilities,
+    not just browser window resizing.
+    ================================================================
+    -->
     <div class="login-split-container">
         <!-- Left Branded Panel -->
         <div class="login-branded-panel">
             <div class="branded-content">
-                <img src="../public/logo.svg" alt="Golden Z-5 Logo" class="branded-logo" onerror="this.style.display='none'">
-                <h1 class="branded-headline">Welcome to Golden Z-5</h1>
-                <p class="branded-description">Your comprehensive HR Management System for efficient workforce administration and streamlined operations.</p>
+                <img src="../public/logo.svg" alt="Golden Z-5 Security and Investigation Agency, Inc. Logo" class="branded-logo" onerror="this.style.display='none'">
+                <h1 class="branded-headline">Golden Z-5 Security and Investigation Agency, Inc.</h1>
+                <p class="branded-description">
+                    Human Resources Management System<br>
+                    Licensed by PNP-CSG-SAGSD | Registered with SEC
+                </p>
+                
+                <!-- See More Button -->
+                <button type="button" class="see-more-btn" id="seeMoreBtn">
+                    <i class="fas fa-info-circle"></i> System Information
+                </button>
+                
+                <!-- Social Links -->
+                <div class="social-links">
+                    <a href="mailto:goldenzfive@yahoo.com.ph" class="social-link" title="Email us">
+                        <i class="fas fa-envelope"></i>
+                    </a>
+                    <a href="https://www.facebook.com/goldenZ5SA" target="_blank" rel="noopener noreferrer" class="social-link" title="Visit our Facebook page">
+                        <i class="fab fa-facebook-f"></i>
+                    </a>
+                </div>
             </div>
         </div>
 
-        <!-- Right Form Panel -->
+        <!-- Right Form Panel - Centered Card -->
         <div class="login-form-panel">
             <div class="auth-form-container">
                 <div class="auth-form-card">
                     <div class="auth-header">
-                        <h2 class="auth-title">Sign in</h2>
-                        <p class="auth-subtitle">Enter your credentials to access your account</p>
+                        <h2 class="auth-title">
+                            Sign In
+                        </h2>
+                        <p class="auth-subtitle">Enter your authorized credentials to access the system</p>
                     </div>
 
                 <?php if ($error): ?>
-                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                        <i class="fas fa-exclamation-circle me-2"></i>
-                        <?php echo htmlspecialchars($error); ?>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>
+                    <div class="alert alert-danger" role="alert">
+                        <div class="alert-icon">
+                            <i class="fas fa-exclamation-circle"></i>
+                        </div>
+                        <div class="alert-content">
+                            <strong>Access Denied</strong>
+                            <p>Invalid credentials. Verify your username and password and try again.</p>
+                        </div>
                     </div>
                 <?php endif; ?>
                 
                 <?php if ($show_password_change_modal): ?>
                     <div class="alert alert-info alert-dismissible fade show" role="alert">
                         <i class="fas fa-info-circle me-2"></i>
-                        This is your first login. Please set a new password to continue.
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>
+                        Password change required. You must set a new password to continue.
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
                 <?php endif; ?>
 
                 <?php if (!$show_password_change_modal): ?>
-                <form method="POST" action="" id="loginForm" class="auth-form">
+                <form method="POST" action="" id="loginForm" class="auth-form" novalidate>
                     <input type="hidden" name="login" value="1">
+                    <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token'] ?? ''; ?>">
+                    
+                    <!-- Validation Alert (Hidden by default) -->
+                    <div class="system-alert system-alert-warning d-none" id="validationAlert" role="alert">
+                        <div class="system-alert-icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="system-alert-content">
+                            <strong id="alertTitle">Required Information</strong>
+                            <p id="alertMessage">All fields must be completed.</p>
+                        </div>
+                        <button type="button" class="system-alert-close" id="closeAlert" aria-label="Close">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
                     
                     <div class="form-group">
-                        <label for="username" class="form-label">Username</label>
-                        <div class="input-group">
+                        <label for="username" class="form-label">
+                            Username
+                            <span class="required-indicator" aria-label="Required">*</span>
+                        </label>
+                        <div class="input-wrapper">
+                            <div class="input-icon">
+                                <i class="fas fa-user"></i>
+                            </div>
                             <input type="text" 
                                    class="form-control" 
                                    id="username" 
                                    name="username" 
-                                   placeholder="Enter your username" 
+                                   placeholder="Username" 
                                    required 
                                    autocomplete="username"
                                    autofocus
-                                   value="<?php echo isset($_POST['username']) ? htmlspecialchars($_POST['username']) : ''; ?>">
+                                   minlength="3"
+                                   maxlength="100"
+                                   pattern="^[a-zA-Z0-9._@+-]+$"
+                                   aria-required="true"
+                                   aria-describedby="username-error"
+                                   data-validation-message="Enter a valid username"
+                                   value="<?php echo isset($_POST['username']) ? htmlspecialchars(trim($_POST['username'])) : ''; ?>">
+                            <div class="invalid-feedback" id="username-error" role="alert"></div>
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <label for="password" class="form-label">Password</label>
-                        <div class="input-group password-input-group">
+                        <label for="password" class="form-label">
+                            Password
+                            <span class="required-indicator" aria-label="Required">*</span>
+                        </label>
+                        <div class="input-wrapper">
+                            <div class="input-icon">
+                                <i class="fas fa-lock"></i>
+                            </div>
                             <input type="password" 
-                                   class="form-control" 
+                                   class="form-control password-input" 
                                    id="password" 
                                    name="password" 
-                                   placeholder="Enter your password" 
+                                   placeholder="Password" 
                                    required 
-                                   autocomplete="current-password">
-                            <button class="password-toggle" type="button" id="togglePassword">
-                                <i class="fas fa-eye" id="togglePasswordIcon"></i>
+                                   autocomplete="current-password"
+                                   minlength="8"
+                                   maxlength="255"
+                                   aria-required="true"
+                                   aria-describedby="password-error"
+                                   data-validation-message="Minimum 8 characters required">
+                            <button class="password-toggle" type="button" id="togglePassword" aria-label="Show password" tabindex="-1">
+                                <i class="fas fa-eye" id="togglePasswordIcon" aria-hidden="true"></i>
                             </button>
+                            <div class="invalid-feedback" id="password-error" role="alert"></div>
                         </div>
                     </div>
 
-                    <div class="d-grid">
-                        <button type="submit" name="login" class="btn btn-primary btn-lg" id="submitBtn">
-                            <span class="btn-text">Sign in</span>
-                            <span class="spinner-border spinner-border-sm d-none" id="submitSpinner" role="status" aria-hidden="true"></span>
-                        </button>
-                    </div>
-
-                    <div class="text-center mt-3">
-                        <a href="forgot-password.php" class="text-decoration-none" style="color: #2563eb; font-size: 0.875rem; font-weight: 500;">
-                            Forgot your password?
+                    <div class="form-actions">
+                        <div class="form-check remember-me">
+                            <input class="form-check-input" type="checkbox" id="rememberMe" name="remember_me" value="1">
+                            <label class="form-check-label" for="rememberMe">
+                                Remember credentials
+                            </label>
+                        </div>
+                        <a href="forgot-password.php" class="forgot-password-link" id="resetPasswordLink">
+                            <span class="link-text">Forgot password?</span>
+                            <span class="link-spinner d-none">
+                                <i class="fas fa-spinner fa-spin"></i>
+                            </span>
                         </a>
                     </div>
 
-                    <div class="text-center text-muted small mt-3">
-                        Need access? Contact your administrator.
+                    <div class="form-submit">
+                        <button type="submit" name="login" class="btn btn-primary btn-block" id="submitBtn">
+                            <span class="btn-text">Sign In</span>
+                            <span class="btn-spinner d-none" id="submitSpinner">
+                                <i class="fas fa-spinner fa-spin"></i>
+                            </span>
+                        </button>
+                    </div>
+
+                    <div class="form-footer">
+                        <div class="help-text">
+                            <i class="fas fa-info-circle"></i>
+                            <span>For assistance, contact your system administrator.</span>
+                        </div>
+                        <div class="security-notice">
+                            <i class="fas fa-shield-alt"></i>
+                            <span>Secure connection established</span>
+                        </div>
                     </div>
                 </form>
-                
-                <!-- Alerts Display Link -->
-                <div class="text-center mt-4">
-                    <a href="alerts-display.php" class="btn btn-outline-primary btn-lg" style="border-radius: 8px; padding: 0.75rem 2rem; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem;">
-                        <i class="fas fa-exclamation-triangle"></i>
-                        View License Alerts
-                    </a>
-                </div>
                 <?php endif; ?>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Notification Icon - Upper Right -->
+    <a href="alerts-display.php" class="notification-icon" title="View License Alerts">
+        <i class="fas fa-bell"></i>
+    </a>
+    
+    <!-- System Information Modal -->
+    <div class="system-info-modal" id="systemInfoModal">
+        <div class="system-info-overlay" id="systemInfoOverlay"></div>
+        <div class="system-info-content">
+            <button type="button" class="system-info-close" id="closeModalBtn" aria-label="Close">
+                <i class="fas fa-times"></i>
+            </button>
+            
+            <div class="system-info-header">
+                <img src="../public/logo.svg" alt="Golden Z-5 Logo" class="modal-logo" onerror="this.style.display='none'">
+                <h2>Golden Z-5 HR Management System</h2>
+                <p class="modal-subtitle">Comprehensive Workforce Management Solution</p>
+            </div>
+            
+            <div class="system-info-body">
+                <section class="info-section">
+                    <h3><i class="fas fa-building"></i> About Golden Z-5</h3>
+                    <p>
+                        <strong>Golden Z-5 Security and Investigation Agency, Inc.</strong> is duly licensed by the 
+                        PNP-CSG-SAGSD (Philippine National Police - Civil Security Group - Security Agencies and Guards 
+                        Supervision Division) and registered with the Securities and Exchange Commission to provide 
+                        professional Security Services.
+                    </p>
+                </section>
+                
+                <section class="info-section">
+                    <h3><i class="fas fa-desktop"></i> System Overview</h3>
+                    <p>
+                        The Golden Z-5 HR Management System is a comprehensive digital platform designed to streamline 
+                        workforce administration, enhance operational efficiency, and maintain compliance with regulatory 
+                        requirements.
+                    </p>
+                </section>
+                
+                <section class="info-section">
+                    <h3><i class="fas fa-users"></i> Departments & Users</h3>
+                    <div class="features-grid">
+                        <div class="feature-item">
+                            <i class="fas fa-user-shield"></i>
+                            <h4>Super Admin</h4>
+                            <p>System-wide control and configuration</p>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-user-tie"></i>
+                            <h4>HR Admin</h4>
+                            <p>Employee management and HR operations</p>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-calculator"></i>
+                            <h4>Accounting</h4>
+                            <p>Financial and payroll management</p>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-cogs"></i>
+                            <h4>Operations</h4>
+                            <p>Daily operations and deployment</p>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-truck"></i>
+                            <h4>Logistics</h4>
+                            <p>Resource and equipment management</p>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-user"></i>
+                            <h4>Employees</h4>
+                            <p>Staff access and self-service</p>
+                        </div>
+                    </div>
+                </section>
+                
+                <section class="info-section">
+                    <h3><i class="fas fa-star"></i> Key Features</h3>
+                    <ul class="features-list">
+                        <li><i class="fas fa-check-circle"></i> <strong>Employee Management:</strong> Complete employee records, profiles, and documentation</li>
+                        <li><i class="fas fa-check-circle"></i> <strong>Posts & Assignments:</strong> Security post management and guard deployment tracking</li>
+                        <li><i class="fas fa-check-circle"></i> <strong>Team Management:</strong> Department and team organization</li>
+                        <li><i class="fas fa-check-circle"></i> <strong>User Management:</strong> Role-based access control and permissions</li>
+                        <li><i class="fas fa-check-circle"></i> <strong>Alerts System:</strong> License expiry and compliance notifications</li>
+                        <li><i class="fas fa-check-circle"></i> <strong>Audit Trail:</strong> Complete activity logging and tracking</li>
+                        <li><i class="fas fa-check-circle"></i> <strong>System Logs:</strong> Security and system monitoring</li>
+                        <li><i class="fas fa-check-circle"></i> <strong>Dashboard:</strong> Real-time insights and analytics</li>
+                    </ul>
+                </section>
+                
+                <section class="info-section">
+                    <h3><i class="fas fa-shield-alt"></i> Security & Compliance</h3>
+                    <p>
+                        Built with enterprise-grade security features including role-based access control, 
+                        two-factor authentication, audit trails, password policies, and session management 
+                        to ensure data protection and regulatory compliance.
+                    </p>
+                </section>
+                
+                <section class="info-section contact-section">
+                    <h3><i class="fas fa-envelope"></i> Contact Information</h3>
+                    <div class="contact-info">
+                        <p><strong>Email:</strong> <a href="mailto:goldenzfive@yahoo.com.ph">goldenzfive@yahoo.com.ph</a></p>
+                        <p><strong>Facebook:</strong> <a href="https://www.facebook.com/goldenZ5SA" target="_blank" rel="noopener noreferrer">Golden Z-5 Security Agency</a></p>
+                    </div>
+                </section>
             </div>
         </div>
     </div>
@@ -789,6 +1027,7 @@ ob_end_flush();
 
     <!-- JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../assets/js/notifications.js"></script>
     <script>
     // Simplified JavaScript - minimal interference
     document.addEventListener('DOMContentLoaded', function() {
@@ -842,6 +1081,43 @@ ob_end_flush();
             window.scrollTo(0, 0);
             document.body.scrollTop = 0;
             document.documentElement.scrollTop = 0;
+        });
+        
+        // System Information Modal
+        const seeMoreBtn = document.getElementById('seeMoreBtn');
+        const systemInfoModal = document.getElementById('systemInfoModal');
+        const systemInfoOverlay = document.getElementById('systemInfoOverlay');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        
+        // Open modal
+        if (seeMoreBtn) {
+            seeMoreBtn.addEventListener('click', function() {
+                systemInfoModal.classList.add('active');
+                document.body.style.overflow = 'hidden'; // Prevent background scrolling
+            });
+        }
+        
+        // Close modal function
+        function closeModal() {
+            systemInfoModal.classList.remove('active');
+            document.body.style.overflow = ''; // Restore scrolling
+        }
+        
+        // Close on X button
+        if (closeModalBtn) {
+            closeModalBtn.addEventListener('click', closeModal);
+        }
+        
+        // Close on overlay click
+        if (systemInfoOverlay) {
+            systemInfoOverlay.addEventListener('click', closeModal);
+        }
+        
+        // Close on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && systemInfoModal.classList.contains('active')) {
+                closeModal();
+            }
         });
         
         // Toggle Password Visibility for login form
@@ -914,6 +1190,36 @@ ob_end_flush();
             });
         }
         
+        // System Alert Close Button
+        const closeAlertBtn = document.getElementById('closeAlert');
+        if (closeAlertBtn) {
+            closeAlertBtn.addEventListener('click', function() {
+                const validationAlert = document.getElementById('validationAlert');
+                if (validationAlert) {
+                    validationAlert.classList.add('d-none');
+                }
+            });
+        }
+        
+        // Reset Password Link - Show loading state
+        const resetPasswordLink = document.getElementById('resetPasswordLink');
+        if (resetPasswordLink) {
+            resetPasswordLink.addEventListener('click', function(e) {
+                // Add loading class
+                this.classList.add('loading');
+                
+                // Store original text
+                const linkText = this.querySelector('.link-text');
+                if (linkText) {
+                    linkText.setAttribute('data-original', linkText.textContent);
+                    linkText.textContent = 'Redirecting...';
+                }
+                
+                // Allow navigation to proceed
+                // The loading state will be visible during page transition
+            });
+        }
+        
         // Form submission - SIMPLIFIED
         const loginForm = document.getElementById('loginForm');
         if (loginForm) {
@@ -933,7 +1239,22 @@ ob_end_flush();
                 
                 // Basic validation
                 if (!username || !password) {
-                    alert('Please enter both username and password');
+                    // Show professional system alert
+                    const validationAlert = document.getElementById('validationAlert');
+                    const alertTitle = document.getElementById('alertTitle');
+                    const alertMessage = document.getElementById('alertMessage');
+                    
+                    if (validationAlert && alertTitle && alertMessage) {
+                        alertTitle.textContent = 'Required Fields Missing';
+                        alertMessage.textContent = 'Please enter both username and password to continue.';
+                        validationAlert.classList.remove('d-none');
+                        
+                        // Auto-hide after 5 seconds
+                        setTimeout(() => {
+                            validationAlert.classList.add('d-none');
+                        }, 5000);
+                    }
+                    
                     if (!username && usernameEl) {
                         usernameEl.focus();
                     } else if (passwordEl) {
