@@ -52,7 +52,7 @@ $page_subtitle = $current_page === 'dashboard'
         <p class="hrdash-welcome__subtitle"><?php echo htmlspecialchars($page_subtitle); ?></p>
     </div>
     <div class="hrdash-welcome__actions">
-        <span id="current-time-super-admin" class="hrdash-welcome__time"><?php echo strtolower(date('h:i A')); ?></span>
+        <span id="current-time-super-admin" class="hrdash-welcome__time"><?php echo strtolower(date('h:i:s A')); ?></span>
         
         <!-- Messages Dropdown -->
         <?php
@@ -288,7 +288,7 @@ $page_subtitle = $current_page === 'dashboard'
 </div>
 
 <script>
-// Update time display every minute for super admin
+// Update time display every second for super admin (with seconds)
 (function() {
     function updateTime() {
         const timeElement = document.getElementById('current-time-super-admin');
@@ -296,17 +296,19 @@ $page_subtitle = $current_page === 'dashboard'
             const now = new Date();
             const hours = now.getHours();
             const minutes = now.getMinutes();
+            const seconds = now.getSeconds();
             const ampm = hours >= 12 ? 'PM' : 'AM';
             const displayHours = hours % 12 || 12;
             const displayMinutes = minutes < 10 ? '0' + minutes : minutes;
-            timeElement.textContent = displayHours + ':' + displayMinutes + ' ' + ampm.toLowerCase();
+            const displaySeconds = seconds < 10 ? '0' + seconds : seconds;
+            timeElement.textContent = displayHours + ':' + displayMinutes + ':' + displaySeconds + ' ' + ampm.toLowerCase();
         }
     }
     
     // Update immediately
     updateTime();
     
-    // Update every minute
-    setInterval(updateTime, 60000);
+    // Update every second for live seconds display
+    setInterval(updateTime, 1000);
 })();
 </script>

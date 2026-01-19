@@ -680,12 +680,19 @@ body {
     background: #f5f5f7;
     transition: all 0.2s ease;
     min-height: var(--touch-target); /* 44px touch target */
+    box-sizing: border-box;
+    outline: none;
 }
 
 .input-group:focus-within {
     border-color: var(--blue-light);
     background: var(--white);
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    outline: none !important;
+    border-width: 2px;
+    border-radius: 0.75rem; /* Match exactly */
+    overflow: visible;
+    -webkit-box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .password-input-group {
@@ -699,11 +706,14 @@ body {
     color: var(--text-primary);
     padding: var(--space-3) var(--space-4); /* 12px 16px internal padding */
     font-size: var(--text-base);
-    outline: none;
+    outline: none !important;
     transition: all 0.2s ease;
     width: 100%;
     box-sizing: border-box;
     line-height: var(--leading-normal);
+    border-radius: var(--radius-md);
+    -webkit-appearance: none;
+    appearance: none;
 }
 
 .password-input-group .form-control {
@@ -717,17 +727,61 @@ body {
 }
 
 .form-control:focus {
-    outline: none;
+    outline: none !important;
+    box-shadow: none !important;
 }
 
 .form-control:hover {
-    background: #ececef;
+    background: transparent;
 }
 
 /* Input Wrapper with Icon Support */
 .input-wrapper {
     position: relative;
     width: 100%;
+    border: 2px solid transparent;
+    border-radius: 0.75rem; /* 12px - explicit value for consistency */
+    background: #f5f5f7;
+    transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    min-height: var(--touch-target);
+    /* Prevent any outline or double border issues */
+    outline: none !important;
+    -webkit-appearance: none;
+    appearance: none;
+    /* Ensure no clipping */
+    overflow: visible;
+}
+
+.input-wrapper:hover {
+    background: #ececef;
+}
+
+.input-wrapper:focus-within {
+    border-color: var(--blue-light);
+    background: var(--white);
+    /* Perfectly aligned focus ring - 3px offset from border edge, matches border-radius */
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    outline: none !important;
+    /* Ensure border stays consistent */
+    border-width: 2px;
+    border-radius: 0.75rem; /* Match exactly - 12px */
+    /* Prevent any clipping or overflow */
+    overflow: visible;
+    /* Ensure box-shadow follows border-radius perfectly */
+    -webkit-box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Remove any browser default outlines on child elements */
+.input-wrapper:focus-within *,
+.input-wrapper:focus-within *:focus,
+.input-wrapper:focus-within input,
+.input-wrapper:focus-within input:focus {
+    outline: none !important;
+    box-shadow: none !important;
+    border: none !important;
 }
 
 .input-icon {
@@ -762,8 +816,15 @@ body {
     background-color: rgba(239, 68, 68, 0.05);
 }
 
-.form-control.is-invalid:focus {
-    box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
+.input-wrapper:has(.form-control.is-invalid:focus),
+.input-wrapper:has(.form-control.is-invalid:focus-within) {
+    border-color: var(--red-primary);
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+    outline: none !important;
+    border-width: 2px;
+    border-radius: 0.75rem; /* Match exactly */
+    overflow: visible;
+    -webkit-box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
 }
 
 .form-control.is-valid {
@@ -771,8 +832,15 @@ body {
     background-color: rgba(16, 185, 129, 0.05);
 }
 
-.form-control.is-valid:focus {
-    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+.input-wrapper:has(.form-control.is-valid:focus),
+.input-wrapper:has(.form-control.is-valid:focus-within) {
+    border-color: #10b981;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+    outline: none !important;
+    border-width: 2px;
+    border-radius: 0.75rem; /* Match exactly */
+    overflow: visible;
+    -webkit-box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
 }
 
 .invalid-feedback {
@@ -788,14 +856,24 @@ body {
 }
 
 /* Validation States */
-.input-group:has(.form-control:invalid:not(:placeholder-shown)) {
+.input-wrapper:has(.form-control:invalid:not(:placeholder-shown)) {
     border-color: var(--red-primary);
     box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+    outline: none !important;
+    border-width: 2px;
+    border-radius: 0.75rem; /* Match exactly */
+    overflow: visible;
+    -webkit-box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
 }
 
-.input-group:has(.form-control:valid:not(:placeholder-shown)) {
+.input-wrapper:has(.form-control:valid:not(:placeholder-shown)) {
     border-color: var(--blue-light);
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    outline: none !important;
+    border-width: 2px;
+    border-radius: 0.75rem; /* Match exactly */
+    overflow: visible;
+    -webkit-box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .password-toggle {
@@ -1304,48 +1382,274 @@ body.login-transition-active .auth-form-card {
     z-index: 35;
 }
 
-/* Fullscreen circular loader, centered with transparent background */
+/* Premium Login Loading Animation - Fluid & High-End */
 .login-spinner-overlay {
     position: fixed;
     inset: 0;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    background: transparent;
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
     pointer-events: none;
     z-index: 40;
+    opacity: 0;
+    will-change: opacity;
 }
 
+.login-spinner-overlay.active {
+    opacity: 1;
+    transition: opacity 0.28s ease-out;
+}
+
+.login-spinner-overlay.fade-out {
+    opacity: 0;
+    transition: opacity 0.25s ease-in;
+}
+
+/* Vignette/radial gradient background to draw focus */
+.login-spinner-overlay::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at center, rgba(59, 130, 246, 0.08) 0%, transparent 65%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.login-spinner-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    transform: translateY(4px);
+    opacity: 0;
+    will-change: transform, opacity;
+    position: relative;
+    z-index: 1;
+}
+
+.login-spinner-overlay.active .login-spinner-container {
+    transform: translateY(0);
+    opacity: 1;
+    transition: transform 0.28s ease-out, opacity 0.28s ease-out;
+}
+
+.login-spinner-overlay.fade-out .login-spinner-container {
+    transform: translateY(0) scale(0.96);
+    opacity: 0;
+    transition: transform 0.25s ease-in, opacity 0.25s ease-in;
+}
+
+/* Refined circular spinner with gradient sweep */
 .login-spinner {
-    width: min(160px, 28vmin);
-    height: min(160px, 28vmin);
+    width: min(64px, 10vmin);
+    height: min(64px, 10vmin);
     border-radius: 50%;
-    border: 4px solid rgba(148, 163, 184, 0.18);
-    border-top-color: rgba(251, 191, 36, 0.95);
-    border-right-color: rgba(59, 130, 246, 0.9);
-    border-bottom-color: transparent;
-    border-left-color: transparent;
+    border: 2.5px solid rgba(148, 163, 184, 0.15);
+    border-top-color: rgba(251, 191, 36, 0.85);
+    border-right-color: rgba(59, 130, 246, 0.8);
+    border-bottom-color: rgba(148, 163, 184, 0.15);
+    border-left-color: rgba(148, 163, 184, 0.15);
     box-shadow:
-        0 0 26px rgba(250, 204, 21, 0.65),
-        0 0 40px rgba(59, 130, 246, 0.45);
+        0 0 16px rgba(251, 191, 36, 0.4),
+        0 0 24px rgba(59, 130, 246, 0.3),
+        0 2px 8px rgba(0, 0, 0, 0.1);
     margin: 0;
     padding: 0;
     transform-origin: center center;
-    animation: spinnerMotion 1.25s cubic-bezier(0.42, 0, 0.58, 1) infinite;
+    will-change: transform;
+    position: relative;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
 }
 
-@keyframes spinnerMotion {
+/* Outer glow effect */
+.login-spinner::before {
+    content: '';
+    position: absolute;
+    inset: -6px;
+    border-radius: 50%;
+    background: radial-gradient(
+        circle at center,
+        rgba(251, 191, 36, 0.2) 0%,
+        rgba(59, 130, 246, 0.15) 40%,
+        transparent 70%
+    );
+    pointer-events: none;
+    z-index: -1;
+    filter: blur(8px);
+    opacity: 0.7;
+}
+
+/* Gradient sweep animation - warm to cool traveling around ring */
+.login-spinner-overlay.active:not(.fade-out) .login-spinner {
+    animation: spinnerRotateSmooth 1.5s ease-in-out infinite,
+               gradientSweep 3s ease-in-out infinite;
+}
+
+/* Scale down during fade-out */
+.login-spinner-overlay.fade-out .login-spinner {
+    animation: none;
+    transform: scale(0.96);
+    transition: transform 0.25s ease-in;
+}
+
+/* Premium text styling */
+.login-spinner-text {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', 'Inter', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+    font-size: clamp(0.875rem, 2vw, 1rem);
+    font-weight: 500;
+    color: rgba(203, 213, 225, 0.9);
+    letter-spacing: 0.06em;
+    margin: 0;
+    padding: 0;
+    opacity: 0.85;
+    will-change: opacity, transform;
+    text-align: center;
+}
+
+/* Text animation - subtle upward motion and pulse */
+.login-spinner-overlay.active:not(.fade-out) .login-spinner-text {
+    animation: textFadeInUp 0.28s ease-out forwards,
+               textPulse 2.5s ease-in-out 0.3s infinite;
+}
+
+/* Stop animations before fade-out */
+.login-spinner-overlay.fade-out .login-spinner-text {
+    animation: none;
+    opacity: 0.85;
+    transform: translateY(0);
+}
+
+/* Smooth rotation with constant angular velocity */
+@keyframes spinnerRotateSmooth {
     0% {
-        transform: rotate(0deg) scale(0.96);
-        opacity: 0.9;
-    }
-    50% {
-        transform: rotate(360deg) scale(1.02);
-        opacity: 1;
+        transform: rotate(0deg);
     }
     100% {
-        transform: rotate(720deg) scale(0.96);
-        opacity: 0.9;
+        transform: rotate(360deg);
+    }
+}
+
+/* Gradient sweep - warm to cool traveling around */
+@keyframes gradientSweep {
+    0% {
+        border-top-color: rgba(251, 191, 36, 0.85);
+        border-right-color: rgba(59, 130, 246, 0.8);
+        border-bottom-color: rgba(148, 163, 184, 0.15);
+        border-left-color: rgba(148, 163, 184, 0.15);
+    }
+    25% {
+        border-top-color: rgba(59, 130, 246, 0.8);
+        border-right-color: rgba(34, 211, 238, 0.75);
+        border-bottom-color: rgba(251, 191, 36, 0.85);
+        border-left-color: rgba(148, 163, 184, 0.15);
+    }
+    50% {
+        border-top-color: rgba(34, 211, 238, 0.75);
+        border-right-color: rgba(59, 130, 246, 0.8);
+        border-bottom-color: rgba(59, 130, 246, 0.8);
+        border-left-color: rgba(251, 191, 36, 0.85);
+    }
+    75% {
+        border-top-color: rgba(59, 130, 246, 0.8);
+        border-right-color: rgba(251, 191, 36, 0.85);
+        border-bottom-color: rgba(34, 211, 238, 0.75);
+        border-left-color: rgba(59, 130, 246, 0.8);
+    }
+    100% {
+        border-top-color: rgba(251, 191, 36, 0.85);
+        border-right-color: rgba(59, 130, 246, 0.8);
+        border-bottom-color: rgba(148, 163, 184, 0.15);
+        border-left-color: rgba(148, 163, 184, 0.15);
+    }
+}
+
+/* Text fade in with upward motion */
+@keyframes textFadeInUp {
+    0% {
+        transform: translateY(4px);
+        opacity: 0;
+    }
+    100% {
+        transform: translateY(0);
+        opacity: 0.85;
+    }
+}
+
+/* Soft opacity pulse */
+@keyframes textPulse {
+    0%, 100% {
+        opacity: 0.85;
+    }
+    50% {
+        opacity: 1;
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .login-spinner {
+        width: min(56px, 12vmin);
+        height: min(56px, 12vmin);
+        border-width: 2px;
+    }
+    
+    .login-spinner-text {
+        font-size: clamp(0.8125rem, 2.5vw, 0.9375rem);
+        letter-spacing: 0.05em;
+    }
+    
+    .login-spinner-container {
+        gap: 1.25rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .login-spinner {
+        width: min(48px, 14vmin);
+        height: min(48px, 14vmin);
+        border-width: 2px;
+    }
+    
+    .login-spinner-text {
+        font-size: clamp(0.75rem, 3vw, 0.875rem);
+        letter-spacing: 0.04em;
+    }
+    
+    .login-spinner-container {
+        gap: 1rem;
+    }
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    .login-spinner-overlay.active:not(.fade-out) .login-spinner {
+        animation: spinnerRotateSmooth 2s linear infinite;
+    }
+    
+    .login-spinner-overlay.active:not(.fade-out) .login-spinner-text {
+        animation: none;
+        opacity: 1;
+        transform: translateY(0);
+    }
+    
+    .login-spinner-overlay.active .login-spinner-container {
+        transform: translateY(0);
+        opacity: 1;
+        transition: opacity 0.15s ease-out, transform 0.15s ease-out;
+    }
+    
+    .login-spinner-overlay {
+        transition: opacity 0.15s ease-out;
+    }
+    
+    .login-spinner-overlay.fade-out {
+        transition: opacity 0.15s ease-in;
     }
 }
 
