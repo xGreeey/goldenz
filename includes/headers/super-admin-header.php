@@ -336,6 +336,9 @@ $activeSection = getActiveSection($page);
                 case 'edit_employee':
                     include $pages_path . 'edit_employee.php';
                     break;
+                case 'view_employee':
+                    include $pages_path . 'view_employee.php';
+                    break;
                 case 'alerts':
                     include $pages_path . 'alerts.php';
                     break;

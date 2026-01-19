@@ -362,35 +362,35 @@ function renderField($label, $name, $value, $type = 'text', $required = false, $
 
 <div class="container-fluid py-4">
     <!-- Page Header -->
-    <div class="page-header mb-4">
-        <div class="page-title">
-            <div class="d-flex align-items-center gap-2">
-                <h1 class="mb-0">Employee Details</h1>
+    <div class="page-header-modern mb-4">
+        <div class="page-header-content">
+            <div class="page-title-modern">
+                <h1 class="page-title-main">Employee Details</h1>
+                <p class="page-subtitle">View complete employee information</p>
             </div>
-            <p class="text-muted mb-0">View complete employee information</p>
-        </div>
-        <div class="page-actions">
-            <a href="?page=employees" class="btn btn-outline-secondary">
-                Back to Employees
-            </a>
-            <?php if ($edit_mode): ?>
-                <a href="?page=view_employee&id=<?php echo htmlspecialchars($employee_id); ?>" class="btn btn-outline-secondary">
-                    Cancel
+            <div class="page-actions-modern">
+                <a href="?page=employees&_r=<?php echo time(); ?>" class="btn btn-outline-modern">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Employees
                 </a>
-                <button type="submit" form="employeeEditForm" class="btn btn-primary">
-                    <i class="fas fa-save me-1"></i>Save Changes
-                </button>
-            <?php else: ?>
-                <a href="?page=view_employee&id=<?php echo htmlspecialchars($employee_id); ?>&edit=1" class="btn btn-primary">
-                    <i class="fas fa-edit me-1"></i>Edit Employee
-                </a>
-            <?php endif; ?>
+                <?php if ($edit_mode): ?>
+                    <a href="?page=view_employee&id=<?php echo htmlspecialchars($employee_id); ?>" class="btn btn-outline-modern">
+                        Cancel
+                    </a>
+                    <button type="submit" form="employeeEditForm" class="btn btn-primary-modern">
+                        <i class="fas fa-save me-1"></i>Save Changes
+                    </button>
+                <?php else: ?>
+                    <a href="?page=view_employee&id=<?php echo htmlspecialchars($employee_id); ?>&edit=1" class="btn btn-primary-modern">
+                        <i class="fas fa-edit me-1"></i>Edit Employee
+                    </a>
+                <?php endif; ?>
+            </div>
         </div>
     </div>
 
-    <!-- Employee Information Card -->
-    <div class="card mb-4">
-        <div class="card-header employee-header-gold">
+    <!-- Employee Information Card - Form Style -->
+    <div class="card card-modern mb-4" id="employeeDetailsForm">
+        <div class="card-header-modern employee-header-gold">
             <div class="d-flex justify-content-between align-items-center">
                 <div class="flex-grow-1">
                     <h2 class="employee-name-gold mb-0">
@@ -426,6 +426,9 @@ function renderField($label, $name, $value, $type = 'text', $required = false, $
                         <?php endif; ?>
                         <?php echo htmlspecialchars($update_status_text); ?>
                     </span>
+                    <button type="button" class="btn btn-outline-modern btn-sm" onclick="saveEmployeeDetailsPDF()" title="Save Employee Details as PDF">
+                        <i class="fas fa-file-pdf me-2"></i>Save PDF
+                    </button>
                 </div>
             </div>
         </div>
@@ -433,7 +436,7 @@ function renderField($label, $name, $value, $type = 'text', $required = false, $
         <form method="POST" id="employeeEditForm" enctype="multipart/form-data">
             <input type="hidden" name="update_employee" value="1">
         <?php endif; ?>
-        <div class="card-body">
+        <div class="card-body-modern">
             <?php if (!empty($errors)): ?>
                 <div class="alert alert-danger">
                     <ul class="mb-0">
@@ -484,31 +487,29 @@ function renderField($label, $name, $value, $type = 'text', $required = false, $
                             <!-- Photo Section -->
                             <div class="employee-photo-container ms-3">
                                 <?php 
-                                $photo_path = '';
-                                if (!empty($employee['photo'])) {
-                                    $photo_path = $employee['photo'];
-                                } elseif (file_exists(__DIR__ . '/../uploads/employees/' . $employee_id . '.jpg')) {
-                                    $photo_path = 'uploads/employees/' . $employee_id . '.jpg';
-                                } elseif (file_exists(__DIR__ . '/../uploads/employees/' . $employee_id . '.png')) {
-                                    $photo_path = 'uploads/employees/' . $employee_id . '.png';
-                                } elseif (file_exists(__DIR__ . '/../assets/images/employees/' . $employee_id . '.jpg')) {
-                                    $photo_path = 'assets/images/employees/' . $employee_id . '.jpg';
-                                } elseif (file_exists(__DIR__ . '/../assets/images/employees/' . $employee_id . '.png')) {
-                                    $photo_path = 'assets/images/employees/' . $employee_id . '.png';
-                                }
+                                // Use the helper function to get the correct photo URL
+                                $photo_path = get_employee_photo_url($employee['photo'] ?? null, $employee_id);
                                 ?>
                                 <div class="employee-photo-wrapper">
                                     <div id="photoPreview" style="position: relative;">
-                                        <?php if ($photo_path && file_exists(__DIR__ . '/../' . $photo_path)): ?>
-                                            <img src="<?php echo htmlspecialchars($photo_path); ?>" alt="<?php echo htmlspecialchars($full_name); ?>" class="employee-photo-img" id="currentPhoto">
+                                        <?php if ($photo_path): ?>
+                                            <img src="<?php echo htmlspecialchars($photo_path); ?>" alt="<?php echo htmlspecialchars($full_name); ?>" class="employee-photo-img" id="currentPhoto" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                            <div class="employee-photo-placeholder" id="photoPlaceholder" style="display: none;">
+                                                <span class="photo-placeholder-text">2X2 PHOTO</span>
+                                            </div>
                                         <?php else: ?>
                                             <div class="employee-photo-placeholder" id="photoPlaceholder">
                                                 <span class="photo-placeholder-text">2X2 PHOTO</span>
                                             </div>
                                         <?php endif; ?>
                                     </div>
+<<<<<<< HEAD
                                     <input type="file" name="employee_photo" id="employee_photo" accept="image/jpeg,image/jpg,image/png" class="form-control form-control-sm mt-2 fs-xs" style="width: 140px;" onchange="previewPhoto(this)">
                                     <small class="text-muted d-block mt-1 fs-11">Max 2MB (JPG/PNG)</small>
+=======
+                                    <input type="file" name="employee_photo" id="employee_photo" accept="image/jpeg,image/jpg,image/png" class="form-control form-control-sm mt-2" style="font-size: 0.75rem; width: 100px;" onchange="previewPhoto(this)">
+                                    <small class="text-muted d-block mt-1" style="font-size: 0.7rem;">Max 2MB (JPG/PNG)</small>
+>>>>>>> 8e02a0e2b13574f1b99b6c406002082b233c4614
                                 </div>
                             </div>
                         </div>
@@ -544,22 +545,15 @@ function renderField($label, $name, $value, $type = 'text', $required = false, $
                             <!-- Photo Section -->
                             <div class="employee-photo-container ms-3">
                                 <?php 
-                                $photo_path = '';
-                                if (!empty($employee['photo'])) {
-                                    $photo_path = $employee['photo'];
-                                } elseif (file_exists(__DIR__ . '/../uploads/employees/' . $employee_id . '.jpg')) {
-                                    $photo_path = 'uploads/employees/' . $employee_id . '.jpg';
-                                } elseif (file_exists(__DIR__ . '/../uploads/employees/' . $employee_id . '.png')) {
-                                    $photo_path = 'uploads/employees/' . $employee_id . '.png';
-                                } elseif (file_exists(__DIR__ . '/../assets/images/employees/' . $employee_id . '.jpg')) {
-                                    $photo_path = 'assets/images/employees/' . $employee_id . '.jpg';
-                                } elseif (file_exists(__DIR__ . '/../assets/images/employees/' . $employee_id . '.png')) {
-                                    $photo_path = 'assets/images/employees/' . $employee_id . '.png';
-                                }
+                                // Use the helper function to get the correct photo URL
+                                $photo_path = get_employee_photo_url($employee['photo'] ?? null, $employee_id);
                                 ?>
                                 <div class="employee-photo-wrapper">
-                                    <?php if ($photo_path && file_exists(__DIR__ . '/../' . $photo_path)): ?>
-                                        <img src="<?php echo htmlspecialchars($photo_path); ?>" alt="<?php echo htmlspecialchars($full_name); ?>" class="employee-photo-img">
+                                    <?php if ($photo_path): ?>
+                                        <img src="<?php echo htmlspecialchars($photo_path); ?>" alt="<?php echo htmlspecialchars($full_name); ?>" class="employee-photo-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                        <div class="employee-photo-placeholder" style="display: none;">
+                                            <span class="photo-placeholder-text">2X2 PHOTO</span>
+                                        </div>
                                     <?php else: ?>
                                         <div class="employee-photo-placeholder">
                                             <span class="photo-placeholder-text">2X2 PHOTO</span>
@@ -1192,6 +1186,53 @@ function renderField($label, $name, $value, $type = 'text', $required = false, $
 </div>
 
 <style>
+/* Page Header - Card Style with Centered/Compressed Layout */
+.page-header-modern {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 1.25rem 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.04);
+    margin-bottom: 1.5rem;
+    max-width: 1400px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.page-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.page-title-modern {
+    flex: 1;
+}
+
+.page-title-main {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 0.25rem 0;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+}
+
+.page-subtitle {
+    color: #64748b;
+    font-size: 0.875rem;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.page-actions-modern {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    flex-shrink: 0;
+}
+
 .page-header {
     display: flex;
     justify-content: space-between;
@@ -1273,11 +1314,250 @@ function renderField($label, $name, $value, $type = 'text', $required = false, $
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
+/* Modern Button Styles for Page Header */
+.btn-outline-modern {
+    border: 1.5px solid #e2e8f0;
+    color: #475569;
+    background: #ffffff;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+}
+
+.btn-outline-modern:hover {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+    color: #334155;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.btn-primary-modern {
+    background: linear-gradient(135deg, #1fb2d5 0%, #0ea5e9 100%);
+    color: #ffffff;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(31, 178, 213, 0.25);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+}
+
+.btn-primary-modern:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(31, 178, 213, 0.35);
+    background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+    color: #ffffff;
+}
+
+/* Responsive Design for Page Header */
+@media (max-width: 768px) {
+    .page-header-modern {
+        padding: 1rem;
+    }
+    
+    .page-header-content {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .page-actions-modern {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+    
+    .page-actions-modern .btn {
+        flex: 1;
+        min-width: 120px;
+    }
+}
+
+/* Card Modern Styling */
+.card-modern {
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+    background: #ffffff;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.card-header-modern {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid #e2e8f0;
+    background: #ffffff;
+}
+
+.card-body-modern {
+    padding: 2rem;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-top: none;
+}
+
+/* Form Style Styling */
+.card-body-modern .form-section-title {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #e2e8f0;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.card-body-modern .form-group {
+    margin-bottom: 1.25rem;
+}
+
+.card-body-modern .form-group label {
+    display: block;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: #475569;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+}
+
+.card-body-modern .form-control,
+.card-body-modern .form-select {
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    background: #ffffff;
+}
+
+.card-body-modern .form-control:focus,
+.card-body-modern .form-select:focus {
+    border-color: #1fb2d5;
+    box-shadow: 0 0 0 3px rgba(31, 178, 213, 0.1);
+    outline: none;
+}
+
+.card-body-modern .row {
+    margin-bottom: 1rem;
+}
+
+.card-body-modern .row:last-child {
+    margin-bottom: 0;
+}
+
+/* Form field display (non-edit mode) */
+.card-body-modern .form-field-display {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #f1f5f9;
+    margin-bottom: 0.75rem;
+}
+
+.card-body-modern .form-field-display label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.25rem;
+    display: block;
+}
+
+.card-body-modern .form-field-display .field-value {
+    font-size: 0.9375rem;
+    color: #1e293b;
+    font-weight: 500;
+    padding: 0.25rem 0;
+}
+
+/* Form input styling */
+.card-body-modern input[type="text"],
+.card-body-modern input[type="date"],
+.card-body-modern input[type="email"],
+.card-body-modern input[type="tel"],
+.card-body-modern input[type="number"],
+.card-body-modern textarea {
+    width: 100%;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    background: #ffffff;
+    transition: all 0.2s ease;
+}
+
+.card-body-modern input[type="text"]:focus,
+.card-body-modern input[type="date"]:focus,
+.card-body-modern input[type="email"]:focus,
+.card-body-modern input[type="tel"]:focus,
+.card-body-modern input[type="number"]:focus,
+.card-body-modern textarea:focus {
+    border-color: #1fb2d5;
+    box-shadow: 0 0 0 3px rgba(31, 178, 213, 0.1);
+    outline: none;
+}
+
+/* Form sections spacing */
+.card-body-modern .row.g-3 {
+    margin-bottom: 1.25rem;
+}
+
+.card-body-modern .row.g-3:last-child {
+    margin-bottom: 0;
+}
+
+/* Form grid styling */
+.card-body-modern .col-md-3,
+.card-body-modern .col-md-4,
+.card-body-modern .col-md-6,
+.card-body-modern .col-md-12 {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+}
+
+/* Reduce row gap */
+.card-body-modern .row.g-3 {
+    --bs-gutter-x: 1rem;
+    --bs-gutter-y: 0.75rem;
+}
+
+/* Read-only form fields (view mode) */
+.card-body-modern .text-muted.small {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.card-body-modern .fw-semibold,
+.card-body-modern .fw-bold {
+    font-size: 0.9375rem;
+    color: #1e293b;
+    font-weight: 600;
+}
+
 .employee-header-gold {
     background: linear-gradient(135deg, #ffd700 0%, #ffed4e 25%, #ffd700 50%, #ffc107 75%, #ffd700 100%);
     border-bottom: 3px solid #daa520;
-    padding: 1.5rem;
+    padding: 1rem 1.25rem;
     box-shadow: 0 2px 8px rgba(218, 165, 32, 0.3);
+    border-radius: 14px 14px 0 0;
 }
 
 .employee-name-gold {
@@ -1292,7 +1572,7 @@ function renderField($label, $name, $value, $type = 'text', $required = false, $
 .employee-first-name {
     font-family: 'Arial', 'Helvetica', sans-serif;
     font-weight: 500;
-    font-size: 2rem;
+    font-size: 1.5rem;
     color: #1a1a1a;
     margin-right: 0.5rem;
 }
@@ -1300,7 +1580,7 @@ function renderField($label, $name, $value, $type = 'text', $required = false, $
 .employee-middle-name {
     font-family: 'Arial', 'Helvetica', sans-serif;
     font-weight: 400;
-    font-size: 2rem;
+    font-size: 1.5rem;
     color: #1a1a1a;
     margin-right: 0.5rem;
 }
@@ -1308,7 +1588,7 @@ function renderField($label, $name, $value, $type = 'text', $required = false, $
 .employee-last-name {
     font-family: 'Arial', 'Helvetica', sans-serif;
     font-weight: 700;
-    font-size: 2rem;
+    font-size: 1.5rem;
     color: #1a1a1a;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -1319,8 +1599,21 @@ function renderField($label, $name, $value, $type = 'text', $required = false, $
 }
 
 .employee-photo-wrapper {
-    width: 140px;
-    height: 140px;
+    width: 100px;
+    height: 100px;
+    border-radius: 8px;
+}
+
+.employee-photo-img {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.employee-photo-placeholder {
+    width: 100px;
+    height: 100px;
     border-radius: 8px;
     overflow: hidden;
     border: 3px solid rgba(255, 255, 255, 0.5);
@@ -1423,15 +1716,461 @@ function renderField($label, $name, $value, $type = 'text', $required = false, $
 .collapsible-section.collapsed i {
     transform: rotate(-90deg);
 }
+
+/* Print Styles for Legal Paper - Compact Format */
+@media print {
+    /* Set page size to legal portrait with compact margins */
+    @page {
+        size: legal portrait;
+        margin: 0.4in 0.5in;
+    }
+    
+    /* Compact body styling */
+    body {
+        background: white !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        font-size: 9pt !important;
+        color: #000 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        overflow: visible !important;
+        line-height: 1.3 !important;
+    }
+    
+    /* Hide everything except card-body-modern */
+    body * {
+        visibility: hidden;
+    }
+    
+    .card-body-modern,
+    .card-body-modern * {
+        visibility: visible;
+    }
+    
+    /* Hide non-print UI elements */
+    .page-header-modern,
+    .page-actions-modern,
+    .page-header-content,
+    .page-title-modern,
+    .page-actions-modern,
+    .btn,
+    button,
+    .sidebar,
+    .main-content header,
+    nav,
+    .navbar,
+    .pagination-controls,
+    .alert,
+    .card-header-modern,
+    .employee-header-gold,
+    .employee-photo-container input[type="file"],
+    .form-control[type="file"],
+    input[type="file"],
+    input[type="submit"],
+    input[type="button"],
+    .badge:empty {
+        display: none !important;
+        visibility: hidden !important;
+    }
+    
+    /* Container and layout adjustments */
+    .container-fluid {
+        padding: 0 !important;
+        margin: 0 !important;
+        max-width: 100% !important;
+        width: 100% !important;
+    }
+    
+    /* Main profile container - remove shadows, transforms, fixed widths */
+    #employeeDetailsForm,
+    .card-modern,
+    .card {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        transform: none !important;
+        position: relative !important;
+        left: auto !important;
+        top: auto !important;
+        page-break-inside: avoid;
+    }
+    
+    /* Card body styling - compact padding */
+    .card-body-modern {
+        padding: 0.5rem 0.75rem !important;
+        border: none !important;
+        box-shadow: none !important;
+        margin: 0 !important;
+        border-radius: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        position: relative !important;
+        left: auto !important;
+        top: auto !important;
+        transform: none !important;
+        page-break-inside: avoid;
+    }
+    
+    /* Remove all shadows and transforms */
+    * {
+        box-shadow: none !important;
+        text-shadow: none !important;
+        transform: none !important;
+    }
+    
+    /* Ensure all sections are visible */
+    .collapsible-section {
+        display: block !important;
+    }
+    
+    .collapse,
+    .collapse.show {
+        display: block !important;
+        visibility: visible !important;
+    }
+    
+    .collapsible-content {
+        display: block !important;
+    }
+    
+    /* Compact section titles - reduced spacing */
+    .form-section-title {
+        border-bottom: 1px solid #000 !important;
+        padding-bottom: 0.3rem !important;
+        margin-bottom: 0.5rem !important;
+        margin-top: 0.5rem !important;
+        page-break-after: avoid;
+        font-size: 0.95rem !important;
+        font-weight: 700 !important;
+        line-height: 1.2 !important;
+        text-align: left !important;
+    }
+    
+    /* Compact field labels */
+    .text-muted.small {
+        font-size: 0.7rem !important;
+        margin-bottom: 0.15rem !important;
+        line-height: 1.2 !important;
+        text-align: left !important;
+    }
+    
+    /* Compact field values */
+    .fw-semibold,
+    .fw-bold {
+        font-size: 0.85rem !important;
+        margin-bottom: 0.35rem !important;
+        line-height: 1.3 !important;
+        text-align: left !important;
+    }
+    
+    /* Compact rows - reduced spacing */
+    .row {
+        page-break-inside: avoid;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin-bottom: 0.4rem !important;
+    }
+    
+    .row.g-3 {
+        margin-bottom: 0.4rem !important;
+    }
+    
+    [class*="col-"] {
+        padding-left: 0.4rem !important;
+        padding-right: 0.4rem !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+    
+    .mb-4 {
+        margin-bottom: 0.5rem !important;
+    }
+    
+    /* Compact form groups */
+    .form-group {
+        margin-bottom: 0.4rem !important;
+    }
+    
+    /* Compact tables */
+    table {
+        border-collapse: collapse !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        font-size: 0.75rem !important;
+        margin-bottom: 0.4rem !important;
+        page-break-inside: avoid;
+    }
+    
+    table th,
+    table td {
+        border: 1px solid #000 !important;
+        padding: 0.25rem 0.4rem !important;
+        text-align: left !important;
+        vertical-align: top !important;
+    }
+    
+    /* Compact badges */
+    .badge {
+        font-size: 0.65rem !important;
+        padding: 0.15rem 0.3rem !important;
+        display: inline-block !important;
+    }
+    
+    /* Compact photo */
+    .employee-photo-container {
+        max-width: 80px !important;
+    }
+    
+    .employee-photo-wrapper,
+    .employee-photo-img,
+    .employee-photo-placeholder {
+        max-width: 80px !important;
+        max-height: 80px !important;
+    }
+    
+    /* Compact paragraphs */
+    p {
+        margin-bottom: 0.25rem !important;
+        line-height: 1.3 !important;
+    }
+    
+    /* Ensure proper alignment */
+    .text-center {
+        text-align: center !important;
+    }
+    
+    .text-left {
+        text-align: left !important;
+    }
+    
+    .text-right {
+        text-align: right !important;
+    }
+    
+    /* Page break handling */
+    .row,
+    .form-section-title,
+    .card-body-modern > .row:first-child {
+        page-break-inside: avoid;
+    }
+    
+    /* Prevent content from being cut off */
+    img {
+        max-width: 100% !important;
+        height: auto !important;
+        page-break-inside: avoid;
+    }
+}
 </style>
 
 <script>
-// Toggle RLM expiration field
-function toggleRLMExpiration(value) {
-    const container = document.getElementById('rlm_exp_container');
-    if (container) {
-        container.style.display = value === '1' ? 'block' : 'none';
+// Save Employee Details as PDF - compact format
+function saveEmployeeDetailsPDF() {
+    // Get the card-body-modern element
+    const cardBody = document.querySelector('.card-body-modern');
+    if (!cardBody) {
+        alert('Employee details not found.');
+        return;
     }
+    
+    // Clone the card body content
+    const printContent = cardBody.cloneNode(true);
+    
+    // Expand all collapsed sections in the clone
+    const collapsedSections = printContent.querySelectorAll('.collapse');
+    collapsedSections.forEach(section => {
+        section.classList.add('show');
+        section.classList.remove('collapse');
+    });
+    
+    // Create a new window for printing/saving PDF
+    const printWindow = window.open('', '_blank', 'width=800,height=600');
+    
+    // Collect all stylesheet links from the current page
+    const stylesheetLinks = [];
+    document.querySelectorAll('link[rel="stylesheet"]').forEach(link => {
+        const href = link.href;
+        if (href) {
+            stylesheetLinks.push(`<link rel="stylesheet" href="${href}">`);
+        }
+    });
+    
+    // Get all inline styles from style tags
+    let inlineStyles = '';
+    document.querySelectorAll('style').forEach(styleTag => {
+        inlineStyles += styleTag.innerHTML;
+    });
+    
+    // Get employee name for PDF filename
+    const employeeName = document.querySelector('.employee-name-gold')?.textContent?.trim() || 'Employee';
+    const sanitizedName = employeeName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+    
+    // Add compact print-specific styles for PDF
+    const printOverrides = `
+        <style>
+            @page {
+                margin: 0.4in 0.5in;
+                size: legal portrait;
+            }
+            
+            /* Compact body styling */
+            body {
+                background: white !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                font-size: 9pt !important;
+                line-height: 1.3 !important;
+            }
+            
+            /* Hide buttons and interactive elements */
+            .btn,
+            button,
+            input[type="file"],
+            input[type="submit"],
+            input[type="button"],
+            .alert {
+                display: none !important;
+            }
+            
+            /* Ensure all collapsed sections are visible */
+            .collapse,
+            .collapse.show {
+                display: block !important;
+            }
+            
+            /* Compact card body - reduce padding */
+            .card-body-modern {
+                padding: 0.5rem 0.75rem !important;
+                margin: 0 !important;
+            }
+            
+            /* Compact section titles - reduce spacing */
+            .form-section-title {
+                font-size: 0.95rem !important;
+                margin-top: 0.5rem !important;
+                margin-bottom: 0.5rem !important;
+                padding-bottom: 0.3rem !important;
+                page-break-after: avoid;
+            }
+            
+            /* Compact field labels */
+            .text-muted.small {
+                font-size: 0.7rem !important;
+                margin-bottom: 0.15rem !important;
+                line-height: 1.2 !important;
+            }
+            
+            /* Compact field values */
+            .fw-semibold,
+            .fw-bold {
+                font-size: 0.85rem !important;
+                margin-bottom: 0.35rem !important;
+                line-height: 1.3 !important;
+            }
+            
+            /* Compact rows - reduce spacing */
+            .row {
+                margin-bottom: 0.4rem !important;
+                page-break-inside: avoid;
+            }
+            
+            .row.g-3 {
+                margin-bottom: 0.4rem !important;
+            }
+            
+            .mb-4 {
+                margin-bottom: 0.5rem !important;
+            }
+            
+            /* Compact columns */
+            [class*="col-"] {
+                padding-left: 0.4rem !important;
+                padding-right: 0.4rem !important;
+            }
+            
+            /* Compact form groups */
+            .form-group {
+                margin-bottom: 0.4rem !important;
+            }
+            
+            /* Compact tables */
+            table {
+                font-size: 0.75rem !important;
+                margin-bottom: 0.4rem !important;
+            }
+            
+            table th,
+            table td {
+                padding: 0.25rem 0.4rem !important;
+            }
+            
+            /* Compact badges */
+            .badge {
+                font-size: 0.65rem !important;
+                padding: 0.15rem 0.3rem !important;
+            }
+            
+            /* Compact photo */
+            .employee-photo-container {
+                max-width: 80px !important;
+            }
+            
+            .employee-photo-wrapper,
+            .employee-photo-img,
+            .employee-photo-placeholder {
+                max-width: 80px !important;
+                max-height: 80px !important;
+            }
+            
+            /* Remove unnecessary spacing */
+            p {
+                margin-bottom: 0.25rem !important;
+            }
+            
+            /* Page break handling */
+            .form-section-title {
+                page-break-after: avoid;
+            }
+            
+            .row {
+                page-break-inside: avoid;
+            }
+        </style>
+    `;
+    
+    // Write the HTML content with all original stylesheets and compact styles
+    printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Employee Details - ${employeeName}</title>
+            <meta charset="UTF-8">
+            ${stylesheetLinks.join('\n')}
+            <style>${inlineStyles}</style>
+            ${printOverrides}
+        </head>
+        <body>
+            ${printContent.outerHTML}
+        </body>
+        </html>
+    `);
+    
+    printWindow.document.close();
+    
+    // Wait for content to load, then trigger print dialog (user can save as PDF)
+    printWindow.onload = function() {
+        setTimeout(function() {
+            printWindow.print();
+            // Note: User will see print dialog where they can choose "Save as PDF"
+        }, 500);
+    };
 }
 
 // Photo preview function
