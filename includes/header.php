@@ -89,6 +89,7 @@ if ($userRole === 'hr_admin') {
     <link href="<?php echo asset_url('css/style.css'); ?>" rel="stylesheet">
     <link href="<?php echo asset_url('css/font-override.css'); ?>" rel="stylesheet">
     <link href="<?php echo asset_url('css/utilities.css'); ?>" rel="stylesheet">
+    <link href="<?php echo asset_url('css/notifications.css'); ?>" rel="stylesheet">
     <!-- number-rendering-fix.css merged into font-override.css -->
     
     <!-- Page-specific CSS -->
