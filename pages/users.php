@@ -27,12 +27,14 @@ if (isset($_GET['action']) && $_GET['action'] === 'get_details' && isset($_GET['
     <div class="user-details">
         <div class="row mb-4">
             <div class="col-md-3 text-center">
-                <?php if (!empty($user['avatar'])): ?>
-                    <img src="<?php echo htmlspecialchars($user['avatar']); ?>" 
+                <?php 
+                $avatar_url = !empty($user['avatar']) ? get_avatar_url($user['avatar']) : null;
+                if ($avatar_url): ?>
+                    <img src="<?php echo htmlspecialchars($avatar_url); ?>" 
                          alt="<?php echo htmlspecialchars($user['name']); ?>" 
-                         class="rounded-circle mb-3 avatar-md">
+                         class="mb-3 avatar-md">
                 <?php else: ?>
-                    <div class="avatar-placeholder avatar-placeholder-lg rounded-circle mx-auto mb-3">
+                    <div class="avatar-placeholder avatar-placeholder-lg mx-auto mb-3">
                         <?php echo strtoupper(substr($user['name'], 0, 1)); ?>
                     </div>
                 <?php endif; ?>
@@ -235,12 +237,18 @@ $role_config = config('roles.roles', []);
                                     <td>
                                         <div class="d-flex align-items-center">
                                             <div class="user-avatar me-3">
-                                                <?php if (!empty($user['avatar'])): ?>
-                                                    <img src="<?php echo htmlspecialchars($user['avatar']); ?>" 
+                                                <?php 
+                                                $avatar_url = !empty($user['avatar']) ? get_avatar_url($user['avatar']) : null;
+                                                if ($avatar_url): ?>
+                                                    <img src="<?php echo htmlspecialchars($avatar_url); ?>" 
                                                          alt="<?php echo htmlspecialchars($user['name']); ?>" 
-                                                         class="rounded-circle avatar-sm">
+                                                         class="avatar-sm"
+                                                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                                    <div class="avatar-placeholder avatar-placeholder-sm" style="display: none;">
+                                                        <?php echo strtoupper(substr($user['name'], 0, 1)); ?>
+                                                    </div>
                                                 <?php else: ?>
-                                                    <div class="avatar-placeholder avatar-placeholder-sm rounded-circle">
+                                                    <div class="avatar-placeholder avatar-placeholder-sm">
                                                         <?php echo strtoupper(substr($user['name'], 0, 1)); ?>
                                                     </div>
                                                 <?php endif; ?>
@@ -565,6 +573,61 @@ $role_config = config('roles.roles', []);
 
 .avatar-placeholder {
     font-size: 1rem;
+}
+
+/* User Avatar Sizing - Match Header Profile Avatar */
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.user-avatar img,
+.user-avatar .avatar-sm,
+.user-avatar .avatar-md {
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px !important;
+    min-height: 40px !important;
+    max-width: 40px !important;
+    max-height: 40px !important;
+    border-radius: 8px !important;
+    object-fit: cover !important;
+    display: block !important;
+}
+
+.user-avatar .avatar-placeholder,
+.user-avatar .avatar-placeholder-sm,
+.user-avatar .avatar-placeholder-md,
+.user-avatar .avatar-placeholder-lg {
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px !important;
+    min-height: 40px !important;
+    max-width: 40px !important;
+    max-height: 40px !important;
+    border-radius: 8px !important;
+    font-size: 0.875rem !important;
+}
+
+/* User Details Section Avatar */
+.user-details .avatar-md,
+.user-details .avatar-placeholder-lg {
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px !important;
+    min-height: 40px !important;
+    max-width: 40px !important;
+    max-height: 40px !important;
+    border-radius: 8px !important;
+    object-fit: cover !important;
+}
+
+.user-details .avatar-placeholder-lg {
+    font-size: 0.875rem !important;
 }
 
 .user-actions {

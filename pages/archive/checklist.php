@@ -123,36 +123,40 @@ function get_checklist_progress($employee_id) {
     </div>
 
     <!-- Statistics Cards -->
-    <div class="row mb-4">
-        <div class="col-md-3">
-            <div class="card summary-card">
-                <div class="card-body text-center">
-                    <h3 class="text-primary"><?php echo count($employees); ?></h3>
-                    <p class="text-muted mb-0">Total Employees</p>
+    <div class="d-flex justify-content-center">
+        <div class="checklist-stats-container">
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card summary-card">
+                        <div class="card-body text-center">
+                            <h3 class="text-primary"><?php echo count($employees); ?></h3>
+                            <p class="text-muted mb-0">Total Employees</p>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card summary-card">
-                <div class="card-body text-center">
-                    <h3 class="text-success" id="completedCount">0</h3>
-                    <p class="text-muted mb-0">Fully Completed</p>
+                <div class="col-md-3">
+                    <div class="card summary-card">
+                        <div class="card-body text-center">
+                            <h3 class="text-success" id="completedCount">0</h3>
+                            <p class="text-muted mb-0">Fully Completed</p>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card summary-card">
-                <div class="card-body text-center">
-                    <h3 class="text-warning" id="inProgressCount">0</h3>
-                    <p class="text-muted mb-0">In Progress</p>
+                <div class="col-md-3">
+                    <div class="card summary-card">
+                        <div class="card-body text-center">
+                            <h3 class="text-warning" id="inProgressCount">0</h3>
+                            <p class="text-muted mb-0">In Progress</p>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card summary-card">
-                <div class="card-body text-center">
-                    <h3 class="text-danger" id="notStartedCount">0</h3>
-                    <p class="text-muted mb-0">Not Started</p>
+                <div class="col-md-3">
+                    <div class="card summary-card">
+                        <div class="card-body text-center">
+                            <h3 class="text-danger" id="notStartedCount">0</h3>
+                            <p class="text-muted mb-0">Not Started</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

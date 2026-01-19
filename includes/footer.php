@@ -12,6 +12,7 @@
     <script src="<?php echo asset_url('js/app.js'); ?>"></script>
     <script src="<?php echo asset_url('js/page-transitions.js'); ?>"></script>
     <script src="<?php echo asset_url('js/comprehensive-functionality.js'); ?>"></script>
+    <script src="<?php echo asset_url('js/notifications.js'); ?>"></script>
     
     <script>
     // Enhanced Sidebar Navigation System

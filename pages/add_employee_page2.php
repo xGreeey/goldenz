@@ -87,6 +87,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST)) {
         }
     }
     
+    // Validate required Page 2 fields
+    // Question 1: At least one vacancy source must be selected
+    if (empty($_POST['vacancy_source']) || !is_array($_POST['vacancy_source']) || count($_POST['vacancy_source']) === 0) {
+        $errors[] = 'Question 1 (How did you know of the vacancy) is required. Please select at least one option.';
+    }
+    
+    $required_page2_fields = [
+        'knows_agency_person' => 'Question 2 (Do you know anyone from the AGENCY)',
+        'physical_defect' => 'Question 3 (Physical defect/s or chronic ailments)',
+        'drives' => 'Question 4 (Do you drive)',
+        'drinks_alcohol' => 'Question 5 (Do you drink alcoholic beverages)',
+        'prohibited_drugs' => 'Question 6 (Are you taking prohibited drugs)',
+        'convicted' => 'Question 8 (Have you ever been convicted)',
+        'filed_case' => 'Question 9 (Have you filed any case)'
+    ];
+    
+    foreach ($required_page2_fields as $field => $label) {
+        if (empty($_POST[$field])) {
+            $errors[] = $label . ' is required.';
+        }
+    }
+    
     // If we have Page 1 data, proceed with INSERT
     if (empty($errors) && !empty($page1_data)) {
         try {
@@ -509,36 +531,38 @@ if (isset($_SESSION['employee_redirect_url'])) {
                     
                     <div class="col-12">
                         <div class="form-group">
-                            <label class="form-label">1. How did you know of the vacancy in the AGENCY?</label>
-                            <div class="d-flex flex-wrap gap-3 align-items-center">
+                            <label class="form-label">1. How did you know of the vacancy in the AGENCY? <span class="text-danger">*</span></label>
+                            <div class="d-flex flex-wrap gap-3 align-items-baseline mb-2">
                                 <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="vacancy_source[]" id="vacancy_ads" value="Ads">
+                                    <input class="form-check-input vacancy-source-checkbox" type="checkbox" name="vacancy_source[]" id="vacancy_ads" value="Ads">
                                     <label class="form-check-label" for="vacancy_ads">Ads</label>
                                 </div>
                                 <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="vacancy_source[]" id="vacancy_walkin" value="Walk-in">
+                                    <input class="form-check-input vacancy-source-checkbox" type="checkbox" name="vacancy_source[]" id="vacancy_walkin" value="Walk-in">
                                     <label class="form-check-label" for="vacancy_walkin">Walk-in</label>
                                 </div>
                                 <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="vacancy_source[]" id="vacancy_referral" value="Referral">
+                                    <input class="form-check-input vacancy-source-checkbox" type="checkbox" name="vacancy_source[]" id="vacancy_referral" value="Referral">
                                     <label class="form-check-label" for="vacancy_referral">Referral (Name)</label>
                                 </div>
-                                <input type="text" class="form-control" id="referral_name" name="referral_name" placeholder="Name" style="max-width: 300px; display: inline-block;">
+                                <input type="text" class="form-control" id="referral_name" name="referral_name" placeholder="Name" style="max-width: 300px;">
                             </div>
+                            <small class="form-text text-muted">Please select at least one option.</small>
+                            <div class="invalid-feedback" id="vacancy_source_error" style="display: none;">Please select at least one option.</div>
                         </div>
                     </div>
 
                     <div class="col-12">
                         <div class="form-group">
-                            <label class="form-label">2. Do you know anyone from the AGENCY prior to your application?</label>
-                            <div class="d-flex flex-wrap gap-3 align-items-center">
+                            <label class="form-label">2. Do you know anyone from the AGENCY prior to your application? <span class="text-danger">*</span></label>
+                            <div class="d-flex flex-wrap gap-3 align-items-baseline mb-2">
                                 <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="knows_agency_person" id="knows_yes" value="Yes">
+                                    <input class="form-check-input" type="radio" name="knows_agency_person" id="knows_yes" value="Yes" required>
                                     <label class="form-check-label" for="knows_yes">Yes, state his/her name and your relationship with him/her</label>
                                 </div>
-                                <input type="text" class="form-control" id="agency_person_name" name="agency_person_name" placeholder="Name and relationship" style="max-width: 400px; display: inline-block;">
+                                <input type="text" class="form-control" id="agency_person_name" name="agency_person_name" placeholder="Name and relationship" style="max-width: 400px;">
                                 <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="knows_agency_person" id="knows_no" value="No">
+                                    <input class="form-check-input" type="radio" name="knows_agency_person" id="knows_no" value="No" required>
                                     <label class="form-check-label" for="knows_no">No.</label>
                                 </div>
                             </div>
@@ -547,15 +571,15 @@ if (isset($_SESSION['employee_redirect_url'])) {
 
                     <div class="col-12">
                         <div class="form-group">
-                            <label class="form-label">3. Do you have any physical defect/s or chronic ailments?</label>
-                            <div class="d-flex flex-wrap gap-3 align-items-center">
+                            <label class="form-label">3. Do you have any physical defect/s or chronic ailments? <span class="text-danger">*</span></label>
+                            <div class="d-flex flex-wrap gap-3 align-items-baseline mb-2">
                                 <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="physical_defect" id="defect_yes" value="Yes">
+                                    <input class="form-check-input" type="radio" name="physical_defect" id="defect_yes" value="Yes" required>
                                     <label class="form-check-label" for="defect_yes">Yes, please specify</label>
                                 </div>
-                                <input type="text" class="form-control" id="physical_defect_specify" name="physical_defect_specify" placeholder="Specify" style="max-width: 400px; display: inline-block;">
+                                <input type="text" class="form-control" id="physical_defect_specify" name="physical_defect_specify" placeholder="Specify" style="max-width: 400px;">
                                 <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="physical_defect" id="defect_no" value="No">
+                                    <input class="form-check-input" type="radio" name="physical_defect" id="defect_no" value="No" required>
                                     <label class="form-check-label" for="defect_no">No.</label>
                                 </div>
                             </div>
@@ -564,17 +588,17 @@ if (isset($_SESSION['employee_redirect_url'])) {
 
                     <div class="col-12">
                         <div class="form-group">
-                            <label class="form-label">4. Do you drive?</label>
-                            <div class="d-flex flex-wrap gap-3 align-items-center">
+                            <label class="form-label">4. Do you drive? <span class="text-danger">*</span></label>
+                            <div class="d-flex flex-wrap gap-3 align-items-baseline mb-2">
                                 <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="drives" id="drives_yes" value="Yes">
+                                    <input class="form-check-input" type="radio" name="drives" id="drives_yes" value="Yes" required>
                                     <label class="form-check-label" for="drives_yes">Yes, Driver's License no. / Expiration Date:</label>
                                 </div>
-                                <input type="text" class="form-control" id="drivers_license_no" name="drivers_license_no" placeholder="License No." style="max-width: 180px; display: inline-block;">
+                                <input type="text" class="form-control" id="drivers_license_no" name="drivers_license_no" placeholder="License No." style="max-width: 180px;">
                                 <span style="margin: 0 5px;">/</span>
-                                <input type="text" class="form-control" id="drivers_license_exp" name="drivers_license_exp" placeholder="Expiration Date" style="max-width: 180px; display: inline-block;">
+                                <input type="text" class="form-control" id="drivers_license_exp" name="drivers_license_exp" placeholder="Expiration Date" style="max-width: 180px;">
                                 <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="drives" id="drives_no" value="No">
+                                    <input class="form-check-input" type="radio" name="drives" id="drives_no" value="No" required>
                                     <label class="form-check-label" for="drives_no">No.</label>
                                 </div>
                             </div>
@@ -583,15 +607,15 @@ if (isset($_SESSION['employee_redirect_url'])) {
 
                     <div class="col-12">
                         <div class="form-group">
-                            <label class="form-label">5. Do you drink alcoholic beverages?</label>
-                            <div class="d-flex flex-wrap gap-3 align-items-center">
+                            <label class="form-label">5. Do you drink alcoholic beverages? <span class="text-danger">*</span></label>
+                            <div class="d-flex flex-wrap gap-3 align-items-baseline mb-2">
                                 <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="drinks_alcohol" id="alcohol_yes" value="Yes">
+                                    <input class="form-check-input" type="radio" name="drinks_alcohol" id="alcohol_yes" value="Yes" required>
                                     <label class="form-check-label" for="alcohol_yes">Yes, how frequent?</label>
                                 </div>
-                                <input type="text" class="form-control" id="alcohol_frequency" name="alcohol_frequency" placeholder="Frequency" style="max-width: 300px; display: inline-block;">
+                                <input type="text" class="form-control" id="alcohol_frequency" name="alcohol_frequency" placeholder="Frequency" style="max-width: 300px;">
                                 <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="drinks_alcohol" id="alcohol_no" value="No">
+                                    <input class="form-check-input" type="radio" name="drinks_alcohol" id="alcohol_no" value="No" required>
                                     <label class="form-check-label" for="alcohol_no">No.</label>
                                 </div>
                             </div>
@@ -600,14 +624,14 @@ if (isset($_SESSION['employee_redirect_url'])) {
 
                     <div class="col-12">
                         <div class="form-group">
-                            <label class="form-label">6. Are you taking prohibited drugs?</label>
-                            <div class="d-flex gap-3">
+                            <label class="form-label">6. Are you taking prohibited drugs? <span class="text-danger">*</span></label>
+                            <div class="d-flex gap-3 align-items-baseline">
                                 <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="prohibited_drugs" id="drugs_yes" value="Yes">
+                                    <input class="form-check-input" type="radio" name="prohibited_drugs" id="drugs_yes" value="Yes" required>
                                     <label class="form-check-label" for="drugs_yes">Yes</label>
                                 </div>
                                 <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="prohibited_drugs" id="drugs_no" value="No">
+                                    <input class="form-check-input" type="radio" name="prohibited_drugs" id="drugs_no" value="No" required>
                                     <label class="form-check-label" for="drugs_no">No</label>
                                 </div>
                             </div>
@@ -623,15 +647,15 @@ if (isset($_SESSION['employee_redirect_url'])) {
 
                     <div class="col-12">
                         <div class="form-group">
-                            <label class="form-label">8. Have you ever been convicted of any <strong>OFFENSE (criminal or civil)</strong> before a court competent jurisdiction?</label>
-                            <div class="d-flex flex-wrap gap-3 align-items-center">
+                            <label class="form-label">8. Have you ever been convicted of any <strong>OFFENSE (criminal or civil)</strong> before a court competent jurisdiction? <span class="text-danger">*</span></label>
+                            <div class="d-flex flex-wrap gap-3 align-items-baseline mb-2">
                                 <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="convicted" id="convicted_yes" value="Yes">
+                                    <input class="form-check-input" type="radio" name="convicted" id="convicted_yes" value="Yes" required>
                                     <label class="form-check-label" for="convicted_yes">Yes, please specify</label>
                                 </div>
-                                <input type="text" class="form-control" id="conviction_details" name="conviction_details" placeholder="Specify" style="max-width: 400px; display: inline-block;">
+                                <input type="text" class="form-control" id="conviction_details" name="conviction_details" placeholder="Specify" style="max-width: 400px;">
                                 <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="convicted" id="convicted_no" value="No">
+                                    <input class="form-check-input" type="radio" name="convicted" id="convicted_no" value="No" required>
                                     <label class="form-check-label" for="convicted_no">No.</label>
                                 </div>
                             </div>
@@ -640,22 +664,22 @@ if (isset($_SESSION['employee_redirect_url'])) {
 
                     <div class="col-12">
                         <div class="form-group">
-                            <label class="form-label">9. Have you filed any <strong>CRIMINAL / CIVIL CASE (labor)</strong> against any of your previous employer?</label>
-                            <div class="d-flex flex-wrap gap-3 align-items-center mb-2">
+                            <label class="form-label">9. Have you filed any <strong>CRIMINAL / CIVIL CASE (labor)</strong> against any of your previous employer? <span class="text-danger">*</span></label>
+                            <div class="d-flex flex-wrap gap-3 align-items-baseline mb-2">
                                 <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="filed_case" id="case_yes" value="Yes">
+                                    <input class="form-check-input" type="radio" name="filed_case" id="case_yes" value="Yes" required>
                                     <label class="form-check-label" for="case_yes">Yes</label>
                                 </div>
                                 <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="filed_case" id="case_no" value="No">
+                                    <input class="form-check-input" type="radio" name="filed_case" id="case_no" value="No" required>
                                     <label class="form-check-label" for="case_no">No.</label>
                                 </div>
                             </div>
-                            <div class="d-flex flex-wrap gap-3 align-items-center">
+                            <div class="d-flex flex-wrap gap-3 align-items-baseline">
                                 <label class="form-label mb-0">If YES, please specify:</label>
-                                <input type="text" class="form-control" id="case_specify" name="case_specify" placeholder="Specify case" style="max-width: 300px; display: inline-block;">
+                                <input type="text" class="form-control" id="case_specify" name="case_specify" placeholder="Specify case" style="max-width: 300px;">
                                 <label class="form-label mb-0">and what was your action after your termination?</label>
-                                <input type="text" class="form-control" id="action_after_termination" name="action_after_termination" placeholder="Action taken" style="max-width: 300px; display: inline-block;">
+                                <input type="text" class="form-control" id="action_after_termination" name="action_after_termination" placeholder="Action taken" style="max-width: 300px;">
                             </div>
                         </div>
                     </div>
@@ -1188,6 +1212,26 @@ $root_prefix = root_prefix();
 $css_path = ($root_prefix ? $root_prefix : '') . '/pages/css/add_employee.css';
 ?>
 <link rel="stylesheet" href="<?php echo htmlspecialchars($css_path); ?>">
+<style>
+/* Validation styles for Page 2 */
+.form-group.has-error .form-check-label {
+    color: #dc3545;
+}
+.form-check-input.is-invalid {
+    border-color: #dc3545;
+}
+.form-check-input.is-invalid:checked {
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+.invalid-feedback {
+    display: block;
+    width: 100%;
+    margin-top: 0.25rem;
+    font-size: 0.875em;
+    color: #dc3545;
+}
+</style>
 
 <script>
 // Success Modal Functions
@@ -1220,6 +1264,116 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+    
+    // Form validation
+    const form = document.getElementById('page2EmployeeForm');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            let isValid = true;
+            const errors = [];
+            
+            // Validate Question 1: At least one vacancy source must be selected
+            const vacancySources = document.querySelectorAll('.vacancy-source-checkbox:checked');
+            if (vacancySources.length === 0) {
+                isValid = false;
+                errors.push('Question 1: Please select at least one option for how you knew of the vacancy.');
+                const vacancyError = document.getElementById('vacancy_source_error');
+                if (vacancyError) {
+                    vacancyError.style.display = 'block';
+                }
+                document.querySelectorAll('.vacancy-source-checkbox').forEach(cb => {
+                    cb.classList.add('is-invalid');
+                });
+            } else {
+                const vacancyError = document.getElementById('vacancy_source_error');
+                if (vacancyError) {
+                    vacancyError.style.display = 'none';
+                }
+                document.querySelectorAll('.vacancy-source-checkbox').forEach(cb => {
+                    cb.classList.remove('is-invalid');
+                });
+            }
+            
+            // Validate required radio button groups
+            const requiredRadioGroups = [
+                { name: 'knows_agency_person', label: 'Question 2 (Do you know anyone from the AGENCY)' },
+                { name: 'physical_defect', label: 'Question 3 (Physical defect/s or chronic ailments)' },
+                { name: 'drives', label: 'Question 4 (Do you drive)' },
+                { name: 'drinks_alcohol', label: 'Question 5 (Do you drink alcoholic beverages)' },
+                { name: 'prohibited_drugs', label: 'Question 6 (Are you taking prohibited drugs)' },
+                { name: 'convicted', label: 'Question 8 (Have you ever been convicted)' },
+                { name: 'filed_case', label: 'Question 9 (Have you filed any case)' }
+            ];
+            
+            requiredRadioGroups.forEach(group => {
+                const radios = document.querySelectorAll(`input[type="radio"][name="${group.name}"]`);
+                const checked = Array.from(radios).some(radio => radio.checked);
+                if (!checked) {
+                    isValid = false;
+                    errors.push(group.label + ' is required.');
+                    radios.forEach(radio => {
+                        radio.classList.add('is-invalid');
+                        const formGroup = radio.closest('.form-group');
+                        if (formGroup) {
+                            formGroup.classList.add('has-error');
+                        }
+                    });
+                } else {
+                    radios.forEach(radio => {
+                        radio.classList.remove('is-invalid');
+                        const formGroup = radio.closest('.form-group');
+                        if (formGroup) {
+                            formGroup.classList.remove('has-error');
+                        }
+                    });
+                }
+            });
+            
+            if (!isValid) {
+                e.preventDefault();
+                // Show error message
+                let errorMsg = 'Please fix the following errors:\n\n' + errors.join('\n');
+                alert(errorMsg);
+                // Scroll to first error
+                const firstError = form.querySelector('.is-invalid');
+                if (firstError) {
+                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    firstError.focus();
+                }
+                return false;
+            }
+        });
+        
+        // Clear validation on change for radio buttons
+        document.querySelectorAll('input[type="radio"][required]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                const radios = document.querySelectorAll(`input[type="radio"][name="${this.name}"]`);
+                radios.forEach(r => {
+                    r.classList.remove('is-invalid');
+                    const formGroup = r.closest('.form-group');
+                    if (formGroup) {
+                        formGroup.classList.remove('has-error');
+                    }
+                });
+            });
+        });
+        
+        // Clear validation on change for vacancy source checkboxes
+        document.querySelectorAll('.vacancy-source-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const checked = document.querySelectorAll('.vacancy-source-checkbox:checked').length;
+                if (checked > 0) {
+                    const vacancyError = document.getElementById('vacancy_source_error');
+                    if (vacancyError) {
+                        vacancyError.style.display = 'none';
+                    }
+                    document.querySelectorAll('.vacancy-source-checkbox').forEach(cb => {
+                        cb.classList.remove('is-invalid');
+                    });
+                }
+            });
+        });
+    }
     
     // Close modal on escape key
     document.addEventListener('keydown', function(e) {

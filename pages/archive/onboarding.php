@@ -81,36 +81,40 @@ $onboarding_steps = [
     </div>
 
     <!-- Statistics Cards -->
-    <div class="row mb-4">
-        <div class="col-md-3">
-            <div class="card summary-card">
-                <div class="card-body text-center">
-                    <h3 class="text-primary"><?php echo count($onboarding_employees); ?></h3>
-                    <p class="text-muted mb-0">In Onboarding</p>
+    <div class="d-flex justify-content-center">
+        <div class="onboarding-stats-container">
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card summary-card">
+                        <div class="card-body text-center">
+                            <h3 class="text-primary"><?php echo count($onboarding_employees); ?></h3>
+                            <p class="text-muted mb-0">In Onboarding</p>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card summary-card">
-                <div class="card-body text-center">
-                    <h3 class="text-success" id="completedOnboarding">0</h3>
-                    <p class="text-muted mb-0">Completed</p>
+                <div class="col-md-3">
+                    <div class="card summary-card">
+                        <div class="card-body text-center">
+                            <h3 class="text-success" id="completedOnboarding">0</h3>
+                            <p class="text-muted mb-0">Completed</p>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card summary-card">
-                <div class="card-body text-center">
-                    <h3 class="text-warning" id="inProgressOnboarding">0</h3>
-                    <p class="text-muted mb-0">In Progress</p>
+                <div class="col-md-3">
+                    <div class="card summary-card">
+                        <div class="card-body text-center">
+                            <h3 class="text-warning" id="inProgressOnboarding">0</h3>
+                            <p class="text-muted mb-0">In Progress</p>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card summary-card">
-                <div class="card-body text-center">
-                    <h3 class="text-info" id="newHires">0</h3>
-                    <p class="text-muted mb-0">New This Month</p>
+                <div class="col-md-3">
+                    <div class="card summary-card">
+                        <div class="card-body text-center">
+                            <h3 class="text-info" id="newHires">0</h3>
+                            <p class="text-muted mb-0">New This Month</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

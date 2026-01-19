@@ -1,0 +1,571 @@
+/**
+ * Golden Z-5 HR System - Global Notification System
+ * Replace all browser alerts with professional in-system notifications
+ * Version: 1.0
+ * Date: January 19, 2026
+ */
+
+/* ============================================================
+   NOTIFICATION SYSTEM VARIABLES
+   ============================================================ */
+:root {
+    /* Colors */
+    --notif-success: #10b981;
+    --notif-success-light: #d1fae5;
+    --notif-info: #3b82f6;
+    --notif-info-light: #dbeafe;
+    --notif-warning: #fbbf24;
+    --notif-warning-light: #fef3c7;
+    --notif-error: #ef4444;
+    --notif-error-light: #fee2e2;
+    --notif-gold: #ffd700;
+    --notif-gold-light: #fff9e6;
+    
+    /* Shadows */
+    --notif-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    --notif-shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.2);
+    
+    /* Timing */
+    --notif-duration: 0.3s;
+    --notif-ease: cubic-bezier(0.4, 0, 0.2, 1);
+    
+    /* Z-Index */
+    --notif-z-index: 9999;
+}
+
+/* ============================================================
+   TOP-CENTER SYSTEM ALERTS
+   For validation, errors, important system notices
+   ============================================================ */
+
+.system-alert-container {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: var(--notif-z-index);
+    width: 90%;
+    max-width: 600px;
+    pointer-events: none;
+}
+
+.system-alert {
+    position: relative;
+    background: white;
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    box-shadow: var(--notif-shadow-lg);
+    pointer-events: all;
+    transition: all var(--notif-duration) var(--notif-ease);
+    animation: slideDown var(--notif-duration) var(--notif-ease);
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.system-alert.hiding {
+    animation: slideUp var(--notif-duration) var(--notif-ease);
+    opacity: 0;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+}
+
+/* Alert Types - Top Center */
+.system-alert.alert-success {
+    border: 2px solid var(--notif-success);
+    box-shadow: 
+        0 0 20px rgba(16, 185, 129, 0.3),
+        0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.system-alert.alert-info {
+    border: 2px solid var(--notif-info);
+    box-shadow: 
+        0 0 20px rgba(59, 130, 246, 0.3),
+        0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.system-alert.alert-warning {
+    border: 2px solid var(--notif-gold);
+    box-shadow: 
+        0 0 20px rgba(255, 215, 0, 0.4),
+        0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.system-alert.alert-error {
+    border: 2px solid var(--notif-error);
+    box-shadow: 
+        0 0 20px rgba(239, 68, 68, 0.3),
+        0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* Alert Icon */
+.system-alert-icon {
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.system-alert.alert-success .system-alert-icon {
+    background: linear-gradient(135deg, var(--notif-success) 0%, #059669 100%);
+    color: white;
+}
+
+.system-alert.alert-info .system-alert-icon {
+    background: linear-gradient(135deg, var(--notif-info) 0%, #2563eb 100%);
+    color: white;
+}
+
+.system-alert.alert-warning .system-alert-icon {
+    background: linear-gradient(135deg, var(--notif-gold) 0%, #f59e0b 100%);
+    color: #1e293b;
+}
+
+.system-alert.alert-error .system-alert-icon {
+    background: linear-gradient(135deg, var(--notif-error) 0%, #dc2626 100%);
+    color: white;
+}
+
+/* Alert Content */
+.system-alert-content {
+    flex: 1;
+    padding-top: 2px;
+}
+
+.system-alert-content strong {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 700;
+    font-size: 16px;
+    color: #1e293b;
+    line-height: 1.4;
+}
+
+.system-alert-content p {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #475569;
+}
+
+/* Close Button */
+.system-alert-close {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    color: #64748b;
+    cursor: pointer;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    padding: 0;
+    font-size: 18px;
+}
+
+.system-alert-close:hover {
+    background: rgba(0, 0, 0, 0.05);
+    color: #1e293b;
+}
+
+.system-alert-close:active {
+    transform: scale(0.95);
+}
+
+/* ============================================================
+   BOTTOM-RIGHT TOAST NOTIFICATIONS
+   For messages, success confirmations, announcements, reminders
+   ============================================================ */
+
+.toast-container {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: var(--notif-z-index);
+    max-width: 400px;
+    width: 90%;
+    pointer-events: none;
+}
+
+.toast {
+    position: relative;
+    background: white;
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-top: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: var(--notif-shadow);
+    pointer-events: all;
+    transition: all var(--notif-duration) var(--notif-ease);
+    animation: slideInRight var(--notif-duration) var(--notif-ease);
+    border-left: 4px solid transparent;
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.toast.hiding {
+    animation: slideOutRight var(--notif-duration) var(--notif-ease);
+    opacity: 0;
+}
+
+@keyframes slideOutRight {
+    from {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+}
+
+/* Toast Types - Bottom Right */
+.toast.toast-success {
+    border-left-color: var(--notif-success);
+    background: linear-gradient(to right, var(--notif-success-light) 0%, white 10%);
+}
+
+.toast.toast-info {
+    border-left-color: var(--notif-info);
+    background: linear-gradient(to right, var(--notif-info-light) 0%, white 10%);
+}
+
+.toast.toast-warning {
+    border-left-color: var(--notif-gold);
+    background: linear-gradient(to right, var(--notif-gold-light) 0%, white 10%);
+}
+
+.toast.toast-error {
+    border-left-color: var(--notif-error);
+    background: linear-gradient(to right, var(--notif-error-light) 0%, white 10%);
+}
+
+/* Toast Icon */
+.toast-icon {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 14px;
+}
+
+.toast.toast-success .toast-icon {
+    background: var(--notif-success);
+    color: white;
+}
+
+.toast.toast-info .toast-icon {
+    background: var(--notif-info);
+    color: white;
+}
+
+.toast.toast-warning .toast-icon {
+    background: var(--notif-gold);
+    color: #1e293b;
+}
+
+.toast.toast-error .toast-icon {
+    background: var(--notif-error);
+    color: white;
+}
+
+/* Toast Content */
+.toast-content {
+    flex: 1;
+}
+
+.toast-content strong {
+    display: block;
+    margin-bottom: 2px;
+    font-weight: 600;
+    font-size: 14px;
+    color: #1e293b;
+    line-height: 1.4;
+}
+
+.toast-content p {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.5;
+    color: #64748b;
+}
+
+/* Toast Close Button */
+.toast-close {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    padding: 0;
+    font-size: 16px;
+}
+
+.toast-close:hover {
+    background: rgba(0, 0, 0, 0.05);
+    color: #475569;
+}
+
+/* Progress Bar for Auto-dismiss */
+.toast-progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    background: currentColor;
+    border-radius: 0 0 0 10px;
+    opacity: 0.3;
+    transition: width linear;
+}
+
+.toast.toast-success .toast-progress {
+    color: var(--notif-success);
+}
+
+.toast.toast-info .toast-progress {
+    color: var(--notif-info);
+}
+
+.toast.toast-warning .toast-progress {
+    color: var(--notif-gold);
+}
+
+.toast.toast-error .toast-progress {
+    color: var(--notif-error);
+}
+
+/* ============================================================
+   CONFIRMATION DIALOG (Replaces confirm())
+   ============================================================ */
+
+.confirm-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    z-index: calc(var(--notif-z-index) + 10);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.confirm-dialog {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    max-width: 450px;
+    width: 100%;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+    animation: scaleIn 0.3s var(--notif-ease);
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.confirm-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.confirm-icon {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 20px;
+}
+
+.confirm-dialog.confirm-warning .confirm-icon {
+    background: var(--notif-gold-light);
+    color: #f59e0b;
+}
+
+.confirm-dialog.confirm-danger .confirm-icon {
+    background: var(--notif-error-light);
+    color: var(--notif-error);
+}
+
+.confirm-dialog.confirm-info .confirm-icon {
+    background: var(--notif-info-light);
+    color: var(--notif-info);
+}
+
+.confirm-title {
+    flex: 1;
+    font-size: 18px;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+}
+
+.confirm-message {
+    margin: 0 0 24px 0;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #475569;
+}
+
+.confirm-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+}
+
+.confirm-btn {
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+    min-width: 80px;
+}
+
+.confirm-btn-cancel {
+    background: #f1f5f9;
+    color: #475569;
+}
+
+.confirm-btn-cancel:hover {
+    background: #e2e8f0;
+}
+
+.confirm-btn-confirm {
+    background: linear-gradient(135deg, var(--notif-gold) 0%, #f59e0b 100%);
+    color: #1e293b;
+    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
+}
+
+.confirm-btn-confirm:hover {
+    box-shadow: 0 4px 12px rgba(255, 215, 0, 0.4);
+    transform: translateY(-1px);
+}
+
+.confirm-btn-confirm.btn-danger {
+    background: linear-gradient(135deg, var(--notif-error) 0%, #dc2626 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+}
+
+.confirm-btn-confirm.btn-danger:hover {
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+}
+
+/* ============================================================
+   RESPONSIVE DESIGN
+   ============================================================ */
+
+@media (max-width: 768px) {
+    .system-alert-container {
+        top: 10px;
+        width: 95%;
+    }
+    
+    .system-alert {
+        padding: 16px;
+        gap: 12px;
+    }
+    
+    .toast-container {
+        bottom: 16px;
+        right: 16px;
+        width: 95%;
+        max-width: 350px;
+    }
+    
+    .toast {
+        padding: 14px 16px;
+    }
+    
+    .confirm-dialog {
+        padding: 20px;
+        max-width: 95%;
+    }
+}
+
+/* ============================================================
+   UTILITY CLASSES
+   ============================================================ */
+
+.d-none {
+    display: none !important;
+}
+
+/* Prevent scrolling when confirm dialog is open */
+body.confirm-open {
+    overflow: hidden;
+}
