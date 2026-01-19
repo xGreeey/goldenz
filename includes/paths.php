@@ -37,3 +37,50 @@ if (!function_exists('public_url')) {
     }
 }
 
+if (!function_exists('get_avatar_url')) {
+    /**
+     * Get correct avatar URL based on current context
+     * Handles path resolution for different entry points (super-admin, hr-admin, etc.)
+     * 
+     * @param string|null $avatar_path Path stored in database (e.g., 'uploads/users/filename.jpg')
+     * @return string|null Correct relative URL for the avatar or null if file doesn't exist
+     */
+    function get_avatar_url($avatar_path) {
+        if (empty($avatar_path)) {
+            return null;
+        }
+        
+        // Normalize the avatar path (ensure forward slashes)
+        $avatar_path = str_replace('\\', '/', $avatar_path);
+        
+        // Get the project root directory
+        $base_dir = dirname(__DIR__);
+        // Normalize base directory path for cross-platform compatibility
+        $base_dir = str_replace('\\', '/', $base_dir);
+        
+        // Build full path and check if file exists
+        $full_path = $base_dir . '/' . $avatar_path;
+        
+        // Also try with DIRECTORY_SEPARATOR for Windows compatibility
+        $full_path_native = str_replace('/', DIRECTORY_SEPARATOR, $full_path);
+        
+        if (!file_exists($full_path) && !file_exists($full_path_native)) {
+            // Log for debugging
+            error_log("Avatar file not found: $full_path (also tried: $full_path_native)");
+            return null;
+        }
+        
+        // Determine correct relative path based on entry point
+        $script_name = $_SERVER['SCRIPT_NAME'] ?? '';
+        $script_dir = dirname($script_name);
+        
+        // If accessed from subdirectory (super-admin, hr-admin, etc.), need ../ to reach root
+        if (preg_match('#/(super-admin|hr-admin|developer|employee|accounting|operation)(/|$)#', $script_dir)) {
+            return '../' . $avatar_path;
+        }
+        
+        // Otherwise, use path as-is (from root)
+        return $avatar_path;
+    }
+}
+

@@ -1261,8 +1261,11 @@ document.addEventListener('DOMContentLoaded', function() {
     justify-content: space-between;
     align-items: center;
     margin-bottom: var(--spacing-2xl);
-    padding-bottom: var(--spacing-xl);
-    border-bottom: 2px solid var(--interface-border);
+    padding: 1.5rem 2rem;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.04);
 }
 
 .dtr-title h2 {
@@ -1867,8 +1870,11 @@ document.addEventListener('DOMContentLoaded', function() {
     display: flex;
     gap: var(--spacing-sm);
     margin-bottom: var(--spacing-xl);
-    border-bottom: 2px solid var(--interface-border);
-    padding-bottom: var(--spacing-sm);
+    padding: 1rem 1.5rem;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.04);
 }
 
 .tab-button {
