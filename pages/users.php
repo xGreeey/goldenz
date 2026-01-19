@@ -8,108 +8,8 @@ if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'super_admin') 
     exit;
 }
 
-// NOTE: POST/AJAX requests are handled by super-admin/index.php before this file is included
+// NOTE: POST/AJAX requests and GET requests for user details are handled by super-admin/index.php before this file is included
 // This file should only handle GET requests for displaying the page
-
-// Handle GET request for user details
-if (isset($_GET['action']) && $_GET['action'] === 'get_details' && isset($_GET['user_id'])) {
-    $user_id = (int)$_GET['user_id'];
-    $user = get_user_by_id($user_id);
-    
-    if (!$user) {
-        echo '<div class="alert alert-danger">User not found</div>';
-        exit;
-    }
-    
-    $role_config = config('roles.roles', []);
-    $user_role_config = $role_config[$user['role']] ?? [];
-    ?>
-    <div class="user-details">
-        <div class="row mb-4">
-            <div class="col-md-3 text-center">
-                <?php 
-                $avatar_url = !empty($user['avatar']) ? get_avatar_url($user['avatar']) : null;
-                if ($avatar_url): ?>
-                    <img src="<?php echo htmlspecialchars($avatar_url); ?>" 
-                         alt="<?php echo htmlspecialchars($user['name']); ?>" 
-                         class="mb-3 avatar-md">
-                <?php else: ?>
-                    <div class="avatar-placeholder avatar-placeholder-lg mx-auto mb-3">
-                        <?php echo strtoupper(substr($user['name'], 0, 1)); ?>
-                    </div>
-                <?php endif; ?>
-                <h5 class="mb-0"><?php echo htmlspecialchars($user['name']); ?></h5>
-                <small class="text-muted"><?php echo htmlspecialchars($user['username']); ?></small>
-            </div>
-            <div class="col-md-9">
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <label class="form-label text-muted small">Email</label>
-                        <div class="fw-semibold"><?php echo htmlspecialchars($user['email']); ?></div>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label text-muted small">Phone</label>
-                        <div class="fw-semibold"><?php echo htmlspecialchars($user['phone'] ?? '—'); ?></div>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label text-muted small">Role</label>
-                        <div>
-                            <span class="badge badge-primary-modern">
-                                <?php echo htmlspecialchars($user_role_config['name'] ?? ucfirst($user['role'])); ?>
-                            </span>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label text-muted small">Status</label>
-                        <div>
-                            <span class="badge badge-<?php echo $user['status'] === 'active' ? 'success' : ($user['status'] === 'suspended' ? 'danger' : 'secondary'); ?>-modern">
-                                <?php echo ucfirst($user['status']); ?>
-                            </span>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label text-muted small">Department</label>
-                        <div class="fw-semibold"><?php echo htmlspecialchars($user['department'] ?? '—'); ?></div>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label text-muted small">Last Login</label>
-                        <div class="fw-semibold">
-                            <?php echo $user['last_login'] ? date('M d, Y H:i', strtotime($user['last_login'])) : 'Never'; ?>
-                        </div>
-                    </div>
-                    <?php if ($user['employee_id']): ?>
-                        <div class="col-md-6">
-                            <label class="form-label text-muted small">Linked Employee</label>
-                            <div class="fw-semibold">
-                                #<?php echo htmlspecialchars($user['employee_no'] ?? $user['employee_id']); ?>
-                                - <?php echo htmlspecialchars(trim(($user['first_name'] ?? '') . ' ' . ($user['surname'] ?? ''))); ?>
-                            </div>
-                        </div>
-                    <?php endif; ?>
-                    <div class="col-md-6">
-                        <label class="form-label text-muted small">Account Created</label>
-                        <div class="fw-semibold"><?php echo date('M d, Y', strtotime($user['created_at'])); ?></div>
-                    </div>
-                    <?php if ($user['created_by_name']): ?>
-                        <div class="col-md-6">
-                            <label class="form-label text-muted small">Created By</label>
-                            <div class="fw-semibold"><?php echo htmlspecialchars($user['created_by_name']); ?></div>
-                        </div>
-                    <?php endif; ?>
-                </div>
-            </div>
-        </div>
-        
-        <?php if (!empty($user_role_config['description'])): ?>
-            <div class="mt-4">
-                <h6>Role Description</h6>
-                <p class="text-muted"><?php echo htmlspecialchars($user_role_config['description']); ?></p>
-            </div>
-        <?php endif; ?>
-    </div>
-    <?php
-    exit;
-}
 
 // Get filters from request
 $filters = [
@@ -381,6 +281,11 @@ $role_config = config('roles.roles', []);
                     </div>
                 </div>
             </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Close
+                </button>
+            </div>
         </div>
     </div>
 </div>
@@ -439,6 +344,36 @@ $role_config = config('roles.roles', []);
                 </button>
                 <button type="button" class="btn futuristic-btn-confirm" id="confirmStatusChangeBtn">
                     <i class="fas fa-check me-2"></i>Confirm Change
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete User Confirmation Modal -->
+<div class="modal fade" id="deleteUserConfirmModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="false" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content futuristic-modal futuristic-modal-danger">
+            <div class="futuristic-modal-header">
+                <div class="futuristic-icon-wrapper">
+                    <i class="fas fa-exclamation-triangle futuristic-icon futuristic-icon-danger" id="deleteUserIcon"></i>
+                    <div class="futuristic-pulse futuristic-pulse-danger"></div>
+                </div>
+                <h5 class="futuristic-modal-title">Confirm User Deletion</h5>
+            </div>
+            <div class="futuristic-modal-body">
+                <p class="futuristic-message" id="deleteUserConfirmMessage"></p>
+                <div class="futuristic-info-box futuristic-info-box-danger" id="deleteUserInfoBox">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span id="deleteUserInfoText">This action cannot be undone. All user data and access will be permanently removed.</span>
+                </div>
+            </div>
+            <div class="futuristic-modal-footer">
+                <button type="button" class="btn futuristic-btn-cancel" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Cancel
+                </button>
+                <button type="button" class="btn futuristic-btn-danger" id="confirmDeleteUserBtn">
+                    <i class="fas fa-trash me-2"></i>Delete User
                 </button>
             </div>
         </div>
@@ -1309,7 +1244,9 @@ html[data-theme="dark"] .alert-info {
 
 /* Ensure modal is clickable and properly positioned */
 #roleChangeConfirmModal.show,
-#statusChangeConfirmModal.show {
+#statusChangeConfirmModal.show,
+#userDetailsModal.show,
+#deleteUserConfirmModal.show {
     display: block !important;
     z-index: 1060 !important;
     padding-right: 0 !important;
@@ -1324,10 +1261,144 @@ html[data-theme="dark"] .alert-info {
     pointer-events: auto;
 }
 
+#userDetailsModal .modal-dialog {
+    transform: translate(0, 0) !important;
+    margin: 1.75rem auto !important;
+    position: relative;
+    pointer-events: auto;
+    max-width: 900px;
+}
+
+#userDetailsModal {
+    z-index: 1060 !important;
+}
+
+#userDetailsModal .modal-content {
+    pointer-events: auto !important;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+#userDetailsModal .modal-header {
+    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1e293b 100%);
+    color: white;
+    border-bottom: none;
+    padding: 1rem 1.5rem;
+    border-radius: 12px 12px 0 0;
+}
+
+#userDetailsModal .modal-header .modal-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: white;
+}
+
+#userDetailsModal .modal-header .btn-close {
+    filter: invert(1) grayscale(100%) brightness(200%);
+    opacity: 1;
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    padding: 0.5rem;
+    width: 2rem;
+    height: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+#userDetailsModal .modal-header .btn-close:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+#userDetailsModal .modal-header .btn-close:focus {
+    box-shadow: 0 0 0 0.25rem rgba(255, 255, 255, 0.5);
+    outline: none;
+}
+
+#userDetailsModal .modal-body {
+    padding: 1.5rem;
+    max-height: calc(100vh - 250px);
+    overflow-y: auto;
+}
+
+#userDetailsModal .modal-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: flex-end;
+}
+
+#userDetailsModal .modal-footer .btn {
+    padding: 0.5rem 1.25rem;
+    font-size: 0.875rem;
+    border-radius: 6px;
+}
+
+#userDetailsModal .modal-footer .btn-secondary {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    color: white;
+}
+
+#userDetailsModal .modal-footer .btn-secondary:hover {
+    background-color: #5a6268;
+    border-color: #545b62;
+    color: white;
+}
+
+/* Ensure user details modal is properly centered and doesn't overlap header */
+#userDetailsModal.modal {
+    align-items: center !important;
+    padding-top: 2rem !important;
+    padding-bottom: 2rem !important;
+}
+
+#userDetailsModal .modal-dialog {
+    max-width: 900px;
+    width: 90%;
+    margin: 2rem auto !important;
+}
+
+/* Dark theme support for user details modal */
+html[data-theme="dark"] #userDetailsModal .modal-content {
+    background-color: #1a1d23 !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] #userDetailsModal .modal-header {
+    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1e293b 100%) !important;
+    border-bottom-color: var(--interface-border) !important;
+}
+
+html[data-theme="dark"] #userDetailsModal .modal-body {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] #userDetailsModal .modal-footer {
+    border-top-color: var(--interface-border) !important;
+    background-color: #1a1d23 !important;
+}
+
+html[data-theme="dark"] #userDetailsModal .modal-footer .btn-secondary {
+    background-color: #475569 !important;
+    border-color: #475569 !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] #userDetailsModal .modal-footer .btn-secondary:hover {
+    background-color: #334155 !important;
+    border-color: #334155 !important;
+}
+
 #roleChangeConfirmModal .futuristic-btn-cancel,
 #roleChangeConfirmModal .futuristic-btn-confirm,
 #statusChangeConfirmModal .futuristic-btn-cancel,
-#statusChangeConfirmModal .futuristic-btn-confirm {
+#statusChangeConfirmModal .futuristic-btn-confirm,
+#deleteUserConfirmModal .futuristic-btn-cancel,
+#deleteUserConfirmModal .futuristic-btn-danger {
     pointer-events: auto !important;
     cursor: pointer !important;
     z-index: 10;
@@ -1335,7 +1406,8 @@ html[data-theme="dark"] .alert-info {
 }
 
 #roleChangeConfirmModal .modal-content,
-#statusChangeConfirmModal .modal-content {
+#statusChangeConfirmModal .modal-content,
+#deleteUserConfirmModal .modal-content {
     pointer-events: auto !important;
 }
 
@@ -1354,6 +1426,111 @@ html[data-theme="dark"] .alert-info {
     z-index: 1059 !important;
     background: rgba(0, 0, 0, 0.7);
     backdrop-filter: blur(5px);
+}
+
+/* Delete User Confirmation Modal - Danger Theme */
+.futuristic-modal-danger {
+    background: linear-gradient(135deg, rgba(127, 29, 29, 0.95) 0%, rgba(153, 27, 27, 0.95) 100%);
+    border: none;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(220, 38, 38, 0.5),
+                0 0 0 1px rgba(239, 68, 68, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    overflow: hidden;
+    position: relative;
+}
+
+.futuristic-modal-danger::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, 
+        rgba(239, 68, 68, 0.1) 0%, 
+        rgba(220, 38, 38, 0.1) 50%, 
+        rgba(185, 28, 28, 0.1) 100%);
+    opacity: 0.6;
+    z-index: 0;
+    animation: gradientShift 8s ease infinite;
+}
+
+.futuristic-icon-danger {
+    color: #ef4444 !important;
+    text-shadow: 0 0 20px rgba(239, 68, 68, 0.6),
+                 0 0 40px rgba(239, 68, 68, 0.4);
+}
+
+.futuristic-pulse-danger {
+    border-color: rgba(239, 68, 68, 0.5) !important;
+}
+
+.futuristic-info-box-danger {
+    background: rgba(239, 68, 68, 0.1) !important;
+    border: 1px solid rgba(239, 68, 68, 0.3) !important;
+    color: #fca5a5 !important;
+}
+
+.futuristic-info-box-danger i {
+    color: #f87171 !important;
+}
+
+.futuristic-btn-danger {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 50%, #991b1b 100%);
+    color: #ffffff;
+    box-shadow: 0 4px 15px rgba(220, 38, 38, 0.4),
+                0 0 20px rgba(220, 38, 38, 0.2);
+    background-size: 200% 200%;
+    animation: gradientMove 3s ease infinite;
+    padding: 0.75rem 2rem;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: none;
+    position: relative;
+    overflow: hidden;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.futuristic-btn-danger::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.5s;
+}
+
+.futuristic-btn-danger:hover::before {
+    left: 100%;
+}
+
+.futuristic-btn-danger:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 6px 25px rgba(220, 38, 38, 0.6),
+                0 0 30px rgba(185, 28, 28, 0.4);
+}
+
+.futuristic-btn-danger:active {
+    transform: translateY(0) scale(0.98);
+}
+
+#deleteUserConfirmModal {
+    z-index: 1060 !important;
+}
+
+#deleteUserConfirmModal .modal-dialog {
+    z-index: 1061 !important;
+    position: relative;
+    margin: 1.75rem auto;
+    pointer-events: auto;
+    max-width: 500px;
 }
 
 /* Fix for modal appearing below screen */
@@ -1976,16 +2153,57 @@ function updateUserStatus(userId, newStatus, selectElement) {
 function viewUserDetails(userId) {
     console.log('👁️ Viewing user details:', userId);
     
-    const modal = new bootstrap.Modal(document.getElementById('userDetailsModal'));
+    const modalElement = document.getElementById('userDetailsModal');
     const content = document.getElementById('userDetailsContent');
     
-    if (!content) {
-        console.error('User details content element not found');
+    if (!modalElement || !content) {
+        console.error('User details modal or content element not found');
         return;
     }
     
+    // Ensure modal is in the body (not hidden in a container)
+    if (modalElement.parentElement !== document.body) {
+        document.body.appendChild(modalElement);
+    }
+    
+    // Show loading state
     content.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>';
-    modal.show();
+    
+    // Get or create modal instance
+    let modalInstance = bootstrap.Modal.getInstance(modalElement);
+    if (modalInstance) {
+        modalInstance.dispose();
+    }
+    
+    // Create new modal instance WITHOUT backdrop to prevent blocking issues
+    modalInstance = new bootstrap.Modal(modalElement, {
+        backdrop: false,
+        keyboard: true,
+        focus: true
+    });
+    
+    // Show modal
+    modalInstance.show();
+    
+    // Ensure modal is visible and properly positioned after Bootstrap shows it
+    setTimeout(() => {
+        modalElement.style.display = 'block';
+        modalElement.style.zIndex = '1060';
+        modalElement.classList.add('show');
+        modalElement.setAttribute('aria-hidden', 'false');
+        modalElement.setAttribute('aria-modal', 'true');
+        
+        const modalDialog = modalElement.querySelector('.modal-dialog');
+        if (modalDialog) {
+            modalDialog.style.zIndex = '1061';
+            modalDialog.style.pointerEvents = 'auto';
+            modalDialog.style.margin = '1.75rem auto';
+            modalDialog.style.position = 'relative';
+        }
+        
+        // Remove any backdrops - we don't use them
+        cleanupAllBackdrops();
+    }, 50);
     
     // Fetch user details
     const url = window.location.pathname + '?page=users&action=get_details&user_id=' + userId;
@@ -2003,9 +2221,98 @@ function viewUserDetails(userId) {
 function deleteUser(userId, userName, buttonEl) {
     if (!userId) return;
 
-    const ok = confirm(`Delete ${userName}? This action cannot be undone.`);
-    if (!ok) return;
+    const modal = document.getElementById('deleteUserConfirmModal');
+    const messageEl = document.getElementById('deleteUserConfirmMessage');
+    const confirmBtn = document.getElementById('confirmDeleteUserBtn');
+    
+    if (!modal || !messageEl || !confirmBtn) {
+        // Fallback to default confirm if modal not found
+        const ok = confirm(`Delete ${userName}? This action cannot be undone.`);
+        if (!ok) return;
+        performDeleteUser(userId, buttonEl);
+        return;
+    }
+    
+    // Ensure modal is in the body (not hidden in a container)
+    if (modal.parentElement !== document.body) {
+        document.body.appendChild(modal);
+    }
+    
+    // Set message
+    messageEl.textContent = `Are you sure you want to delete "${userName}"?`;
+    
+    // Cleanup function to restore page state
+    function cleanupModal() {
+        // Remove all backdrops
+        cleanupAllBackdrops();
+        
+        // Remove show class from modal
+        modal.classList.remove('show');
+        modal.style.display = 'none';
+        modal.setAttribute('aria-hidden', 'true');
+        modal.setAttribute('aria-modal', 'false');
+    }
+    
+    // Remove previous event listeners by cloning button
+    const newConfirmBtn = confirmBtn.cloneNode(true);
+    confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+    
+    // Handle confirmation
+    newConfirmBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        cleanupModal();
+        performDeleteUser(userId, buttonEl);
+    });
+    
+    // Handle cancellation
+    const cancelBtn = modal.querySelector('.futuristic-btn-cancel');
+    if (cancelBtn) {
+        const newCancelBtn = cancelBtn.cloneNode(true);
+        cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+        
+        newCancelBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            cleanupModal();
+        });
+    }
+    
+    // Also handle modal hidden event to ensure cleanup
+    modal.addEventListener('hidden.bs.modal', function() {
+        cleanupModal();
+    });
+    
+    // Show modal using Bootstrap WITHOUT backdrop
+    const modalInstance = new bootstrap.Modal(modal, {
+        backdrop: false,
+        keyboard: false,
+        focus: true
+    });
+    
+    modalInstance.show();
+    
+    // Ensure modal is visible and properly positioned after Bootstrap shows it
+    setTimeout(() => {
+        modal.style.display = 'block';
+        modal.style.zIndex = '1060';
+        modal.classList.add('show');
+        modal.setAttribute('aria-hidden', 'false');
+        modal.setAttribute('aria-modal', 'true');
+        
+        const modalDialog = modal.querySelector('.modal-dialog');
+        if (modalDialog) {
+            modalDialog.style.zIndex = '1061';
+            modalDialog.style.pointerEvents = 'auto';
+            modalDialog.style.margin = '1.75rem auto';
+        }
+        
+        // Remove any backdrops - we don't use them
+        cleanupAllBackdrops();
+    }, 50);
+}
 
+function performDeleteUser(userId, buttonEl) {
     const formData = new FormData();
     formData.append('action', 'delete_user');
     formData.append('user_id', userId);
