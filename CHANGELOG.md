@@ -1,5 +1,511 @@
 # Changelog - Golden Z-5 HR System
 
+## [2.1.0] - 2026-01-19
+
+### 🔔 Enhanced Notification System with License Monitoring
+
+#### Major Update: Interactive Notification System
+
+#### Added
+- **Expiring License Notifications** - Automatically detects and notifies about security licenses expiring within 60 days
+- **Expiring Clearance Notifications (RLM)** - Tracks and alerts on RLM clearance expiration dates
+- **Interactive Notification Actions:**
+  - Mark individual notifications as read (checkmark button)
+  - Dismiss individual notifications (X button)
+  - Mark all notifications as read (batch action)
+  - Clear all notifications at once (batch dismiss)
+- **User-Specific Notification Tracking** - Each user has their own read/dismissed status
+- **Priority-Based Color Coding:**
+  - Red (Urgent) - Expired or expiring within 7-14 days
+  - Yellow (High) - Expiring within 15-30 days
+  - Blue (Medium) - Expiring within 31-60 days
+- **Visual Feedback:**
+  - Unread items: Blue background with left border accent
+  - Read items: Faded opacity (70%)
+  - Hover actions: Buttons appear on mouseover
+  - Smooth animations for dismiss actions
+- **Auto-Updating Badge** - Real-time notification count updates every 60 seconds
+- **Categorized Dropdown** - Notifications organized by type (License Expiry, Clearance Expiry, Employee Alerts)
+
+#### New Files
+- `api/notifications.php` - API endpoint handling all notification actions
+- `assets/js/notifications-handler.js` - JavaScript handlers for notification interactions
+- `migrations/add_notification_status_table.sql` - Database migration for notification tracking
+- `NOTIFICATION_SYSTEM_SETUP.md` - Complete documentation
+- `NOTIFICATION_SYSTEM_QUICK_START.md` - Quick reference guide
+- `README_NOTIFICATION_UPDATE.md` - Update announcement
+
+#### Modified Files
+- `includes/database.php` - Added 3 new notification functions
+- `includes/page-header.php` - Complete redesign of notification dropdown
+- `includes/footer.php` - Added notification handler script
+- `assets/css/font-override.css` - Added notification item styles
+
+#### Technical Details
+- Database table: `notification_status` with indexed columns
+- Performance optimized: Limited fetch, efficient queries
+- Fully backward compatible with existing alerts
+- Mobile-friendly and touch-optimized
+
+### 📊 Dashboard License Watchlist Enhancement
+
+#### Added Database-Responsive License Monitoring
+- **License Status Stat Cards** - 4 new cards showing real-time license status:
+  - Expired licenses (red/critical)
+  - Critical expiring ≤7 days (red/urgent)
+  - Warning expiring 8-30 days (yellow/high)
+  - Valid licenses >30 days (green/good)
+- **Threshold-Based Alerts** - Automatic categorization by expiration timeline
+- **Interactive Navigation** - Click stat cards to filter watchlist table
+- **Color-Coded Priority** - Visual indicators for urgency levels
+- **Real-Time Database Queries** - Updates automatically on page load
+
+#### Database Query Features
+```sql
+-- Calculates counts for each threshold category
+-- Expired: < today
+-- Critical: 0-7 days
+-- Warning: 8-30 days  
+-- Valid: > 30 days
+```
+
+#### Visual Design
+- Color-coded left borders (4px expanding to 8px on hover)
+- Threshold badges (Critical, Urgent, High, Good)
+- Background icons with semi-transparency
+- Smooth hover animations with transform effects
+- Responsive layout (stacks on mobile)
+
+#### Benefits
+- ✅ Proactive license expiration monitoring
+- ✅ Clear visual categorization by urgency
+- ✅ Immediate access to filtered license lists
+- ✅ Database-driven real-time updates
+- ✅ Reduced risk of expired credentials
+
+### 🗺️ Centralized Breadcrumb Navigation System
+
+#### Implemented Automated Breadcrumb Generation
+- **Centralized Management** - All breadcrumb paths defined in `includes/page-header.php`
+- **Automatic Generation** - Breadcrumbs created based on current page
+- **Consistent Display** - Appears below page title for all pages
+- **Proper Hierarchy** - Shows correct navigation path (Dashboard > Parent > Current)
+
+#### Supported Page Hierarchies
+- Employee Management: Dashboard > Employees > [Add/Edit/View]
+- Posts & Locations: Dashboard > Posts > [Add/Edit/Assignments]
+- Alerts: Dashboard > Alerts > [Add Alert]
+- Settings, Profile, Help, System Logs, etc.
+
+#### Removed Hardcoded Breadcrumbs
+Cleaned up 6 page files:
+- `pages/employees.php`
+- `pages/posts.php`
+- `pages/post_assignments.php`
+- `pages/add_employee.php`
+- `pages/add_employee_page2.php`
+- `pages/alerts.php`
+
+#### Design Features
+- Forward slash (/) separators
+- Hover effect (links turn blue)
+- Current page in bold, non-clickable
+- Responsive wrapping on small screens
+- ARIA labels for accessibility
+- Dark theme support
+
+#### Benefits
+- ✅ Consistency across all pages
+- ✅ Single source of truth for navigation paths
+- ✅ Easy to add new pages
+- ✅ Eliminates code duplication
+- ✅ Better user orientation
+- ✅ Improved accessibility
+
+#### New Files
+- `BREADCRUMB_SYSTEM.md` - Complete documentation
+
+#### Modified Files
+- `includes/page-header.php` - Added breadcrumb generation function
+- `assets/css/font-override.css` - Added breadcrumb styling for HR Admin and Super Admin portals
+
+### 🎨 CSS Organization & Documentation
+
+#### Reorganized CSS Architecture
+- **Enhanced File Structure** - Added clear section markers and documentation headers
+- **7 Main Sections** - Organized into logical groups:
+  1. Global Foundations (typography, fonts)
+  2. Layout & Structure (containers, sidebar, header, breadcrumbs)
+  3. Reusable Components (tables, cards, stats, forms, buttons, badges, modals)
+  4. Page-Specific Styles
+  5. Portal-Specific Overrides (HR Admin, Super Admin, etc.)
+  6. Responsive & Media Queries
+  7. Dark Theme
+
+#### New Documentation
+- **CSS_ORGANIZATION_GUIDE.md** - Comprehensive 500+ line guide
+  - File structure explained
+  - Maintenance guidelines
+  - Common editing scenarios
+  - Performance considerations
+  - Troubleshooting guide
+- **CSS_QUICK_REFERENCE.md** - Quick lookup reference
+  - Section organization map
+  - Common tasks & searches
+  - CSS variables reference
+  - Selector index
+  - Testing checklist
+
+#### CSS File Improvements
+- **Section Headers** - Added descriptive headers for main sections
+  - `SECTION 1: GLOBAL FOUNDATIONS`
+  - `SECTION 2: LAYOUT & STRUCTURE` with subsections (2A-2D)
+  - `SECTION 3: REUSABLE COMPONENTS` with subsections (3A-3G)
+  - `SECTION 5: PORTAL-SPECIFIC OVERRIDES`
+  - `SECTION 7: DARK THEME`
+- **Subsection Markers** - Clear labels for specific areas:
+  - 2A: Page Containers & Layout
+  - 2B: Consistent Spacing System
+  - 2C: Sidebar Navigation
+  - 2D: Header & Welcome Section
+  - 3A: Tables
+  - 3B: Cards & Containers
+  - 3C: Buttons
+  - 3D: Stat Cards
+  - 5A: Super Admin Portal
+  - 7A: Super Admin Dark Theme
+
+#### Benefits
+- ✅ Easy navigation with clear section markers
+- ✅ Better maintainability with organized structure
+- ✅ Comprehensive documentation for developers
+- ✅ Quick reference for common tasks
+- ✅ Reduces confusion when editing styles
+- ✅ Separates general layout from component-specific styles
+- ✅ Clear distinction between global and portal-specific CSS
+
+#### Files Modified
+- `assets/css/font-override.css` - Added section headers and improved organization
+- `assets/css/font-override.css.backup` - Automatic backup created
+
+#### Files Created
+- `CSS_ORGANIZATION_GUIDE.md` - Complete architecture documentation
+- `CSS_QUICK_REFERENCE.md` - Quick lookup guide
+
+### 🔧 CSS Spacing System Fix
+
+#### Critical Bug Fix: Resolved Conflicting Spacing Rules
+
+**Problem**: Dashboard spacing was not working properly due to conflicting CSS rules that were canceling each other out.
+
+**Root Causes**:
+1. **Conflicting `.row.g-4` Rules** - Two rules with opposite effects:
+   - Line ~1574: `.hrdash .row.g-4 + .row.g-4 { margin-top: 1.75rem !important; }` ✅
+   - Line ~2300: `.row.g-4 + .row.g-4 { margin-top: 0 !important; }` ❌ **Overriding!**
+   - The second, more general rule was removing ALL spacing between rows
+
+2. **Duplicate `.container-fluid.hrdash` Definitions** - Properties scattered across multiple locations:
+   - Line 657: Only padding-left/right
+   - Line 746: Only scroll-behavior
+   - Line 1602: Only padding-top
+   - Result: Incomplete and fragmented styling
+
+**Solutions Implemented**:
+
+1. ❌ **Removed Conflicting Rules** (Lines ~2300-2318)
+   - Deleted all conflicting spacing rules that were overriding Section 2B
+   - Removed: `.row.g-4 + .row.g-4 { margin-top: 0 !important; }`
+   - Removed: `.row.g-4 + .card { margin-top: 0 !important; }`
+
+2. ✅ **Consolidated Container Rules** (Section 2A)
+   ```css
+   body.portal-hr-admin .container-fluid.hrdash {
+       padding-top: 1.75rem !important;        /* Desktop */
+       padding-left: var(--hr-page-px) !important;
+       padding-right: var(--hr-page-px) !important;
+       padding-bottom: var(--hr-page-py) !important;
+       scroll-behavior: smooth;
+   }
+   
+   /* Mobile: 1.25rem top padding */
+   @media (max-width: 768px) {
+       padding-top: 1.25rem !important;
+   }
+   ```
+
+3. ✅ **Enhanced Row Spacing** (Section 2B)
+   ```css
+   /* Between stat rows */
+   .hrdash .row.g-4 + .row.g-4 { 
+       margin-top: 1.75rem !important; 
+   }
+   
+   /* Between stats and cards */
+   .hrdash .row.g-4 + .card-modern { 
+       margin-top: 1.75rem !important; 
+   }
+   
+   /* Between stats and other sections */
+   .hrdash .row.g-4 + div:not(.row) { 
+       margin-top: 1.75rem !important; 
+   }
+   ```
+
+4. ✅ **Applied to Both Portals**
+   - HR Admin portal (`body.portal-hr-admin`)
+   - Super Admin portal (`body.portal-super-admin`)
+
+**Spacing Standards**:
+
+Desktop (≥769px):
+- Container top padding: `1.75rem` (28px)
+- Row-to-row spacing: `1.75rem` (28px)
+- Row-to-card spacing: `1.75rem` (28px)
+- Page horizontal padding: `1.5rem` (24px)
+
+Mobile (≤768px):
+- Container top padding: `1.25rem` (20px)
+- Row-to-row spacing: `1.75rem` (28px) - maintained for clarity
+- Page horizontal padding: `1rem` (16px)
+
+**What This Fixes**:
+- ✅ Proper spacing between header and first stat row
+- ✅ Consistent spacing between multiple stat card rows
+- ✅ Clear visual separation between stats and License Watchlist
+- ✅ Proper padding around all dashboard content
+- ✅ Consistent mobile responsive behavior
+- ✅ No more conflicting CSS rules
+
+**Prevention Strategy**:
+- Always check Section 2B before adding new spacing rules
+- Use specific selectors (`.hrdash` scope) to avoid overrides
+- Consolidate duplicate rules in one location
+- Test thoroughly on dashboard after spacing changes
+
+**Impact**:
+- Affects: Dashboard, all pages using `.container-fluid.hrdash`
+- Portals: HR Admin, Super Admin
+- Status: ✅ Resolved
+
+#### Files Modified
+- `assets/css/font-override.css` - Fixed conflicting spacing rules
+
+#### Files Created
+- `CSS_SPACING_FIX_SUMMARY.md` - Detailed fix documentation
+
+---
+
+## [2026-01-19] - System Cleanup & Documentation Consolidation
+
+### Summary
+Major cleanup of the project structure by removing redundant documentation files, consolidating all SQL migrations into the main database schema, and updating project documentation to be more comprehensive and maintainable.
+
+---
+
+### 📂 Files Deleted
+
+#### Documentation Files (MD)
+**Reason**: All documentation is now embedded as comments within code files for better maintainability.
+
+- `ADAPTIVE_ORIENTATION_GUIDE.md` - CSS responsive design patterns (now in `assets/css/font-override.css` comments)
+- `CSS_ORGANIZATION.md` - CSS file structure (now in code comments)
+- `EMPLOYEE_PAGE_FLOW.md` - Employee page workflow (now in page comments)
+- `LOGIN_PROFESSIONAL_UPGRADE_SUMMARY.md` - Login features (now in `landing/index.php` comments)
+- `LOGIN_VALIDATION_SPECIFICATION.md` - Login validation rules (now in code comments)
+- `NOTIFICATION_QUICK_START.md` - Notification system guide (now in `assets/js/notifications.js` comments)
+- `NOTIFICATION_SYSTEM_GUIDE.md` - Full notification docs (now in code comments)
+- `NOTIFICATION_SYSTEM_IMPLEMENTATION.md` - Implementation details (now in code comments)
+- `RESPONSIVE_LOGIN_SPECIFICATION.md` - Login responsive design (now in CSS comments)
+- `STAT_CARDS_CONSISTENCY.md` - Stat card design system (now in CSS comments)
+- `STRUCTURE.md` - Project structure (now in README.md)
+- `SYSTEM_OVERVIEW.md` - System overview (now in README.md)
+- `PASSWORD_RESET_SETUP.md` - Password reset setup (now in code comments)
+
+**Total**: 13 documentation files removed
+
+#### SQL Migration Files
+**Reason**: All migrations have been consolidated into the main `goldenz_hr.sql` file with comprehensive documentation headers.
+
+- `add_employee_page2_migration.sql` - Employee form Page 2 fields migration
+- `create_system_logs_table.sql` - System and security logs table creation
+- `fix_audit_logs.sql` - Audit logs AUTO_INCREMENT fix
+- `fix_employee_auto_increment.sql` - Employee table AUTO_INCREMENT fix
+- `goldenz_password_reset_migration.sql` - Password reset fields migration
+- `remove_dummy_employees.sql` - Clean up test data script
+- `migrations/add_first_last_name_to_users.sql` - User name fields migration
+
+**Total**: 7 SQL migration files removed
+
+#### Configuration Files
+- `httpd-vhosts.conf.txt` - XAMPP virtual host config (not needed in repo)
+- `httpd.conf.txt` - Apache config (not needed in repo)
+
+**Total**: 2 configuration files removed
+
+#### PHP Helper Scripts
+- `fix_employee_auto_increment.php` - No longer needed (SQL version consolidated)
+
+**Total**: 1 PHP file removed
+
+#### Directories
+- `migrations/` - Empty folder removed (all migrations consolidated)
+
+**Total**: 1 directory removed
+
+---
+
+### 📝 Files Updated
+
+#### `goldenz_hr.sql` - Main Database Schema
+**Changes**:
+- Added comprehensive 100-line documentation header
+- Documented all 6 applied migrations with descriptions
+- Added installation instructions
+- Added maintenance notes
+- Added important notes about charset, engines, and indexes
+- Created clear section headers for better organization
+
+**New Header Sections**:
+1. **Description** - What the database contains
+2. **Applied Migrations** - Complete list of all consolidated migrations
+3. **Important Notes** - Technical details about database configuration
+4. **Installation Instructions** - Step-by-step database setup
+5. **Maintenance** - Regular maintenance tasks and recommendations
+
+**Benefits**:
+- Single source of truth for database schema
+- Clear history of all applied migrations
+- Easy to understand what's in the database
+- Proper documentation for new developers
+
+#### `README.md` - Project Documentation
+**Complete Rewrite** with:
+- Comprehensive overview of system features
+- Clear installation instructions
+- Default credentials table
+- Detailed feature list (Employee Management, Post Management, Alerts, etc.)
+- System architecture documentation
+- Project structure visualization
+- Database schema overview
+- Configuration examples
+- Development guidelines
+- Maintenance procedures
+- Troubleshooting section
+- System requirements and browser support
+- Support contact information
+
+**Structure**:
+- 300+ lines of comprehensive documentation
+- Well-organized sections with emojis for visual hierarchy
+- Code examples for configuration
+- Clear navigation to other documentation files
+- Professional formatting
+
+---
+
+### ✨ Benefits of This Cleanup
+
+#### Reduced Clutter
+- **Before**: 20+ MD files, 8+ SQL files scattered across project
+- **After**: 4 essential MD files (README, CHANGELOG, ENV_SETUP, GITHUB_SETUP), 1 SQL file
+
+#### Improved Maintainability
+- Documentation is now with the code it describes
+- Single SQL file to maintain instead of multiple migration files
+- Clear README that serves as entry point for all documentation
+
+#### Better Developer Experience
+- All migrations documented in SQL file header
+- Inline code comments provide context where needed
+- README provides complete system overview
+- Clear project structure and guidelines
+
+#### Reduced Confusion
+- No outdated documentation files to maintain
+- Single source of truth for database schema
+- Clear separation of essential vs. inline documentation
+
+---
+
+### 📊 Statistics
+
+**Files Removed**: 24 files + 1 directory  
+**Files Updated**: 3 files (goldenz_hr.sql, README.md, CHANGELOG.md)  
+**Lines of Documentation Added**: ~300 lines in README, ~100 lines in SQL  
+**Total Space Freed**: ~180 KB of redundant documentation
+
+---
+
+### 🎯 What's Left
+
+#### Essential Documentation (MD Files)
+1. **README.md** - Main project documentation (comprehensive)
+2. **CHANGELOG.md** - Complete change history
+3. **ENV_SETUP.md** - Environment setup guide
+4. **GITHUB_SETUP.md** - Git configuration guide
+5. **LICENSE** - Software license (EULA)
+
+#### Database
+1. **goldenz_hr.sql** - Complete database schema with all migrations
+
+#### Vendor Documentation (Unchanged)
+- PHPMailer documentation in `config/vendor/` (third-party, not touched)
+
+---
+
+### 🔍 Migration Consolidation Details
+
+All previous migration files have been consolidated into `goldenz_hr.sql` with proper documentation:
+
+1. **Password Reset Migration**
+   - Added `password_reset_token` and `password_reset_expires_at` to users table
+   - Added indexes for token lookups
+
+2. **User Name Fields Migration**
+   - Added `first_name` and `last_name` columns to users table
+   - Kept `name` column for backward compatibility
+
+3. **Employee Page 2 Fields Migration**
+   - Added 60+ new fields to employees table
+   - Includes health info, driver's license, signatures, fingerprints, requirements
+
+4. **System Logs Tables**
+   - Created `system_logs` and `security_logs` tables
+   - Proper indexes for performance
+
+5. **Audit Logs Fix**
+   - Fixed AUTO_INCREMENT on audit_logs id column
+   - Prevents duplicate key errors
+
+6. **Employee Auto-Increment Fix**
+   - Script to reset AUTO_INCREMENT to max(id) + 1
+   - Documented in SQL header
+
+---
+
+### 🚀 Future Recommendations
+
+1. **Keep inline documentation updated** as features change
+2. **Add comments to complex SQL queries** in PHP files
+3. **Document new features in CHANGELOG** as they're added
+4. **Keep README updated** with new features and requirements
+5. **Add API documentation** if REST APIs are implemented
+
+---
+
+### 📋 Checklist for Developers
+
+- [x] All migrations consolidated into main SQL file
+- [x] Redundant documentation files removed
+- [x] README completely rewritten
+- [x] CHANGELOG updated with cleanup details
+- [x] SQL file header comprehensive and clear
+- [x] All essential files retained (README, CHANGELOG, ENV_SETUP, GITHUB_SETUP, LICENSE)
+- [x] Code comments reviewed for clarity
+- [x] Project structure documented
+
+---
+
 ## [2025-01-XX] - Employee Management & Dashboard Functionality Fixes
 
 ### Summary

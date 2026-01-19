@@ -83,9 +83,9 @@ if ($_POST['action'] ?? '' === 'create') {
                 </div>
                 <div class="modal-body" style="padding: 1.5rem;">
                     <div class="text-center mb-3">
-                        <i class="fas fa-check-circle text-success" style="font-size: 3rem;"></i>
+                        <i class="fas fa-check-circle text-success fs-48"></i>
                     </div>
-                    <p class="mb-0 text-center" style="font-size: 1.1rem;"><?php echo htmlspecialchars($success_message); ?></p>
+                    <p class="mb-0 text-center fs-md"><?php echo htmlspecialchars($success_message); ?></p>
                     <?php if ($created_post_id): ?>
                         <p class="text-muted small mt-2 mb-0 text-center">Post ID: <strong><?php echo htmlspecialchars($created_post_id); ?></strong></p>
                     <?php endif; ?>
@@ -570,11 +570,11 @@ function showValidationErrorPopup(errors, firstErrorField) {
                 </div>
                 <div class="modal-body" style="padding: 1.5rem;">
                     <div class="text-center mb-3">
-                        <i class="fas fa-exclamation-circle text-danger" style="font-size: 3rem;"></i>
+                        <i class="fas fa-exclamation-circle text-danger fs-48"></i>
                     </div>
-                    <p class="mb-3 text-center" style="font-size: 1.1rem; font-weight: 500;">Please fill in all required fields:</p>
+                    <p class="mb-3 text-center fs-md fw-medium">Please fill in all required fields:</p>
                     <ul class="list-unstyled mb-0" style="text-align: left;">
-                        ${errors.map(error => `<li style="padding: 0.5rem 0; border-bottom: 1px solid #e9ecef;"><i class="fas fa-circle text-danger me-2" style="font-size: 0.5rem;"></i>${error}</li>`).join('')}
+                        ${errors.map(error => `<li class="py-2" style="border-bottom: 1px solid #e9ecef;"><i class="fas fa-circle text-danger me-2 fs-10"></i>${error}</li>`).join('')}
                     </ul>
                 </div>
                 <div class="modal-footer" style="border-top: 1px solid #dee2e6; padding: 1rem 1.5rem; border-radius: 0 0 8px 8px;">

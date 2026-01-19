@@ -4,6 +4,61 @@
     <!-- JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <?php include_once __DIR__ . '/paths.php'; ?>
+    
+    <!-- Initialize Header Dropdowns (Messages & Notifications) -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize all Bootstrap dropdowns
+        const dropdownElementList = document.querySelectorAll('[data-bs-toggle="dropdown"]');
+        const dropdownList = [...dropdownElementList].map(dropdownToggleEl => new bootstrap.Dropdown(dropdownToggleEl));
+        
+        // Add smooth animation to dropdowns
+        dropdownElementList.forEach(function(dropdown) {
+            dropdown.addEventListener('show.bs.dropdown', function() {
+                const menu = this.nextElementSibling;
+                if (menu && menu.classList.contains('dropdown-menu')) {
+                    menu.style.opacity = '0';
+                    menu.style.transform = 'translateY(-10px)';
+                    setTimeout(() => {
+                        menu.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
+                        menu.style.opacity = '1';
+                        menu.style.transform = 'translateY(0)';
+                    }, 10);
+                }
+            });
+            
+            dropdown.addEventListener('hide.bs.dropdown', function() {
+                const menu = this.nextElementSibling;
+                if (menu && menu.classList.contains('dropdown-menu')) {
+                    menu.style.opacity = '0';
+                    menu.style.transform = 'translateY(-10px)';
+                }
+            });
+        });
+        
+        // Prevent dropdown from closing when clicking inside (except on links)
+        document.querySelectorAll('.hrdash-notification-dropdown').forEach(function(dropdown) {
+            dropdown.addEventListener('click', function(e) {
+                // Allow links and buttons to work normally
+                if (e.target.tagName === 'A' || e.target.tagName === 'BUTTON' || e.target.closest('a') || e.target.closest('button')) {
+                    return;
+                }
+                e.stopPropagation();
+            });
+        });
+        
+        // Add visual feedback for notification buttons
+        document.querySelectorAll('.hrdash-welcome__icon-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                this.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    this.style.transform = 'scale(1)';
+                }, 100);
+            });
+        });
+    });
+    </script>
+    
     <!-- Pass user ID to JavaScript for user-scoped theme storage -->
     <script>
         // Set current user ID for theme preference scoping
@@ -57,6 +112,7 @@
     <script src="<?php echo asset_url('js/page-transitions.js'); ?>"></script>
     <script src="<?php echo asset_url('js/comprehensive-functionality.js'); ?>"></script>
     <script src="<?php echo asset_url('js/notifications.js'); ?>"></script>
+    <script src="<?php echo asset_url('js/notifications-handler.js'); ?>"></script>
     
     <script>
     // Enhanced Sidebar Navigation System
@@ -545,5 +601,10 @@
         include __DIR__ . '/password-expiry-modal.php';
     }
     ?>
+    
+    <!-- Scroll to Top Button -->
+    <button id="scrollToTopBtn" class="scroll-to-top-btn" title="Scroll to top" aria-label="Scroll to top">
+        <i class="fas fa-arrow-up"></i>
+    </button>
 </body>
 </html>

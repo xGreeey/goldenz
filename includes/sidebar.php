@@ -42,11 +42,6 @@ if ($user_role === 'developer') {
             'section' => null,
         ],
         [
-            'title' => 'Post Assignments',
-            'page' => 'post_assignments',
-            'section' => null,
-        ],
-        [
             'title' => 'Alerts',
             'page' => 'alerts',
             'section' => null,

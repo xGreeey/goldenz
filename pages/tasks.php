@@ -209,7 +209,7 @@ function isTaskOverdue($due_date, $status) {
                 <h1 class="mb-0">Task</h1>
                 <button type="button" class="btn btn-link p-0 text-primary" data-bs-toggle="popover" data-bs-trigger="hover focus" data-bs-placement="bottom" 
                         data-bs-content="Tasks are automatically generated when employee records need updates. Tasks can only be removed once they are accomplished (completed). Click on the location page link to go directly to the employee record." 
-                        title="How Tasks Work" style="font-size: 1.25rem; line-height: 1;">
+                        title="How Tasks Work" class="fs-lg" style="line-height: 1;">
                     <i class="fas fa-circle-question"></i>
                 </button>
             </div>
@@ -511,7 +511,7 @@ function isTaskOverdue($due_date, $status) {
                                 </td>
                                 <td>
                                     <div class="d-flex align-items-center">
-                                        <div class="employee-avatar me-2" style="width: 32px; height: 32px; font-size: 0.75rem;">
+                                        <div class="employee-avatar me-2 fs-xs" style="width: 32px; height: 32px;">
                                             <?php 
                                             $name = $task['assigned_by_name'] ?? 'System';
                                             $initials = '';

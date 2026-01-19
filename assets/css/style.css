@@ -2,6 +2,35 @@
 .text-uppercase {
     text-transform: uppercase !important;
 }
+
+/* ============================================================
+   FONT SIZE UTILITY CLASSES - System-wide Consistency
+   ============================================================ */
+.fs-xs { font-size: 0.75rem !important; }      /* 12px - Extra small */
+.fs-sm { font-size: 0.875rem !important; }     /* 14px - Small */
+.fs-base { font-size: 1rem !important; }       /* 16px - Base */
+.fs-md { font-size: 1.125rem !important; }     /* 18px - Medium */
+.fs-lg { font-size: 1.25rem !important; }      /* 20px - Large */
+.fs-xl { font-size: 1.5rem !important; }       /* 24px - Extra large */
+.fs-2xl { font-size: 2rem !important; }        /* 32px - 2X large */
+.fs-3xl { font-size: 2.5rem !important; }      /* 40px - 3X large */
+
+/* Additional granular sizes for specific use cases */
+.fs-10 { font-size: 0.625rem !important; }     /* 10px */
+.fs-11 { font-size: 0.6875rem !important; }    /* 11px */
+.fs-12 { font-size: 0.75rem !important; }      /* 12px */
+.fs-13 { font-size: 0.8125rem !important; }    /* 13px */
+.fs-14 { font-size: 0.875rem !important; }     /* 14px */
+.fs-15 { font-size: 0.9375rem !important; }    /* 15px */
+.fs-16 { font-size: 1rem !important; }         /* 16px */
+.fs-18 { font-size: 1.125rem !important; }     /* 18px */
+.fs-20 { font-size: 1.25rem !important; }      /* 20px */
+.fs-24 { font-size: 1.5rem !important; }       /* 24px */
+.fs-28 { font-size: 1.75rem !important; }      /* 28px */
+.fs-32 { font-size: 2rem !important; }         /* 32px */
+.fs-36 { font-size: 2.25rem !important; }      /* 36px */
+.fs-40 { font-size: 2.5rem !important; }       /* 40px */
+.fs-48 { font-size: 3rem !important; }         /* 48px */
 /* Golden Z-5 HR System - High Security Styling */
 /* Sidebar Redesign v2.0 - Updated with modern styling */
 
@@ -419,6 +448,25 @@ html::-webkit-scrollbar-button {
     display: none;
 }
 
+/* Prevent layout shift during page load */
+html {
+    min-height: 100vh;
+}
+
+body {
+    min-height: 100vh;
+}
+
+/* Main Content Area - Persistent Positioning */
+.main-content {
+    margin-left: var(--sidebar-width);
+    min-height: 100vh;
+    width: calc(100% - var(--sidebar-width));
+    transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: margin-left;
+    position: relative;
+}
+
 /* Sidebar Styles */
 .sidebar {
     position: fixed;
@@ -437,6 +485,7 @@ html::-webkit-scrollbar-button {
     display: flex;
     flex-direction: column;
     backdrop-filter: blur(10px);
+    will-change: transform;
 }
 
 
@@ -3211,7 +3260,8 @@ button.btn-primary:focus {
     }
     
     .main-content {
-        margin-left: 0;
+        margin-left: 0 !important;
+        width: 100% !important;
     }
     
     .content {

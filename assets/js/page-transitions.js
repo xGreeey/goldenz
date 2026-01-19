@@ -90,18 +90,19 @@ class PageTransitionManager {
             const parser = new DOMParser();
             const doc = parser.parseFromString(html, 'text/html');
             
-            // Extract the main content
-            const newContent = doc.querySelector('.main-content');
-            const currentContent = document.querySelector('.main-content');
+            // Extract only the content area (not the header)
+            const newContentWrapper = doc.querySelector('.main-content');
+            const newContent = newContentWrapper ? newContentWrapper.querySelector('.content') : null;
+            const currentContent = document.querySelector('.content');
             
             if (!newContent) {
-                console.error('❌ .main-content not found in fetched page');
-                throw new Error('.main-content element not found');
+                console.error('❌ .content not found in fetched page');
+                throw new Error('.content element not found');
             }
             
             if (!currentContent) {
-                console.error('❌ .main-content not found in current page');
-                throw new Error('.main-content element not found in current DOM');
+                console.error('❌ .content not found in current page');
+                throw new Error('.content element not found in current DOM');
             }
             
             // Extract page title from the fetched document
@@ -171,6 +172,9 @@ class PageTransitionManager {
             // Execute extracted page scripts AFTER DOM is in place
             console.log('⚡ Executing page scripts...');
             this.executeScripts(extracted.scripts);
+
+            // Update page header title and subtitle
+            this.updatePageHeader(pageParam);
 
             // Reinitialize page-specific JavaScript
             console.log('🔄 Reinitializing page scripts...');
@@ -256,11 +260,13 @@ class PageTransitionManager {
             // Check if state is recent (less than 5 minutes old)
             const stateAge = Date.now() - state.timestamp;
             if (stateAge < 300000) { // 5 minutes
-                const currentContent = document.querySelector('.main-content');
+                const currentContent = document.querySelector('.content');
                 if (currentContent) {
                     // Restore content from state
                     currentContent.innerHTML = state.content;
                     document.title = state.title || document.title;
+                    // Update page header
+                    this.updatePageHeader(state.page || 'dashboard');
                     // Execute scripts stored in state (needed for injected pages)
                     if (Array.isArray(state.scripts) && state.scripts.length) {
                         this.executeScripts(state.scripts);
@@ -289,8 +295,9 @@ class PageTransitionManager {
             const parser = new DOMParser();
             const doc = parser.parseFromString(html, 'text/html');
             
-            const newContent = doc.querySelector('.main-content');
-            const currentContent = document.querySelector('.main-content');
+            const newContentWrapper = doc.querySelector('.main-content');
+            const newContent = newContentWrapper ? newContentWrapper.querySelector('.content') : null;
+            const currentContent = document.querySelector('.content');
             const newTitle = doc.querySelector('title')?.textContent || document.title;
             
             if (newContent && currentContent) {
@@ -313,6 +320,9 @@ class PageTransitionManager {
                 
                 // Replace current state with updated one
                 history.replaceState(newState, newTitle, url);
+                
+                // Update page header
+                this.updatePageHeader(pageParam);
                 
                 this.executeScripts(extracted.scripts);
                 this.reinitializePageScripts({ page: pageParam, url });
@@ -346,6 +356,86 @@ class PageTransitionManager {
                 return new bootstrap.Tooltip(tooltipTriggerEl);
             });
         }
+    }
+
+    updatePageHeader(page) {
+        // Page titles mapping
+        const pageTitles = {
+            'dashboard': 'Dashboard',
+            'employees': 'Employee Management',
+            'add_employee': 'Add New Employee',
+            'add_employee_page2': 'Add New Employee - Page 2',
+            'edit_employee': 'Edit Employee',
+            'view_employee': 'View Employee',
+            'dtr': 'Daily Time Record',
+            'timeoff': 'Time Off Management',
+            'checklist': 'Employee Checklist',
+            'hiring': 'Hiring Process',
+            'onboarding': 'Employee Onboarding',
+            'handbook': 'Hiring Handbook',
+            'alerts': 'Employee Alerts',
+            'add_alert': 'Add New Alert',
+            'tasks': 'Tasks',
+            'posts': 'Posts & Locations',
+            'add_post': 'Add New Post',
+            'edit_post': 'Edit Post',
+            'post_assignments': 'Post Assignments',
+            'settings': 'System Settings',
+            'profile': 'My Profile',
+            'integrations': 'Integrations',
+            'help': 'Help & Support',
+            'system_logs': 'System Logs'
+        };
+
+        // Page subtitles mapping
+        const pageSubtitles = {
+            'dashboard': 'Overview of your HR management system',
+            'employees': 'Manage employee information and records',
+            'posts': 'Manage posts, locations, and assignments',
+            'post_assignments': 'Assign employees to specific posts',
+            'alerts': 'View and manage employee alerts',
+            'tasks': 'Manage your tasks and assignments',
+            'settings': 'Configure system settings and preferences',
+            'profile': 'View and edit your profile information',
+            'system_logs': 'View system activity and audit logs',
+            'users': 'Manage system users and permissions',
+            'teams': 'Manage teams and departments',
+            'add_employee': 'Add a new employee to the system',
+            'edit_employee': 'Edit employee information',
+            'view_employee': 'View employee details',
+            'add_post': 'Create a new post location',
+            'edit_post': 'Edit post information',
+            'add_alert': 'Create a new employee alert',
+            'help': 'Get help and support for the HR system',
+            'integrations': 'Manage third-party integrations',
+            'dtr': 'Track daily time and attendance records',
+            'timeoff': 'Manage time off requests and approvals',
+            'checklist': 'View and manage employee checklists',
+            'hiring': 'Manage the recruitment and hiring process',
+            'onboarding': 'Manage employee onboarding procedures',
+            'handbook': 'Access the employee handbook and policies'
+        };
+
+        // Get title and subtitle
+        const title = pageTitles[page] || 'Dashboard';
+        const subtitle = pageSubtitles[page] || 'Manage your HR operations';
+
+        // Update header title
+        const titleElement = document.querySelector('.hrdash-welcome__title');
+        if (titleElement) {
+            titleElement.textContent = title;
+            console.log(`📝 Updated page title to: ${title}`);
+        }
+
+        // Update header subtitle
+        const subtitleElement = document.querySelector('.hrdash-welcome__subtitle');
+        if (subtitleElement) {
+            subtitleElement.textContent = subtitle;
+            console.log(`📝 Updated page subtitle to: ${subtitle}`);
+        }
+
+        // Update browser title
+        document.title = title;
     }
 
     /**
@@ -418,7 +508,7 @@ class PageTransitionManager {
     
     storeInitialState() {
         // Store the initial page state for back/forward navigation
-        const currentContent = document.querySelector('.main-content');
+        const currentContent = document.querySelector('.content');
         if (currentContent) {
             const url = window.location.href;
             const urlObj = new URL(url, window.location.origin);

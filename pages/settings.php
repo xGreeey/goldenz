@@ -837,7 +837,7 @@ if (!empty($two_factor_secret)) {
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body" style="padding: 2rem;">
-                <p class="mb-3" style="font-size: 1rem; color: #475569;">
+                <p class="mb-3 fs-base text-muted">
                     You are about to update the password policy settings. This will affect <strong>all users</strong> in the system.
                 </p>
                 <div class="alert alert-warning mb-0" style="border-left: 4px solid #f59e0b;">

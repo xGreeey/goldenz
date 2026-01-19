@@ -445,7 +445,7 @@ if (isset($_SESSION['employee_redirect_url'])) {
             <h1 class="page-title-main">Add New Employee - Page 2</h1>
             <p class="page-subtitle-modern">Complete the employee application form</p>
             <?php if ($has_page1_data): ?>
-                <div class="alert alert-info mt-2 mb-0" style="font-size: 0.875rem; border-left: 3px solid #0dcaf0;">
+                <div class="alert alert-info mt-2 mb-0 fs-sm" style="border-left: 3px solid #0dcaf0;">
                     <i class="fas fa-info-circle me-2"></i>
                     <strong>Draft Employee:</strong>&nbsp;
                     <span class="text-dark"><?php echo htmlspecialchars(trim(($page1_data['first_name'] ?? '') . ' ' . ($page1_data['surname'] ?? ''))); ?></span>
@@ -462,24 +462,6 @@ if (isset($_SESSION['employee_redirect_url'])) {
             </a>
         </div>
     </div>
-
-    <!-- Breadcrumb -->
-    <nav class="hr-breadcrumb" aria-label="Breadcrumb">
-        <ol class="hr-breadcrumb__list">
-            <li class="hr-breadcrumb__item">
-                <a href="?page=dashboard" class="hr-breadcrumb__link">Dashboard</a>
-            </li>
-            <li class="hr-breadcrumb__item">
-                <a href="?page=employees" class="hr-breadcrumb__link">Employees</a>
-            </li>
-            <li class="hr-breadcrumb__item">
-                <a href="?page=add_employee" class="hr-breadcrumb__link">Add Employee</a>
-            </li>
-            <li class="hr-breadcrumb__item hr-breadcrumb__current" aria-current="page">
-                Page 2
-            </li>
-        </ol>
-    </nav>
 
     <!-- Error Messages -->
     <?php if (!empty($errors)): ?>
@@ -520,7 +502,7 @@ if (isset($_SESSION['employee_redirect_url'])) {
                 <!-- General Information Section - Clean Layout -->
                 <div class="clean-form-page">
                     <!-- Main Header -->
-                    <h1 class="clean-section-title" style="text-align: center; font-size: 16px; font-weight: 700; margin-bottom: 1.5rem; padding-bottom: 0.75rem; border-bottom: 2px solid #d1d5db;">General Information</h1>
+                    <h1 class="clean-section-title text-center fs-16 fw-bold mb-4 pb-3" style="border-bottom: 2px solid #d1d5db;">General Information</h1>
                     
                     <!-- Question List -->
                     <ul class="clean-question-list">
@@ -1214,11 +1196,11 @@ if (isset($_SESSION['employee_redirect_url'])) {
             </div>
             <div class="modal-body" style="padding: 1.5rem;">
                 <div class="text-center mb-3">
-                    <i class="fas fa-check-circle text-success" style="font-size: 3rem;"></i>
+                    <i class="fas fa-check-circle text-success fs-48"></i>
                 </div>
-                <p class="mb-0 text-center" style="font-size: 1.1rem;"><?php echo htmlspecialchars($success_message); ?></p>
+                <p class="mb-0 text-center fs-md"><?php echo htmlspecialchars($success_message); ?></p>
                 <?php if ($created_employee_name): ?>
-                    <p class="text-center mt-3 mb-1" style="font-size: 1rem; font-weight: 500;">
+                    <p class="text-center mt-3 mb-1 fs-base fw-medium">
                         <?php echo htmlspecialchars($created_employee_name); ?>
                     </p>
                     <p class="text-muted small mt-1 mb-0 text-center">

@@ -1213,20 +1213,37 @@ if (!function_exists('get_posts_for_dropdown')) {
 
 // Get all employee alerts
 if (!function_exists('get_employee_alerts')) {
-    function get_employee_alerts($status = 'active', $priority = null) {
+    function get_employee_alerts($status = 'active', $priority = null, $user_id = null) {
         $sql = "SELECT ea.*, e.employee_no, e.surname, e.first_name, e.middle_name, e.post, 
-                        u1.name as created_by_name, u2.name as acknowledged_by_name
+                        u1.name as created_by_name, u2.name as acknowledged_by_name,
+                        ns.is_read, ns.is_dismissed, ns.read_at, ns.dismissed_at
                  FROM employee_alerts ea
                  JOIN employees e ON ea.employee_id = e.id
                  LEFT JOIN users u1 ON ea.created_by = u1.id
-                 LEFT JOIN users u2 ON ea.acknowledged_by = u2.id
-                 WHERE ea.status = ?";
+                 LEFT JOIN users u2 ON ea.acknowledged_by = u2.id";
         
-        $params = [$status];
+        // Add notification status if user_id is provided
+        if ($user_id) {
+            $sql .= " LEFT JOIN notification_status ns ON ea.id = ns.notification_id 
+                      AND ns.user_id = ? AND ns.notification_type = 'alert'";
+        }
+        
+        $sql .= " WHERE ea.status = ?";
+        
+        $params = [];
+        if ($user_id) {
+            $params[] = $user_id;
+        }
+        $params[] = $status;
         
         if ($priority) {
             $sql .= " AND ea.priority = ?";
             $params[] = $priority;
+        }
+        
+        // Filter out dismissed notifications if user_id provided
+        if ($user_id) {
+            $sql .= " AND (ns.is_dismissed IS NULL OR ns.is_dismissed = 0)";
         }
         
         $sql .= " ORDER BY ea.priority DESC, ea.due_date ASC, ea.created_at DESC";
@@ -4658,4 +4675,171 @@ if (function_exists('create_tasks_table')) {
 if (function_exists('create_support_tickets_table')) {
     create_support_tickets_table();
 }
+
+// ============================================
+// NOTIFICATION FUNCTIONS
+// ============================================
+
+/**
+ * Get expiring and expired licenses with notification status
+ * @param int $user_id Current user ID for notification status
+ * @param int $days_threshold Days ahead to check for expiring licenses (default 60)
+ * @return array Array of license notifications
+ */
+if (!function_exists('get_license_notifications')) {
+    function get_license_notifications($user_id = null, $days_threshold = 60) {
+        $today = date('Y-m-d');
+        $threshold_date = date('Y-m-d', strtotime("+{$days_threshold} days"));
+        
+        $sql = "SELECT 
+                    e.id as employee_id,
+                    e.employee_no,
+                    e.surname,
+                    e.first_name,
+                    e.middle_name,
+                    e.post,
+                    e.license_no,
+                    e.license_exp_date,
+                    DATEDIFF(e.license_exp_date, ?) as days_until_expiry,
+                    CASE 
+                        WHEN e.license_exp_date < ? THEN 'expired'
+                        WHEN DATEDIFF(e.license_exp_date, ?) <= 7 THEN 'urgent'
+                        WHEN DATEDIFF(e.license_exp_date, ?) <= 15 THEN 'high'
+                        WHEN DATEDIFF(e.license_exp_date, ?) <= 30 THEN 'medium'
+                        ELSE 'low'
+                    END as priority,
+                    ns.is_read,
+                    ns.is_dismissed,
+                    ns.read_at,
+                    ns.dismissed_at
+                FROM employees e";
+        
+        if ($user_id) {
+            $sql .= " LEFT JOIN notification_status ns ON 
+                      CONCAT('license_', e.id) = ns.notification_id 
+                      AND ns.user_id = ? 
+                      AND ns.notification_type = 'license'";
+        }
+        
+        $sql .= " WHERE e.status = 'Active'
+                  AND e.license_exp_date IS NOT NULL
+                  AND e.license_exp_date <= ?";
+        
+        if ($user_id) {
+            $sql .= " AND (ns.is_dismissed IS NULL OR ns.is_dismissed = 0)";
+        }
+        
+        $sql .= " ORDER BY e.license_exp_date ASC";
+        
+        $params = [$today, $today, $today, $today, $today];
+        if ($user_id) {
+            $params[] = $user_id;
+        }
+        $params[] = $threshold_date;
+        
+        $stmt = execute_query($sql, $params);
+        return $stmt->fetchAll();
+    }
+}
+
+/**
+ * Get expiring and expired clearances (RLM) with notification status
+ * @param int $user_id Current user ID for notification status
+ * @param int $days_threshold Days ahead to check for expiring clearances (default 60)
+ * @return array Array of clearance notifications
+ */
+if (!function_exists('get_clearance_notifications')) {
+    function get_clearance_notifications($user_id = null, $days_threshold = 60) {
+        $today = date('Y-m-d');
+        $threshold_date = date('Y-m-d', strtotime("+{$days_threshold} days"));
+        
+        $sql = "SELECT 
+                    e.id as employee_id,
+                    e.employee_no,
+                    e.surname,
+                    e.first_name,
+                    e.middle_name,
+                    e.post,
+                    e.rlm_exp,
+                    STR_TO_DATE(e.rlm_exp, '%m/%d/%Y') as rlm_exp_date,
+                    DATEDIFF(STR_TO_DATE(e.rlm_exp, '%m/%d/%Y'), ?) as days_until_expiry,
+                    CASE 
+                        WHEN STR_TO_DATE(e.rlm_exp, '%m/%d/%Y') < ? THEN 'expired'
+                        WHEN DATEDIFF(STR_TO_DATE(e.rlm_exp, '%m/%d/%Y'), ?) <= 14 THEN 'urgent'
+                        WHEN DATEDIFF(STR_TO_DATE(e.rlm_exp, '%m/%d/%Y'), ?) <= 30 THEN 'high'
+                        WHEN DATEDIFF(STR_TO_DATE(e.rlm_exp, '%m/%d/%Y'), ?) <= 45 THEN 'medium'
+                        ELSE 'low'
+                    END as priority,
+                    ns.is_read,
+                    ns.is_dismissed,
+                    ns.read_at,
+                    ns.dismissed_at
+                FROM employees e";
+        
+        if ($user_id) {
+            $sql .= " LEFT JOIN notification_status ns ON 
+                      CONCAT('clearance_', e.id) = ns.notification_id 
+                      AND ns.user_id = ? 
+                      AND ns.notification_type = 'clearance'";
+        }
+        
+        $sql .= " WHERE e.status = 'Active'
+                  AND e.rlm_exp IS NOT NULL
+                  AND e.rlm_exp != ''
+                  AND STR_TO_DATE(e.rlm_exp, '%m/%d/%Y') IS NOT NULL
+                  AND STR_TO_DATE(e.rlm_exp, '%m/%d/%Y') <= ?";
+        
+        if ($user_id) {
+            $sql .= " AND (ns.is_dismissed IS NULL OR ns.is_dismissed = 0)";
+        }
+        
+        $sql .= " ORDER BY STR_TO_DATE(e.rlm_exp, '%m/%d/%Y') ASC";
+        
+        $params = [$today, $today, $today, $today, $today];
+        if ($user_id) {
+            $params[] = $user_id;
+        }
+        $params[] = $threshold_date;
+        
+        $stmt = execute_query($sql, $params);
+        return $stmt->fetchAll();
+    }
+}
+
+/**
+ * Get total count of unread notifications for a user
+ * @param int $user_id User ID
+ * @return int Total count of unread notifications
+ */
+if (!function_exists('get_unread_notification_count')) {
+    function get_unread_notification_count($user_id) {
+        $count = 0;
+        
+        // Count unread alerts
+        $sql = "SELECT COUNT(*) as count
+                FROM employee_alerts ea
+                LEFT JOIN notification_status ns ON ea.id = ns.notification_id 
+                    AND ns.user_id = ? 
+                    AND ns.notification_type = 'alert'
+                WHERE ea.status = 'active' 
+                AND (ns.is_read IS NULL OR ns.is_read = 0)
+                AND (ns.is_dismissed IS NULL OR ns.is_dismissed = 0)";
+        
+        $stmt = execute_query($sql, [$user_id]);
+        $result = $stmt->fetch();
+        $count += (int)($result['count'] ?? 0);
+        
+        // Count expiring licenses
+        $licenses = get_license_notifications($user_id, 60);
+        $count += count($licenses);
+        
+        // Count expiring clearances
+        $clearances = get_clearance_notifications($user_id, 60);
+        $count += count($clearances);
+        
+        return $count;
+    }
+}
+
 ?>
+

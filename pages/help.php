@@ -500,7 +500,7 @@ $category_labels = [
                             <td>
                                 <small><?php echo date('M d, Y', strtotime($ticket['created_at'])); ?></small>
                                 <br>
-                                <small class="text-muted"><?php echo date('h:i A', strtotime($ticket['created_at'])); ?></small>
+                                <small class="text-muted"><?php echo date('g:i A', strtotime($ticket['created_at'])); ?></small>
                             </td>
                             <td>
                                 <a href="?page=help&view=<?php echo $ticket['id']; ?>" 

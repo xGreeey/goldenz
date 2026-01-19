@@ -16,238 +16,9 @@ $posts = get_posts($filters);
 ?>
 
 <div class="container-fluid hrdash">
-    <!-- Header Section with Actions -->
-    <?php if (($_SESSION['user_role'] ?? '') === 'hr_admin'): ?>
-    <div class="hrdash-welcome">
-        <div class="hrdash-welcome__left">
-            <h2 class="hrdash-welcome__title">
-                <i class="fas fa-map-marker-alt me-2"></i>Posts &amp; Locations
-            </h2>
-            <p class="hrdash-welcome__subtitle">Manage posts, locations, and assignments</p>
-        </div>
-        <div class="hrdash-welcome__actions">
-            <span id="current-time-posts" class="hrdash-welcome__time"><?php echo strtolower(date('h:i A')); ?></span>
-            
-            <!-- Messages Dropdown -->
-            <?php
-            // Get recent messages/alerts (last 5 active alerts)
-            $recentMessages = [];
-            if (function_exists('get_employee_alerts')) {
-                try {
-                    $recentMessages = get_employee_alerts('active', null);
-                    $recentMessages = array_slice($recentMessages, 0, 5);
-                } catch (Exception $e) {
-                    $recentMessages = [];
-                }
-            }
-            $messageCount = count($recentMessages);
-            ?>
-            <div class="dropdown">
-                <button class="hrdash-welcome__icon-btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Messages" aria-label="Messages">
-                    <i class="fas fa-envelope"></i>
-                    <?php if ($messageCount > 0): ?>
-                        <span class="hrdash-welcome__badge"><?php echo $messageCount > 99 ? '99+' : $messageCount; ?></span>
-                    <?php endif; ?>
-                </button>
-                <ul class="dropdown-menu dropdown-menu-end hrdash-notification-dropdown">
-                    <li class="dropdown-header">
-                        <strong>Messages</strong>
-                        <a href="?page=alerts" class="text-decoration-none ms-auto">View All</a>
-                    </li>
-                    <li><hr class="dropdown-divider"></li>
-                    <?php if (empty($recentMessages)): ?>
-                        <li class="dropdown-item-text text-muted text-center py-3">
-                            <i class="far fa-envelope-open fa-2x mb-2 d-block"></i>
-                            <small>No new messages</small>
-                        </li>
-                    <?php else: ?>
-                        <?php foreach ($recentMessages as $msg): 
-                            $priorityClass = '';
-                            $priorityIcon = 'fa-info-circle';
-                            switch(strtolower($msg['priority'] ?? '')) {
-                                case 'urgent':
-                                    $priorityClass = 'text-danger';
-                                    $priorityIcon = 'fa-exclamation-triangle';
-                                    break;
-                                case 'high':
-                                    $priorityClass = 'text-warning';
-                                    $priorityIcon = 'fa-exclamation-circle';
-                                    break;
-                                default:
-                                    $priorityClass = 'text-info';
-                            }
-                            $employeeName = trim(($msg['surname'] ?? '') . ', ' . ($msg['first_name'] ?? '') . ' ' . ($msg['middle_name'] ?? ''));
-                            $timeAgo = '';
-                            if (!empty($msg['created_at'])) {
-                                $created = new DateTime($msg['created_at']);
-                                $now = new DateTime();
-                                $diff = $now->diff($created);
-                                if ($diff->days > 0) {
-                                    $timeAgo = $diff->days . 'd ago';
-                                } elseif ($diff->h > 0) {
-                                    $timeAgo = $diff->h . 'h ago';
-                                } else {
-                                    $timeAgo = $diff->i . 'm ago';
-                                }
-                            }
-                        ?>
-                            <li>
-                                <a class="dropdown-item hrdash-notification-item" href="?page=alerts">
-                                    <div class="d-flex align-items-start">
-                                        <i class="fas <?php echo $priorityIcon; ?> <?php echo $priorityClass; ?> me-2 mt-1"></i>
-                                        <div class="flex-grow-1">
-                                            <div class="fw-semibold small"><?php echo htmlspecialchars($msg['title'] ?? 'Alert'); ?></div>
-                                            <div class="text-muted small"><?php echo htmlspecialchars($employeeName); ?></div>
-                                            <?php if ($timeAgo): ?>
-                                                <div class="text-muted" style="font-size: 0.7rem;"><?php echo $timeAgo; ?></div>
-                                            <?php endif; ?>
-                                        </div>
-                                    </div>
-                                </a>
-                            </li>
-                        <?php endforeach; ?>
-                    <?php endif; ?>
-                </ul>
-            </div>
-            
-            <!-- Notifications Dropdown -->
-            <?php
-            // Get recent notifications (pending tasks)
-            $recentNotifications = [];
-            $pendingTasks = 0;
-            if (function_exists('get_all_tasks')) {
-                try {
-                    $recentNotifications = get_all_tasks('pending', null, null);
-                    $recentNotifications = array_slice($recentNotifications, 0, 5);
-                    $pendingTasks = count($recentNotifications);
-                } catch (Exception $e) {
-                    $recentNotifications = [];
-                }
-            }
-            if (function_exists('get_pending_task_count')) {
-                try {
-                    $pendingTasks = (int) get_pending_task_count();
-                } catch (Exception $e) {
-                    $pendingTasks = 0;
-                }
-            }
-            ?>
-            <div class="dropdown">
-                <button class="hrdash-welcome__icon-btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Notifications" aria-label="Notifications">
-                    <i class="fas fa-bell"></i>
-                    <?php if ($pendingTasks > 0): ?>
-                        <span class="hrdash-welcome__badge"><?php echo $pendingTasks > 99 ? '99+' : $pendingTasks; ?></span>
-                    <?php endif; ?>
-                </button>
-                <ul class="dropdown-menu dropdown-menu-end hrdash-notification-dropdown">
-                    <li class="dropdown-header">
-                        <strong>Notifications</strong>
-                        <a href="?page=tasks" class="text-decoration-none ms-auto">View All</a>
-                    </li>
-                    <li><hr class="dropdown-divider"></li>
-                    <?php if (empty($recentNotifications)): ?>
-                        <li class="dropdown-item-text text-muted text-center py-3">
-                            <i class="far fa-bell-slash fa-2x mb-2 d-block"></i>
-                            <small>No new notifications</small>
-                        </li>
-                    <?php else: ?>
-                        <?php foreach ($recentNotifications as $notif): 
-                            $priorityClass = '';
-                            $priorityIcon = 'fa-circle';
-                            switch(strtolower($notif['priority'] ?? '')) {
-                                case 'urgent':
-                                    $priorityClass = 'text-danger';
-                                    $priorityIcon = 'fa-exclamation-triangle';
-                                    break;
-                                case 'high':
-                                    $priorityClass = 'text-warning';
-                                    $priorityIcon = 'fa-exclamation-circle';
-                                    break;
-                                case 'medium':
-                                    $priorityClass = 'text-info';
-                                    $priorityIcon = 'fa-info-circle';
-                                    break;
-                                default:
-                                    $priorityClass = 'text-muted';
-                            }
-                            $timeAgo = '';
-                            if (!empty($notif['created_at'])) {
-                                $created = new DateTime($notif['created_at']);
-                                $now = new DateTime();
-                                $diff = $now->diff($created);
-                                if ($diff->days > 0) {
-                                    $timeAgo = $diff->days . 'd ago';
-                                } elseif ($diff->h > 0) {
-                                    $timeAgo = $diff->h . 'h ago';
-                                } else {
-                                    $timeAgo = $diff->i . 'm ago';
-                                }
-                            }
-                        ?>
-                            <li>
-                                <a class="dropdown-item hrdash-notification-item" href="?page=tasks">
-                                    <div class="d-flex align-items-start">
-                                        <i class="fas <?php echo $priorityIcon; ?> <?php echo $priorityClass; ?> me-2 mt-1"></i>
-                                        <div class="flex-grow-1">
-                                            <div class="fw-semibold small"><?php echo htmlspecialchars($notif['title'] ?? 'Task'); ?></div>
-                                            <div class="text-muted small"><?php echo htmlspecialchars($notif['category'] ?? 'Task'); ?></div>
-                                            <?php if ($timeAgo): ?>
-                                                <div class="text-muted" style="font-size: 0.7rem;"><?php echo $timeAgo; ?></div>
-                                            <?php endif; ?>
-                                        </div>
-                                    </div>
-                                </a>
-                            </li>
-                        <?php endforeach; ?>
-                    <?php endif; ?>
-                </ul>
-            </div>
-            <div class="dropdown">
-                <button class="hrdash-welcome__profile-btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Profile menu">
-                    <?php
-                    $displayName = trim((string)($_SESSION['name'] ?? ($_SESSION['username'] ?? 'HR Admin')));
-                    $initials = 'HA';
-                    if ($displayName) {
-                        $parts = preg_split('/\s+/', $displayName);
-                        $first = $parts[0][0] ?? 'H';
-                        $last = (count($parts) > 1) ? ($parts[count($parts) - 1][0] ?? 'A') : ($parts[0][1] ?? 'A');
-                        $initials = strtoupper($first . $last);
-                    }
-                    ?>
-                    <span class="hrdash-welcome__avatar"><?php echo htmlspecialchars($initials); ?></span>
-                    <i class="fas fa-chevron-down hrdash-welcome__chevron"></i>
-                </button>
-                <ul class="dropdown-menu dropdown-menu-end">
-                    <li><a class="dropdown-item" href="?page=profile"><i class="fas fa-user me-2"></i>Profile</a></li>
-                    <li><a class="dropdown-item" href="?page=settings"><i class="fas fa-cog me-2"></i>Settings</a></li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li>
-                        <a class="dropdown-item text-danger" href="<?php echo base_url(); ?>/index.php?logout=1" data-no-transition="true">
-                            <i class="fas fa-right-from-bracket me-2"></i>Logout
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </div>
-    <?php endif; ?>
-
-    <!-- Breadcrumb -->
-    <nav class="hr-breadcrumb" aria-label="Breadcrumb">
-        <ol class="hr-breadcrumb__list">
-            <li class="hr-breadcrumb__item">
-                <a href="?page=dashboard" class="hr-breadcrumb__link">Dashboard</a>
-            </li>
-            <li class="hr-breadcrumb__item hr-breadcrumb__current" aria-current="page">
-                Posts &amp; Locations
-            </li>
-        </ol>
-    </nav>
 
     <!-- Statistics Cards -->
-    <div class="d-flex justify-content-center">
-        <div class="posts-stats-container">
-            <div class="row g-4">
+    <div class="row g-4">
                 <div class="col-xl-3 col-md-6">
                     <div class="card hrdash-stat hrdash-stat--primary">
                         <div class="hrdash-stat__header">
@@ -312,26 +83,9 @@ $posts = get_posts($filters);
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
-
-    <!-- Action Buttons -->
-    <div class="row g-4 mb-4">
-        <div class="col-12">
-            <div class="d-flex justify-content-end gap-2">
-                <button class="btn btn-outline-modern" onclick="exportToCSV()">
-                    <i class="fas fa-download me-2"></i>Export CSV
-                </button>
-                <a href="?page=add_post" class="btn btn-primary-modern">
-                    <span class="hr-icon hr-icon-plus me-2"></span>Add New Post
-                </a>
-            </div>
-        </div>
     </div>
 
     <!-- Filters and Search -->
-    <div class="row g-4">
-        <div class="col-12">
     <div class="filters-modern">
         <div class="search-control-modern">
             <div class="search-input-modern">
@@ -385,9 +139,26 @@ $posts = get_posts($filters);
         </div>
     </div>
 
-    <!-- Main Content Row -->
-    <div class="row g-4">
-        <div class="col-12">
+    <!-- Post List -->
+    <div class="card card-modern mb-4 mt-4">
+        <div class="card-body-modern">
+            <div class="card-header-modern mb-4 d-flex justify-content-between align-items-start">
+                <div>
+                    <h5 class="card-title-modern">Post List</h5>
+                    <small class="card-subtitle">View and manage all posts</small>
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-modern" onclick="exportToCSV()" title="Export post list">
+                        <i class="fas fa-download me-2"></i>Export
+                    </button>
+                    <a href="?page=post_assignments" class="btn btn-outline-modern" title="View post assignments">
+                        <i class="fas fa-users-cog me-2"></i>Assignments
+                    </a>
+                    <a href="?page=add_post" class="btn btn-primary-modern">
+                        <span class="hr-icon hr-icon-plus me-2"></span>Add New Post
+                    </a>
+                </div>
+            </div>
             <div class="table-container">
                 <table class="table posts-table" id="postsTable">
             <thead>
@@ -516,7 +287,7 @@ $posts = get_posts($filters);
             </div>
 
             <!-- Pagination -->
-            <div class="pagination-container">
+            <div class="pagination-container mt-4">
                 <div class="pagination-info">
                     <span>Showing <strong><?php echo count($posts); ?></strong> of <strong><?php echo count($posts); ?></strong> posts</span>
                 </div>
@@ -541,7 +312,7 @@ $posts = get_posts($filters);
             const ampm = hours >= 12 ? 'PM' : 'AM';
             const displayHours = hours % 12 || 12;
             const displayMinutes = minutes < 10 ? '0' + minutes : minutes;
-            timeElement.textContent = displayHours + ':' + displayMinutes + ' ' + ampm.toLowerCase();
+            timeElement.textContent = displayHours + ':' + displayMinutes + ' ' + ampm.toUpperCase();
         }
     }
     
@@ -1629,3 +1400,5 @@ if ($_POST['action'] ?? '' === 'delete') {
     }
 }
 ?>
+
+</div> <!-- /.container-fluid -->

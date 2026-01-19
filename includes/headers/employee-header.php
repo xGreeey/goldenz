@@ -40,7 +40,7 @@ $activeSection = getActiveSection($page);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo getPageTitle($page); ?> - Employee Portal - Golden Z-5 HR System</title>
+    <title><?php echo getPageTitle($page); ?></title>
     
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="<?php echo public_url('logo.svg'); ?>">

@@ -15,6 +15,7 @@ function getPageTitle($page) {
         'add_employee' => 'Add New Employee',
         'add_employee_page2' => 'Add New Employee - Page 2',
         'edit_employee' => 'Edit Employee',
+        'view_employee' => 'View Employee',
         'dtr' => 'Daily Time Record',
         'timeoff' => 'Time Off Management',
         'checklist' => 'Employee Checklist',
@@ -23,7 +24,7 @@ function getPageTitle($page) {
         'handbook' => 'Hiring Handbook',
         'alerts' => 'Employee Alerts',
         'add_alert' => 'Add New Alert',
-        'tasks' => 'Task',
+        'tasks' => 'Tasks',
         'posts' => 'Posts & Locations',
         'add_post' => 'Add New Post',
         'edit_post' => 'Edit Post',
@@ -75,7 +76,7 @@ if ($userRole === 'hr_admin') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo getPageTitle($page); ?> - Golden Z-5 HR System</title>
+    <title><?php echo getPageTitle($page); ?></title>
     
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="<?php echo public_url('logo.svg'); ?>">
@@ -108,28 +109,8 @@ if ($userRole === 'hr_admin') {
 
     <!-- Main Content -->
     <div class="main-content" id="mainContent">
-        <!-- Header -->
-        <?php 
-        // Pages that should not show the header
-        $pages_without_header = ['permissions', 'add_employee', 'add_employee_page2', 'view_employee', 'tasks', 'hr-help', 'help', 'dashboard', 'employees', 'posts', 'post_assignments', 'alerts', 'system_logs'];
-        
-        // Pages that should show HR Admin header section (welcome section with notifications, etc.)
-        // All pages now have their own header sections, so none are included here
-        $pages_with_hr_header = [];
-
-        // HR Admin: show header section on specific pages
-        if (($userRole ?? '') === 'hr_admin' && in_array($page, $pages_with_hr_header)): 
-        ?>
-        <?php include __DIR__ . '/hr-admin-header-section.php'; ?>
-        <?php
-        elseif (($userRole ?? '') !== 'hr_admin' && !in_array($page, $pages_without_header)): 
-        ?>
-        <header class="header">
-            <div class="d-flex align-items-center">
-                <h1 class="mb-0" id="pageTitle"><?php echo getPageTitle($page); ?></h1>
-            </div>
-        </header>
-        <?php endif; ?>
+        <!-- Permanent Page Header (like sidebar) -->
+        <?php include __DIR__ . '/page-header.php'; ?>
 
         <!-- Content -->
         <main class="content">
