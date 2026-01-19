@@ -560,8 +560,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                     $user_data = [
                         'username' => trim($_POST['username'] ?? ''),
                         'email' => trim($_POST['email'] ?? ''),
-                        'password' => $_POST['password'] ?? '',
-                        'name' => trim($_POST['name'] ?? ''),
+                        'first_name' => trim($_POST['first_name'] ?? ''),
+                        'last_name' => trim($_POST['last_name'] ?? ''),
                         'role' => $_POST['role'] ?? 'hr_admin',
                         'status' => $_POST['status'] ?? 'active',
                         'department' => !empty(trim($_POST['department'] ?? '')) ? trim($_POST['department']) : null,
@@ -569,8 +569,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                         'employee_id' => !empty($_POST['employee_id']) ? (int)$_POST['employee_id'] : null
                     ];
                     
-                    // Validate required fields before processing
-                    if (empty($user_data['username']) || empty($user_data['email']) || empty($user_data['password']) || empty($user_data['name'])) {
+                    // Validate required fields before processing (password is auto-generated)
+                    if (empty($user_data['username']) || empty($user_data['email']) || empty($user_data['first_name']) || empty($user_data['last_name'])) {
                         echo json_encode(['success' => false, 'message' => 'All required fields must be filled']);
                         exit;
                     }

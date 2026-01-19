@@ -220,6 +220,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
 // Handle login
 $error = '';
 $debug_info = [];
+$login_status_error = $_SESSION['login_status_error'] ?? '';
+$login_status_message = $_SESSION['login_status_message'] ?? '';
+// Clear status error from session after reading
+unset($_SESSION['login_status_error']);
+unset($_SESSION['login_status_message']);
+
 $show_password_change_modal = isset($_SESSION['require_password_change']) && $_SESSION['require_password_change'];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
@@ -241,11 +247,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
             $debug_info[] = "Database connection successful";
             
             // Direct database query (simpler, more reliable)
+            // Note: We don't filter by status here so we can check it and show appropriate messages
             $sql = "SELECT id, username, password_hash, name, role, status, employee_id, department, 
                            failed_login_attempts, locked_until, password_changed_at,
                            two_factor_enabled, two_factor_secret
                     FROM users 
-                    WHERE username = ? AND status = 'active'
+                    WHERE username = ?
                     LIMIT 1";
             
             $stmt = $pdo->prepare($sql);
@@ -253,10 +260,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
             $user = $stmt->fetch(PDO::FETCH_ASSOC);
             
             if ($user) {
-                $debug_info[] = "User found: " . $user['username'] . " (Role: " . $user['role'] . ")";
+                $debug_info[] = "User found: " . $user['username'] . " (Role: " . $user['role'] . ", Status: " . $user['status'] . ")";
                 
-                // Check if account is locked
-                if (!empty($user['locked_until']) && strtotime($user['locked_until']) > time()) {
+                // Check user status first (before password verification)
+                // IMPORTANT: Check status BEFORE password verification so error shows immediately
+                if ($user['status'] === 'inactive') {
+                    $_SESSION['login_status_error'] = 'inactive';
+                    $_SESSION['login_status_message'] = 'Your account is currently inactive. Please contact your administrator to activate your account.';
+                    $error = 'inactive';
+                    $debug_info[] = "User account is inactive - blocking login";
+                    // Redirect back to login page to show the modal
+                    header('Location: index.php');
+                    exit;
+                } elseif ($user['status'] === 'suspended') {
+                    $_SESSION['login_status_error'] = 'suspended';
+                    $_SESSION['login_status_message'] = 'Your account has been suspended. Please contact your administrator for assistance.';
+                    $error = 'suspended';
+                    $debug_info[] = "User account is suspended - blocking login";
+                    // Redirect back to login page to show the modal
+                    header('Location: index.php');
+                    exit;
+                } elseif (!empty($user['locked_until']) && strtotime($user['locked_until']) > time()) {
                     $error = 'Account is temporarily locked. Please try again later.';
                     $debug_info[] = "Account locked";
                 } elseif (password_verify($password, $user['password_hash'])) {
@@ -695,7 +719,7 @@ ob_end_flush();
                         <p class="auth-subtitle">Enter your authorized credentials to access the system</p>
                     </div>
 
-                <?php if ($error): ?>
+                <?php if ($error && $error !== 'inactive' && $error !== 'suspended'): ?>
                     <div class="alert alert-danger" role="alert">
                         <div class="alert-icon">
                             <i class="fas fa-exclamation-circle"></i>
@@ -1303,6 +1327,344 @@ ob_end_flush();
         }
     });
     </script>
+
+    <!-- Futuristic Status Error Modal -->
+    <div class="modal fade" id="statusErrorModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content futuristic-status-modal">
+                <div class="futuristic-status-header">
+                    <div class="futuristic-status-icon-wrapper">
+                        <i class="fas fa-ban futuristic-status-icon" id="statusErrorIcon"></i>
+                        <div class="futuristic-status-pulse"></div>
+                    </div>
+                    <h5 class="futuristic-status-title" id="statusErrorTitle">Account Status</h5>
+                </div>
+                <div class="futuristic-status-body">
+                    <p class="futuristic-status-message" id="statusErrorMessage"></p>
+                    <div class="futuristic-status-info-box" id="statusErrorInfoBox">
+                        <i class="fas fa-info-circle"></i>
+                        <span id="statusErrorInfoText">Please contact your administrator for assistance.</span>
+                    </div>
+                </div>
+                <div class="futuristic-status-footer">
+                    <button type="button" class="btn futuristic-status-btn-ok" id="statusErrorOkBtn" data-bs-dismiss="modal">
+                        <i class="fas fa-check me-2"></i>Understood
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Show status error modal if status error exists
+        <?php if ($login_status_error): ?>
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById('statusErrorModal');
+            const messageEl = document.getElementById('statusErrorMessage');
+            const titleEl = document.getElementById('statusErrorTitle');
+            const iconEl = document.getElementById('statusErrorIcon');
+            const infoBoxEl = document.getElementById('statusErrorInfoBox');
+            const infoTextEl = document.getElementById('statusErrorInfoText');
+            
+            if (modal && messageEl) {
+                const statusType = '<?php echo htmlspecialchars($login_status_error); ?>';
+                const statusMessage = '<?php echo htmlspecialchars($login_status_message); ?>';
+                
+                messageEl.textContent = statusMessage;
+                
+                if (statusType === 'inactive') {
+                    titleEl.textContent = 'Account Inactive';
+                    iconEl.className = 'fas fa-pause-circle futuristic-status-icon';
+                    iconEl.style.color = '#94a3b8';
+                    infoBoxEl.style.borderColor = 'rgba(148, 163, 184, 0.3)';
+                    infoBoxEl.style.background = 'rgba(148, 163, 184, 0.1)';
+                    infoTextEl.textContent = 'Your account has been deactivated. Contact your administrator to reactivate it.';
+                } else if (statusType === 'suspended') {
+                    titleEl.textContent = 'Account Suspended';
+                    iconEl.className = 'fas fa-ban futuristic-status-icon';
+                    iconEl.style.color = '#ef4444';
+                    infoBoxEl.style.borderColor = 'rgba(239, 68, 68, 0.3)';
+                    infoBoxEl.style.background = 'rgba(239, 68, 68, 0.1)';
+                    infoTextEl.textContent = 'Your account has been suspended. This action may be due to policy violations or security concerns.';
+                }
+                
+                // Show modal using Bootstrap
+                const modalInstance = new bootstrap.Modal(modal, {
+                    backdrop: 'static',
+                    keyboard: false,
+                    focus: true
+                });
+                
+                modalInstance.show();
+                
+                // Ensure modal is visible and properly positioned
+                setTimeout(() => {
+                    modal.style.display = 'block';
+                    modal.style.zIndex = '1060';
+                    modal.classList.add('show');
+                    modal.setAttribute('aria-hidden', 'false');
+                    modal.setAttribute('aria-modal', 'true');
+                    
+                    const modalDialog = modal.querySelector('.modal-dialog');
+                    if (modalDialog) {
+                        modalDialog.style.zIndex = '1061';
+                        modalDialog.style.pointerEvents = 'auto';
+                        modalDialog.style.margin = '1.75rem auto';
+                    }
+                    
+                    // Ensure backdrop exists
+                    let backdrop = document.querySelector('.modal-backdrop');
+                    if (!backdrop) {
+                        backdrop = document.createElement('div');
+                        backdrop.className = 'modal-backdrop fade show';
+                        document.body.appendChild(backdrop);
+                    }
+                    backdrop.style.zIndex = '1059';
+                    backdrop.classList.add('show');
+                    
+                    document.body.classList.add('modal-open');
+                    document.body.style.overflow = 'hidden';
+                }, 50);
+            }
+        });
+        <?php endif; ?>
+    </script>
+
+    <style>
+    /* Futuristic Status Error Modal Styles */
+    #statusErrorModal {
+        z-index: 1060 !important;
+    }
+
+    #statusErrorModal .modal-dialog {
+        z-index: 1061 !important;
+        position: relative;
+        margin: 1.75rem auto;
+        pointer-events: auto;
+        max-width: 500px;
+    }
+
+    #statusErrorModal .modal-backdrop {
+        z-index: 1059 !important;
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(5px);
+    }
+
+    .futuristic-status-modal {
+        background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.95) 100%);
+        border: none;
+        border-radius: 20px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5),
+                    0 0 0 1px rgba(99, 102, 241, 0.3),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(20px);
+        overflow: hidden;
+        position: relative;
+        pointer-events: auto;
+        z-index: 1;
+    }
+
+    .futuristic-status-modal::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, 
+            rgba(99, 102, 241, 0.1) 0%, 
+            rgba(168, 85, 247, 0.1) 50%, 
+            rgba(236, 72, 153, 0.1) 100%);
+        opacity: 0.6;
+        z-index: 0;
+        animation: statusGradientShift 8s ease infinite;
+    }
+
+    @keyframes statusGradientShift {
+        0%, 100% { opacity: 0.6; }
+        50% { opacity: 0.8; }
+    }
+
+    .futuristic-status-modal > * {
+        position: relative;
+        z-index: 1;
+    }
+
+    .futuristic-status-header {
+        padding: 2rem 2rem 1rem;
+        text-align: center;
+        border-bottom: 1px solid rgba(99, 102, 241, 0.2);
+        background: linear-gradient(180deg, rgba(99, 102, 241, 0.1) 0%, transparent 100%);
+    }
+
+    .futuristic-status-icon-wrapper {
+        position: relative;
+        display: inline-block;
+        margin-bottom: 1rem;
+    }
+
+    .futuristic-status-icon {
+        font-size: 3rem;
+        text-shadow: 0 0 20px currentColor,
+                     0 0 40px currentColor;
+        animation: statusIconPulse 2s ease-in-out infinite;
+        position: relative;
+        z-index: 2;
+    }
+
+    @keyframes statusIconPulse {
+        0%, 100% { 
+            transform: scale(1);
+            filter: brightness(1);
+        }
+        50% { 
+            transform: scale(1.1);
+            filter: brightness(1.3);
+        }
+    }
+
+    .futuristic-status-pulse {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 80px;
+        height: 80px;
+        border: 2px solid currentColor;
+        border-radius: 50%;
+        opacity: 0.5;
+        animation: statusPulseRing 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    @keyframes statusPulseRing {
+        0% {
+            transform: translate(-50%, -50%) scale(0.8);
+            opacity: 0.5;
+        }
+        100% {
+            transform: translate(-50%, -50%) scale(1.5);
+            opacity: 0;
+        }
+    }
+
+    .futuristic-status-title {
+        color: #ffffff;
+        font-weight: 600;
+        font-size: 1.5rem;
+        margin: 0;
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+        letter-spacing: 0.5px;
+    }
+
+    .futuristic-status-body {
+        padding: 2rem;
+        color: #e2e8f0;
+    }
+
+    .futuristic-status-message {
+        font-size: 1.1rem;
+        line-height: 1.6;
+        margin-bottom: 1.5rem;
+        color: #cbd5e1;
+        text-align: center;
+    }
+
+    .futuristic-status-info-box {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 1rem;
+        border: 1px solid rgba(99, 102, 241, 0.3);
+        border-radius: 12px;
+        color: #a5b4fc;
+        font-size: 0.9rem;
+        backdrop-filter: blur(10px);
+    }
+
+    .futuristic-status-info-box i {
+        font-size: 1.2rem;
+        color: #818cf8;
+        flex-shrink: 0;
+    }
+
+    .futuristic-status-footer {
+        padding: 1.5rem 2rem 2rem;
+        display: flex;
+        justify-content: center;
+        border-top: 1px solid rgba(99, 102, 241, 0.2);
+        background: linear-gradient(180deg, transparent 0%, rgba(99, 102, 241, 0.05) 100%);
+    }
+
+    .futuristic-status-btn-ok {
+        padding: 0.75rem 2rem;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border: none;
+        position: relative;
+        overflow: hidden;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%);
+        color: #ffffff;
+        box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4),
+                    0 0 20px rgba(99, 102, 241, 0.2);
+        background-size: 200% 200%;
+        animation: statusGradientMove 3s ease infinite;
+        pointer-events: auto !important;
+        cursor: pointer !important;
+        z-index: 10;
+    }
+
+    @keyframes statusGradientMove {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+
+    .futuristic-status-btn-ok:hover {
+        transform: translateY(-2px) scale(1.02);
+        box-shadow: 0 6px 25px rgba(99, 102, 241, 0.6),
+                    0 0 30px rgba(139, 92, 246, 0.4);
+    }
+
+    .futuristic-status-btn-ok:active {
+        transform: translateY(0) scale(0.98);
+    }
+
+    #statusErrorModal.show {
+        display: block !important;
+        z-index: 1060 !important;
+        padding-right: 0 !important;
+    }
+
+    #statusErrorModal .modal-content {
+        pointer-events: auto !important;
+    }
+
+    @media (max-width: 576px) {
+        .futuristic-status-header {
+            padding: 1.5rem 1.5rem 0.75rem;
+        }
+        
+        .futuristic-status-icon {
+            font-size: 2.5rem;
+        }
+        
+        .futuristic-status-title {
+            font-size: 1.25rem;
+        }
+        
+        .futuristic-status-body {
+            padding: 1.5rem;
+        }
+        
+        .futuristic-status-footer {
+            padding: 1rem 1.5rem 1.5rem;
+        }
+    }
+    </style>
 </body>
 </html>
 
