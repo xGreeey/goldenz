@@ -345,7 +345,6 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
                 <div class="hrdash-stat__meta">The total number of employees in the system.</div>
             </div>
         </div>
-<<<<<<< HEAD
         <div class="col-xl-4 col-md-6">
             <div class="card hrdash-stat">
                 <div class="hrdash-stat__header">
@@ -374,7 +373,8 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
                     </div>
                 </div>
                 <div class="hrdash-stat__meta">Employees currently inactive or off roster.</div>
-=======
+            </div>
+        </div>
     </div>
 
     <!-- Search and Filter Bar -->
@@ -450,37 +450,12 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
         </div>
     </div>
 
-    <!-- Action Buttons -->
-    <div class="row g-4 mb-4">
-        <div class="col-12">
-            <div class="d-flex justify-content-end gap-2">
-                <button class="btn btn-outline-modern" id="exportBtn" title="Export employee list">
-                    <i class="fas fa-download me-2"></i>Export CSV
-                </button>
-                <a href="?page=add_employee" class="btn btn-primary-modern">
-                    <span class="hr-icon hr-icon-plus me-2"></span>Add New Employee
-                </a>
->>>>>>> 8e02a0e2b13574f1b99b6c406002082b233c4614
-            </div>
-        </div>
-    </div>
-
     <!-- Employee Table -->
-    <div class="card card-modern mb-4 mt-4">
+    <div class="card card-modern mb-4">
         <div class="card-body-modern">
-            <div class="card-header-modern mb-4 d-flex justify-content-between align-items-start">
-                <div>
-                    <h5 class="card-title-modern">Employee List</h5>
-                    <small class="card-subtitle">View and manage all employees</small>
-                </div>
-                <div class="d-flex gap-2">
-                    <button class="btn btn-outline-modern" id="exportBtn" title="Export employee list">
-                        <i class="fas fa-download me-2"></i>Export
-                    </button>
-                    <a href="?page=add_employee" class="btn btn-primary-modern">
-                        <span class="hr-icon hr-icon-plus me-2"></span>Add Employee
-                    </a>
-                </div>
+            <div class="card-header-modern mb-4">
+                <h5 class="card-title-modern">Employee List</h5>
+                <small class="card-subtitle">Viewing <?php echo count($employees); ?> of <?php echo number_format($total_all_employees); ?> total employees</small>
             </div>
             <div class="table-container">
                 <table class="employees-table">
@@ -508,7 +483,7 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
                     <tbody>
                         <?php if (empty($paginated_employees)): ?>
                             <tr>
-                                <td colspan="5" class="text-center py-5">
+                                <td colspan="6" class="text-center py-5">
                                     <div class="d-flex flex-column align-items-center">
                                         <i class="fas fa-users fa-3x text-muted mb-3"></i>
                                         <h5 class="text-muted">No employees found</h5>
