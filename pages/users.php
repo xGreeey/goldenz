@@ -416,7 +416,7 @@ $role_config = config('roles.roles', []);
 </div>
 
 <!-- Futuristic Status Change Confirmation Modal -->
-<div class="modal fade" id="statusChangeConfirmModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+<div class="modal fade" id="statusChangeConfirmModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="false" data-bs-keyboard="false">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content futuristic-modal">
             <div class="futuristic-modal-header">
@@ -1368,6 +1368,15 @@ body.modal-open {
     pointer-events: auto;
 }
 
+/* CRITICAL: Hide ALL modal backdrops - we don't use them */
+.modal-backdrop {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    z-index: -1 !important;
+}
+
 /* Responsive adjustments */
 @media (max-width: 576px) {
     .futuristic-modal-header {
@@ -1525,6 +1534,10 @@ function initializeUsersPage() {
         return;
     }
     
+    // CRITICAL: Clean up any lingering backdrops from previous page loads/refreshes
+    // This fixes the issue where backdrop blocks clicks on first login
+    cleanupAllBackdrops();
+    
     // Check if required elements exist
     const createUserModal = document.getElementById('createUserModal');
     const createUserForm = document.getElementById('createUserForm');
@@ -1553,9 +1566,9 @@ function initializeUsersPage() {
         modalInstance.dispose();
     }
   
-    // Initialize Create User modal with standard Bootstrap behavior
+    // Initialize Create User modal WITHOUT backdrop to prevent blocking issues
     modalInstance = new bootstrap.Modal(createUserModal, {
-        backdrop: true,
+        backdrop: false,
         keyboard: true,
         focus: true
     });
@@ -1715,6 +1728,9 @@ function initializeUsersPage() {
             }
             const alertDiv = document.getElementById('createUserAlert');
             if (alertDiv) alertDiv.innerHTML = '';
+            
+            // Ensure backdrop is removed
+            cleanupAllBackdrops();
         });
         
         console.log('✅ Modal events attached');
@@ -2071,14 +2087,8 @@ function showRoleChangeConfirm(userId, newRole, newRoleText, selectElement) {
     
     // Cleanup function to restore page state
     function cleanupModal() {
-        // Remove backdrop
-        const backdrops = document.querySelectorAll('.modal-backdrop');
-        backdrops.forEach(backdrop => backdrop.remove());
-        
-        // Remove modal-open class and restore body scroll
-        document.body.classList.remove('modal-open');
-        document.body.style.overflow = '';
-        document.body.style.paddingRight = '';
+        // Remove all backdrops
+        cleanupAllBackdrops();
         
         // Remove show class from modal
         modal.classList.remove('show');
@@ -2115,9 +2125,9 @@ function showRoleChangeConfirm(userId, newRole, newRoleText, selectElement) {
         cleanupModal();
     });
     
-    // Show modal using Bootstrap
+    // Show modal using Bootstrap WITHOUT backdrop
     const modalInstance = new bootstrap.Modal(modal, {
-        backdrop: 'static',
+        backdrop: false,
         keyboard: false,
         focus: true
     });
@@ -2139,19 +2149,8 @@ function showRoleChangeConfirm(userId, newRole, newRoleText, selectElement) {
             modalDialog.style.margin = '1.75rem auto';
         }
         
-        // Ensure backdrop exists and is properly positioned
-        let backdrop = document.querySelector('.modal-backdrop');
-        if (!backdrop) {
-            backdrop = document.createElement('div');
-            backdrop.className = 'modal-backdrop fade show';
-            document.body.appendChild(backdrop);
-        }
-        backdrop.style.zIndex = '1059';
-        backdrop.classList.add('show');
-        
-        // Add body class for modal-open
-        document.body.classList.add('modal-open');
-        document.body.style.overflow = 'hidden';
+        // Remove any backdrops - we don't use them
+        cleanupAllBackdrops();
     }, 50);
 }
 
@@ -2211,14 +2210,8 @@ function showStatusChangeConfirm(userId, newStatus, statusText, selectElement) {
     
     // Cleanup function to restore page state
     function cleanupModal() {
-        // Remove backdrop
-        const backdrops = document.querySelectorAll('.modal-backdrop');
-        backdrops.forEach(backdrop => backdrop.remove());
-        
-        // Remove modal-open class and restore body scroll
-        document.body.classList.remove('modal-open');
-        document.body.style.overflow = '';
-        document.body.style.paddingRight = '';
+        // Remove all backdrops
+        cleanupAllBackdrops();
         
         // Remove show class from modal
         modal.classList.remove('show');
@@ -2259,9 +2252,9 @@ function showStatusChangeConfirm(userId, newStatus, statusText, selectElement) {
         cleanupModal();
     });
     
-    // Show modal using Bootstrap
+    // Show modal using Bootstrap WITHOUT backdrop
     const modalInstance = new bootstrap.Modal(modal, {
-        backdrop: 'static',
+        backdrop: false,
         keyboard: false,
         focus: true
     });
@@ -2283,19 +2276,8 @@ function showStatusChangeConfirm(userId, newStatus, statusText, selectElement) {
             modalDialog.style.margin = '1.75rem auto';
         }
         
-        // Ensure backdrop exists and is properly positioned
-        let backdrop = document.querySelector('.modal-backdrop');
-        if (!backdrop) {
-            backdrop = document.createElement('div');
-            backdrop.className = 'modal-backdrop fade show';
-            document.body.appendChild(backdrop);
-        }
-        backdrop.style.zIndex = '1059';
-        backdrop.classList.add('show');
-        
-        // Add body class for modal-open
-        document.body.classList.add('modal-open');
-        document.body.style.overflow = 'hidden';
+        // Remove any backdrops - we don't use them
+        cleanupAllBackdrops();
     }, 50);
 }
 
@@ -2319,6 +2301,29 @@ function showNotification(message, type) {
     }, 3000);
 }
 
+// === AGGRESSIVE BACKDROP CLEANUP ===
+// This function aggressively removes any lingering backdrops
+function cleanupAllBackdrops() {
+    // Remove ALL backdrops - we don't want any backdrops at all
+    const backdrops = document.querySelectorAll('.modal-backdrop');
+    if (backdrops.length > 0) {
+        console.log('🧹 Removing', backdrops.length, 'backdrop(s)');
+        backdrops.forEach(backdrop => {
+            backdrop.remove();
+        });
+    }
+    
+    // Remove modal-open class and restore body
+    if (document.body.classList.contains('modal-open')) {
+        document.body.classList.remove('modal-open');
+        document.body.style.overflow = '';
+        document.body.style.paddingRight = '';
+    }
+}
+
+// Run cleanup immediately on script load (before DOMContentLoaded)
+cleanupAllBackdrops();
+
 // === INITIALIZATION TRIGGERS ===
 // Initialize state object if it doesn't exist
 if (!window.usersPageState) {
@@ -2333,6 +2338,9 @@ function tryInit() {
         console.log('ℹ️ Not on users page, skipping initialization');
         return;
     }
+    
+    // Clean up any lingering backdrops immediately when page loads
+    cleanupAllBackdrops();
     
     if (typeof bootstrap === 'undefined') {
         console.log('⏳ Bootstrap not ready, retrying...');
@@ -2353,10 +2361,41 @@ function tryInit() {
 
 // Multiple initialization points
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', tryInit);
+    document.addEventListener('DOMContentLoaded', function() {
+        cleanupAllBackdrops();
+        tryInit();
+    });
 } else {
+    cleanupAllBackdrops();
     tryInit();
 }
+
+// Also run cleanup on window load
+window.addEventListener('load', function() {
+    cleanupAllBackdrops();
+});
+
+// Run cleanup periodically for the first few seconds after page load
+// This catches any backdrops that might be created after initial load
+let cleanupInterval = setInterval(function() {
+    const backdrops = document.querySelectorAll('.modal-backdrop');
+    if (backdrops.length > 0) {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('page') === 'users') {
+            // Only cleanup if we're on users page and no modal is actually showing
+            const showingModals = document.querySelectorAll('.modal.show, .modal.showing');
+            if (showingModals.length === 0) {
+                console.log('🧹 Periodic cleanup: removing', backdrops.length, 'backdrop(s)');
+                cleanupAllBackdrops();
+            }
+        }
+    }
+}, 500);
+
+// Stop the interval after 5 seconds
+setTimeout(function() {
+    clearInterval(cleanupInterval);
+}, 5000);
 
 // CRITICAL: Listen for AJAX page loads (pageContentLoaded event)
 document.addEventListener('pageContentLoaded', function(e) {
@@ -2412,4 +2451,82 @@ window.addEventListener('load', function() {
 });
 
 console.log('📜 Users page script loaded');
+
+// IMMEDIATE BACKDROP CLEANUP - Run as soon as script loads
+(function() {
+    'use strict';
+    
+    // Function to aggressively remove all backdrops
+    function removeAllBackdrops() {
+        // Remove all backdrop elements
+        const backdrops = document.querySelectorAll('.modal-backdrop');
+        backdrops.forEach(function(backdrop) {
+            try {
+                backdrop.remove();
+            } catch (e) {
+                // If remove fails, try parentNode.removeChild
+                if (backdrop.parentNode) {
+                    backdrop.parentNode.removeChild(backdrop);
+                }
+            }
+        });
+        
+        // Remove modal-open class
+        if (document.body) {
+            document.body.classList.remove('modal-open');
+            document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
+        }
+        
+        // Hide any incorrectly shown modals (unless they're actually being shown)
+        const modals = document.querySelectorAll('.modal');
+        modals.forEach(function(modal) {
+            // Only hide if it has 'show' class but isn't in the process of showing
+            if (modal.classList.contains('show') && !modal.classList.contains('showing')) {
+                // Check if this modal should actually be visible
+                const modalInstance = bootstrap?.Modal?.getInstance?.(modal);
+                if (!modalInstance || !modalInstance._isShown) {
+                    modal.classList.remove('show');
+                    modal.style.display = 'none';
+                    modal.setAttribute('aria-hidden', 'true');
+                    modal.setAttribute('aria-modal', 'false');
+                }
+            }
+        });
+    }
+    
+    // Run immediately if DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', removeAllBackdrops);
+    } else {
+        removeAllBackdrops();
+    }
+    
+    // Also run on window load
+    window.addEventListener('load', removeAllBackdrops);
+    
+    // Run periodically for the first 3 seconds to catch any late-created backdrops
+    let attempts = 0;
+    const maxAttempts = 6; // 3 seconds at 500ms intervals
+    const cleanupTimer = setInterval(function() {
+        attempts++;
+        const backdrops = document.querySelectorAll('.modal-backdrop');
+        if (backdrops.length > 0) {
+            // Check if we're on users page
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('page') === 'users') {
+                // Only remove if no modal is actually showing
+                const showingModals = document.querySelectorAll('.modal.show, .modal.showing');
+                if (showingModals.length === 0) {
+                    console.log('🧹 Immediate cleanup: removing', backdrops.length, 'backdrop(s)');
+                    removeAllBackdrops();
+                }
+            }
+        }
+        
+        if (attempts >= maxAttempts) {
+            clearInterval(cleanupTimer);
+        }
+    }, 500);
+})();
 </script>
