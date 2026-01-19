@@ -84,3 +84,68 @@ if (!function_exists('get_avatar_url')) {
     }
 }
 
+if (!function_exists('get_employee_photo_url')) {
+    /**
+     * Get correct employee photo URL based on current context
+     * Handles path resolution for different entry points (super-admin, hr-admin, etc.)
+     * 
+     * @param string|null $photo_path Path stored in database (e.g., 'uploads/employees/filename.jpg')
+     * @param int|null $employee_id Employee ID to check for file-based photos
+     * @return string|null Correct relative URL for the photo or null if file doesn't exist
+     */
+    function get_employee_photo_url($photo_path = null, $employee_id = null) {
+        $base_dir = dirname(__DIR__);
+        $base_dir = str_replace('\\', '/', $base_dir);
+        
+        // First, try the photo_path from database
+        if (!empty($photo_path)) {
+            $photo_path = str_replace('\\', '/', $photo_path);
+            $full_path = $base_dir . '/' . $photo_path;
+            $full_path_native = str_replace('/', DIRECTORY_SEPARATOR, $full_path);
+            
+            if (file_exists($full_path) || file_exists($full_path_native)) {
+                // Determine correct relative path based on entry point
+                $script_name = $_SERVER['SCRIPT_NAME'] ?? '';
+                $script_dir = dirname($script_name);
+                
+                // If accessed from subdirectory (super-admin, hr-admin, etc.), need ../ to reach root
+                if (preg_match('#/(super-admin|hr-admin|developer|employee|accounting|operation)(/|$)#', $script_dir)) {
+                    return '../' . $photo_path;
+                }
+                
+                return $photo_path;
+            }
+        }
+        
+        // If no photo_path or file doesn't exist, try file-based approach with employee_id
+        if ($employee_id) {
+            $possible_paths = [
+                'uploads/employees/' . $employee_id . '.jpg',
+                'uploads/employees/' . $employee_id . '.png',
+                'assets/images/employees/' . $employee_id . '.jpg',
+                'assets/images/employees/' . $employee_id . '.png'
+            ];
+            
+            foreach ($possible_paths as $path) {
+                $full_path = $base_dir . '/' . $path;
+                $full_path_native = str_replace('/', DIRECTORY_SEPARATOR, $full_path);
+                
+                if (file_exists($full_path) || file_exists($full_path_native)) {
+                    // Determine correct relative path based on entry point
+                    $script_name = $_SERVER['SCRIPT_NAME'] ?? '';
+                    $script_dir = dirname($script_name);
+                    
+                    // If accessed from subdirectory (super-admin, hr-admin, etc.), need ../ to reach root
+                    if (preg_match('#/(super-admin|hr-admin|developer|employee|accounting|operation)(/|$)#', $script_dir)) {
+                        return '../' . $path;
+                    }
+                    
+                    return $path;
+                }
+            }
+        }
+        
+        return null;
+    }
+}
+

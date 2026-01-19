@@ -313,6 +313,10 @@
     transition: all 0.2s ease;
 }
 
+.employees-table tbody tr.employee-row:hover {
+    background-color: #f8fafc;
+}
+
 .employees-table tbody tr:last-child {
     border-bottom: none;
 }
