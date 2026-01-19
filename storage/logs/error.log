@@ -81473,3 +81473,561 @@ Data: Array
 
 File: /golden/goldenz/hr-admin/index.php
 --------------------------------------------------------------------------------
+[2026-01-19 16:57:38] [execute_query] User: grey (ID: 30) | IP: 192.168.1.50
+Error: PDO Error [42S22]: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ns.is_read' in 'field list'
+Data: Array
+(
+    [sql] => SELECT ea.*, e.employee_no, e.surname, e.first_name, e.middle_name, e.post, 
+                        u1.name as created_by_name, u2.name as acknowledged_by_name,
+                        ns.is_read, ns.is_dismissed, ns.read_at, ns.dismissed_at
+                 FROM employee_alerts ea
+                 JOIN employees e ON ea.employee_id = e.id
+                 LEFT JOIN users u1 ON ea.created_by = u1.id
+                 LEFT JOIN users u2 ON ea.acknowledged_by = u2.id WHERE ea.status = ? ORDER BY ea.priority DESC, ea.due_date ASC, ea.created_at DESC
+    [params] => Array
+        (
+            [0] => active
+        )
+
+    [trace] => #0 C:\xampp\htdocs\goldenz\includes\database.php(117): PDO->prepare('SELECT ea.*, e....')
+#1 C:\xampp\htdocs\goldenz\includes\database.php(1251): execute_query('SELECT ea.*, e....', Array)
+#2 C:\xampp\htdocs\goldenz\includes\super-admin-header-section.php(63): get_employee_alerts('active', NULL)
+#3 C:\xampp\htdocs\goldenz\includes\headers\super-admin-header.php(314): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\goldenz\super-admin\index.php(967): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /super-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 17:01:55] [execute_query] User: hradmin (ID: 25) | IP: 192.168.1.50
+Error: PDO Error [42S22]: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ns.is_read' in 'field list'
+Data: Array
+(
+    [sql] => SELECT ea.*, e.employee_no, e.surname, e.first_name, e.middle_name, e.post, 
+                        u1.name as created_by_name, u2.name as acknowledged_by_name,
+                        ns.is_read, ns.is_dismissed, ns.read_at, ns.dismissed_at
+                 FROM employee_alerts ea
+                 JOIN employees e ON ea.employee_id = e.id
+                 LEFT JOIN users u1 ON ea.created_by = u1.id
+                 LEFT JOIN users u2 ON ea.acknowledged_by = u2.id WHERE ea.status = ? ORDER BY ea.priority DESC, ea.due_date ASC, ea.created_at DESC
+    [params] => Array
+        (
+            [0] => active
+        )
+
+    [trace] => #0 C:\xampp\htdocs\goldenz\includes\database.php(117): PDO->prepare('SELECT ea.*, e....')
+#1 C:\xampp\htdocs\goldenz\includes\database.php(1251): execute_query('SELECT ea.*, e....', Array)
+#2 C:\xampp\htdocs\goldenz\includes\hr-admin-header-section.php(42): get_employee_alerts('active', NULL)
+#3 C:\xampp\htdocs\goldenz\includes\page-header.php(15): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#5 C:\xampp\htdocs\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#6 {main}
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 17:01:58] [execute_query] User: hradmin (ID: 25) | IP: 192.168.1.50
+Error: PDO Error [42S22]: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ns.is_read' in 'field list'
+Data: Array
+(
+    [sql] => SELECT ea.*, e.employee_no, e.surname, e.first_name, e.middle_name, e.post, 
+                        u1.name as created_by_name, u2.name as acknowledged_by_name,
+                        ns.is_read, ns.is_dismissed, ns.read_at, ns.dismissed_at
+                 FROM employee_alerts ea
+                 JOIN employees e ON ea.employee_id = e.id
+                 LEFT JOIN users u1 ON ea.created_by = u1.id
+                 LEFT JOIN users u2 ON ea.acknowledged_by = u2.id WHERE ea.status = ? ORDER BY ea.priority DESC, ea.due_date ASC, ea.created_at DESC
+    [params] => Array
+        (
+            [0] => active
+        )
+
+    [trace] => #0 C:\xampp\htdocs\goldenz\includes\database.php(117): PDO->prepare('SELECT ea.*, e....')
+#1 C:\xampp\htdocs\goldenz\includes\database.php(1251): execute_query('SELECT ea.*, e....', Array)
+#2 C:\xampp\htdocs\goldenz\includes\hr-admin-header-section.php(42): get_employee_alerts('active', NULL)
+#3 C:\xampp\htdocs\goldenz\includes\page-header.php(15): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#5 C:\xampp\htdocs\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#6 {main}
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 17:01:59] [execute_query] User: hradmin (ID: 25) | IP: 192.168.1.50
+Error: PDO Error [42S22]: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ns.is_read' in 'field list'
+Data: Array
+(
+    [sql] => SELECT ea.*, e.employee_no, e.surname, e.first_name, e.middle_name, e.post, 
+                        u1.name as created_by_name, u2.name as acknowledged_by_name,
+                        ns.is_read, ns.is_dismissed, ns.read_at, ns.dismissed_at
+                 FROM employee_alerts ea
+                 JOIN employees e ON ea.employee_id = e.id
+                 LEFT JOIN users u1 ON ea.created_by = u1.id
+                 LEFT JOIN users u2 ON ea.acknowledged_by = u2.id WHERE ea.status = ? ORDER BY ea.priority DESC, ea.due_date ASC, ea.created_at DESC
+    [params] => Array
+        (
+            [0] => active
+        )
+
+    [trace] => #0 C:\xampp\htdocs\goldenz\includes\database.php(117): PDO->prepare('SELECT ea.*, e....')
+#1 C:\xampp\htdocs\goldenz\includes\database.php(1251): execute_query('SELECT ea.*, e....', Array)
+#2 C:\xampp\htdocs\goldenz\includes\hr-admin-header-section.php(42): get_employee_alerts('active', NULL)
+#3 C:\xampp\htdocs\goldenz\includes\page-header.php(15): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#5 C:\xampp\htdocs\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#6 {main}
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 17:02:00] [execute_query] User: hradmin (ID: 25) | IP: 192.168.1.50
+Error: PDO Error [42S22]: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ns.is_read' in 'field list'
+Data: Array
+(
+    [sql] => SELECT ea.*, e.employee_no, e.surname, e.first_name, e.middle_name, e.post, 
+                        u1.name as created_by_name, u2.name as acknowledged_by_name,
+                        ns.is_read, ns.is_dismissed, ns.read_at, ns.dismissed_at
+                 FROM employee_alerts ea
+                 JOIN employees e ON ea.employee_id = e.id
+                 LEFT JOIN users u1 ON ea.created_by = u1.id
+                 LEFT JOIN users u2 ON ea.acknowledged_by = u2.id WHERE ea.status = ? ORDER BY ea.priority DESC, ea.due_date ASC, ea.created_at DESC
+    [params] => Array
+        (
+            [0] => active
+        )
+
+    [trace] => #0 C:\xampp\htdocs\goldenz\includes\database.php(117): PDO->prepare('SELECT ea.*, e....')
+#1 C:\xampp\htdocs\goldenz\includes\database.php(1251): execute_query('SELECT ea.*, e....', Array)
+#2 C:\xampp\htdocs\goldenz\includes\hr-admin-header-section.php(42): get_employee_alerts('active', NULL)
+#3 C:\xampp\htdocs\goldenz\includes\page-header.php(15): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#5 C:\xampp\htdocs\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#6 {main}
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 17:02:00] [execute_query] User: hradmin (ID: 25) | IP: 192.168.1.50
+Error: PDO Error [42S22]: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ns.is_read' in 'field list'
+Data: Array
+(
+    [sql] => SELECT ea.*, e.employee_no, e.surname, e.first_name, e.middle_name, e.post, 
+                        u1.name as created_by_name, u2.name as acknowledged_by_name,
+                        ns.is_read, ns.is_dismissed, ns.read_at, ns.dismissed_at
+                 FROM employee_alerts ea
+                 JOIN employees e ON ea.employee_id = e.id
+                 LEFT JOIN users u1 ON ea.created_by = u1.id
+                 LEFT JOIN users u2 ON ea.acknowledged_by = u2.id WHERE ea.status = ? ORDER BY ea.priority DESC, ea.due_date ASC, ea.created_at DESC
+    [params] => Array
+        (
+            [0] => active
+        )
+
+    [trace] => #0 C:\xampp\htdocs\goldenz\includes\database.php(117): PDO->prepare('SELECT ea.*, e....')
+#1 C:\xampp\htdocs\goldenz\includes\database.php(1251): execute_query('SELECT ea.*, e....', Array)
+#2 C:\xampp\htdocs\goldenz\pages\alerts.php(84): get_employee_alerts('active', NULL)
+#3 C:\xampp\htdocs\goldenz\includes\header.php(141): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 17:02:00] [execute_query] User: hradmin (ID: 25) | IP: 192.168.1.50
+Error: PDO Error [42S22]: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ns.is_read' in 'field list'
+Data: Array
+(
+    [sql] => SELECT ea.*, e.employee_no, e.surname, e.first_name, e.middle_name, e.post, 
+                        u1.name as created_by_name, u2.name as acknowledged_by_name,
+                        ns.is_read, ns.is_dismissed, ns.read_at, ns.dismissed_at
+                 FROM employee_alerts ea
+                 JOIN employees e ON ea.employee_id = e.id
+                 LEFT JOIN users u1 ON ea.created_by = u1.id
+                 LEFT JOIN users u2 ON ea.acknowledged_by = u2.id WHERE ea.status = ? ORDER BY ea.priority DESC, ea.due_date ASC, ea.created_at DESC
+    [params] => Array
+        (
+            [0] => active
+        )
+
+    [trace] => #0 C:\xampp\htdocs\goldenz\includes\database.php(117): PDO->prepare('SELECT ea.*, e....')
+#1 C:\xampp\htdocs\goldenz\includes\database.php(1251): execute_query('SELECT ea.*, e....', Array)
+#2 C:\xampp\htdocs\goldenz\pages\alerts.php(146): get_employee_alerts('active', NULL)
+#3 C:\xampp\htdocs\goldenz\includes\header.php(141): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 17:02:02] [execute_query] User: hradmin (ID: 25) | IP: 192.168.1.50
+Error: PDO Error [42S22]: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ns.is_read' in 'field list'
+Data: Array
+(
+    [sql] => SELECT ea.*, e.employee_no, e.surname, e.first_name, e.middle_name, e.post, 
+                        u1.name as created_by_name, u2.name as acknowledged_by_name,
+                        ns.is_read, ns.is_dismissed, ns.read_at, ns.dismissed_at
+                 FROM employee_alerts ea
+                 JOIN employees e ON ea.employee_id = e.id
+                 LEFT JOIN users u1 ON ea.created_by = u1.id
+                 LEFT JOIN users u2 ON ea.acknowledged_by = u2.id WHERE ea.status = ? ORDER BY ea.priority DESC, ea.due_date ASC, ea.created_at DESC
+    [params] => Array
+        (
+            [0] => active
+        )
+
+    [trace] => #0 C:\xampp\htdocs\goldenz\includes\database.php(117): PDO->prepare('SELECT ea.*, e....')
+#1 C:\xampp\htdocs\goldenz\includes\database.php(1251): execute_query('SELECT ea.*, e....', Array)
+#2 C:\xampp\htdocs\goldenz\includes\hr-admin-header-section.php(42): get_employee_alerts('active', NULL)
+#3 C:\xampp\htdocs\goldenz\includes\page-header.php(15): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#5 C:\xampp\htdocs\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#6 {main}
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 17:10:04] [execute_query] User: hradmin (ID: 25) | IP: 192.168.1.50
+Error: PDO Error [42S22]: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ns.is_read' in 'field list'
+Data: Array
+(
+    [sql] => SELECT ea.*, e.employee_no, e.surname, e.first_name, e.middle_name, e.post, 
+                        u1.name as created_by_name, u2.name as acknowledged_by_name,
+                        ns.is_read, ns.is_dismissed, ns.read_at, ns.dismissed_at
+                 FROM employee_alerts ea
+                 JOIN employees e ON ea.employee_id = e.id
+                 LEFT JOIN users u1 ON ea.created_by = u1.id
+                 LEFT JOIN users u2 ON ea.acknowledged_by = u2.id WHERE ea.status = ? ORDER BY ea.priority DESC, ea.due_date ASC, ea.created_at DESC
+    [params] => Array
+        (
+            [0] => active
+        )
+
+    [trace] => #0 C:\xampp\htdocs\goldenz\includes\database.php(117): PDO->prepare('SELECT ea.*, e....')
+#1 C:\xampp\htdocs\goldenz\includes\database.php(1251): execute_query('SELECT ea.*, e....', Array)
+#2 C:\xampp\htdocs\goldenz\includes\hr-admin-header-section.php(42): get_employee_alerts('active', NULL)
+#3 C:\xampp\htdocs\goldenz\includes\page-header.php(15): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#5 C:\xampp\htdocs\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#6 {main}
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 17:10:08] [execute_query] User: hradmin (ID: 25) | IP: 192.168.1.50
+Error: PDO Error [42S22]: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ns.is_read' in 'field list'
+Data: Array
+(
+    [sql] => SELECT ea.*, e.employee_no, e.surname, e.first_name, e.middle_name, e.post, 
+                        u1.name as created_by_name, u2.name as acknowledged_by_name,
+                        ns.is_read, ns.is_dismissed, ns.read_at, ns.dismissed_at
+                 FROM employee_alerts ea
+                 JOIN employees e ON ea.employee_id = e.id
+                 LEFT JOIN users u1 ON ea.created_by = u1.id
+                 LEFT JOIN users u2 ON ea.acknowledged_by = u2.id WHERE ea.status = ? ORDER BY ea.priority DESC, ea.due_date ASC, ea.created_at DESC
+    [params] => Array
+        (
+            [0] => active
+        )
+
+    [trace] => #0 C:\xampp\htdocs\goldenz\includes\database.php(117): PDO->prepare('SELECT ea.*, e....')
+#1 C:\xampp\htdocs\goldenz\includes\database.php(1251): execute_query('SELECT ea.*, e....', Array)
+#2 C:\xampp\htdocs\goldenz\includes\hr-admin-header-section.php(42): get_employee_alerts('active', NULL)
+#3 C:\xampp\htdocs\goldenz\includes\page-header.php(15): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#5 C:\xampp\htdocs\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#6 {main}
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 17:10:12] [execute_query] User: hradmin (ID: 25) | IP: 192.168.1.50
+Error: PDO Error [42S22]: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ns.is_read' in 'field list'
+Data: Array
+(
+    [sql] => SELECT ea.*, e.employee_no, e.surname, e.first_name, e.middle_name, e.post, 
+                        u1.name as created_by_name, u2.name as acknowledged_by_name,
+                        ns.is_read, ns.is_dismissed, ns.read_at, ns.dismissed_at
+                 FROM employee_alerts ea
+                 JOIN employees e ON ea.employee_id = e.id
+                 LEFT JOIN users u1 ON ea.created_by = u1.id
+                 LEFT JOIN users u2 ON ea.acknowledged_by = u2.id WHERE ea.status = ? ORDER BY ea.priority DESC, ea.due_date ASC, ea.created_at DESC
+    [params] => Array
+        (
+            [0] => active
+        )
+
+    [trace] => #0 C:\xampp\htdocs\goldenz\includes\database.php(117): PDO->prepare('SELECT ea.*, e....')
+#1 C:\xampp\htdocs\goldenz\includes\database.php(1251): execute_query('SELECT ea.*, e....', Array)
+#2 C:\xampp\htdocs\goldenz\includes\hr-admin-header-section.php(42): get_employee_alerts('active', NULL)
+#3 C:\xampp\htdocs\goldenz\includes\page-header.php(15): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#5 C:\xampp\htdocs\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#6 {main}
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 17:10:15] [execute_query] User: hradmin (ID: 25) | IP: 192.168.1.50
+Error: PDO Error [42S22]: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ns.is_read' in 'field list'
+Data: Array
+(
+    [sql] => SELECT ea.*, e.employee_no, e.surname, e.first_name, e.middle_name, e.post, 
+                        u1.name as created_by_name, u2.name as acknowledged_by_name,
+                        ns.is_read, ns.is_dismissed, ns.read_at, ns.dismissed_at
+                 FROM employee_alerts ea
+                 JOIN employees e ON ea.employee_id = e.id
+                 LEFT JOIN users u1 ON ea.created_by = u1.id
+                 LEFT JOIN users u2 ON ea.acknowledged_by = u2.id WHERE ea.status = ? ORDER BY ea.priority DESC, ea.due_date ASC, ea.created_at DESC
+    [params] => Array
+        (
+            [0] => active
+        )
+
+    [trace] => #0 C:\xampp\htdocs\goldenz\includes\database.php(117): PDO->prepare('SELECT ea.*, e....')
+#1 C:\xampp\htdocs\goldenz\includes\database.php(1251): execute_query('SELECT ea.*, e....', Array)
+#2 C:\xampp\htdocs\goldenz\includes\hr-admin-header-section.php(42): get_employee_alerts('active', NULL)
+#3 C:\xampp\htdocs\goldenz\includes\page-header.php(15): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#5 C:\xampp\htdocs\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#6 {main}
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 17:10:16] [execute_query] User: hradmin (ID: 25) | IP: 192.168.1.50
+Error: PDO Error [42S22]: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ns.is_read' in 'field list'
+Data: Array
+(
+    [sql] => SELECT ea.*, e.employee_no, e.surname, e.first_name, e.middle_name, e.post, 
+                        u1.name as created_by_name, u2.name as acknowledged_by_name,
+                        ns.is_read, ns.is_dismissed, ns.read_at, ns.dismissed_at
+                 FROM employee_alerts ea
+                 JOIN employees e ON ea.employee_id = e.id
+                 LEFT JOIN users u1 ON ea.created_by = u1.id
+                 LEFT JOIN users u2 ON ea.acknowledged_by = u2.id WHERE ea.status = ? ORDER BY ea.priority DESC, ea.due_date ASC, ea.created_at DESC
+    [params] => Array
+        (
+            [0] => active
+        )
+
+    [trace] => #0 C:\xampp\htdocs\goldenz\includes\database.php(117): PDO->prepare('SELECT ea.*, e....')
+#1 C:\xampp\htdocs\goldenz\includes\database.php(1251): execute_query('SELECT ea.*, e....', Array)
+#2 C:\xampp\htdocs\goldenz\pages\alerts.php(84): get_employee_alerts('active', NULL)
+#3 C:\xampp\htdocs\goldenz\includes\header.php(141): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 17:10:16] [execute_query] User: hradmin (ID: 25) | IP: 192.168.1.50
+Error: PDO Error [42S22]: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ns.is_read' in 'field list'
+Data: Array
+(
+    [sql] => SELECT ea.*, e.employee_no, e.surname, e.first_name, e.middle_name, e.post, 
+                        u1.name as created_by_name, u2.name as acknowledged_by_name,
+                        ns.is_read, ns.is_dismissed, ns.read_at, ns.dismissed_at
+                 FROM employee_alerts ea
+                 JOIN employees e ON ea.employee_id = e.id
+                 LEFT JOIN users u1 ON ea.created_by = u1.id
+                 LEFT JOIN users u2 ON ea.acknowledged_by = u2.id WHERE ea.status = ? ORDER BY ea.priority DESC, ea.due_date ASC, ea.created_at DESC
+    [params] => Array
+        (
+            [0] => active
+        )
+
+    [trace] => #0 C:\xampp\htdocs\goldenz\includes\database.php(117): PDO->prepare('SELECT ea.*, e....')
+#1 C:\xampp\htdocs\goldenz\includes\database.php(1251): execute_query('SELECT ea.*, e....', Array)
+#2 C:\xampp\htdocs\goldenz\pages\alerts.php(146): get_employee_alerts('active', NULL)
+#3 C:\xampp\htdocs\goldenz\includes\header.php(141): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 17:10:25] [execute_query] User: hradmin (ID: 25) | IP: 192.168.1.50
+Error: PDO Error [42S22]: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ns.is_read' in 'field list'
+Data: Array
+(
+    [sql] => SELECT ea.*, e.employee_no, e.surname, e.first_name, e.middle_name, e.post, 
+                        u1.name as created_by_name, u2.name as acknowledged_by_name,
+                        ns.is_read, ns.is_dismissed, ns.read_at, ns.dismissed_at
+                 FROM employee_alerts ea
+                 JOIN employees e ON ea.employee_id = e.id
+                 LEFT JOIN users u1 ON ea.created_by = u1.id
+                 LEFT JOIN users u2 ON ea.acknowledged_by = u2.id WHERE ea.status = ? ORDER BY ea.priority DESC, ea.due_date ASC, ea.created_at DESC
+    [params] => Array
+        (
+            [0] => active
+        )
+
+    [trace] => #0 C:\xampp\htdocs\goldenz\includes\database.php(117): PDO->prepare('SELECT ea.*, e....')
+#1 C:\xampp\htdocs\goldenz\includes\database.php(1251): execute_query('SELECT ea.*, e....', Array)
+#2 C:\xampp\htdocs\goldenz\includes\hr-admin-header-section.php(42): get_employee_alerts('active', NULL)
+#3 C:\xampp\htdocs\goldenz\includes\page-header.php(15): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#5 C:\xampp\htdocs\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#6 {main}
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 17:14:12] [execute_query] User: hradmin (ID: 25) | IP: 192.168.1.50
+Error: PDO Error [42S22]: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ns.is_read' in 'field list'
+Data: Array
+(
+    [sql] => SELECT ea.*, e.employee_no, e.surname, e.first_name, e.middle_name, e.post, 
+                        u1.name as created_by_name, u2.name as acknowledged_by_name,
+                        ns.is_read, ns.is_dismissed, ns.read_at, ns.dismissed_at
+                 FROM employee_alerts ea
+                 JOIN employees e ON ea.employee_id = e.id
+                 LEFT JOIN users u1 ON ea.created_by = u1.id
+                 LEFT JOIN users u2 ON ea.acknowledged_by = u2.id WHERE ea.status = ? ORDER BY ea.priority DESC, ea.due_date ASC, ea.created_at DESC
+    [params] => Array
+        (
+            [0] => active
+        )
+
+    [trace] => #0 C:\xampp\htdocs\goldenz\includes\database.php(117): PDO->prepare('SELECT ea.*, e....')
+#1 C:\xampp\htdocs\goldenz\includes\database.php(1251): execute_query('SELECT ea.*, e....', Array)
+#2 C:\xampp\htdocs\goldenz\includes\hr-admin-header-section.php(42): get_employee_alerts('active', NULL)
+#3 C:\xampp\htdocs\goldenz\includes\page-header.php(15): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#5 C:\xampp\htdocs\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#6 {main}
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 17:14:16] [execute_query] User: hradmin (ID: 25) | IP: 192.168.1.50
+Error: PDO Error [42S22]: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ns.is_read' in 'field list'
+Data: Array
+(
+    [sql] => SELECT ea.*, e.employee_no, e.surname, e.first_name, e.middle_name, e.post, 
+                        u1.name as created_by_name, u2.name as acknowledged_by_name,
+                        ns.is_read, ns.is_dismissed, ns.read_at, ns.dismissed_at
+                 FROM employee_alerts ea
+                 JOIN employees e ON ea.employee_id = e.id
+                 LEFT JOIN users u1 ON ea.created_by = u1.id
+                 LEFT JOIN users u2 ON ea.acknowledged_by = u2.id WHERE ea.status = ? ORDER BY ea.priority DESC, ea.due_date ASC, ea.created_at DESC
+    [params] => Array
+        (
+            [0] => active
+        )
+
+    [trace] => #0 C:\xampp\htdocs\goldenz\includes\database.php(117): PDO->prepare('SELECT ea.*, e....')
+#1 C:\xampp\htdocs\goldenz\includes\database.php(1251): execute_query('SELECT ea.*, e....', Array)
+#2 C:\xampp\htdocs\goldenz\includes\hr-admin-header-section.php(42): get_employee_alerts('active', NULL)
+#3 C:\xampp\htdocs\goldenz\includes\page-header.php(15): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\goldenz\includes\header.php(113): include('C:\\xampp\\htdocs...')
+#5 C:\xampp\htdocs\goldenz\hr-admin\index.php(510): include('C:\\xampp\\htdocs...')
+#6 {main}
+)
+
+File: /hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 17:23:45] [execute_query] User: grey (ID: 30) | IP: 192.168.1.50
+Error: PDO Error [42S22]: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ns.is_read' in 'field list'
+Data: Array
+(
+    [sql] => SELECT ea.*, e.employee_no, e.surname, e.first_name, e.middle_name, e.post, 
+                        u1.name as created_by_name, u2.name as acknowledged_by_name,
+                        ns.is_read, ns.is_dismissed, ns.read_at, ns.dismissed_at
+                 FROM employee_alerts ea
+                 JOIN employees e ON ea.employee_id = e.id
+                 LEFT JOIN users u1 ON ea.created_by = u1.id
+                 LEFT JOIN users u2 ON ea.acknowledged_by = u2.id WHERE ea.status = ? ORDER BY ea.priority DESC, ea.due_date ASC, ea.created_at DESC
+    [params] => Array
+        (
+            [0] => active
+        )
+
+    [trace] => #0 C:\xampp\htdocs\goldenz\includes\database.php(117): PDO->prepare('SELECT ea.*, e....')
+#1 C:\xampp\htdocs\goldenz\includes\database.php(1251): execute_query('SELECT ea.*, e....', Array)
+#2 C:\xampp\htdocs\goldenz\includes\super-admin-header-section.php(63): get_employee_alerts('active', NULL)
+#3 C:\xampp\htdocs\goldenz\includes\headers\super-admin-header.php(314): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\goldenz\super-admin\index.php(967): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /super-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 17:26:22] [execute_query] User: grey (ID: 30) | IP: 192.168.1.50
+Error: PDO Error [42S22]: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ns.is_read' in 'field list'
+Data: Array
+(
+    [sql] => SELECT ea.*, e.employee_no, e.surname, e.first_name, e.middle_name, e.post, 
+                        u1.name as created_by_name, u2.name as acknowledged_by_name,
+                        ns.is_read, ns.is_dismissed, ns.read_at, ns.dismissed_at
+                 FROM employee_alerts ea
+                 JOIN employees e ON ea.employee_id = e.id
+                 LEFT JOIN users u1 ON ea.created_by = u1.id
+                 LEFT JOIN users u2 ON ea.acknowledged_by = u2.id WHERE ea.status = ? ORDER BY ea.priority DESC, ea.due_date ASC, ea.created_at DESC
+    [params] => Array
+        (
+            [0] => active
+        )
+
+    [trace] => #0 C:\xampp\htdocs\goldenz\includes\database.php(117): PDO->prepare('SELECT ea.*, e....')
+#1 C:\xampp\htdocs\goldenz\includes\database.php(1251): execute_query('SELECT ea.*, e....', Array)
+#2 C:\xampp\htdocs\goldenz\includes\super-admin-header-section.php(63): get_employee_alerts('active', NULL)
+#3 C:\xampp\htdocs\goldenz\includes\headers\super-admin-header.php(314): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\goldenz\super-admin\index.php(967): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /super-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 17:33:28] [execute_query] User: grey (ID: 30) | IP: 192.168.1.50
+Error: PDO Error [42S22]: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ns.is_read' in 'field list'
+Data: Array
+(
+    [sql] => SELECT ea.*, e.employee_no, e.surname, e.first_name, e.middle_name, e.post, 
+                        u1.name as created_by_name, u2.name as acknowledged_by_name,
+                        ns.is_read, ns.is_dismissed, ns.read_at, ns.dismissed_at
+                 FROM employee_alerts ea
+                 JOIN employees e ON ea.employee_id = e.id
+                 LEFT JOIN users u1 ON ea.created_by = u1.id
+                 LEFT JOIN users u2 ON ea.acknowledged_by = u2.id WHERE ea.status = ? ORDER BY ea.priority DESC, ea.due_date ASC, ea.created_at DESC
+    [params] => Array
+        (
+            [0] => active
+        )
+
+    [trace] => #0 C:\xampp\htdocs\goldenz\includes\database.php(117): PDO->prepare('SELECT ea.*, e....')
+#1 C:\xampp\htdocs\goldenz\includes\database.php(1251): execute_query('SELECT ea.*, e....', Array)
+#2 C:\xampp\htdocs\goldenz\includes\super-admin-header-section.php(63): get_employee_alerts('active', NULL)
+#3 C:\xampp\htdocs\goldenz\includes\headers\super-admin-header.php(314): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\goldenz\super-admin\index.php(967): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /super-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 17:33:31] [execute_query] User: grey (ID: 30) | IP: 192.168.1.50
+Error: PDO Error [42S22]: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ns.is_read' in 'field list'
+Data: Array
+(
+    [sql] => SELECT ea.*, e.employee_no, e.surname, e.first_name, e.middle_name, e.post, 
+                        u1.name as created_by_name, u2.name as acknowledged_by_name,
+                        ns.is_read, ns.is_dismissed, ns.read_at, ns.dismissed_at
+                 FROM employee_alerts ea
+                 JOIN employees e ON ea.employee_id = e.id
+                 LEFT JOIN users u1 ON ea.created_by = u1.id
+                 LEFT JOIN users u2 ON ea.acknowledged_by = u2.id WHERE ea.status = ? ORDER BY ea.priority DESC, ea.due_date ASC, ea.created_at DESC
+    [params] => Array
+        (
+            [0] => active
+        )
+
+    [trace] => #0 C:\xampp\htdocs\goldenz\includes\database.php(117): PDO->prepare('SELECT ea.*, e....')
+#1 C:\xampp\htdocs\goldenz\includes\database.php(1251): execute_query('SELECT ea.*, e....', Array)
+#2 C:\xampp\htdocs\goldenz\includes\super-admin-header-section.php(63): get_employee_alerts('active', NULL)
+#3 C:\xampp\htdocs\goldenz\includes\headers\super-admin-header.php(314): include('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs\goldenz\super-admin\index.php(967): include('C:\\xampp\\htdocs...')
+#5 {main}
+)
+
+File: /super-admin/index.php
+--------------------------------------------------------------------------------

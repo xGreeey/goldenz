@@ -304,10 +304,6 @@ $employees = get_employees();
                 Next <i class="fas fa-chevron-right"></i>
             </button>
         </div>
-        <div class="current-time">
-            <i class="fas fa-clock me-1"></i>
-            <span id="currentTime"><?php echo date('H:i:s'); ?></span>
-        </div>
     </div>
 
     <!-- Tab Content Container -->
@@ -381,15 +377,24 @@ $employees = get_employees();
                     <div class="year-selector">
                         <label class="form-label">Year</label>
                         <select class="form-select form-select-sm" id="balanceYear">
-                            <option value="2024">2024</option>
-                            <option value="2023">2023</option>
-                            <option value="2025">2025</option>
+                            <?php 
+                            $currentYear = date('Y');
+                            for ($year = $currentYear + 1; $year >= $currentYear - 2; $year--): 
+                            ?>
+                            <option value="<?php echo $year; ?>" <?php echo $year == $currentYear ? 'selected' : ''; ?>>
+                                <?php echo $year; ?>
+                            </option>
+                            <?php endfor; ?>
                         </select>
                     </div>
                 </div>
                 
                 <div class="balances-grid" id="balancesGrid">
-                    <!-- Populated by JavaScript -->
+                    <div class="empty-state">
+                        <i class="fas fa-chart-pie fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No Leave Balances Found</h5>
+                        <p class="text-muted">Leave balances will appear here once they are configured for employees.</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -411,7 +416,11 @@ $employees = get_employees();
             <!-- Card View -->
             <div class="view-container" id="cardsViewContainer">
                 <div class="employee-status-grid" id="employeeStatusGrid">
-                    <!-- This will be populated by JavaScript -->
+                    <div class="empty-state">
+                        <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No Employee Status Data</h5>
+                        <p class="text-muted">Employee attendance status will appear here. Select a date to view attendance records.</p>
+                    </div>
                 </div>
             </div>
 
@@ -434,7 +443,11 @@ $employees = get_employees();
                 
                 <div class="calendar-container">
                     <div class="calendar-grid" id="calendarContainer">
-                        <!-- Calendar will be populated by JavaScript -->
+                        <div class="empty-state">
+                            <i class="fas fa-calendar-alt fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No Calendar Data Available</h5>
+                            <p class="text-muted">Calendar view will display employee attendance timeline. Select a date to view records.</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -552,10 +565,12 @@ class RealTimeDTR {
     
     initializeDTR() {
         this.loadEmployeeStatus();
-        this.updateCurrentTime();
         this.bindEvents();
         this.loadTimeOffRequests();
-        this.loadLeaveBalances();
+        // Load balances when balances tab is active, otherwise it will load when tab is clicked
+        if (this.currentTab === 'balances') {
+            this.loadLeaveBalances();
+        }
     }
     
     generateTimeSlots() {
@@ -581,6 +596,22 @@ class RealTimeDTR {
             this.loadEmployeeStatus();
         });
         
+        // Year selector for balances
+        const balanceYear = document.getElementById('balanceYear');
+        if (balanceYear) {
+            balanceYear.addEventListener('change', () => {
+                this.loadLeaveBalances();
+            });
+        }
+        
+        // Tab buttons
+        document.querySelectorAll('.tab-button').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const tab = e.currentTarget.dataset.tab;
+                this.switchTab(tab);
+            });
+        });
+        
         // Auto-refresh every 30 seconds
         setInterval(() => {
             this.loadEmployeeStatus();
@@ -588,21 +619,7 @@ class RealTimeDTR {
     }
     
     startRealTimeUpdates() {
-        // Update current time every second
-        setInterval(() => {
-            this.updateCurrentTime();
-        }, 1000);
-    }
-    
-    updateCurrentTime() {
-        const now = new Date();
-        const timeString = now.toLocaleTimeString('en-US', { 
-            hour12: false, 
-            hour: '2-digit', 
-            minute: '2-digit', 
-            second: '2-digit' 
-        });
-        document.getElementById('currentTime').textContent = timeString;
+        // Timer display removed
     }
     
     async loadEmployeeStatus() {
@@ -632,6 +649,17 @@ class RealTimeDTR {
     updateStatusGrid(employees) {
         const grid = document.getElementById('employeeStatusGrid');
         grid.innerHTML = '';
+        
+        if (!employees || employees.length === 0) {
+            grid.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">No Employee Status Data</h5>
+                    <p class="text-muted">Employee attendance status will appear here. Select a date to view attendance records.</p>
+                </div>
+            `;
+            return;
+        }
         
         employees.forEach(employee => {
             const status = employee.status || 'out_of_duty';
@@ -840,8 +868,20 @@ class RealTimeDTR {
     }
     
     updateCalendarGrid(employees) {
-        const grid = document.getElementById('calendarGrid');
+        const grid = document.getElementById('calendarContainer');
+        if (!grid) return;
         grid.innerHTML = '';
+        
+        if (!employees || employees.length === 0) {
+            grid.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-calendar-alt fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">No Calendar Data Available</h5>
+                    <p class="text-muted">Calendar view will display employee attendance timeline. Select a date to view records.</p>
+                </div>
+            `;
+            return;
+        }
         
         // Create header row with time slots
         const headerRow = document.createElement('div');
@@ -969,6 +1009,8 @@ class RealTimeDTR {
             this.loadLeaveBalances();
         } else if (tab === 'calendar') {
             this.loadEmployeeStatus();
+            // Ensure card view is shown by default
+            this.switchView('cards');
         }
     }
     
@@ -1065,6 +1107,17 @@ class RealTimeDTR {
     updateBalancesGrid(balances) {
         const grid = document.getElementById('balancesGrid');
         grid.innerHTML = '';
+        
+        if (!balances || balances.length === 0) {
+            grid.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-chart-pie fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">No Leave Balances Found</h5>
+                    <p class="text-muted">Leave balances will appear here once they are configured for employees.</p>
+                </div>
+            `;
+            return;
+        }
         
         balances.forEach(balance => {
             const card = document.createElement('div');
@@ -2112,6 +2165,44 @@ document.addEventListener('DOMContentLoaded', function() {
     font-size: 0.75rem;
     color: var(--interface-text-light);
     text-align: right;
+}
+
+/* Empty State Styling */
+.empty-state {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 2rem;
+    text-align: center;
+    min-height: 300px;
+    width: 100%;
+}
+
+.balances-grid .empty-state,
+.employee-status-grid .empty-state,
+.calendar-container .empty-state {
+    grid-column: 1 / -1;
+    width: 100%;
+}
+
+.empty-state i {
+    opacity: 0.3;
+    margin-bottom: 1rem;
+    color: #94a3b8;
+}
+
+.empty-state h5 {
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #64748b;
+}
+
+.empty-state p {
+    margin: 0;
+    max-width: 400px;
+    color: #94a3b8;
 }
 
 @media (max-width: 768px) {
