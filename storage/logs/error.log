@@ -14356,3 +14356,3451 @@ Data: Array
 
 File: /hr-admin/index.php
 --------------------------------------------------------------------------------
+[2026-01-19 10:57:20] [add_employee_page] User: hradmin (ID: 25) | IP: ::1
+Error: Storing employee data in session (deferred save)
+Data: Array
+(
+    [post_data] => Array
+        (
+            [employee_no] => 24328
+            [employee_type] => 
+            [status] => 
+            [surname] => USER
+            [first_name] => TEMP
+            [middle_name] => 
+            [birth_date] => 
+            [age] => 
+            [civil_status] => 
+            [birthplace] => 
+            [citizenship] => 
+            [address] => 
+            [provincial_address] => 
+            [height] => 
+            [weight] => 
+            [blood_type] => 
+            [religion] => 
+            [special_skills] => 
+            [spouse_name] => 
+            [spouse_age] => 
+            [spouse_occupation] => 
+            [father_name] => 
+            [father_age] => 
+            [father_occupation] => 
+            [mother_name] => 
+            [mother_age] => 
+            [mother_occupation] => 
+            [children_names] => 
+            [college_course] => 
+            [college_school_name] => 
+            [college_years] => 
+            [college_school_address] => 
+            [vocational_course] => 
+            [vocational_school_name] => 
+            [vocational_years] => 
+            [vocational_school_address] => 
+            [highschool_school_name] => 
+            [highschool_years] => 
+            [highschool_school_address] => 
+            [elementary_school_name] => 
+            [elementary_years] => 
+            [elementary_school_address] => 
+            [trainings] => Array
+                (
+                    [0] => Array
+                        (
+                            [title] => 
+                            [by] => 
+                            [date] => 
+                        )
+
+                )
+
+            [employment_history] => Array
+                (
+                    [0] => Array
+                        (
+                            [position] => 
+                            [company_name] => 
+                            [company_address] => 
+                            [company_phone] => 
+                            [period] => 
+                            [reason] => 
+                        )
+
+                )
+
+            [character_references] => Array
+                (
+                    [0] => Array
+                        (
+                            [name] => 
+                            [occupation] => 
+                            [company] => 
+                            [contact] => 
+                        )
+
+                    [1] => Array
+                        (
+                            [name] => 
+                            [occupation] => 
+                            [company] => 
+                            [contact] => 
+                        )
+
+                    [2] => Array
+                        (
+                            [name] => 
+                            [occupation] => 
+                            [company] => 
+                            [contact] => 
+                        )
+
+                )
+
+            [gov_exam_taken] => No
+            [gov_exams] => Array
+                (
+                    [0] => Array
+                        (
+                            [type] => 
+                            [score] => 
+                        )
+
+                )
+
+            [cp_number] => 
+            [contact_person] => 
+            [relationship] => 
+            [contact_person_number] => 
+            [contact_person_address] => 
+            [contact_person_alt] => 
+            [relationship_alt] => 
+            [contact_person_number_alt] => 
+            [contact_person_address_alt] => 
+            [post] => 
+            [date_hired] => 
+            [license_no] => 
+            [license_exp_date] => 
+            [rlm_exp] => 
+            [sss_no] => 
+            [pagibig_no] => 
+            [tin_number] => 
+            [philhealth_no] => 
+            [hr_remarks] => 
+            [status_summary] => 
+        )
+
+    [files] => Array
+        (
+            [employee_photo] => Array
+                (
+                    [name] => 
+                    [size] => 0
+                    [error] => 4
+                )
+
+        )
+
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 10:57:20] [add_employee_page] User: hradmin (ID: 25) | IP: ::1
+Error: Page 1 data stored in session, redirecting to Page 2
+Data: Array
+(
+    [employee_no] => 24328
+    [employee_name] => TEMP USER
+    [has_photo] => no
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 10:57:20] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:03:24] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:06:47] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:07:49] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:07:50] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:07:50] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:07:50] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:07:50] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:07:50] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:07:53] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:07:53] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:07:54] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:07:54] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:07:55] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:09:01] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:09:01] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:09:02] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:10:52] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:10:57] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:12:08] [add_employee_page] User: hradmin (ID: 25) | IP: ::1
+Error: Storing employee data in session (deferred save)
+Data: Array
+(
+    [post_data] => Array
+        (
+            [employee_no] => 24328
+            [employee_type] => 
+            [status] => 
+            [surname] => USER
+            [first_name] => TEMP
+            [middle_name] => 
+            [birth_date] => 
+            [age] => 
+            [civil_status] => 
+            [birthplace] => 
+            [citizenship] => 
+            [address] => 
+            [provincial_address] => 
+            [height] => 
+            [weight] => 
+            [blood_type] => 
+            [religion] => 
+            [special_skills] => 
+            [spouse_name] => 
+            [spouse_age] => 
+            [spouse_occupation] => 
+            [father_name] => 
+            [father_age] => 
+            [father_occupation] => 
+            [mother_name] => 
+            [mother_age] => 
+            [mother_occupation] => 
+            [children_names] => 
+            [college_course] => 
+            [college_school_name] => 
+            [college_years] => 
+            [college_school_address] => 
+            [vocational_course] => 
+            [vocational_school_name] => 
+            [vocational_years] => 
+            [vocational_school_address] => 
+            [highschool_school_name] => 
+            [highschool_years] => 
+            [highschool_school_address] => 
+            [elementary_school_name] => 
+            [elementary_years] => 
+            [elementary_school_address] => 
+            [trainings] => Array
+                (
+                    [0] => Array
+                        (
+                            [title] => 
+                            [by] => 
+                            [date] => 
+                        )
+
+                )
+
+            [employment_history] => Array
+                (
+                    [0] => Array
+                        (
+                            [position] => 
+                            [company_name] => 
+                            [company_address] => 
+                            [company_phone] => 
+                            [period] => 
+                            [reason] => 
+                        )
+
+                )
+
+            [character_references] => Array
+                (
+                    [0] => Array
+                        (
+                            [name] => 
+                            [occupation] => 
+                            [company] => 
+                            [contact] => 
+                        )
+
+                    [1] => Array
+                        (
+                            [name] => 
+                            [occupation] => 
+                            [company] => 
+                            [contact] => 
+                        )
+
+                    [2] => Array
+                        (
+                            [name] => 
+                            [occupation] => 
+                            [company] => 
+                            [contact] => 
+                        )
+
+                )
+
+            [gov_exam_taken] => No
+            [gov_exams] => Array
+                (
+                    [0] => Array
+                        (
+                            [type] => 
+                            [score] => 
+                        )
+
+                )
+
+            [cp_number] => 
+            [contact_person] => 
+            [relationship] => 
+            [contact_person_number] => 
+            [contact_person_address] => 
+            [contact_person_alt] => 
+            [relationship_alt] => 
+            [contact_person_number_alt] => 
+            [contact_person_address_alt] => 
+            [post] => 
+            [date_hired] => 
+            [license_no] => 
+            [license_exp_date] => 
+            [rlm_exp] => 
+            [sss_no] => 
+            [pagibig_no] => 
+            [tin_number] => 
+            [philhealth_no] => 
+            [hr_remarks] => 
+            [status_summary] => 
+        )
+
+    [files] => Array
+        (
+            [employee_photo] => Array
+                (
+                    [name] => 
+                    [size] => 0
+                    [error] => 4
+                )
+
+        )
+
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:12:08] [add_employee_page] User: hradmin (ID: 25) | IP: ::1
+Error: Page 1 data stored in session, redirecting to Page 2
+Data: Array
+(
+    [employee_no] => 24328
+    [employee_name] => TEMP USER
+    [has_photo] => no
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:12:08] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:13:57] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:15:35] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:16:03] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:23:09] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:23:12] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:24:42] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:25:52] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:27:22] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:27:42] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:27:42] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:27:43] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:27:43] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:27:43] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:27:44] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:27:44] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:27:44] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:27:44] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:27:45] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:27:46] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:27:46] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:27:47] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:27:47] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:27:47] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:27:48] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:27:49] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:27:54] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:27:55] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:28:44] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:28:45] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:28:45] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:28:51] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:28:51] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:28:52] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:28:52] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:28:52] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:28:52] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:28:53] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:30:55] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:32:05] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:34:47] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:34:54] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:34:55] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:34:55] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:34:55] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:36:26] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:36:56] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:42:20] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:42:25] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:42:25] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:42:26] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:42:26] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:42:26] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:42:26] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:43:12] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:43:18] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:43:18] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:43:18] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:43:19] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:43:19] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:43:19] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:43:19] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:43:20] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:43:20] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:43:20] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:43:37] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:43:38] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:43:44] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:44:29] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:46:10] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:46:11] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:46:13] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:47:27] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:49:05] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:49:06] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:49:06] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:49:06] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:49:39] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:49:39] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:49:45] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:49:55] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:52:09] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:52:10] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:52:11] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:52:12] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:52:16] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:52:17] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:52:32] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:52:33] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:52:37] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:52:38] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:52:38] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:52:38] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:52:39] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:52:41] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:52:43] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:52:49] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:54:04] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:54:09] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:54:17] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:54:18] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:55:05] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 11:59:28] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 12:00:21] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 12:00:35] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 12:01:23] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 12:03:40] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 12:03:52] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 12:05:01] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 12:05:38] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 12:05:46] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 12:07:03] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 12:13:17] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 12:13:33] [add_employee_page] User: hradmin (ID: 25) | IP: ::1
+Error: Storing employee data in session (deferred save)
+Data: Array
+(
+    [post_data] => Array
+        (
+            [employee_no] => 24328
+            [employee_type] => 
+            [status] => 
+            [surname] => USER
+            [first_name] => TEMP
+            [middle_name] => 
+            [birth_date] => 
+            [age] => 
+            [civil_status] => 
+            [birthplace] => 
+            [citizenship] => 
+            [address] => 
+            [provincial_address] => 
+            [height] => 
+            [weight] => 
+            [blood_type] => 
+            [religion] => 
+            [special_skills] => 
+            [spouse_name] => 
+            [spouse_age] => 
+            [spouse_occupation] => 
+            [father_name] => 
+            [father_age] => 
+            [father_occupation] => 
+            [mother_name] => 
+            [mother_age] => 
+            [mother_occupation] => 
+            [children_names] => 
+            [college_course] => 
+            [college_school_name] => 
+            [college_years] => 
+            [college_school_address] => 
+            [vocational_course] => 
+            [vocational_school_name] => 
+            [vocational_years] => 
+            [vocational_school_address] => 
+            [highschool_school_name] => 
+            [highschool_years] => 
+            [highschool_school_address] => 
+            [elementary_school_name] => 
+            [elementary_years] => 
+            [elementary_school_address] => 
+            [trainings] => Array
+                (
+                    [0] => Array
+                        (
+                            [title] => 
+                            [by] => 
+                            [date] => 
+                        )
+
+                )
+
+            [employment_history] => Array
+                (
+                    [0] => Array
+                        (
+                            [position] => 
+                            [company_name] => 
+                            [company_address] => 
+                            [company_phone] => 
+                            [period] => 
+                            [reason] => 
+                        )
+
+                )
+
+            [character_references] => Array
+                (
+                    [0] => Array
+                        (
+                            [name] => 
+                            [occupation] => 
+                            [company] => 
+                            [contact] => 
+                        )
+
+                    [1] => Array
+                        (
+                            [name] => 
+                            [occupation] => 
+                            [company] => 
+                            [contact] => 
+                        )
+
+                    [2] => Array
+                        (
+                            [name] => 
+                            [occupation] => 
+                            [company] => 
+                            [contact] => 
+                        )
+
+                )
+
+            [gov_exam_taken] => No
+            [gov_exams] => Array
+                (
+                    [0] => Array
+                        (
+                            [type] => 
+                            [score] => 
+                        )
+
+                )
+
+            [cp_number] => 
+            [contact_person] => 
+            [relationship] => 
+            [contact_person_number] => 
+            [contact_person_address] => 
+            [contact_person_alt] => 
+            [relationship_alt] => 
+            [contact_person_number_alt] => 
+            [contact_person_address_alt] => 
+            [post] => 
+            [date_hired] => 
+            [license_no] => 
+            [license_exp_date] => 
+            [rlm_exp] => 
+            [sss_no] => 
+            [pagibig_no] => 
+            [tin_number] => 
+            [philhealth_no] => 
+            [hr_remarks] => 
+            [status_summary] => 
+        )
+
+    [files] => Array
+        (
+            [employee_photo] => Array
+                (
+                    [name] => 
+                    [size] => 0
+                    [error] => 4
+                )
+
+        )
+
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 12:13:33] [add_employee_page] User: hradmin (ID: 25) | IP: ::1
+Error: Page 1 data stored in session, redirecting to Page 2
+Data: Array
+(
+    [employee_no] => 24328
+    [employee_name] => TEMP USER
+    [has_photo] => no
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 12:13:33] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 12:13:46] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 12:14:54] [add_employee_page] User: hradmin (ID: 25) | IP: ::1
+Error: Storing employee data in session (deferred save)
+Data: Array
+(
+    [post_data] => Array
+        (
+            [employee_no] => 24328
+            [employee_type] => 
+            [status] => 
+            [surname] => USER
+            [first_name] => TEMP
+            [middle_name] => 
+            [birth_date] => 
+            [age] => 
+            [civil_status] => 
+            [birthplace] => 
+            [citizenship] => 
+            [address] => 
+            [provincial_address] => 
+            [height] => 
+            [weight] => 
+            [blood_type] => 
+            [religion] => 
+            [special_skills] => 
+            [spouse_name] => 
+            [spouse_age] => 
+            [spouse_occupation] => 
+            [father_name] => 
+            [father_age] => 
+            [father_occupation] => 
+            [mother_name] => 
+            [mother_age] => 
+            [mother_occupation] => 
+            [children_names] => 
+            [college_course] => 
+            [college_school_name] => 
+            [college_years] => 
+            [college_school_address] => 
+            [vocational_course] => 
+            [vocational_school_name] => 
+            [vocational_years] => 
+            [vocational_school_address] => 
+            [highschool_school_name] => 
+            [highschool_years] => 
+            [highschool_school_address] => 
+            [elementary_school_name] => 
+            [elementary_years] => 
+            [elementary_school_address] => 
+            [trainings] => Array
+                (
+                    [0] => Array
+                        (
+                            [title] => 
+                            [by] => 
+                            [date] => 
+                        )
+
+                )
+
+            [employment_history] => Array
+                (
+                    [0] => Array
+                        (
+                            [position] => 
+                            [company_name] => 
+                            [company_address] => 
+                            [company_phone] => 
+                            [period] => 
+                            [reason] => 
+                        )
+
+                )
+
+            [character_references] => Array
+                (
+                    [0] => Array
+                        (
+                            [name] => 
+                            [occupation] => 
+                            [company] => 
+                            [contact] => 
+                        )
+
+                    [1] => Array
+                        (
+                            [name] => 
+                            [occupation] => 
+                            [company] => 
+                            [contact] => 
+                        )
+
+                    [2] => Array
+                        (
+                            [name] => 
+                            [occupation] => 
+                            [company] => 
+                            [contact] => 
+                        )
+
+                )
+
+            [gov_exam_taken] => No
+            [gov_exams] => Array
+                (
+                    [0] => Array
+                        (
+                            [type] => 
+                            [score] => 
+                        )
+
+                )
+
+            [cp_number] => 
+            [contact_person] => 
+            [relationship] => 
+            [contact_person_number] => 
+            [contact_person_address] => 
+            [contact_person_alt] => 
+            [relationship_alt] => 
+            [contact_person_number_alt] => 
+            [contact_person_address_alt] => 
+            [post] => 
+            [date_hired] => 
+            [license_no] => 
+            [license_exp_date] => 
+            [rlm_exp] => 
+            [sss_no] => 
+            [pagibig_no] => 
+            [tin_number] => 
+            [philhealth_no] => 
+            [hr_remarks] => 
+            [status_summary] => 
+        )
+
+    [files] => Array
+        (
+            [employee_photo] => Array
+                (
+                    [name] => 
+                    [size] => 0
+                    [error] => 4
+                )
+
+        )
+
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 12:14:54] [add_employee_page] User: hradmin (ID: 25) | IP: ::1
+Error: Page 1 data stored in session, redirecting to Page 2
+Data: Array
+(
+    [employee_no] => 24328
+    [employee_name] => TEMP USER
+    [has_photo] => no
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 12:14:54] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 12:19:24] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 12:19:29] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 12:19:30] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 12:21:48] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 12:24:16] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 12:30:03] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 12:30:11] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 12:31:13] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 12:38:18] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 12:38:58] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 12:38:58] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 12:39:30] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 12:39:35] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 12:39:38] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 12:39:38] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 12:39:38] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 12:39:39] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 12:39:43] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 12:39:44] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 12:42:23] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 12:42:32] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 12:43:00] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 12:43:01] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 12:43:15] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 12:43:16] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 12:43:17] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 12:45:35] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 12:45:41] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 12:45:49] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 12:45:50] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 12:45:50] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 12:45:50] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 12:45:50] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 12:46:02] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 12:46:03] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 12:47:07] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 12:48:04] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 12:53:25] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 12:54:49] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 12:55:11] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 12:55:18] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 12:55:42] [add_employee_page] User: hradmin (ID: 25) | IP: ::1
+Error: Storing employee data in session (deferred save)
+Data: Array
+(
+    [post_data] => Array
+        (
+            [employee_no] => 24328
+            [employee_type] => 
+            [status] => 
+            [surname] => USER
+            [first_name] => TEMP
+            [middle_name] => 
+            [birth_date] => 
+            [age] => 
+            [civil_status] => 
+            [birthplace] => 
+            [citizenship] => 
+            [address] => 
+            [provincial_address] => 
+            [height] => 
+            [weight] => 
+            [blood_type] => 
+            [religion] => 
+            [special_skills] => 
+            [spouse_name] => 
+            [spouse_age] => 
+            [spouse_occupation] => 
+            [father_name] => 
+            [father_age] => 
+            [father_occupation] => 
+            [mother_name] => 
+            [mother_age] => 
+            [mother_occupation] => 
+            [children_names] => 
+            [college_course] => 
+            [college_school_name] => 
+            [college_years] => 
+            [college_school_address] => 
+            [vocational_course] => 
+            [vocational_school_name] => 
+            [vocational_years] => 
+            [vocational_school_address] => 
+            [highschool_school_name] => 
+            [highschool_years] => 
+            [highschool_school_address] => 
+            [elementary_school_name] => 
+            [elementary_years] => 
+            [elementary_school_address] => 
+            [trainings] => Array
+                (
+                    [0] => Array
+                        (
+                            [title] => 
+                            [by] => 
+                            [date] => 
+                        )
+
+                )
+
+            [employment_history] => Array
+                (
+                    [0] => Array
+                        (
+                            [position] => 
+                            [company_name] => 
+                            [company_address] => 
+                            [company_phone] => 
+                            [period] => 
+                            [reason] => 
+                        )
+
+                )
+
+            [character_references] => Array
+                (
+                    [0] => Array
+                        (
+                            [name] => 
+                            [occupation] => 
+                            [company] => 
+                            [contact] => 
+                        )
+
+                    [1] => Array
+                        (
+                            [name] => 
+                            [occupation] => 
+                            [company] => 
+                            [contact] => 
+                        )
+
+                    [2] => Array
+                        (
+                            [name] => 
+                            [occupation] => 
+                            [company] => 
+                            [contact] => 
+                        )
+
+                )
+
+            [gov_exam_taken] => No
+            [gov_exams] => Array
+                (
+                    [0] => Array
+                        (
+                            [type] => 
+                            [score] => 
+                        )
+
+                )
+
+            [cp_number] => 
+            [contact_person] => 
+            [relationship] => 
+            [contact_person_number] => 
+            [contact_person_address] => 
+            [contact_person_alt] => 
+            [relationship_alt] => 
+            [contact_person_number_alt] => 
+            [contact_person_address_alt] => 
+            [post] => 
+            [date_hired] => 
+            [license_no] => 
+            [license_exp_date] => 
+            [rlm_exp] => 
+            [sss_no] => 
+            [pagibig_no] => 
+            [tin_number] => 
+            [philhealth_no] => 
+            [hr_remarks] => 
+            [status_summary] => 
+        )
+
+    [files] => Array
+        (
+            [employee_photo] => Array
+                (
+                    [name] => 
+                    [size] => 0
+                    [error] => 4
+                )
+
+        )
+
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 12:55:42] [add_employee_page] User: hradmin (ID: 25) | IP: ::1
+Error: Page 1 data stored in session, redirecting to Page 2
+Data: Array
+(
+    [employee_no] => 24328
+    [employee_name] => TEMP USER
+    [has_photo] => no
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 12:55:43] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 12:56:03] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 12:56:04] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 12:56:17] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 12:56:18] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 12:56:23] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 13:00:47] [add_employee_page] User: hradmin (ID: 25) | IP: ::1
+Error: Storing employee data in session (deferred save)
+Data: Array
+(
+    [post_data] => Array
+        (
+            [employee_no] => 24328
+            [employee_type] => 
+            [status] => 
+            [surname] => USER
+            [first_name] => TEMP
+            [middle_name] => 
+            [birth_date] => 
+            [age] => 
+            [civil_status] => 
+            [birthplace] => 
+            [citizenship] => 
+            [address] => 
+            [provincial_address] => 
+            [height] => 
+            [weight] => 
+            [blood_type] => 
+            [religion] => 
+            [special_skills] => 
+            [spouse_name] => 
+            [spouse_age] => 
+            [spouse_occupation] => 
+            [father_name] => 
+            [father_age] => 
+            [father_occupation] => 
+            [mother_name] => 
+            [mother_age] => 
+            [mother_occupation] => 
+            [children_names] => 
+            [college_course] => 
+            [college_school_name] => 
+            [college_years] => 
+            [college_school_address] => 
+            [vocational_course] => 
+            [vocational_school_name] => 
+            [vocational_years] => 
+            [vocational_school_address] => 
+            [highschool_school_name] => 
+            [highschool_years] => 
+            [highschool_school_address] => 
+            [elementary_school_name] => 
+            [elementary_years] => 
+            [elementary_school_address] => 
+            [trainings] => Array
+                (
+                    [0] => Array
+                        (
+                            [title] => 
+                            [by] => 
+                            [date] => 
+                        )
+
+                )
+
+            [employment_history] => Array
+                (
+                    [0] => Array
+                        (
+                            [position] => 
+                            [company_name] => 
+                            [company_address] => 
+                            [company_phone] => 
+                            [period] => 
+                            [reason] => 
+                        )
+
+                )
+
+            [character_references] => Array
+                (
+                    [0] => Array
+                        (
+                            [name] => 
+                            [occupation] => 
+                            [company] => 
+                            [contact] => 
+                        )
+
+                    [1] => Array
+                        (
+                            [name] => 
+                            [occupation] => 
+                            [company] => 
+                            [contact] => 
+                        )
+
+                    [2] => Array
+                        (
+                            [name] => 
+                            [occupation] => 
+                            [company] => 
+                            [contact] => 
+                        )
+
+                )
+
+            [gov_exam_taken] => No
+            [gov_exams] => Array
+                (
+                    [0] => Array
+                        (
+                            [type] => 
+                            [score] => 
+                        )
+
+                )
+
+            [cp_number] => 
+            [contact_person] => 
+            [relationship] => 
+            [contact_person_number] => 
+            [contact_person_address] => 
+            [contact_person_alt] => 
+            [relationship_alt] => 
+            [contact_person_number_alt] => 
+            [contact_person_address_alt] => 
+            [post] => 
+            [date_hired] => 
+            [license_no] => 
+            [license_exp_date] => 
+            [rlm_exp] => 
+            [sss_no] => 
+            [pagibig_no] => 
+            [tin_number] => 
+            [philhealth_no] => 
+            [hr_remarks] => 
+            [status_summary] => 
+        )
+
+    [files] => Array
+        (
+            [employee_photo] => Array
+                (
+                    [name] => 
+                    [size] => 0
+                    [error] => 4
+                )
+
+        )
+
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 13:00:47] [add_employee_page] User: hradmin (ID: 25) | IP: ::1
+Error: Page 1 data stored in session, redirecting to Page 2
+Data: Array
+(
+    [employee_no] => 24328
+    [employee_name] => TEMP USER
+    [has_photo] => no
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 13:00:47] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 13:00:57] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 13:01:05] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 13:01:08] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 13:01:09] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 13:01:10] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 13:01:11] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 13:01:11] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 13:01:11] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 13:01:11] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 13:01:44] [add_employee_page] User: hradmin (ID: 25) | IP: ::1
+Error: Storing employee data in session (deferred save)
+Data: Array
+(
+    [post_data] => Array
+        (
+            [employee_no] => 24328
+            [employee_type] => 
+            [status] => 
+            [surname] => USER
+            [first_name] => TEMP
+            [middle_name] => 
+            [birth_date] => 
+            [age] => 
+            [civil_status] => 
+            [birthplace] => 
+            [citizenship] => 
+            [address] => 
+            [provincial_address] => 
+            [height] => 
+            [weight] => 
+            [blood_type] => 
+            [religion] => 
+            [special_skills] => 
+            [spouse_name] => 
+            [spouse_age] => 
+            [spouse_occupation] => 
+            [father_name] => 
+            [father_age] => 
+            [father_occupation] => 
+            [mother_name] => 
+            [mother_age] => 
+            [mother_occupation] => 
+            [children_names] => 
+            [college_course] => 
+            [college_school_name] => 
+            [college_years] => 
+            [college_school_address] => 
+            [vocational_course] => 
+            [vocational_school_name] => 
+            [vocational_years] => 
+            [vocational_school_address] => 
+            [highschool_school_name] => 
+            [highschool_years] => 
+            [highschool_school_address] => 
+            [elementary_school_name] => 
+            [elementary_years] => 
+            [elementary_school_address] => 
+            [trainings] => Array
+                (
+                    [0] => Array
+                        (
+                            [title] => 
+                            [by] => 
+                            [date] => 
+                        )
+
+                )
+
+            [employment_history] => Array
+                (
+                    [0] => Array
+                        (
+                            [position] => 
+                            [company_name] => 
+                            [company_address] => 
+                            [company_phone] => 
+                            [period] => 
+                            [reason] => 
+                        )
+
+                )
+
+            [character_references] => Array
+                (
+                    [0] => Array
+                        (
+                            [name] => 
+                            [occupation] => 
+                            [company] => 
+                            [contact] => 
+                        )
+
+                    [1] => Array
+                        (
+                            [name] => 
+                            [occupation] => 
+                            [company] => 
+                            [contact] => 
+                        )
+
+                    [2] => Array
+                        (
+                            [name] => 
+                            [occupation] => 
+                            [company] => 
+                            [contact] => 
+                        )
+
+                )
+
+            [gov_exam_taken] => No
+            [gov_exams] => Array
+                (
+                    [0] => Array
+                        (
+                            [type] => 
+                            [score] => 
+                        )
+
+                )
+
+            [cp_number] => 
+            [contact_person] => 
+            [relationship] => 
+            [contact_person_number] => 
+            [contact_person_address] => 
+            [contact_person_alt] => 
+            [relationship_alt] => 
+            [contact_person_number_alt] => 
+            [contact_person_address_alt] => 
+            [post] => 
+            [date_hired] => 
+            [license_no] => 
+            [license_exp_date] => 
+            [rlm_exp] => 
+            [sss_no] => 
+            [pagibig_no] => 
+            [tin_number] => 
+            [philhealth_no] => 
+            [hr_remarks] => 
+            [status_summary] => 
+        )
+
+    [files] => Array
+        (
+            [employee_photo] => Array
+                (
+                    [name] => 
+                    [size] => 0
+                    [error] => 4
+                )
+
+        )
+
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 13:01:44] [add_employee_page] User: hradmin (ID: 25) | IP: ::1
+Error: Page 1 data stored in session, redirecting to Page 2
+Data: Array
+(
+    [employee_no] => 24328
+    [employee_name] => TEMP USER
+    [has_photo] => no
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 13:01:44] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
+[2026-01-19 13:02:05] [add_employee_page2] User: hradmin (ID: 25) | IP: ::1
+Error: Page 2 loaded
+Data: Array
+(
+    [has_page1_data] => yes
+    [employee_id] => 
+    [page1_employee_no] => 24328
+    [page1_name] => TEMP USER
+)
+
+File: /goldenz/goldenz/hr-admin/index.php
+--------------------------------------------------------------------------------
