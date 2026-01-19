@@ -415,9 +415,39 @@ $role_config = config('roles.roles', []);
     </div>
 </div>
 
+<!-- Futuristic Status Change Confirmation Modal -->
+<div class="modal fade" id="statusChangeConfirmModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content futuristic-modal">
+            <div class="futuristic-modal-header">
+                <div class="futuristic-icon-wrapper">
+                    <i class="fas fa-toggle-on futuristic-icon" id="statusChangeIcon"></i>
+                    <div class="futuristic-pulse"></div>
+                </div>
+                <h5 class="futuristic-modal-title">Confirm Status Change</h5>
+            </div>
+            <div class="futuristic-modal-body">
+                <p class="futuristic-message" id="statusChangeConfirmMessage"></p>
+                <div class="futuristic-info-box" id="statusChangeInfoBox">
+                    <i class="fas fa-info-circle"></i>
+                    <span id="statusChangeInfoText">This action will change the user's access status.</span>
+                </div>
+            </div>
+            <div class="futuristic-modal-footer">
+                <button type="button" class="btn futuristic-btn-cancel" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Cancel
+                </button>
+                <button type="button" class="btn futuristic-btn-confirm" id="confirmStatusChangeBtn">
+                    <i class="fas fa-check me-2"></i>Confirm Change
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Create User Modal -->
 <div class="modal fade" id="createUserModal" tabindex="-1" aria-labelledby="createUserModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-scrollable" style="margin-top: 1rem;">
+    <div class="modal-dialog modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header bg-primary text-white">
                 <h5 class="modal-title" id="createUserModalLabel">
@@ -429,71 +459,56 @@ $role_config = config('roles.roles', []);
                 <div class="modal-body">
                     <div id="createUserAlert"></div>
                     
-                    <div class="row g-2">
-                        <!-- Required Fields -->
-                        <div class="col-12">
-                            <h6 class="text-muted mb-2 border-bottom pb-1 section-header">Required Information</h6>
-                        </div>
-                        
+                    <div class="row g-2 compact-form">
                         <div class="col-md-6">
-                            <label for="create_username" class="form-label">Username <span class="text-danger">*</span></label>
+                            <label for="create_username" class="form-label small">Username <span class="text-danger">*</span></label>
                             <input type="text" 
-                                   class="form-control" 
+                                   class="form-control form-control-sm" 
                                    id="create_username" 
                                    name="username" 
                                    required
                                    maxlength="50"
                                    autocomplete="username"
                                    placeholder="Enter username">
-                            <small class="text-muted">Must be unique (max 50 characters)</small>
                         </div>
                         
                         <div class="col-md-6">
-                            <label for="create_email" class="form-label">Email <span class="text-danger">*</span></label>
+                            <label for="create_email" class="form-label small">Email <span class="text-danger">*</span></label>
                             <input type="email" 
-                                   class="form-control" 
+                                   class="form-control form-control-sm" 
                                    id="create_email" 
                                    name="email" 
                                    required
                                    maxlength="100"
                                    autocomplete="email"
                                    placeholder="user@example.com">
-                            <small class="text-muted">Must be unique (max 100 characters)</small>
                         </div>
                         
                         <div class="col-md-6">
-                            <label for="create_password" class="form-label">Password <span class="text-danger">*</span></label>
-                            <input type="password" 
-                                   class="form-control" 
-                                   id="create_password" 
-                                   name="password" 
-                                   required
-                                   minlength="8"
-                                   autocomplete="new-password"
-                                   placeholder="Minimum 8 characters">
-                            <small class="text-muted">Minimum 8 characters</small>
-                        </div>
-                        
-                        <div class="col-md-6">
-                            <label for="create_name" class="form-label">Full Name <span class="text-danger">*</span></label>
+                            <label for="create_first_name" class="form-label small">First Name <span class="text-danger">*</span></label>
                             <input type="text" 
-                                   class="form-control" 
-                                   id="create_name" 
-                                   name="name" 
+                                   class="form-control form-control-sm" 
+                                   id="create_first_name" 
+                                   name="first_name" 
                                    required
                                    maxlength="100"
-                                   placeholder="Enter full name">
-                            <small class="text-muted">Max 100 characters</small>
-                        </div>
-                        
-                        <!-- Role & Status -->
-                        <div class="col-12 mt-2">
-                            <h6 class="text-muted mb-2 border-bottom pb-1" style="font-size: 0.9rem;">Role & Status</h6>
+                                   placeholder="Enter first name">
                         </div>
                         
                         <div class="col-md-6">
-                            <label for="create_role" class="form-label">Role <span class="text-danger">*</span></label>
-                            <select class="form-select" id="create_role" name="role" required>
+                            <label for="create_last_name" class="form-label small">Last Name <span class="text-danger">*</span></label>
+                            <input type="text" 
+                                   class="form-control form-control-sm" 
+                                   id="create_last_name" 
+                                   name="last_name" 
+                                   required
+                                   maxlength="100"
+                                   placeholder="Enter last name">
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="create_role" class="form-label small">Role <span class="text-danger">*</span></label>
+                            <select class="form-select form-select-sm" id="create_role" name="role" required>
                                 <option value="hr_admin" selected>HR Administrator</option>
                                 <option value="super_admin">Super Administrator</option>
                                 <option value="hr">HR Staff</option>
@@ -507,58 +522,49 @@ $role_config = config('roles.roles', []);
                         </div>
                         
                         <div class="col-md-6">
-                            <label for="create_status" class="form-label">Status</label>
-                            <select class="form-select" id="create_status" name="status">
+                            <label for="create_status" class="form-label small">Status</label>
+                            <select class="form-select form-select-sm" id="create_status" name="status">
                                 <option value="active" selected>Active</option>
                                 <option value="inactive">Inactive</option>
                                 <option value="suspended">Suspended</option>
                             </select>
-                            <small class="text-muted">User can login if Active</small>
-                        </div>
-                        
-                        <!-- Additional Fields -->
-                        <div class="col-12 mt-2">
-                            <h6 class="text-muted mb-2 border-bottom pb-1 section-header">Additional Information</h6>
                         </div>
                         
                         <div class="col-md-6">
-                            <label for="create_department" class="form-label">Department <span class="text-danger">*</span></label>
+                            <label for="create_department" class="form-label small">Department <span class="text-danger">*</span></label>
                             <input type="text" 
-                                   class="form-control" 
+                                   class="form-control form-control-sm" 
                                    id="create_department" 
                                    name="department" 
                                    required
                                    maxlength="100"
                                    placeholder="e.g., Human Resources">
-                            <small class="text-muted">Max 100 characters</small>
                         </div>
                         
                         <div class="col-md-6">
-                            <label for="create_phone" class="form-label">Phone <span class="text-danger">*</span></label>
+                            <label for="create_phone" class="form-label small">Phone <span class="text-danger">*</span></label>
                             <input type="tel" 
-                                   class="form-control" 
+                                   class="form-control form-control-sm" 
                                    id="create_phone" 
                                    name="phone" 
                                    required
                                    maxlength="20"
                                    placeholder="0917-123-4567">
-                            <small class="text-muted">Max 20 characters</small>
                         </div>
                         
                         <div class="col-md-6">
-                            <label for="create_employee_id" class="form-label">Employee ID</label>
+                            <label for="create_employee_id" class="form-label small">Employee ID</label>
                             <input type="number" 
-                                   class="form-control" 
+                                   class="form-control form-control-sm" 
                                    id="create_employee_id" 
                                    name="employee_id" 
-                                   placeholder="Employee ID">
-                            <small class="text-muted">Link to existing employee record (optional)</small>
+                                   placeholder="Optional">
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-modern" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary-modern" id="createUserSubmitBtn">
+                    <button type="button" class="btn btn-outline-modern btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary-modern btn-sm" id="createUserSubmitBtn">
                         <i class="fas fa-user-plus me-2"></i>Create User
                     </button>
                 </div>
@@ -709,10 +715,10 @@ $role_config = config('roles.roles', []);
 }
 
 #createUserModal .modal-dialog {
-    max-width: 700px;
+    max-width: 600px;
     width: 90%;
-    margin: 1rem auto !important;
-    margin-top: 1rem !important;
+    margin: 0.5rem auto !important;
+    margin-top: 0.5rem !important;
     align-self: flex-start !important;
 }
 
@@ -720,6 +726,13 @@ $role_config = config('roles.roles', []);
     background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1e293b 100%);
     color: white;
     border-bottom: none;
+    padding: 0.75rem 1rem;
+    flex-shrink: 0;
+}
+
+#createUserModal .modal-header .modal-title {
+    font-size: 1rem;
+    font-weight: 600;
 }
 
 #createUserModal .modal-header .btn-close-white {
@@ -731,26 +744,52 @@ $role_config = config('roles.roles', []);
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
     border-radius: 12px;
     overflow: hidden;
-    max-height: calc(100vh - 2rem);
+    max-height: calc(100vh - 1rem);
     display: flex;
     flex-direction: column;
-}
-
-#createUserModal .modal-header {
-    padding: 1rem 1.25rem;
-    flex-shrink: 0;
 }
 
 #createUserModal .modal-body {
     overflow-y: auto;
     flex: 1 1 auto;
-    padding: 1.25rem;
+    padding: 0.75rem 1rem;
 }
 
 #createUserModal .modal-footer {
-    padding: 1rem 1.25rem;
+    padding: 0.5rem 1rem;
     flex-shrink: 0;
     border-top: 1px solid #e2e8f0;
+}
+
+/* Compact form styling */
+#createUserModal .compact-form .form-label {
+    margin-bottom: 0.25rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+#createUserModal .compact-form .form-control-sm,
+#createUserModal .compact-form .form-select-sm {
+    padding: 0.35rem 0.5rem;
+    font-size: 0.875rem;
+    line-height: 1.4;
+}
+
+#createUserModal .compact-form .row {
+    margin-bottom: 0;
+}
+
+#createUserModal .compact-form .col-md-6 {
+    margin-bottom: 0.5rem;
+}
+
+#createUserModal .compact-form small {
+    display: none;
+}
+
+#createUserModal .modal-footer .btn {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.875rem;
 }
 
 @media (max-width: 768px) {
@@ -1269,13 +1308,15 @@ html[data-theme="dark"] .alert-info {
 }
 
 /* Ensure modal is clickable and properly positioned */
-#roleChangeConfirmModal.show {
+#roleChangeConfirmModal.show,
+#statusChangeConfirmModal.show {
     display: block !important;
     z-index: 1060 !important;
     padding-right: 0 !important;
 }
 
-#roleChangeConfirmModal .modal-dialog {
+#roleChangeConfirmModal .modal-dialog,
+#statusChangeConfirmModal .modal-dialog {
     transform: translate(0, 0) !important;
     max-width: 500px;
     margin: 1.75rem auto !important;
@@ -1284,15 +1325,35 @@ html[data-theme="dark"] .alert-info {
 }
 
 #roleChangeConfirmModal .futuristic-btn-cancel,
-#roleChangeConfirmModal .futuristic-btn-confirm {
+#roleChangeConfirmModal .futuristic-btn-confirm,
+#statusChangeConfirmModal .futuristic-btn-cancel,
+#statusChangeConfirmModal .futuristic-btn-confirm {
     pointer-events: auto !important;
     cursor: pointer !important;
     z-index: 10;
     position: relative;
 }
 
-#roleChangeConfirmModal .modal-content {
+#roleChangeConfirmModal .modal-content,
+#statusChangeConfirmModal .modal-content {
     pointer-events: auto !important;
+}
+
+#statusChangeConfirmModal {
+    z-index: 1060 !important;
+}
+
+#statusChangeConfirmModal .modal-dialog {
+    z-index: 1061 !important;
+    position: relative;
+    margin: 1.75rem auto;
+    pointer-events: auto;
+}
+
+#statusChangeConfirmModal .modal-backdrop {
+    z-index: 1059 !important;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
 }
 
 /* Fix for modal appearing below screen */
@@ -1539,15 +1600,6 @@ function initializeUsersPage() {
                 return;
             }
             
-            // Check password length
-            const password = document.getElementById('create_password').value;
-            if (password && password.length < 8) {
-                if (alertDiv) {
-                    alertDiv.innerHTML = '<div class="alert alert-danger"><i class="fas fa-exclamation-circle me-2"></i>Password must be at least 8 characters long</div>';
-                }
-                return;
-            }
-            
             // Disable button
             if (submitBtn) {
                 submitBtn.disabled = true;
@@ -1708,14 +1760,8 @@ function initializeUsersPage() {
                 
                 this.classList.add('changed');
                 
-                // Show confirmation
-                if (confirm(`Change user status to "${statusText}"?`)) {
-                    updateUserStatus(userId, newStatus, this);
-                } else {
-                    // Revert selection
-                    this.value = this.getAttribute('data-original-value');
-                    this.classList.remove('changed');
-                }
+                // Show futuristic confirmation modal
+                showStatusChangeConfirm(userId, newStatus, statusText, this);
             });
         }
     });
@@ -2023,19 +2069,29 @@ function showRoleChangeConfirm(userId, newRole, newRoleText, selectElement) {
     const newConfirmBtn = confirmBtn.cloneNode(true);
     confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
     
+    // Cleanup function to restore page state
+    function cleanupModal() {
+        // Remove backdrop
+        const backdrops = document.querySelectorAll('.modal-backdrop');
+        backdrops.forEach(backdrop => backdrop.remove());
+        
+        // Remove modal-open class and restore body scroll
+        document.body.classList.remove('modal-open');
+        document.body.style.overflow = '';
+        document.body.style.paddingRight = '';
+        
+        // Remove show class from modal
+        modal.classList.remove('show');
+        modal.style.display = 'none';
+        modal.setAttribute('aria-hidden', 'true');
+        modal.setAttribute('aria-modal', 'false');
+    }
+    
     // Handle confirmation
     newConfirmBtn.addEventListener('click', function(e) {
         e.preventDefault();
         e.stopPropagation();
-        const modalInstance = bootstrap.Modal.getInstance(modal);
-        if (modalInstance) {
-            modalInstance.hide();
-        }
-        // Clean up backdrop
-        const backdrop = document.querySelector('.modal-backdrop');
-        if (backdrop) {
-            backdrop.remove();
-        }
+        cleanupModal();
         updateUserRole(userId, newRole, selectElement);
     });
     
@@ -2048,19 +2104,160 @@ function showRoleChangeConfirm(userId, newRole, newRoleText, selectElement) {
         newCancelBtn.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
-            const modalInstance = bootstrap.Modal.getInstance(modal);
-            if (modalInstance) {
-                modalInstance.hide();
-            }
-            // Clean up backdrop
-            const backdrop = document.querySelector('.modal-backdrop');
-            if (backdrop) {
-                backdrop.remove();
-            }
+            cleanupModal();
             selectElement.value = selectElement.getAttribute('data-original-value');
             selectElement.classList.remove('changed');
         });
     }
+    
+    // Also handle modal hidden event to ensure cleanup
+    modal.addEventListener('hidden.bs.modal', function() {
+        cleanupModal();
+    });
+    
+    // Show modal using Bootstrap
+    const modalInstance = new bootstrap.Modal(modal, {
+        backdrop: 'static',
+        keyboard: false,
+        focus: true
+    });
+    
+    modalInstance.show();
+    
+    // Ensure modal is visible and properly positioned after Bootstrap shows it
+    setTimeout(() => {
+        modal.style.display = 'block';
+        modal.style.zIndex = '1060';
+        modal.classList.add('show');
+        modal.setAttribute('aria-hidden', 'false');
+        modal.setAttribute('aria-modal', 'true');
+        
+        const modalDialog = modal.querySelector('.modal-dialog');
+        if (modalDialog) {
+            modalDialog.style.zIndex = '1061';
+            modalDialog.style.pointerEvents = 'auto';
+            modalDialog.style.margin = '1.75rem auto';
+        }
+        
+        // Ensure backdrop exists and is properly positioned
+        let backdrop = document.querySelector('.modal-backdrop');
+        if (!backdrop) {
+            backdrop = document.createElement('div');
+            backdrop.className = 'modal-backdrop fade show';
+            document.body.appendChild(backdrop);
+        }
+        backdrop.style.zIndex = '1059';
+        backdrop.classList.add('show');
+        
+        // Add body class for modal-open
+        document.body.classList.add('modal-open');
+        document.body.style.overflow = 'hidden';
+    }, 50);
+}
+
+function showStatusChangeConfirm(userId, newStatus, statusText, selectElement) {
+    const modal = document.getElementById('statusChangeConfirmModal');
+    const messageEl = document.getElementById('statusChangeConfirmMessage');
+    const confirmBtn = document.getElementById('confirmStatusChangeBtn');
+    const infoTextEl = document.getElementById('statusChangeInfoText');
+    const iconEl = document.getElementById('statusChangeIcon');
+    const infoBoxEl = document.getElementById('statusChangeInfoBox');
+    
+    if (!modal || !messageEl || !confirmBtn) {
+        // Fallback to default confirm if modal not found
+        if (confirm(`Change user status to "${statusText}"?`)) {
+            updateUserStatus(userId, newStatus, selectElement);
+        } else {
+            selectElement.value = selectElement.getAttribute('data-original-value');
+            selectElement.classList.remove('changed');
+        }
+        return;
+    }
+    
+    // Ensure modal is in the body (not hidden in a container)
+    if (modal.parentElement !== document.body) {
+        document.body.appendChild(modal);
+    }
+    
+    // Set message and icon based on status
+    messageEl.textContent = `Are you sure you want to change the user's status to "${statusText}"?`;
+    
+    // Update icon and info text based on status
+    let iconClass = 'fas fa-toggle-on';
+    let infoMessage = 'This action will change the user\'s access status.';
+    
+    if (newStatus === 'active') {
+        iconClass = 'fas fa-check-circle';
+        infoMessage = 'The user will be able to login and access the system.';
+        infoBoxEl.style.borderColor = 'rgba(34, 197, 94, 0.3)';
+        infoBoxEl.style.background = 'rgba(34, 197, 94, 0.1)';
+        iconEl.style.color = '#22c55e';
+    } else if (newStatus === 'inactive') {
+        iconClass = 'fas fa-pause-circle';
+        infoMessage = 'The user will not be able to login. Their account will be inactive.';
+        infoBoxEl.style.borderColor = 'rgba(148, 163, 184, 0.3)';
+        infoBoxEl.style.background = 'rgba(148, 163, 184, 0.1)';
+        iconEl.style.color = '#94a3b8';
+    } else if (newStatus === 'suspended') {
+        iconClass = 'fas fa-ban';
+        infoMessage = 'The user will be suspended and cannot login. This is typically used for disciplinary actions.';
+        infoBoxEl.style.borderColor = 'rgba(239, 68, 68, 0.3)';
+        infoBoxEl.style.background = 'rgba(239, 68, 68, 0.1)';
+        iconEl.style.color = '#ef4444';
+    }
+    
+    iconEl.className = iconClass + ' futuristic-icon';
+    infoTextEl.textContent = infoMessage;
+    
+    // Cleanup function to restore page state
+    function cleanupModal() {
+        // Remove backdrop
+        const backdrops = document.querySelectorAll('.modal-backdrop');
+        backdrops.forEach(backdrop => backdrop.remove());
+        
+        // Remove modal-open class and restore body scroll
+        document.body.classList.remove('modal-open');
+        document.body.style.overflow = '';
+        document.body.style.paddingRight = '';
+        
+        // Remove show class from modal
+        modal.classList.remove('show');
+        modal.style.display = 'none';
+        modal.setAttribute('aria-hidden', 'true');
+        modal.setAttribute('aria-modal', 'false');
+    }
+    
+    // Remove previous event listeners by cloning buttons
+    const newConfirmBtn = confirmBtn.cloneNode(true);
+    confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+    
+    // Handle confirmation
+    newConfirmBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        cleanupModal();
+        updateUserStatus(userId, newStatus, selectElement);
+    });
+    
+    // Handle cancellation
+    const cancelBtn = modal.querySelector('.futuristic-btn-cancel');
+    if (cancelBtn) {
+        const newCancelBtn = cancelBtn.cloneNode(true);
+        cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+        
+        newCancelBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            cleanupModal();
+            selectElement.value = selectElement.getAttribute('data-original-value');
+            selectElement.classList.remove('changed');
+        });
+    }
+    
+    // Also handle modal hidden event to ensure cleanup
+    modal.addEventListener('hidden.bs.modal', function() {
+        cleanupModal();
+    });
     
     // Show modal using Bootstrap
     const modalInstance = new bootstrap.Modal(modal, {

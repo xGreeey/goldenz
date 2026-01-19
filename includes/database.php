@@ -3817,17 +3817,209 @@ if (!function_exists('get_backup_list')) {
 }
 
 // Create new user
+// Generate secure password with mixed case, numbers, and symbols
+if (!function_exists('generate_secure_password')) {
+    function generate_secure_password($length = 12) {
+        // Character sets
+        $lowercase = 'abcdefghijklmnopqrstuvwxyz';
+        $uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $numbers = '0123456789';
+        $symbols = '!@#$%^&*()_+-=[]{}|;:,.<>?';
+        
+        // Ensure at least one character from each set
+        $password = '';
+        $password .= $lowercase[random_int(0, strlen($lowercase) - 1)];
+        $password .= $uppercase[random_int(0, strlen($uppercase) - 1)];
+        $password .= $numbers[random_int(0, strlen($numbers) - 1)];
+        $password .= $symbols[random_int(0, strlen($symbols) - 1)];
+        
+        // Fill the rest with random characters from all sets
+        $all_chars = $lowercase . $uppercase . $numbers . $symbols;
+        for ($i = strlen($password); $i < $length; $i++) {
+            $password .= $all_chars[random_int(0, strlen($all_chars) - 1)];
+        }
+        
+        // Shuffle to avoid predictable pattern
+        return str_shuffle($password);
+    }
+}
+
+// Send new user credentials email
+if (!function_exists('send_new_user_credentials_email')) {
+    function send_new_user_credentials_email($email, $username, $password, $first_name = '', $last_name = '') {
+        try {
+            // Load PHPMailer
+            $phpmailer_path = __DIR__ . '/../config/vendor/autoload.php';
+            if (!file_exists($phpmailer_path)) {
+                error_log('PHPMailer not found at: ' . $phpmailer_path);
+                return false;
+            }
+            
+            require_once $phpmailer_path;
+            
+            $mail = new \PHPMailer\PHPMailer\PHPMailer(true);
+            
+            // Get SMTP configuration from environment
+            $smtp_host = $_ENV['SMTP_HOST'] ?? null;
+            $smtp_username = $_ENV['SMTP_USERNAME'] ?? null;
+            $smtp_password = $_ENV['SMTP_PASSWORD'] ?? null;
+            $smtp_port = $_ENV['SMTP_PORT'] ?? '587';
+            $smtp_encryption_raw = $_ENV['SMTP_ENCRYPTION'] ?? 'tls';
+            $mail_from_address = $_ENV['MAIL_FROM_ADDRESS'] ?? null;
+            $mail_from_name = $_ENV['MAIL_FROM_NAME'] ?? 'Golden Z-5 HR System';
+            
+            if (empty($smtp_host) || empty($smtp_username) || empty($smtp_password) || empty($mail_from_address)) {
+                error_log('SMTP configuration incomplete. Cannot send new user credentials email.');
+                return false;
+            }
+            
+            // Map encryption string to PHPMailer constant
+            $smtp_encryption = \PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
+            if (strtolower($smtp_encryption_raw) === 'ssl') {
+                $smtp_encryption = \PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_SMTPS;
+            }
+            
+            // SMTP Configuration
+            $mail->isSMTP();
+            $mail->Host = $smtp_host;
+            $mail->SMTPAuth = true;
+            $mail->Username = $smtp_username;
+            $mail->Password = $smtp_password;
+            $mail->SMTPSecure = $smtp_encryption;
+            $mail->Port = (int)$smtp_port;
+            $mail->CharSet = 'UTF-8';
+            
+            // Email content
+            $mail->setFrom($mail_from_address, $mail_from_name);
+            $mail->addAddress($email);
+            $mail->Subject = 'Your Golden Z-5 HR System Account Credentials';
+            
+            // Build user name
+            $user_name = trim(($first_name ?? '') . ' ' . ($last_name ?? ''));
+            if (empty($user_name)) {
+                $user_name = $username;
+            }
+            
+            // Login URL
+            $login_url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http') . 
+                        '://' . $_SERVER['HTTP_HOST'] . 
+                        dirname(dirname($_SERVER['PHP_SELF'])) . 
+                        '/landing/index.php';
+            
+            // HTML body
+            $mail->isHTML(true);
+            $mail->Body = "
+                <html>
+                <head>
+                    <style>
+                        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                        .header { background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1e293b 100%); color: white; padding: 20px; border-radius: 8px 8px 0 0; }
+                        .content { background: #f8f9fa; padding: 30px; border-radius: 0 0 8px 8px; }
+                        .credentials { background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #1e3a8a; }
+                        .credential-item { margin: 10px 0; }
+                        .label { font-weight: bold; color: #1e3a8a; }
+                        .value { font-family: monospace; font-size: 14px; background: #f1f3f5; padding: 8px; border-radius: 4px; }
+                        .warning { background: #fff3cd; border: 1px solid #ffc107; padding: 15px; border-radius: 8px; margin: 20px 0; }
+                        .button { display: inline-block; background: #1e3a8a; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin: 20px 0; }
+                        .footer { text-align: center; color: #6c757d; font-size: 12px; margin-top: 30px; }
+                    </style>
+                </head>
+                <body>
+                    <div class='container'>
+                        <div class='header'>
+                            <h2>Welcome to Golden Z-5 HR System</h2>
+                        </div>
+                        <div class='content'>
+                            <p>Hello " . htmlspecialchars($user_name) . ",</p>
+                            <p>Your account has been created successfully. Please find your login credentials below:</p>
+                            
+                            <div class='credentials'>
+                                <div class='credential-item'>
+                                    <span class='label'>Username:</span><br>
+                                    <span class='value'>" . htmlspecialchars($username) . "</span>
+                                </div>
+                                <div class='credential-item'>
+                                    <span class='label'>Temporary Password:</span><br>
+                                    <span class='value'>" . htmlspecialchars($password) . "</span>
+                                </div>
+                            </div>
+                            
+                            <div class='warning'>
+                                <strong>⚠️ Important Security Notice:</strong><br>
+                                For your security, you <strong>must change your password</strong> immediately after your first login. 
+                                You will be prompted to change your password when you log in for the first time.
+                            </div>
+                            
+                            <p>
+                                <a href='" . htmlspecialchars($login_url) . "' class='button'>Login to Your Account</a>
+                            </p>
+                            
+                            <p>If you have any questions or need assistance, please contact your system administrator.</p>
+                        </div>
+                        <div class='footer'>
+                            <p>This is an automated message. Please do not reply to this email.</p>
+                            <p>&copy; " . date('Y') . " Golden Z-5 HR System. All rights reserved.</p>
+                        </div>
+                    </div>
+                </body>
+                </html>
+            ";
+            
+            // Plain text alternative
+            $mail->AltBody = "Hello " . $user_name . ",\n\n" .
+                           "Your account has been created successfully.\n\n" .
+                           "Login Credentials:\n" .
+                           "Username: " . $username . "\n" .
+                           "Temporary Password: " . $password . "\n\n" .
+                           "IMPORTANT: You must change your password immediately after your first login.\n\n" .
+                           "Login URL: " . $login_url . "\n\n" .
+                           "If you have any questions, please contact your system administrator.\n\n" .
+                           "This is an automated message. Please do not reply to this email.";
+            
+            // Send email
+            if (!$mail->send()) {
+                error_log('Failed to send new user credentials email: ' . $mail->ErrorInfo);
+                return false;
+            }
+            
+            return true;
+        } catch (Exception $e) {
+            error_log('Error sending new user credentials email: ' . $e->getMessage());
+            return false;
+        }
+    }
+}
+
 if (!function_exists('create_user')) {
     function create_user($user_data, $created_by = null) {
         try {
             $pdo = get_db_connection();
             
-            // Validate required fields
-            $required_fields = ['username', 'email', 'password', 'name', 'role'];
+            // Check if first_name and last_name columns exist
+            $check_first_name = $pdo->query("SHOW COLUMNS FROM users LIKE 'first_name'");
+            $check_last_name = $pdo->query("SHOW COLUMNS FROM users LIKE 'last_name'");
+            $has_first_name = $check_first_name->rowCount() > 0;
+            $has_last_name = $check_last_name->rowCount() > 0;
+            
+            // Validate required fields (password is now auto-generated, so not required)
+            if ($has_first_name && $has_last_name) {
+                // Use first_name and last_name if columns exist
+                $required_fields = ['username', 'email', 'first_name', 'last_name', 'role'];
+            } else {
+                // Fallback to name field for backward compatibility
+                $required_fields = ['username', 'email', 'name', 'role'];
+            }
+            
             foreach ($required_fields as $field) {
                 if (empty($user_data[$field])) {
                     return ['success' => false, 'message' => "Field '{$field}' is required"];
                 }
+            }
+            
+            // Generate password if not provided
+            if (empty($user_data['password'])) {
+                $user_data['password'] = generate_secure_password();
             }
             
             // Validate role
@@ -3871,36 +4063,91 @@ if (!function_exists('create_user')) {
             // Hash password
             $password_hash = password_hash($user_data['password'], PASSWORD_DEFAULT);
             
+            // Prepare first_name and last_name values
+            $first_name = $has_first_name ? trim($user_data['first_name'] ?? '') : null;
+            $last_name = $has_last_name ? trim($user_data['last_name'] ?? '') : null;
+            
+            // For backward compatibility, also set name field (concatenate first_name + last_name)
+            $full_name = null;
+            if ($has_first_name && $has_last_name) {
+                $full_name = trim(($first_name ?? '') . ' ' . ($last_name ?? ''));
+            } elseif (isset($user_data['name'])) {
+                $full_name = trim($user_data['name']);
+            }
+            
+            // Store plain password for email (before hashing)
+            $plain_password = $user_data['password'];
+            
             // Prepare insert statement (let MySQL handle timestamps automatically)
-            $sql = "INSERT INTO users (
-                        username, 
-                        email, 
-                        password_hash, 
-                        name, 
-                        role, 
-                        status, 
-                        employee_id, 
-                        department, 
-                        phone, 
-                        created_by
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            // Set password_changed_at to NULL to force password change on first login
+            if ($has_first_name && $has_last_name) {
+                // Use first_name and last_name columns
+                $sql = "INSERT INTO users (
+                            username, 
+                            email, 
+                            password_hash, 
+                            name,
+                            first_name, 
+                            last_name, 
+                            role, 
+                            status, 
+                            employee_id, 
+                            department, 
+                            phone, 
+                            password_changed_at,
+                            created_by
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, ?)";
+            } else {
+                // Fallback to name field only
+                $sql = "INSERT INTO users (
+                            username, 
+                            email, 
+                            password_hash, 
+                            name, 
+                            role, 
+                            status, 
+                            employee_id, 
+                            department, 
+                            phone, 
+                            password_changed_at,
+                            created_by
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, ?)";
+            }
             
             // Convert empty strings to null for optional fields
             $department = (!empty($user_data['department']) && trim($user_data['department']) !== '') ? trim($user_data['department']) : null;
             $phone = (!empty($user_data['phone']) && trim($user_data['phone']) !== '') ? trim($user_data['phone']) : null;
             
-            $params = [
-                $user_data['username'],
-                $user_data['email'],
-                $password_hash,
-                $user_data['name'],
-                $user_data['role'],
-                $status,
-                $employee_id,
-                $department,
-                $phone,
-                $created_by
-            ];
+            // Prepare parameters based on which columns exist
+            if ($has_first_name && $has_last_name) {
+                $params = [
+                    $user_data['username'],
+                    $user_data['email'],
+                    $password_hash,
+                    $full_name, // name field for backward compatibility
+                    $first_name,
+                    $last_name,
+                    $user_data['role'],
+                    $status,
+                    $employee_id,
+                    $department,
+                    $phone,
+                    $created_by
+                ];
+            } else {
+                $params = [
+                    $user_data['username'],
+                    $user_data['email'],
+                    $password_hash,
+                    $full_name,
+                    $user_data['role'],
+                    $status,
+                    $employee_id,
+                    $department,
+                    $phone,
+                    $created_by
+                ];
+            }
             
             $stmt = $pdo->prepare($sql);
             
@@ -3967,6 +4214,21 @@ if (!function_exists('create_user')) {
                 $new_user_id = null;
             }
             
+            // Send credentials email to new user
+            if ($new_user_id) {
+                $email_sent = send_new_user_credentials_email(
+                    $user_data['email'],
+                    $user_data['username'],
+                    $plain_password,
+                    $first_name ?? '',
+                    $last_name ?? ''
+                );
+                
+                if (!$email_sent) {
+                    error_log("Warning: Failed to send credentials email to {$user_data['email']} for user {$user_data['username']}");
+                }
+            }
+            
             // Log audit event if we have a user ID
             if ($new_user_id && function_exists('log_audit_event')) {
                 log_audit_event(
@@ -3977,7 +4239,9 @@ if (!function_exists('create_user')) {
                     json_encode([
                         'username' => $user_data['username'],
                         'email' => $user_data['email'],
-                        'name' => $user_data['name'],
+                        'name' => $full_name ?? ($user_data['name'] ?? ''),
+                        'first_name' => $first_name ?? '',
+                        'last_name' => $last_name ?? '',
                         'role' => $user_data['role'],
                         'status' => $status
                     ]),
@@ -3987,12 +4251,21 @@ if (!function_exists('create_user')) {
             
             // Log security event
             if (function_exists('log_security_event')) {
-                log_security_event('User Created', "New user created: {$user_data['username']} ({$user_data['name']}) - Role: {$user_data['role']} - Created by: " . ($created_by ?? 'System'));
+                $display_name = $full_name ?? ($user_data['name'] ?? ($first_name . ' ' . $last_name));
+                log_security_event('User Created', "New user created: {$user_data['username']} ({$display_name}) - Role: {$user_data['role']} - Created by: " . ($created_by ?? 'System'));
+            }
+            
+            // Build success message
+            $message = 'User created successfully';
+            if (isset($email_sent) && $email_sent) {
+                $message .= '. Credentials have been sent to ' . htmlspecialchars($user_data['email']);
+            } elseif (isset($email_sent) && !$email_sent) {
+                $message .= '. Warning: Failed to send credentials email. Please contact the user manually.';
             }
             
             return [
                 'success' => true, 
-                'message' => 'User created successfully',
+                'message' => $message,
                 'user_id' => $new_user_id
             ];
         } catch (PDOException $e) {
