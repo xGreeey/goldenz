@@ -60,10 +60,6 @@ body.portal-hr-admin .add-employee-modern .page-header-modern {
     border: 1px solid #e2e8f0;
 }
 
-body.portal-hr-admin .add-employee-modern .hr-breadcrumb {
-    padding: 0; /* container already has padding */
-    margin-bottom: 0.75rem !important;
-}
 
 body.portal-hr-admin .add-employee-modern .page-title-main {
     font-size: 1.5rem !important;

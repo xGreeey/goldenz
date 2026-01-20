@@ -57,7 +57,7 @@ if (!empty($_SESSION['user_id']) && function_exists('get_user_by_id')) {
             <ul class="dropdown-menu dropdown-menu-end hrdash-notification-dropdown">
                 <li class="dropdown-header">
                     <strong>Messages</strong>
-                    <a href="?page=alerts" class="text-decoration-none ms-auto">View All</a>
+                    <a href="?page=alerts&from=header" class="text-decoration-none ms-auto">View All</a>
                 </li>
                 <li><hr class="dropdown-divider"></li>
                 <?php if (empty($recentMessages)): ?>
@@ -97,7 +97,7 @@ if (!empty($_SESSION['user_id']) && function_exists('get_user_by_id')) {
                         }
                     ?>
                         <li>
-                            <a class="dropdown-item hrdash-notification-item" href="?page=alerts">
+                            <a class="dropdown-item hrdash-notification-item" href="?page=alerts&from=header">
                                 <div class="d-flex align-items-start">
                                     <i class="fas <?php echo $priorityIcon; ?> <?php echo $priorityClass; ?> me-2 mt-1"></i>
                                     <div class="flex-grow-1">
@@ -147,7 +147,7 @@ if (!empty($_SESSION['user_id']) && function_exists('get_user_by_id')) {
             <ul class="dropdown-menu dropdown-menu-end hrdash-notification-dropdown">
                 <li class="dropdown-header">
                     <strong>Notifications</strong>
-                    <a href="?page=tasks" class="text-decoration-none ms-auto">View All</a>
+                    <a href="?page=tasks&from=header" class="text-decoration-none ms-auto">View All</a>
                 </li>
                 <li><hr class="dropdown-divider"></li>
                 <?php if (empty($recentNotifications)): ?>
@@ -190,7 +190,7 @@ if (!empty($_SESSION['user_id']) && function_exists('get_user_by_id')) {
                         }
                     ?>
                         <li>
-                            <a class="dropdown-item hrdash-notification-item" href="?page=tasks">
+                            <a class="dropdown-item hrdash-notification-item" href="?page=tasks&from=header">
                                 <div class="d-flex align-items-start">
                                     <i class="fas <?php echo $priorityIcon; ?> <?php echo $priorityClass; ?> me-2 mt-1"></i>
                                     <div class="flex-grow-1">
@@ -253,8 +253,8 @@ if (!empty($_SESSION['user_id']) && function_exists('get_user_by_id')) {
                 <i class="fas fa-chevron-down hrdash-welcome__chevron"></i>
             </button>
             <ul class="dropdown-menu dropdown-menu-end">
-                <li><a class="dropdown-item" href="?page=profile"><i class="fas fa-user me-2"></i>Profile</a></li>
-                <li><a class="dropdown-item" href="?page=settings"><i class="fas fa-cog me-2"></i>Settings</a></li>
+                <li><a class="dropdown-item" href="?page=profile&from=header"><i class="fas fa-user me-2"></i>Profile</a></li>
+                <li><a class="dropdown-item" href="?page=settings&from=header"><i class="fas fa-cog me-2"></i>Settings</a></li>
                 <li><hr class="dropdown-divider"></li>
                 <li>
                     <a class="dropdown-item text-danger" href="<?php echo base_url(); ?>/index.php?logout=1" data-no-transition="true">

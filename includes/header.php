@@ -34,6 +34,13 @@ function getPageTitle($page) {
         'integrations' => 'Integrations',
         'help' => 'Help & Support',
         'system_logs' => 'System Logs',
+        'documents' => '201 Files - Document Management',
+        'leaves' => 'Leave Requests',
+        'leave_balance' => 'Leave Balance',
+        'leave_reports' => 'Leave Reports',
+        'attendance' => 'Attendance Management',
+        'violations' => 'Employee Violations',
+        'violation_types' => 'Violation Types & Sanctions',
     ];
     
     return $titles[$page] ?? 'Dashboard';
@@ -52,7 +59,12 @@ function getActiveSection($page) {
         'posts' => 'posts',
         'add_post' => 'posts',
         'edit_post' => 'posts',
-        'post_assignments' => 'posts'
+        'post_assignments' => 'posts',
+        'leaves' => 'leaves',
+        'leave_balance' => 'leaves',
+        'leave_reports' => 'leaves',
+        'violations' => 'violations',
+        'violation_types' => 'violations'
     ];
     
     return $sections[$page] ?? null;
@@ -174,6 +186,27 @@ if ($userRole === 'hr_admin') {
                     } else {
                         include $pagesPath . 'system_logs.php';
                     }
+                    break;
+                case 'documents':
+                    include $pagesPath . 'documents.php';
+                    break;
+                case 'leaves':
+                    include $pagesPath . 'leaves.php';
+                    break;
+                case 'leave_balance':
+                    include $pagesPath . 'leave_balance.php';
+                    break;
+                case 'leave_reports':
+                    include $pagesPath . 'leave_reports.php';
+                    break;
+                case 'attendance':
+                    include $pagesPath . 'attendance.php';
+                    break;
+                case 'violations':
+                    include $pagesPath . 'violations.php';
+                    break;
+                case 'violation_types':
+                    include $pagesPath . 'violation_types.php';
                     break;
                 default:
                     include $pagesPath . 'dashboard.php';
