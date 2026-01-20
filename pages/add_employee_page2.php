@@ -714,453 +714,928 @@ if (isset($_SESSION['employee_redirect_url'])) {
                     </ul>
                 </div>
 
-                <!-- Specimen Signature and Initial Section -->
-                <div class="row g-3 mb-2">
-                    <div class="col-12">
-                        <h4 class="form-section-title">SPECIMEN SIGNATURE AND INITIAL</h4>
+                <!-- Specimen Signature and Initial Section - Formal Document Style -->
+                <div class="specimen-section">
+                    <!-- Section Title -->
+                    <div class="specimen-title">
+                        <h4>SPECIMEN SIGNATURE AND INITIAL</h4>
                     </div>
                     
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="form-label"><strong>SIGNATURE</strong></label>
-                            <div class="mb-2">
-                                <label class="form-label small">1.</label>
-                                <input type="text" class="form-control" id="signature_1" name="signature_1" placeholder="Signature line 1">
+                    <!-- Two-Column Layout -->
+                    <div class="specimen-columns">
+                        <!-- Left Column: Signature -->
+                        <div class="specimen-column">
+                            <div class="specimen-column-header">SIGNATURE</div>
+                            <div class="specimen-row">
+                                <span class="specimen-number">1.</span>
+                                <input type="text" class="specimen-underline" id="signature_1" name="signature_1">
                             </div>
-                            <div class="mb-2">
-                                <label class="form-label small">2.</label>
-                                <input type="text" class="form-control" id="signature_2" name="signature_2" placeholder="Signature line 2">
+                            <div class="specimen-row">
+                                <span class="specimen-number">2.</span>
+                                <input type="text" class="specimen-underline" id="signature_2" name="signature_2">
                             </div>
-                            <div class="mb-2">
-                                <label class="form-label small">3.</label>
-                                <input type="text" class="form-control" id="signature_3" name="signature_3" placeholder="Signature line 3">
+                        </div>
+                        
+                        <!-- Right Column: Initial -->
+                        <div class="specimen-column">
+                            <div class="specimen-column-header">INITIAL (PINAIKLING PIRMA)</div>
+                            <div class="specimen-row">
+                                <span class="specimen-number">1.</span>
+                                <input type="text" class="specimen-underline" id="initial_1" name="initial_1">
+                            </div>
+                            <div class="specimen-row">
+                                <span class="specimen-number">2.</span>
+                                <input type="text" class="specimen-underline" id="initial_2" name="initial_2">
                             </div>
                         </div>
                     </div>
                     
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="form-label"><strong>INITIAL (PINAIKLING PIRMA)</strong></label>
-                            <div class="mb-2">
-                                <label class="form-label small">1.</label>
-                                <input type="text" class="form-control" id="initial_1" name="initial_1" placeholder="Initial 1">
-                            </div>
-                            <div class="mb-2">
-                                <label class="form-label small">2.</label>
-                                <input type="text" class="form-control" id="initial_2" name="initial_2" placeholder="Initial 2">
-                            </div>
-                            <div class="mb-2">
-                                <label class="form-label small">3.</label>
-                                <input type="text" class="form-control" id="initial_3" name="initial_3" placeholder="Initial 3">
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-12">
-                        <div class="form-group">
-                            <p class="mb-0"><small>I HEREBY CERTIFY that the above specimen is my <strong>OFFICIAL</strong> signatures and initial of which I <strong>CONFIRM</strong> by my signature below.</small></p>
-                        </div>
+                    <!-- Certification Statement -->
+                    <div class="specimen-certification">
+                        <p>I HEREBY CERTIFY that the above specimen is my <strong>OFFICIAL</strong> signatures and initial of which I <strong>CONFIRM</strong> by my signature below.</p>
                     </div>
                 </div>
 
-                <!-- Fingerprints Section -->
-                <div class="row g-3 mb-2">
-                    <div class="col-12">
-                        <h4 class="form-section-title">FINGERPRINTS</h4>
-                    </div>
+                <style>
+                /* Specimen Signature Section - Formal Document Style */
+                .specimen-section {
+                    margin: 2rem 0;
+                    padding: 1.5rem;
+                    background: #ffffff;
+                    border: 1px solid #d1d5db;
+                    page-break-inside: avoid;
+                }
+
+                .specimen-title {
+                    text-align: center;
+                    margin-bottom: 1rem;
+                    padding-bottom: 0.5rem;
+                    border-bottom: 1px solid #d1d5db;
+                }
+
+                .specimen-title h4 {
+                    margin: 0;
+                    font-size: 0.875rem;
+                    font-weight: 700;
+                    letter-spacing: 0.5px;
+                    text-transform: uppercase;
+                    color: #1f2937;
+                    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+                }
+
+                .specimen-columns {
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 2rem;
+                    margin-bottom: 1rem;
+                }
+
+                .specimen-column {
+                    min-width: 0;
+                }
+
+                .specimen-column-header {
+                    font-size: 0.75rem;
+                    font-weight: 600;
+                    text-transform: uppercase;
+                    color: #374151;
+                    margin-bottom: 0.75rem;
+                    letter-spacing: 0.3px;
+                }
+
+                .specimen-row {
+                    display: flex;
+                    align-items: center;
+                    margin-bottom: 0.875rem;
+                    gap: 0.5rem;
+                }
+
+                .specimen-number {
+                    font-size: 0.813rem;
+                    font-weight: 500;
+                    color: #374151;
+                    min-width: 1.25rem;
+                    flex-shrink: 0;
+                }
+
+                .specimen-underline {
+                    flex: 1;
+                    border: none;
+                    border-bottom: 1px solid #d1d5db;
+                    padding: 0.25rem 0.5rem;
+                    font-size: 0.875rem;
+                    font-family: "Courier New", monospace;
+                    background: transparent;
+                    outline: none;
+                    transition: border-color 0.2s ease;
+                }
+
+                .specimen-underline:focus {
+                    border-bottom-color: #3b82f6;
+                    background-color: #f9fafb;
+                }
+
+                .specimen-underline::placeholder {
+                    color: #9ca3af;
+                    font-style: italic;
+                }
+
+                .specimen-certification {
+                    margin-top: 1.5rem;
+                    padding-top: 1rem;
+                    border-top: 1px solid #e5e7eb;
+                }
+
+                .specimen-certification p {
+                    margin: 0;
+                    font-size: 0.75rem;
+                    line-height: 1.5;
+                    color: #374151;
+                    text-align: justify;
+                }
+
+                /* Responsive */
+                @media (max-width: 768px) {
+                    .specimen-columns {
+                        grid-template-columns: 1fr;
+                        gap: 1.5rem;
+                    }
                     
-                    <div class="col-12">
-                        <div class="table-responsive">
-                            <table class="table table-bordered text-center" style="max-width: 800px; margin: 0 auto;">
-                                <thead>
-                                    <tr>
-                                        <th>RIGHT Thumb</th>
-                                        <th>RIGHT Index Finger</th>
-                                        <th>RIGHT Middle Finger</th>
-                                        <th>RIGHT Ring Finger</th>
-                                        <th>RIGHT Little Finger</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td style="height: 80px; vertical-align: middle;">
-                                            <input type="file" class="form-control form-control-sm" name="fingerprint_right_thumb" accept="image/*">
-                                        </td>
-                                        <td style="height: 80px; vertical-align: middle;">
-                                            <input type="file" class="form-control form-control-sm" name="fingerprint_right_index" accept="image/*">
-                                        </td>
-                                        <td style="height: 80px; vertical-align: middle;">
-                                            <input type="file" class="form-control form-control-sm" name="fingerprint_right_middle" accept="image/*">
-                                        </td>
-                                        <td style="height: 80px; vertical-align: middle;">
-                                            <input type="file" class="form-control form-control-sm" name="fingerprint_right_ring" accept="image/*">
-                                        </td>
-                                        <td style="height: 80px; vertical-align: middle;">
-                                            <input type="file" class="form-control form-control-sm" name="fingerprint_right_little" accept="image/*">
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                        <div class="table-responsive mt-3">
-                            <table class="table table-bordered text-center" style="max-width: 800px; margin: 0 auto;">
-                                <thead>
-                                    <tr>
-                                        <th>LEFT Thumb</th>
-                                        <th>LEFT Index Finger</th>
-                                        <th>LEFT Middle Finger</th>
-                                        <th>LEFT Ring Finger</th>
-                                        <th>LEFT Little Finger</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td style="height: 80px; vertical-align: middle;">
-                                            <input type="file" class="form-control form-control-sm" name="fingerprint_left_thumb" accept="image/*">
-                                        </td>
-                                        <td style="height: 80px; vertical-align: middle;">
-                                            <input type="file" class="form-control form-control-sm" name="fingerprint_left_index" accept="image/*">
-                                        </td>
-                                        <td style="height: 80px; vertical-align: middle;">
-                                            <input type="file" class="form-control form-control-sm" name="fingerprint_left_middle" accept="image/*">
-                                        </td>
-                                        <td style="height: 80px; vertical-align: middle;">
-                                            <input type="file" class="form-control form-control-sm" name="fingerprint_left_ring" accept="image/*">
-                                        </td>
-                                        <td style="height: 80px; vertical-align: middle;">
-                                            <input type="file" class="form-control form-control-sm" name="fingerprint_left_little" accept="image/*">
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
+                    .specimen-section {
+                        padding: 1rem;
+                    }
+                }
 
-                <!-- Basic Requirements Section -->
-                <div class="row g-3 mb-2">
-                    <div class="col-12">
-                        <h4 class="form-section-title">BASIC REQUIREMENTS</h4>
-                    </div>
+                /* Print Styles */
+                @media print {
+                    .specimen-section {
+                        border: 1px solid #000;
+                        box-shadow: none;
+                    }
                     
-                    <div class="col-12 text-end mb-3">
-                        <label class="form-label">Signature Over Printed Name</label>
-                        <input type="text" class="form-control" id="requirements_signature" name="requirements_signature" placeholder="Signature" style="max-width: 400px; margin-left: auto;">
-                    </div>
-
-                    <div class="col-12">
-                        <div class="form-group">
-                            <label class="form-label"><strong>Provided on Application:</strong> Y☐ N☐</label>
-                        </div>
-                    </div>
-
-                    <div class="col-12">
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label class="form-label">1. Close up 2x2 (2pcs)</label>
-                                    <div class="d-flex gap-3">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" name="req_2x2" id="req_2x2_y" value="YO">
-                                            <label class="form-check-label" for="req_2x2_y">YO</label>
-                                        </div>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" name="req_2x2" id="req_2x2_n" value="NO">
-                                            <label class="form-check-label" for="req_2x2_n">NO</label>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label class="form-label">2. NSO, Birth Certificate</label>
-                                    <div class="d-flex gap-3">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" name="req_birth_cert" id="req_birth_cert_y" value="YO">
-                                            <label class="form-check-label" for="req_birth_cert_y">YO</label>
-                                        </div>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" name="req_birth_cert" id="req_birth_cert_n" value="NO">
-                                            <label class="form-check-label" for="req_birth_cert_n">NO</label>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label class="form-label">3. Barangay Clearance</label>
-                                    <div class="d-flex gap-3">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" name="req_barangay" id="req_barangay_y" value="YO">
-                                            <label class="form-check-label" for="req_barangay_y">YO</label>
-                                        </div>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" name="req_barangay" id="req_barangay_n" value="NO">
-                                            <label class="form-check-label" for="req_barangay_n">NO</label>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label class="form-label">4. Police Clearance (local)</label>
-                                    <div class="d-flex gap-3">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" name="req_police" id="req_police_y" value="YO">
-                                            <label class="form-check-label" for="req_police_y">YO</label>
-                                        </div>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" name="req_police" id="req_police_n" value="NO">
-                                            <label class="form-check-label" for="req_police_n">NO</label>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label class="form-label">5. NBI (for cases purposes)</label>
-                                    <div class="d-flex gap-3">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" name="req_nbi" id="req_nbi_y" value="YO">
-                                            <label class="form-check-label" for="req_nbi_y">YO</label>
-                                        </div>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" name="req_nbi" id="req_nbi_n" value="NO">
-                                            <label class="form-check-label" for="req_nbi_n">NO</label>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label class="form-label">6. D.I. Clearance</label>
-                                    <div class="d-flex gap-3">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" name="req_di" id="req_di_y" value="YO">
-                                            <label class="form-check-label" for="req_di_y">YO</label>
-                                        </div>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" name="req_di" id="req_di_n" value="NO">
-                                            <label class="form-check-label" for="req_di_n">NO</label>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label class="form-label">7. High School / College Diploma</label>
-                                    <div class="d-flex gap-3">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" name="req_diploma" id="req_diploma_y" value="YO">
-                                            <label class="form-check-label" for="req_diploma_y">YO</label>
-                                        </div>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" name="req_diploma" id="req_diploma_n" value="NO">
-                                            <label class="form-check-label" for="req_diploma_n">NO</label>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label class="form-label">8. Neuro & Drug test result</label>
-                                    <div class="d-flex gap-3">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" name="req_neuro_drug" id="req_neuro_drug_y" value="YO">
-                                            <label class="form-check-label" for="req_neuro_drug_y">YO</label>
-                                        </div>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" name="req_neuro_drug" id="req_neuro_drug_n" value="NO">
-                                            <label class="form-check-label" for="req_neuro_drug_n">NO</label>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label class="form-label">9. Sec.License Certi. fr. SOSIA</label>
-                                    <div class="d-flex gap-3">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" name="req_sec_license" id="req_sec_license_y" value="YO">
-                                            <label class="form-check-label" for="req_sec_license_y">YO</label>
-                                        </div>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" name="req_sec_license" id="req_sec_license_n" value="NO">
-                                            <label class="form-check-label" for="req_sec_license_n">NO</label>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-12">
-                                <div class="form-group">
-                                    <label class="form-label"><strong>I.D. copy provision:</strong></label>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label class="form-label">10. Sec. Lic. No.</label>
-                                    <div class="d-flex gap-3 align-items-center">
-                                        <input type="text" class="form-control" id="sec_lic_no" name="sec_lic_no" placeholder="License Number" style="max-width: 300px;">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" name="req_sec_lic_no" id="req_sec_lic_no_y" value="YO">
-                                            <label class="form-check-label" for="req_sec_lic_no_y">YO</label>
-                                        </div>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" name="req_sec_lic_no" id="req_sec_lic_no_n" value="NO">
-                                            <label class="form-check-label" for="req_sec_lic_no_n">NO</label>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label class="form-label">11. SSS No.</label>
-                                    <div class="d-flex gap-3 align-items-center">
-                                        <input type="text" class="form-control" id="sss_no_page2" name="sss_no_page2" placeholder="SSS Number" style="max-width: 300px;">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" name="req_sss" id="req_sss_y" value="YO">
-                                            <label class="form-check-label" for="req_sss_y">YO</label>
-                                        </div>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" name="req_sss" id="req_sss_n" value="NO">
-                                            <label class="form-check-label" for="req_sss_n">NO</label>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label class="form-label">12. Pag-Ibig No.</label>
-                                    <div class="d-flex gap-3 align-items-center">
-                                        <input type="text" class="form-control" id="pagibig_no_page2" name="pagibig_no_page2" placeholder="Pag-Ibig Number" style="max-width: 300px;">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" name="req_pagibig" id="req_pagibig_y" value="YO">
-                                            <label class="form-check-label" for="req_pagibig_y">YO</label>
-                                        </div>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" name="req_pagibig" id="req_pagibig_n" value="NO">
-                                            <label class="form-check-label" for="req_pagibig_n">NO</label>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label class="form-label">13. PhilHealth No.</label>
-                                    <div class="d-flex gap-3 align-items-center">
-                                        <input type="text" class="form-control" id="philhealth_no_page2" name="philhealth_no_page2" placeholder="PhilHealth Number" style="max-width: 300px;">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" name="req_philhealth" id="req_philhealth_y" value="YO">
-                                            <label class="form-check-label" for="req_philhealth_y">YO</label>
-                                        </div>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" name="req_philhealth" id="req_philhealth_n" value="NO">
-                                            <label class="form-check-label" for="req_philhealth_n">NO</label>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label class="form-label">14. TIN No.</label>
-                                    <div class="d-flex gap-3 align-items-center">
-                                        <input type="text" class="form-control" id="tin_no_page2" name="tin_no_page2" placeholder="TIN Number" style="max-width: 300px;">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" name="req_tin" id="req_tin_y" value="YO">
-                                            <label class="form-check-label" for="req_tin_y">YO</label>
-                                        </div>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" name="req_tin" id="req_tin_n" value="NO">
-                                            <label class="form-check-label" for="req_tin_n">NO</label>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Sworn Statement Section -->
-                <div class="row g-3 mb-2">
-                    <div class="col-12">
-                        <h4 class="form-section-title">SWORN STATEMENT</h4>
-                    </div>
+                    .specimen-title {
+                        border-bottom-color: #000;
+                    }
                     
-                    <div class="col-12">
-                        <div class="form-group">
-                            <p class="mb-3"><small>I HEREBY AUTHORIZE the Company, <strong>GOLDEN Z-5 SECURITY & INVESTIGATION AGENCY, INC.</strong> to conduct further investigation and inquiry as to my personal, past employment and such other related background Information. I hereby release from any and all liabilities all persons, companies, corporations, and institutions supplying any information with respect to my background, character, and employment history. I understand that any misinterpretation or omission of facts can lead to application revocation or dismissal.</small></p>
+                    .specimen-underline {
+                        border-bottom: 1px solid #000;
+                    }
+                    
+                    .specimen-certification {
+                        border-top-color: #000;
+                    }
+                }
+
+                /* Fingerprints and Requirements - Side by Side Layout */
+                .formal-sections-container {
+                    display: grid;
+                    grid-template-columns: 1.5fr 1fr;
+                    gap: 2rem;
+                    margin: 2rem 0;
+                    page-break-inside: avoid;
+                    align-items: stretch;
+                }
+
+                .formal-section-title {
+                    text-align: center;
+                    margin-bottom: 0.75rem;
+                    padding-bottom: 0.375rem;
+                    border-bottom: 1px solid #374151;
+                }
+
+                .formal-section-title h4 {
+                    margin: 0;
+                    font-size: 0.813rem;
+                    font-weight: 700;
+                    letter-spacing: 0.5px;
+                    text-transform: uppercase;
+                    color: #1f2937;
+                }
+
+                /* Fingerprints Section */
+                .fingerprints-section {
+                    border: 1px solid #d1d5db;
+                    padding: 1rem;
+                    background: #ffffff;
+                    display: flex;
+                    flex-direction: column;
+                    height: 100%;
+                }
+
+                .fingerprints-table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin-top: 0.25rem;
+                    flex: 1;
+                    display: table;
+                }
+
+                .fingerprints-table tbody {
+                    height: 100%;
+                }
+
+                .fingerprints-table tbody tr {
+                    height: 50%;
+                }
+
+                .fingerprint-cell {
+                    border: 1px solid #374151;
+                    padding: 1rem 0.5rem;
+                    text-align: center;
+                    vertical-align: middle;
+                    width: 20%;
+                }
+
+                .fingerprint-label {
+                    font-size: 0.625rem;
+                    font-weight: 600;
+                    text-transform: uppercase;
+                    color: #374151;
+                    line-height: 1.2;
+                    margin-bottom: 0.5rem;
+                    display: block;
+                }
+
+                .fingerprint-upload {
+                    width: 100%;
+                    font-size: 0.625rem;
+                    padding: 0.25rem;
+                    border: none;
+                    background: transparent;
+                    margin-top: 0.25rem;
+                }
+
+                .fingerprint-upload::-webkit-file-upload-button {
+                    font-size: 0.625rem;
+                    padding: 0.25rem 0.5rem;
+                    border: 1px solid #d1d5db;
+                    background: #f9fafb;
+                    cursor: pointer;
+                }
+
+                /* Basic Requirements Section */
+                .requirements-section {
+                    border: 1px solid #d1d5db;
+                    padding: 1rem;
+                    background: #ffffff;
+                    display: flex;
+                    flex-direction: column;
+                    height: 100%;
+                }
+
+                .requirements-signature {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                    margin-bottom: 0.75rem;
+                    padding-bottom: 0.75rem;
+                    border-bottom: 1px solid #e5e7eb;
+                }
+
+                .req-sig-label {
+                    font-size: 0.75rem;
+                    font-weight: 500;
+                    color: #374151;
+                    white-space: nowrap;
+                }
+
+                .req-signature-underline {
+                    flex: 1;
+                    border: none;
+                    border-bottom: 1px solid #d1d5db;
+                    padding: 0.25rem 0.5rem;
+                    font-size: 0.75rem;
+                    background: transparent;
+                    outline: none;
+                }
+
+                .requirements-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 0.5rem;
+                    margin-top: 0.75rem;
+                    padding-bottom: 0.25rem;
+                    border-bottom: 1px solid #e5e7eb;
+                }
+
+                .requirements-header:first-of-type {
+                    margin-top: 0.25rem;
+                }
+
+                .req-header-label {
+                    font-size: 0.75rem;
+                    font-weight: 600;
+                    color: #374151;
+                }
+
+                .req-header-checkboxes {
+                    display: flex;
+                    gap: 1rem;
+                    font-size: 0.75rem;
+                    font-weight: 600;
+                    color: #374151;
+                }
+
+                .requirements-list {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 0.5rem;
+                    flex: 1;
+                    justify-content: space-evenly;
+                }
+
+                .req-item {
+                    display: grid;
+                    grid-template-columns: auto 1fr auto;
+                    gap: 0.5rem;
+                    align-items: center;
+                    padding: 0.125rem 0;
+                }
+
+                .req-number {
+                    font-size: 0.75rem;
+                    font-weight: 500;
+                    color: #374151;
+                    min-width: 1.25rem;
+                }
+
+                .req-label {
+                    font-size: 0.75rem;
+                    color: #374151;
+                }
+
+                .req-checkboxes {
+                    display: flex;
+                    gap: 0.75rem;
+                    align-items: center;
+                }
+
+                .req-checkboxes input[type="checkbox"] {
+                    width: 14px;
+                    height: 14px;
+                    margin: 0;
+                    cursor: pointer;
+                }
+
+                .req-item-with-input {
+                    display: grid;
+                    grid-template-columns: auto auto 1fr auto;
+                    gap: 0.375rem;
+                    align-items: center;
+                    padding: 0.25rem 0;
+                }
+
+                .req-input-underline {
+                    border: none;
+                    border-bottom: 1px solid #d1d5db;
+                    padding: 0.125rem 0.25rem;
+                    font-size: 0.75rem;
+                    background: transparent;
+                    outline: none;
+                    min-width: 120px;
+                }
+
+                .req-input-underline:focus {
+                    border-bottom-color: #3b82f6;
+                    background-color: #f9fafb;
+                }
+
+                /* Responsive */
+                @media (max-width: 992px) {
+                    .formal-sections-container {
+                        grid-template-columns: 1fr;
+                    }
+                    
+                    .fingerprints-section,
+                    .requirements-section {
+                        margin-bottom: 1.5rem;
+                    }
+                }
+
+                /* Print Styles */
+                @media print {
+                    .formal-sections-container {
+                        border: 1px solid #000;
+                    }
+                    
+                    .fingerprints-section,
+                    .requirements-section {
+                        border-color: #000;
+                    }
+                    
+                    .fingerprint-cell {
+                        border-color: #000;
+                    }
+                    
+                    .formal-section-title {
+                        border-bottom-color: #000;
+                    }
+                    
+                    .req-signature-underline,
+                    .req-input-underline {
+                        border-bottom-color: #000;
+                    }
+                }
+
+                /* Sworn Statement Section - Formal Legal Affidavit Style */
+                .sworn-statement-section {
+                    margin: 2.5rem 0;
+                    padding: 2rem;
+                    background: #ffffff;
+                    border: 1px solid #d1d5db;
+                    page-break-inside: avoid;
+                }
+
+                .sworn-title {
+                    text-align: center;
+                    margin-bottom: 1.25rem;
+                    padding-bottom: 0.5rem;
+                    border-bottom: 1px solid #374151;
+                }
+
+                .sworn-title h4 {
+                    margin: 0;
+                    font-size: 0.938rem;
+                    font-weight: 700;
+                    letter-spacing: 1px;
+                    text-transform: uppercase;
+                    color: #1f2937;
+                }
+
+                .sworn-body {
+                    margin-bottom: 2rem;
+                }
+
+                .sworn-body p {
+                    margin: 0 0 1rem 0;
+                    font-size: 0.813rem;
+                    line-height: 1.65;
+                    text-align: justify;
+                    color: #1f2937;
+                    text-indent: 2rem;
+                }
+
+                .sworn-body p:last-child {
+                    margin-bottom: 0;
+                }
+
+                .sworn-signature-line {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: flex-end;
+                    margin: 2rem 0 1.5rem 0;
+                    padding-right: 2rem;
+                }
+
+                .sworn-signature-input {
+                    width: 100%;
+                    max-width: 400px;
+                    border: none;
+                    border-bottom: 1px solid #374151;
+                    padding: 0.5rem 0;
+                    font-size: 0.875rem;
+                    background: transparent;
+                    outline: none;
+                    text-align: center;
+                }
+
+                .sworn-signature-label {
+                    font-size: 0.75rem;
+                    color: #374151;
+                    margin-top: 0.25rem;
+                    font-style: italic;
+                }
+
+                .sworn-subscription {
+                    margin: 1.5rem 0;
+                    font-size: 0.813rem;
+                    line-height: 1.8;
+                    color: #1f2937;
+                    display: flex;
+                    flex-wrap: wrap;
+                    align-items: baseline;
+                    gap: 0.375rem;
+                }
+
+                .subscription-text {
+                    white-space: nowrap;
+                }
+
+                .subscription-input {
+                    border: none;
+                    border-bottom: 1px solid #374151;
+                    padding: 0.125rem 0.5rem;
+                    font-size: 0.813rem;
+                    background: transparent;
+                    outline: none;
+                    min-width: 60px;
+                    width: auto;
+                }
+
+                .subscription-input-wide {
+                    min-width: 120px;
+                }
+
+                .subscription-input:focus {
+                    border-bottom-color: #3b82f6;
+                    background-color: #f9fafb;
+                }
+
+                .sworn-footer {
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 2rem;
+                    margin-top: 2.5rem;
+                    align-items: end;
+                }
+
+                .notarial-details-left {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 0.25rem;
+                }
+
+                .notarial-field {
+                    display: flex;
+                    align-items: baseline;
+                    gap: 0.5rem;
+                    font-size: 0.813rem;
+                    color: #374151;
+                }
+
+                .notarial-label {
+                    font-weight: 500;
+                    white-space: nowrap;
+                }
+
+                .notarial-underline {
+                    flex: 1;
+                    border: none;
+                    border-bottom: 1px solid #374151;
+                    padding: 0.125rem 0.25rem;
+                    font-size: 0.813rem;
+                    background: transparent;
+                    outline: none;
+                    max-width: 200px;
+                }
+
+                .notarial-underline:focus {
+                    border-bottom-color: #3b82f6;
+                    background-color: #f9fafb;
+                }
+
+                .notarial-semicolon {
+                    font-weight: 600;
+                    color: #374151;
+                }
+
+                .notarial-details-right {
+                    text-align: right;
+                }
+
+                .notary-public-label {
+                    font-size: 0.875rem;
+                    font-weight: 700;
+                    letter-spacing: 0.5px;
+                    color: #1f2937;
+                    text-transform: uppercase;
+                }
+
+                /* Responsive */
+                @media (max-width: 768px) {
+                    .sworn-statement-section {
+                        padding: 1.5rem;
+                    }
+                    
+                    .sworn-body p {
+                        font-size: 0.75rem;
+                        text-indent: 1.5rem;
+                    }
+                    
+                    .sworn-signature-line {
+                        padding-right: 0;
+                    }
+                    
+                    .sworn-footer {
+                        grid-template-columns: 1fr;
+                        gap: 1.5rem;
+                    }
+                    
+                    .notarial-details-right {
+                        text-align: left;
+                    }
+                }
+
+                /* Print Styles for Sworn Statement */
+                @media print {
+                    .sworn-statement-section {
+                        border: 1px solid #000;
+                        box-shadow: none;
+                    }
+                    
+                    .sworn-title {
+                        border-bottom-color: #000;
+                    }
+                    
+                    .sworn-signature-input,
+                    .subscription-input,
+                    .notarial-underline {
+                        border-bottom-color: #000;
+                    }
+                }
+                </style>
+
+                <!-- Fingerprints and Basic Requirements Section - Side by Side -->
+                <div class="formal-sections-container">
+                    <!-- Left Side: Fingerprints -->
+                    <div class="fingerprints-section">
+                        <div class="formal-section-title">
+                            <h4>FINGERPRINTS</h4>
+                        </div>
+                        
+                        <table class="fingerprints-table">
+                            <tbody>
+                                <!-- RIGHT Hand Row -->
+                                <tr>
+                                    <td class="fingerprint-cell">
+                                        <div class="fingerprint-label">RIGHT<br>THUMB</div>
+                                        <input type="file" class="fingerprint-upload" name="fingerprint_right_thumb" accept="image/*">
+                                    </td>
+                                    <td class="fingerprint-cell">
+                                        <div class="fingerprint-label">RIGHT<br>INDEX FINGER</div>
+                                        <input type="file" class="fingerprint-upload" name="fingerprint_right_index" accept="image/*">
+                                    </td>
+                                    <td class="fingerprint-cell">
+                                        <div class="fingerprint-label">RIGHT<br>MIDDLE FINGER</div>
+                                        <input type="file" class="fingerprint-upload" name="fingerprint_right_middle" accept="image/*">
+                                    </td>
+                                    <td class="fingerprint-cell">
+                                        <div class="fingerprint-label">RIGHT<br>RING FINGER</div>
+                                        <input type="file" class="fingerprint-upload" name="fingerprint_right_ring" accept="image/*">
+                                    </td>
+                                    <td class="fingerprint-cell">
+                                        <div class="fingerprint-label">RIGHT<br>LITTLE FINGER</div>
+                                        <input type="file" class="fingerprint-upload" name="fingerprint_right_little" accept="image/*">
+                                    </td>
+                                </tr>
+                                
+                                <!-- LEFT Hand Row -->
+                                <tr>
+                                    <td class="fingerprint-cell">
+                                        <div class="fingerprint-label">LEFT<br>THUMB</div>
+                                        <input type="file" class="fingerprint-upload" name="fingerprint_left_thumb" accept="image/*">
+                                    </td>
+                                    <td class="fingerprint-cell">
+                                        <div class="fingerprint-label">LEFT<br>INDEX FINGER</div>
+                                        <input type="file" class="fingerprint-upload" name="fingerprint_left_index" accept="image/*">
+                                    </td>
+                                    <td class="fingerprint-cell">
+                                        <div class="fingerprint-label">LEFT<br>MIDDLE FINGER</div>
+                                        <input type="file" class="fingerprint-upload" name="fingerprint_left_middle" accept="image/*">
+                                    </td>
+                                    <td class="fingerprint-cell">
+                                        <div class="fingerprint-label">LEFT<br>RING FINGER</div>
+                                        <input type="file" class="fingerprint-upload" name="fingerprint_left_ring" accept="image/*">
+                                    </td>
+                                    <td class="fingerprint-cell">
+                                        <div class="fingerprint-label">LEFT<br>LITTLE FINGER</div>
+                                        <input type="file" class="fingerprint-upload" name="fingerprint_left_little" accept="image/*">
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Right Side: Basic Requirements -->
+                    <div class="requirements-section">
+                        <div class="formal-section-title">
+                            <h4>BASIC REQUIREMENTS</h4>
+                        </div>
+                        
+                        <!-- Signature Line -->
+                        <div class="requirements-signature">
+                            <span class="req-sig-label">Signature Over Printed Name:</span>
+                            <input type="text" class="req-signature-underline" id="requirements_signature" name="requirements_signature">
+                        </div>
+                        
+                        <!-- Requirements List -->
+                        <div class="requirements-header">
+                            <span class="req-header-label">Provided on Application:</span>
+                            <div class="req-header-checkboxes">
+                                <span>Y</span>
+                                <span>N</span>
+                            </div>
+                        </div>
+                        
+                        <div class="requirements-list">
+                            <!-- Items 1-9 -->
+                            <div class="req-item">
+                                <span class="req-number">1.</span>
+                                <span class="req-label">Close up 2x2 (2pcs)</span>
+                                <div class="req-checkboxes">
+                                    <input type="checkbox" name="req_2x2" id="req_2x2_y" value="YO">
+                                    <input type="checkbox" name="req_2x2" id="req_2x2_n" value="NO">
+                                </div>
+                            </div>
                             
-                            <p class="mb-3"><small>I <strong>UNDERSTAND</strong> that if my application is considered, my appointment will be on a <strong>PROBATIONARY</strong> basis for a period not more than six (6) months, and that during this period, my services may be terminated without prior notice and without liability on the part of the Company. I further understand that my employment is subject to my compliance with all the rules and regulations of the Company, and that violation of any of these rules and regulations may result in my immediate dismissal.</small></p>
+                            <div class="req-item">
+                                <span class="req-number">2.</span>
+                                <span class="req-label">NSO, Birth Certificate</span>
+                                <div class="req-checkboxes">
+                                    <input type="checkbox" name="req_birth_cert" id="req_birth_cert_y" value="YO">
+                                    <input type="checkbox" name="req_birth_cert" id="req_birth_cert_n" value="NO">
+                                </div>
+                            </div>
                             
-                            <p class="mb-3"><small>I HEREBY CERTIFY that all information given in this application form are true and correct and any false statement or misrepresentation shall be a ground for the termination of my employment with the Company without prejudice to the filing of <strong>APPROPRIATE CRIMINAL PROCEEDINGS</strong> by reason thereof.</small></p>
-                        </div>
-                    </div>
-
-                    <div class="col-12">
-                        <div class="form-group">
-                            <label class="form-label">SUBSCRIBED AND SWORN to before me this</label>
-                            <div class="d-flex flex-wrap gap-2 align-items-center">
-                                <input type="text" class="form-control" id="sworn_day" name="sworn_day" placeholder="Day" style="max-width: 100px;">
-                                <label class="form-label mb-0">day of</label>
-                                <input type="text" class="form-control" id="sworn_month" name="sworn_month" placeholder="Month" style="max-width: 150px;">
-                                <label class="form-label mb-0">on</label>
-                                <input type="text" class="form-control" id="sworn_year" name="sworn_year" placeholder="Year" style="max-width: 100px;">
+                            <div class="req-item">
+                                <span class="req-number">3.</span>
+                                <span class="req-label">Barangay Clearance</span>
+                                <div class="req-checkboxes">
+                                    <input type="checkbox" name="req_barangay" id="req_barangay_y" value="YO">
+                                    <input type="checkbox" name="req_barangay" id="req_barangay_n" value="NO">
+                                </div>
+                            </div>
+                            
+                            <div class="req-item">
+                                <span class="req-number">4.</span>
+                                <span class="req-label">Police Clearance (local)</span>
+                                <div class="req-checkboxes">
+                                    <input type="checkbox" name="req_police" id="req_police_y" value="YO">
+                                    <input type="checkbox" name="req_police" id="req_police_n" value="NO">
+                                </div>
+                            </div>
+                            
+                            <div class="req-item">
+                                <span class="req-number">5.</span>
+                                <span class="req-label">NBI (for cases purposes)</span>
+                                <div class="req-checkboxes">
+                                    <input type="checkbox" name="req_nbi" id="req_nbi_y" value="YO">
+                                    <input type="checkbox" name="req_nbi" id="req_nbi_n" value="NO">
+                                </div>
+                            </div>
+                            
+                            <div class="req-item">
+                                <span class="req-number">6.</span>
+                                <span class="req-label">D.I. Clearance</span>
+                                <div class="req-checkboxes">
+                                    <input type="checkbox" name="req_di" id="req_di_y" value="YO">
+                                    <input type="checkbox" name="req_di" id="req_di_n" value="NO">
+                                </div>
+                            </div>
+                            
+                            <div class="req-item">
+                                <span class="req-number">7.</span>
+                                <span class="req-label">High School / College Diploma</span>
+                                <div class="req-checkboxes">
+                                    <input type="checkbox" name="req_diploma" id="req_diploma_y" value="YO">
+                                    <input type="checkbox" name="req_diploma" id="req_diploma_n" value="NO">
+                                </div>
+                            </div>
+                            
+                            <div class="req-item">
+                                <span class="req-number">8.</span>
+                                <span class="req-label">Neuro & Drug test result</span>
+                                <div class="req-checkboxes">
+                                    <input type="checkbox" name="req_neuro_drug" id="req_neuro_drug_y" value="YO">
+                                    <input type="checkbox" name="req_neuro_drug" id="req_neuro_drug_n" value="NO">
+                                </div>
+                            </div>
+                            
+                            <div class="req-item">
+                                <span class="req-number">9.</span>
+                                <span class="req-label">Sec.License Certi. fr. SOSIA</span>
+                                <div class="req-checkboxes">
+                                    <input type="checkbox" name="req_sec_license" id="req_sec_license_y" value="YO">
+                                    <input type="checkbox" name="req_sec_license" id="req_sec_license_n" value="NO">
+                                </div>
                             </div>
                         </div>
-                    </div>
-
-                    <div class="col-12">
-                        <div class="form-group">
-                            <label class="form-label">Tax Certificate No.</label>
-                            <div class="d-flex flex-wrap gap-2 align-items-center">
-                                <input type="text" class="form-control" id="tax_cert_no" name="tax_cert_no" placeholder="Tax Certificate No." style="max-width: 300px;">
-                                <label class="form-label mb-0">issued at</label>
-                                <input type="text" class="form-control" id="tax_cert_issued_at" name="tax_cert_issued_at" placeholder="Location" style="max-width: 300px;">
+                        
+                        <!-- ID Copy Provision Section -->
+                        <div class="requirements-header">
+                            <span class="req-header-label">I.D. copy provision:</span>
+                        </div>
+                        
+                        <div class="requirements-list">
+                            <!-- Items 10-14 with ID number inputs -->
+                            <div class="req-item-with-input">
+                                <span class="req-number">10.</span>
+                                <span class="req-label">Sec. Lic. No.</span>
+                                <input type="text" class="req-input-underline" id="sec_lic_no" name="sec_lic_no" placeholder="_______________">
+                                <div class="req-checkboxes">
+                                    <input type="checkbox" name="req_sec_lic_no" id="req_sec_lic_no_y" value="YO">
+                                    <input type="checkbox" name="req_sec_lic_no" id="req_sec_lic_no_n" value="NO">
+                                </div>
                             </div>
-                        </div>
-                    </div>
-
-                    <div class="col-12 text-end">
-                        <div class="form-group">
-                            <label class="form-label">Signature Over Printed Name</label>
-                            <input type="text" class="form-control" id="sworn_signature" name="sworn_signature" placeholder="Signature" style="max-width: 400px; margin-left: auto;">
-                        </div>
-                    </div>
-
-                    <div class="col-12">
-                        <div class="form-group">
-                            <label class="form-label">Affiant exhibited to me his/her Community</label>
-                            <input type="text" class="form-control" id="affiant_community" name="affiant_community" placeholder="Community" style="max-width: 400px;">
-                        </div>
-                    </div>
-
-                    <div class="col-12 text-end">
-                        <div class="form-group">
-                            <label class="form-label"><strong>NOTARY PUBLIC</strong></label>
+                            
+                            <div class="req-item-with-input">
+                                <span class="req-number">11.</span>
+                                <span class="req-label">SSS No.</span>
+                                <input type="text" class="req-input-underline" id="sss_no_page2" name="sss_no_page2" placeholder="_______________">
+                                <div class="req-checkboxes">
+                                    <input type="checkbox" name="req_sss" id="req_sss_y" value="YO">
+                                    <input type="checkbox" name="req_sss" id="req_sss_n" value="NO">
+                                </div>
+                            </div>
+                            
+                            <div class="req-item-with-input">
+                                <span class="req-number">12.</span>
+                                <span class="req-label">Pag-Ibig No.</span>
+                                <input type="text" class="req-input-underline" id="pagibig_no_page2" name="pagibig_no_page2" placeholder="_______________">
+                                <div class="req-checkboxes">
+                                    <input type="checkbox" name="req_pagibig" id="req_pagibig_y" value="YO">
+                                    <input type="checkbox" name="req_pagibig" id="req_pagibig_n" value="NO">
+                                </div>
+                            </div>
+                            
+                            <div class="req-item-with-input">
+                                <span class="req-number">13.</span>
+                                <span class="req-label">PhilHealth No.</span>
+                                <input type="text" class="req-input-underline" id="philhealth_no_page2" name="philhealth_no_page2" placeholder="_______________">
+                                <div class="req-checkboxes">
+                                    <input type="checkbox" name="req_philhealth" id="req_philhealth_y" value="YO">
+                                    <input type="checkbox" name="req_philhealth" id="req_philhealth_n" value="NO">
+                                </div>
+                            </div>
+                            
+                            <div class="req-item-with-input">
+                                <span class="req-number">14.</span>
+                                <span class="req-label">TIN No.</span>
+                                <input type="text" class="req-input-underline" id="tin_no_page2" name="tin_no_page2" placeholder="_______________">
+                                <div class="req-checkboxes">
+                                    <input type="checkbox" name="req_tin" id="req_tin_y" value="YO">
+                                    <input type="checkbox" name="req_tin" id="req_tin_n" value="NO">
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Form Footer -->
-                <div class="row g-3 mb-2">
-                    <div class="col-12">
-                        <div class="d-flex flex-wrap gap-4">
-                            <div class="form-group">
-                                <label class="form-label">Doc. No.:</label>
-                                <input type="text" class="form-control" id="doc_no" name="doc_no" placeholder="Document No." style="max-width: 150px;">
+                <!-- Sworn Statement Section - Formal Legal Affidavit Style -->
+                <div class="sworn-statement-section">
+                    <!-- Title -->
+                    <div class="sworn-title">
+                        <h4>SWORN STATEMENT</h4>
+                    </div>
+                    
+                    <!-- Statement Body -->
+                    <div class="sworn-body">
+                        <p>I HEREBY AUTHORIZE the Company, <strong>GOLDEN Z-5 SECURITY & INVESTIGATION AGENCY, INC.</strong> to conduct further investigation and inquiry as to my personal, past employment and such other related background Information. I hereby release from any and all liabilities all persons, companies, corporations, and institutions supplying any information with respect to my background, character, and employment history. I understand that any misinterpretation or omission of facts found in this application form shall be sufficient be sufficient ground for revocation of my applications and/or summary dismissal of my ????????????</p>
+                        
+                        <p>I UNDERSTAND that if my application is considered, my appointment will be on a <strong>PROBATIONARY</strong> basis for a period not more than six (6) months to be determined at the discretion of the Company and subject to satisfactory performance. I will abide with all the policies, submit myself freely to disciplinary action, including termination of my employment without any benefits.</p>
+                        
+                        <p>I HEREBY CERTIFY that all information given in this application form are true and correct and any false statement or misrepresentation shall be a ground for the termination of my employment with the Company without prejudice to the filing of <strong>APPROPRIATE CRIMINAL PROCEEDINGS</strong> by reason thereof.</p>
+                    </div>
+                    
+                    <!-- Signature Line -->
+                    <div class="sworn-signature-line">
+                        <input type="text" class="sworn-signature-input" id="sworn_signature" name="sworn_signature" placeholder="">
+                        <label class="sworn-signature-label">Signature Over Printed Name</label>
+                    </div>
+                    
+                    <!-- Subscription Clause -->
+                    <div class="sworn-subscription">
+                        <span class="subscription-text">SUBSCRIBED AND SWORN to before me this</span>
+                        <input type="text" class="subscription-input" id="sworn_day" name="sworn_day" placeholder="">
+                        <span class="subscription-text">day of</span>
+                        <input type="text" class="subscription-input subscription-input-wide" id="sworn_month_year" name="sworn_month_year" placeholder="">
+                        <span class="subscription-text">. Affiant exhibited to me his/her Community Tax Certificate No.</span>
+                        <input type="text" class="subscription-input subscription-input-wide" id="tax_cert_no" name="tax_cert_no" placeholder="">
+                        <span class="subscription-text">issued at</span>
+                        <input type="text" class="subscription-input subscription-input-wide" id="tax_cert_issued_at" name="tax_cert_issued_at" placeholder="">
+                        <span class="subscription-text">.</span>
+                    </div>
+                    
+                    <!-- Bottom Section: Notarial Details -->
+                    <div class="sworn-footer">
+                        <!-- Left: Doc/Page/Book/Series -->
+                        <div class="notarial-details-left">
+                            <div class="notarial-field">
+                                <span class="notarial-label">Doc No.</span>
+                                <input type="text" class="notarial-underline" id="doc_no" name="doc_no" placeholder="">
+                                <span class="notarial-semicolon">;</span>
                             </div>
-                            <div class="form-group">
-                                <label class="form-label">Page No.:</label>
-                                <input type="text" class="form-control" id="page_no" name="page_no" placeholder="Page No." style="max-width: 150px;" value="2" readonly>
+                            <div class="notarial-field">
+                                <span class="notarial-label">Page No.</span>
+                                <input type="text" class="notarial-underline" id="page_no" name="page_no" placeholder="" value="2" readonly>
+                                <span class="notarial-semicolon">;</span>
                             </div>
-                            <div class="form-group">
-                                <label class="form-label">Book No.:</label>
-                                <input type="text" class="form-control" id="book_no" name="book_no" placeholder="Book No." style="max-width: 150px;">
+                            <div class="notarial-field">
+                                <span class="notarial-label">Book No.</span>
+                                <input type="text" class="notarial-underline" id="book_no" name="book_no" placeholder="">
+                                <span class="notarial-semicolon">;</span>
                             </div>
-                            <div class="form-group">
-                                <label class="form-label">Series of:</label>
-                                <input type="text" class="form-control" id="series_of" name="series_of" placeholder="Series" style="max-width: 150px;">
-               Р            </div>
+                            <div class="notarial-field">
+                                <span class="notarial-label">Series of</span>
+                                <input type="text" class="notarial-underline" id="series_of" name="series_of" placeholder="">
+                                <span class="notarial-semicolon">;</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Right: Notary Public -->
+                        <div class="notarial-details-right">
+                            <div class="notary-public-label">NOTARY PUBLIC</div>
                         </div>
                     </div>
                 </div>
