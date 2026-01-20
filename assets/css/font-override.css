@@ -21,7 +21,6 @@
  *    - Page layout, containers, spacing system
  *    - Sidebar navigation
  *    - Header and welcome section
- *    - Breadcrumb navigation
  * 
  * 3. REUSABLE COMPONENTS       (Lines ~914-2142)
  *    - Tables, cards, stat cards
@@ -732,7 +731,7 @@ body.portal-hr-admin .hrdash-welcome {
 
 /* ============================================
    2D. HEADER & WELCOME SECTION
-   Permanent header with page title, breadcrumb, time, notifications
+   Permanent header with page title, time, notifications
    ============================================ */
 
 /* Sticky header scroll enhancement */
@@ -842,74 +841,6 @@ body.portal-hr-admin .hrdash-welcome .dropdown-menu {
     }
 }
 
-/* ============================================
-   HR-ADMIN BREADCRUMBS
-   Small navigation bar under page header
-   ============================================ */
-body.portal-hr-admin .hr-breadcrumb {
-    margin-bottom: 1.5rem;
-    padding: 0 var(--hr-page-px);
-}
-
-body.portal-hr-admin .hr-breadcrumb__list {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0;
-    margin: 0;
-    list-style: none;
-}
-
-body.portal-hr-admin .hr-breadcrumb__item {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-body.portal-hr-admin .hr-breadcrumb__item + .hr-breadcrumb__item::before {
-    content: "/";
-    color: #9ca3af;
-    margin: 0 0.35rem;
-    font-size: 0.8rem;
-    line-height: 1;
-}
-
-body.portal-hr-admin .hr-breadcrumb__link {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    padding: 0.35rem 0.75rem;
-    border-radius: 9999px;
-    border: none;
-    background: #f3f4f6;
-    color: #374151;
-    text-decoration: none;
-    font-weight: 500;
-    font-size: 0.8125rem;
-    line-height: 1;
-    transition: background 0.15s ease, color 0.15s ease;
-}
-
-body.portal-hr-admin .hr-breadcrumb__link:hover {
-    color: #111827;
-    background: #e5e7eb;
-    text-decoration: none;
-}
-
-body.portal-hr-admin .hr-breadcrumb__current {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    padding: 0;
-    border-radius: 0;
-    border: none;
-    background: transparent;
-    color: #2563eb;
-    font-weight: 600;
-    font-size: 0.8125rem;
-    line-height: 1;
-}
 
 body.portal-hr-admin .page-title-modern,
 body.portal-hr-admin .hrdash-welcome__left {
@@ -935,51 +866,6 @@ body.portal-hr-admin .hrdash-welcome__subtitle {
     font-size: 0.9375rem;
 }
 
-/* Breadcrumb Navigation */
-body.portal-hr-admin .hrdash-breadcrumb {
-    margin-top: 0.5rem;
-}
-
-body.portal-hr-admin .hrdash-breadcrumb__list {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.5rem;
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-body.portal-hr-admin .hrdash-breadcrumb__item {
-    display: flex;
-    align-items: center;
-    font-size: 0.875rem;
-    color: #64748b;
-}
-
-body.portal-hr-admin .hrdash-breadcrumb__item:not(:last-child)::after {
-    content: '/';
-    margin-left: 0.5rem;
-    color: #cbd5e1;
-    font-weight: 400;
-}
-
-body.portal-hr-admin .hrdash-breadcrumb__link {
-    color: #64748b;
-    text-decoration: none;
-    transition: color 0.2s ease;
-    font-weight: 500;
-}
-
-body.portal-hr-admin .hrdash-breadcrumb__link:hover {
-    color: #2563eb;
-    text-decoration: none;
-}
-
-body.portal-hr-admin .hrdash-breadcrumb__current {
-    color: #0f172a;
-    font-weight: 600;
-}
 
 body.portal-hr-admin .page-actions-modern,
 body.portal-hr-admin .hrdash-welcome__actions {
@@ -3605,117 +3491,6 @@ body.portal-super-admin .hrdash-welcome__subtitle {
     font-size: 0.9375rem !important;
 }
 
-/* Breadcrumb Navigation for Super Admin */
-body.portal-super-admin .hrdash-breadcrumb {
-    margin-top: 0.5rem !important;
-}
-
-body.portal-super-admin .hrdash-breadcrumb__list {
-    display: flex !important;
-    flex-wrap: wrap !important;
-    align-items: center !important;
-    gap: 0.5rem !important;
-    list-style: none !important;
-    padding: 0 !important;
-    margin: 0 !important;
-}
-
-body.portal-super-admin .hrdash-breadcrumb__item {
-    display: flex !important;
-    align-items: center !important;
-    font-size: 0.875rem !important;
-    color: #64748b !important;
-}
-
-body.portal-super-admin .hrdash-breadcrumb__item:not(:last-child)::after {
-    content: '/' !important;
-    margin-left: 0.5rem !important;
-    color: #cbd5e1 !important;
-    font-weight: 400 !important;
-}
-
-body.portal-super-admin .hrdash-breadcrumb__link {
-    color: #64748b !important;
-    text-decoration: none !important;
-    transition: color 0.2s ease !important;
-    font-weight: 500 !important;
-}
-
-body.portal-super-admin .hrdash-breadcrumb__link:hover {
-    color: #2563eb !important;
-    text-decoration: none !important;
-}
-
-body.portal-super-admin .hrdash-breadcrumb__current {
-    color: #0f172a !important;
-    font-weight: 600 !important;
-}
-
-/* Super Admin Breadcrumb Styles (inside container-fluid hrdash) */
-body.portal-super-admin .hr-breadcrumb {
-    margin-bottom: 1.5rem;
-    padding: 0 var(--hr-page-px);
-}
-
-body.portal-super-admin .hr-breadcrumb__list {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0;
-    margin: 0;
-    list-style: none;
-}
-
-body.portal-super-admin .hr-breadcrumb__item {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-body.portal-super-admin .hr-breadcrumb__item + .hr-breadcrumb__item::before {
-    content: "/";
-    color: #9ca3af;
-    margin: 0 0.35rem;
-    font-size: 0.8rem;
-    line-height: 1;
-}
-
-body.portal-super-admin .hr-breadcrumb__link {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    padding: 0.35rem 0.75rem;
-    border-radius: 9999px;
-    border: none;
-    background: #f3f4f6;
-    color: #374151;
-    text-decoration: none;
-    font-weight: 500;
-    font-size: 0.8125rem;
-    line-height: 1;
-    transition: background 0.15s ease, color 0.15s ease;
-}
-
-body.portal-super-admin .hr-breadcrumb__link:hover {
-    color: #111827;
-    background: #e5e7eb;
-    text-decoration: none;
-}
-
-body.portal-super-admin .hr-breadcrumb__current {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    padding: 0;
-    border-radius: 0;
-    border: none;
-    background: transparent;
-    color: #2563eb;
-    font-weight: 600;
-    font-size: 0.8125rem;
-    line-height: 1;
-}
 
 /* Super Admin Alert Statistics Cards - Box Style with Rounded Corners */
 body.portal-super-admin .hrdash-stat {
@@ -4297,26 +4072,6 @@ html[data-theme="dark"] body.portal-super-admin .hrdash-welcome__time {
     color: var(--interface-text-muted) !important;
 }
 
-/* Breadcrumb Dark Theme */
-html[data-theme="dark"] body.portal-super-admin .hrdash-breadcrumb__item {
-    color: var(--interface-text-muted) !important;
-}
-
-html[data-theme="dark"] body.portal-super-admin .hrdash-breadcrumb__item:not(:last-child)::after {
-    color: var(--interface-border) !important;
-}
-
-html[data-theme="dark"] body.portal-super-admin .hrdash-breadcrumb__link {
-    color: var(--interface-text-muted) !important;
-}
-
-html[data-theme="dark"] body.portal-super-admin .hrdash-breadcrumb__link:hover {
-    color: var(--interface-primary) !important;
-}
-
-html[data-theme="dark"] body.portal-super-admin .hrdash-breadcrumb__current {
-    color: var(--interface-text) !important;
-}
 
 html[data-theme="dark"] body.portal-super-admin .hrdash-welcome__icon-btn {
     background: #0f1114 !important;
