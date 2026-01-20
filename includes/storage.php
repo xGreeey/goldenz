@@ -368,11 +368,12 @@ function upload_to_minio_manual($source_path, $destination_path, $options = []) 
     // Canonical headers: each header on one line, sorted alphabetically, with trailing \n
     // Headers must be sorted and lowercase
     // For MinIO/S3, we typically don't include Content-Type in signature for PUT requests
-    // Only include headers that are required: host and x-amz-date
-    $canonical_headers = "host:" . $host_header . "\n" .
-                         "x-amz-date:" . $amz_date . "\n";
-    $signed_headers = 'host;x-amz-date';
+    // Must include x-amz-content-sha256 for payload verification (prevents chunked transfer)
     $payload_hash = hash('sha256', $file_content);
+    $canonical_headers = "host:" . $host_header . "\n" .
+                         "x-amz-content-sha256:" . $payload_hash . "\n" .
+                         "x-amz-date:" . $amz_date . "\n";
+    $signed_headers = 'host;x-amz-content-sha256;x-amz-date';
     
     // Canonical request format (AWS Signature Version 4):
     // HTTPMethod\n
@@ -428,8 +429,12 @@ function upload_to_minio_manual($source_path, $destination_path, $options = []) 
         CURLOPT_POSTFIELDS => $file_content,
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_VERBOSE => false,
+        CURLOPT_INFILESIZE => $file_size, // Explicitly set file size to prevent chunked transfer
+        CURLOPT_TIMEOUT => 300, // 5 minute timeout to prevent indefinite hangs
+        CURLOPT_CONNECTTIMEOUT => 30, // 30 second connection timeout
         CURLOPT_HTTPHEADER => [
             'Host: ' . $host_header,
+            'x-amz-content-sha256: ' . $payload_hash,
             'x-amz-date: ' . $amz_date,
             'Authorization: ' . $authorization,
             'Content-Type: ' . $content_type,
