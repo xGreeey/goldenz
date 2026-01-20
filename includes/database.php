@@ -5035,3 +5035,244 @@ if (!function_exists('get_unread_notification_count')) {
         return $count;
     }
 }
+
+// ============================================================================
+// LEAVE MANAGEMENT FUNCTIONS
+// ============================================================================
+
+/**
+ * Get leave requests with optional filters
+ */
+if (!function_exists('get_leave_requests')) {
+    function get_leave_requests($status = null, $employee_id = null, $leave_type = null) {
+        $sql = "SELECT lr.*, 
+                       e.first_name, e.surname, e.post,
+                       CONCAT(e.surname, ', ', e.first_name) as employee_name,
+                       u.name as processed_by_name
+                FROM leave_requests lr
+                LEFT JOIN employees e ON lr.employee_id = e.id
+                LEFT JOIN users u ON lr.processed_by = u.id
+                WHERE 1=1";
+        
+        $params = [];
+        
+        if ($status) {
+            $sql .= " AND lr.status = ?";
+            $params[] = $status;
+        }
+        
+        if ($employee_id) {
+            $sql .= " AND lr.employee_id = ?";
+            $params[] = $employee_id;
+        }
+        
+        if ($leave_type) {
+            $sql .= " AND lr.leave_type = ?";
+            $params[] = $leave_type;
+        }
+        
+        $sql .= " ORDER BY lr.request_date DESC";
+        
+        $stmt = execute_query($sql, $params);
+        return $stmt->fetchAll();
+    }
+}
+
+/**
+ * Get leave balance for an employee
+ */
+if (!function_exists('get_leave_balance')) {
+    function get_leave_balance($employee_id, $year = null) {
+        if (!$year) {
+            $year = date('Y');
+        }
+        
+        $sql = "SELECT * FROM leave_balances WHERE employee_id = ? AND year = ?";
+        $stmt = execute_query($sql, [$employee_id, $year]);
+        return $stmt->fetch();
+    }
+}
+
+/**
+ * Get all leave balances for active employees
+ */
+if (!function_exists('get_all_leave_balances')) {
+    function get_all_leave_balances($year = null) {
+        if (!$year) {
+            $year = date('Y');
+        }
+        
+        $sql = "SELECT lb.*, 
+                       e.first_name, e.surname, e.post,
+                       CONCAT(e.surname, ', ', e.first_name) as employee_name,
+                       (lb.sick_leave_total - lb.sick_leave_used) as sick_available,
+                       (lb.vacation_leave_total - lb.vacation_leave_used) as vacation_available,
+                       (lb.emergency_leave_total - lb.emergency_leave_used) as emergency_available
+                FROM leave_balances lb
+                LEFT JOIN employees e ON lb.employee_id = e.id
+                WHERE e.status = 'Active' AND lb.year = ?
+                ORDER BY e.surname, e.first_name";
+        
+        $stmt = execute_query($sql, [$year]);
+        return $stmt->fetchAll();
+    }
+}
+
+// ============================================================================
+// ATTENDANCE MANAGEMENT FUNCTIONS
+// ============================================================================
+
+/**
+ * Get attendance records with filters
+ */
+if (!function_exists('get_attendance_records')) {
+    function get_attendance_records($date_from = null, $date_to = null, $employee_id = null, $status = null) {
+        $sql = "SELECT ar.*, 
+                       e.first_name, e.surname, e.post,
+                       CONCAT(e.surname, ', ', e.first_name) as employee_name,
+                       u.name as adjusted_by_name
+                FROM attendance_records ar
+                LEFT JOIN employees e ON ar.employee_id = e.id
+                LEFT JOIN users u ON ar.adjusted_by = u.id
+                WHERE 1=1";
+        
+        $params = [];
+        
+        if ($date_from) {
+            $sql .= " AND ar.date >= ?";
+            $params[] = $date_from;
+        }
+        
+        if ($date_to) {
+            $sql .= " AND ar.date <= ?";
+            $params[] = $date_to;
+        }
+        
+        if ($employee_id) {
+            $sql .= " AND ar.employee_id = ?";
+            $params[] = $employee_id;
+        }
+        
+        if ($status) {
+            $sql .= " AND ar.status = ?";
+            $params[] = $status;
+        }
+        
+        $sql .= " ORDER BY ar.date DESC, e.surname, e.first_name";
+        
+        $stmt = execute_query($sql, $params);
+        return $stmt->fetchAll();
+    }
+}
+
+// ============================================================================
+// VIOLATION MANAGEMENT FUNCTIONS
+// ============================================================================
+
+/**
+ * Get violation types
+ */
+if (!function_exists('get_violation_types')) {
+    function get_violation_types($category = null) {
+        $sql = "SELECT * FROM violation_types WHERE is_active = 1";
+        $params = [];
+        
+        if ($category) {
+            $sql .= " AND category = ?";
+            $params[] = $category;
+        }
+        
+        $sql .= " ORDER BY category DESC, name ASC";
+        
+        $stmt = execute_query($sql, $params);
+        $types = $stmt->fetchAll();
+        
+        // Decode JSON sanctions
+        foreach ($types as &$type) {
+            if (isset($type['sanctions']) && is_string($type['sanctions'])) {
+                $type['sanctions'] = json_decode($type['sanctions'], true) ?: [];
+            }
+        }
+        
+        return $types;
+    }
+}
+
+/**
+ * Get employee violations with filters
+ */
+if (!function_exists('get_employee_violations')) {
+    function get_employee_violations($employee_id = null, $severity = null, $violation_type_id = null) {
+        $sql = "SELECT ev.*, 
+                       e.first_name, e.surname, e.post,
+                       CONCAT(e.surname, ', ', e.first_name) as employee_name,
+                       vt.name as violation_type_name,
+                       vt.category as violation_category
+                FROM employee_violations ev
+                LEFT JOIN employees e ON ev.employee_id = e.id
+                LEFT JOIN violation_types vt ON ev.violation_type_id = vt.id
+                WHERE 1=1";
+        
+        $params = [];
+        
+        if ($employee_id) {
+            $sql .= " AND ev.employee_id = ?";
+            $params[] = $employee_id;
+        }
+        
+        if ($severity) {
+            $sql .= " AND ev.severity = ?";
+            $params[] = $severity;
+        }
+        
+        if ($violation_type_id) {
+            $sql .= " AND ev.violation_type_id = ?";
+            $params[] = $violation_type_id;
+        }
+        
+        $sql .= " ORDER BY ev.violation_date DESC";
+        
+        $stmt = execute_query($sql, $params);
+        return $stmt->fetchAll();
+    }
+}
+
+// ============================================================================
+// DOCUMENT MANAGEMENT FUNCTIONS
+// ============================================================================
+
+/**
+ * Get employee documents with filters
+ */
+if (!function_exists('get_employee_documents')) {
+    function get_employee_documents($employee_id = null, $document_type = null) {
+        $sql = "SELECT ed.*, 
+                       e.first_name, e.surname, e.post,
+                       CONCAT(e.surname, ', ', e.first_name) as employee_name,
+                       u.name as uploaded_by_name
+                FROM employee_documents ed
+                LEFT JOIN employees e ON ed.employee_id = e.id
+                LEFT JOIN users u ON ed.uploaded_by = u.id
+                WHERE 1=1";
+        
+        $params = [];
+        
+        if ($employee_id) {
+            $sql .= " AND ed.employee_id = ?";
+            $params[] = $employee_id;
+        }
+        
+        if ($document_type) {
+            $sql .= " AND ed.document_type = ?";
+            $params[] = $document_type;
+        }
+        
+        $sql .= " ORDER BY ed.upload_date DESC";
+        
+        $stmt = execute_query($sql, $params);
+        return $stmt->fetchAll();
+    }
+}
+
+?>
+

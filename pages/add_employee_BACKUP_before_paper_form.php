@@ -632,21 +632,6 @@ if (isset($_SESSION['employee_redirect_url'])) {
         </div>
     </div>
 
-    <!-- Breadcrumb -->
-    <nav class="hr-breadcrumb" aria-label="Breadcrumb">
-        <ol class="hr-breadcrumb__list">
-            <li class="hr-breadcrumb__item">
-                <a href="?page=dashboard" class="hr-breadcrumb__link">Dashboard</a>
-            </li>
-            <li class="hr-breadcrumb__item">
-                <a href="?page=employees" class="hr-breadcrumb__link">Employees</a>
-            </li>
-            <li class="hr-breadcrumb__item hr-breadcrumb__current" aria-current="page">
-                Add Employee
-            </li>
-        </ol>
-    </nav>
-
     <!-- Success/Error Messages -->
     <?php if (isset($success) && $success): ?>
         <div class="alert alert-success">
