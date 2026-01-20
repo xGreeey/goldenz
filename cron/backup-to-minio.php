@@ -7,8 +7,8 @@
  * Usage:
  *   php backup-to-minio.php
  * 
- * Or add to crontab:
- *   */30 * * * * /usr/bin/php /var/www/html/cron/backup-to-minio.php >> /var/www/html/storage/logs/backup-cron.log 2>&1
+ * Or add to crontab (every 30 minutes):
+ *   0,30 * * * * /usr/bin/php /var/www/html/cron/backup-to-minio.php >> /var/www/html/storage/logs/backup-cron.log 2>&1
  */
 
 // Set error reporting
@@ -48,6 +48,15 @@ try {
     if ($result['success']) {
         log_message("Backup created successfully: " . $result['filename']);
         log_message("Backup size: " . number_format($result['size'] / 1024, 2) . " KB");
+        
+        if (isset($result['compressed']) && $result['compressed']) {
+            $compression_ratio = $result['compressed_size'] > 0 
+                ? number_format((1 - $result['compressed_size'] / $result['size']) * 100, 1) 
+                : 0;
+            log_message("✓ Backup compressed: " . $result['compressed_filename'] . " (" . 
+                       number_format($result['compressed_size'] / 1024, 2) . " KB, " . 
+                       $compression_ratio . "% reduction)");
+        }
         
         if (isset($result['minio_uploaded']) && $result['minio_uploaded']) {
             log_message("✓ Backup uploaded to MinIO: " . $result['minio_path']);
