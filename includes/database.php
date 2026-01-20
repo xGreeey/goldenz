@@ -3781,17 +3781,43 @@ if (!function_exists('create_database_backup')) {
             ];
 
             // Create backup directory if it doesn't exist
+            // Build path relative to includes directory
             $backup_dir = __DIR__ . '/../' . $settings['backup_location'];
+            
+            // Ensure directory exists with proper permissions (PHP handles .. resolution)
             if (!file_exists($backup_dir)) {
-                if (!mkdir($backup_dir, 0755, true)) {
-                    return ['success' => false, 'message' => 'Failed to create backup directory'];
+                $old_umask = umask(0);
+                $created = @mkdir($backup_dir, 0755, true);
+                umask($old_umask);
+                if (!$created) {
+                    $error = error_get_last();
+                    return ['success' => false, 'message' => 'Failed to create backup directory: ' . ($error['message'] ?? 'Unknown error') . ' (Path: ' . $backup_dir . ')'];
                 }
+            }
+            // Verify directory exists and is writable
+            if (!is_dir($backup_dir)) {
+                return ['success' => false, 'message' => 'Backup directory does not exist: ' . $backup_dir];
+            }
+            if (!is_writable($backup_dir)) {
+                // Try to make it writable
+                @chmod($backup_dir, 0755);
+                if (!is_writable($backup_dir)) {
+                    return ['success' => false, 'message' => 'Backup directory is not writable: ' . $backup_dir];
+                }
+            }
+            
+            // Get absolute path for use in shell commands (resolves ..)
+            $backup_dir_absolute = realpath($backup_dir);
+            if ($backup_dir_absolute === false) {
+                // If realpath fails, try to resolve manually
+                $backup_dir_absolute = $backup_dir;
             }
 
             // Generate backup filename
             $timestamp = date('Y-m-d_His');
             $filename = "backup_{$db_config['database']}_{$timestamp}.sql";
-            $filepath = $backup_dir . '/' . $filename;
+            // Use absolute path for file operations to avoid path resolution issues
+            $filepath = $backup_dir_absolute . '/' . $filename;
 
             // Use mysqldump if available (preferred method)
             $mysqldump_path = '';
@@ -3814,10 +3840,10 @@ if (!function_exists('create_database_backup')) {
             }
 
             if (!empty($mysqldump_path) && (file_exists($mysqldump_path) || $mysqldump_path === 'mysqldump')) {
-                // Use mysqldump
+                // Use mysqldump with absolute path to avoid directory resolution issues
                 $command = sprintf(
-                    '"%s" --host=%s --user=%s --password=%s %s > "%s" 2>&1',
-                    $mysqldump_path,
+                    '%s --host=%s --user=%s --password=%s %s > %s 2>&1',
+                    escapeshellarg($mysqldump_path),
                     escapeshellarg($db_config['host']),
                     escapeshellarg($db_config['username']),
                     escapeshellarg($db_config['password']),
@@ -3828,12 +3854,46 @@ if (!function_exists('create_database_backup')) {
                 exec($command, $output, $return_var);
 
                 if ($return_var !== 0 || !file_exists($filepath) || filesize($filepath) === 0) {
+                    // Log the error for debugging
+                    if (!empty($output)) {
+                        error_log("mysqldump error: " . implode("\n", $output));
+                    }
                     // Fallback to PHP-based backup
-                    return create_database_backup_php($pdo, $filepath, $db_config['database']);
+                    $php_backup_result = create_database_backup_php($pdo, $filepath, $db_config['database']);
+                    if (!$php_backup_result['success']) {
+                        return $php_backup_result;
+                    }
+                    // Continue with compression and upload
                 }
             } else {
                 // Use PHP-based backup
-                return create_database_backup_php($pdo, $filepath, $db_config['database']);
+                $php_backup_result = create_database_backup_php($pdo, $filepath, $db_config['database']);
+                if (!$php_backup_result['success']) {
+                    return $php_backup_result;
+                }
+                // Continue with compression and upload
+            }
+
+            // Compress the backup file to .sql.gz for MinIO upload
+            $compressed_filepath = $filepath . '.gz';
+            $compressed_filename = $filename . '.gz';
+            $compression_success = false;
+            
+            if (function_exists('gzencode')) {
+                $sql_content = file_get_contents($filepath);
+                if ($sql_content !== false) {
+                    $compressed_content = gzencode($sql_content, 9); // Level 9 = maximum compression
+                    if ($compressed_content !== false && file_put_contents($compressed_filepath, $compressed_content) !== false) {
+                        $compression_success = true;
+                        error_log("Backup compressed successfully: $compressed_filename");
+                    } else {
+                        error_log("Failed to write compressed backup file: $compressed_filepath");
+                    }
+                } else {
+                    error_log("Failed to read backup file for compression: $filepath");
+                }
+            } else {
+                error_log("gzip compression not available (gzencode function missing)");
             }
 
             // Record backup in database
@@ -3847,22 +3907,29 @@ if (!function_exists('create_database_backup')) {
                     INDEX idx_created_at (created_at)
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
+                $backup_size = filesize($filepath);
                 $stmt = $pdo->prepare("INSERT INTO backup_history (filename, filepath, file_size) VALUES (?, ?, ?)");
-                $stmt->execute([$filename, $settings['backup_location'] . '/' . $filename, filesize($filepath)]);
+                $stmt->execute([$filename, $settings['backup_location'] . '/' . $filename, $backup_size]);
             } catch (Exception $e) {
                 error_log("Error recording backup in database: " . $e->getMessage());
             }
 
             // Upload to MinIO if storage is configured for MinIO
             $minio_uploaded = false;
+            $minio_path = null;
             if (function_exists('upload_to_storage')) {
                 require_once __DIR__ . '/storage.php';
                 $storage_driver = get_storage_driver();
                 
                 if ($storage_driver === 'minio') {
-                    $minio_path = 'db-backups/' . $filename;
-                    $minio_result = upload_to_storage($filepath, $minio_path, [
-                        'content_type' => 'application/sql'
+                    // Upload compressed file if available, otherwise upload uncompressed
+                    $upload_filepath = $compression_success ? $compressed_filepath : $filepath;
+                    $upload_filename = $compression_success ? $compressed_filename : $filename;
+                    $minio_path = 'db-backups/' . $upload_filename;
+                    $content_type = $compression_success ? 'application/gzip' : 'application/sql';
+                    
+                    $minio_result = upload_to_storage($upload_filepath, $minio_path, [
+                        'content_type' => $content_type
                     ]);
                     
                     if ($minio_result !== false) {
@@ -3883,8 +3950,11 @@ if (!function_exists('create_database_backup')) {
                 'filename' => $filename,
                 'filepath' => $settings['backup_location'] . '/' . $filename,
                 'size' => filesize($filepath),
+                'compressed' => $compression_success,
+                'compressed_filename' => $compression_success ? $compressed_filename : null,
+                'compressed_size' => $compression_success ? filesize($compressed_filepath) : null,
                 'minio_uploaded' => $minio_uploaded,
-                'minio_path' => $minio_uploaded ? ('db-backups/' . $filename) : null
+                'minio_path' => $minio_path
             ];
         } catch (Exception $e) {
             error_log("Error in create_database_backup: " . $e->getMessage());
