@@ -17,7 +17,7 @@ $db_config = [
     'host' => $_ENV['DB_HOST'] ?? 'localhost',
     'port' => $_ENV['DB_PORT'] ?? '3306',
     'username' => $_ENV['DB_USERNAME'] ?? 'root',
-    'password' => $_ENV['DB_PASSWORD'] ?? '',
+    'password' => $_ENV['DB_PASSWORD'] ?? 'Suomynona027',
     'database' => $_ENV['DB_DATABASE'] ?? 'goldenz_hr',
     'charset' => $_ENV['DB_CHARSET'] ?? 'utf8mb4'
 ];
