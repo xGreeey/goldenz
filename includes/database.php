@@ -3840,18 +3840,74 @@ if (!function_exists('create_database_backup')) {
             }
 
             if (!empty($mysqldump_path) && (file_exists($mysqldump_path) || $mysqldump_path === 'mysqldump')) {
-                // Use mysqldump with absolute path to avoid directory resolution issues
+                // Use mysqldump with proper flags for foreign key handling (Docker/Linux compatible)
+                // --single-transaction: Creates consistent snapshot
+                // --routines: Includes stored procedures and functions
+                // --triggers: Includes triggers
+                // --events: Includes events
+                // --no-tablespaces: Avoids tablespace issues
+                // --skip-lock-tables: Don't lock tables (not needed for restore, causes issues)
+                // --skip-add-locks: Don't add LOCK TABLES statements
+                // --default-character-set=utf8mb4: Ensure UTF-8 encoding
+                $temp_file = $filepath . '.tmp';
                 $command = sprintf(
-                    '%s --host=%s --user=%s --password=%s %s > %s 2>&1',
+                    '%s --host=%s --user=%s --password=%s --default-character-set=utf8mb4 --single-transaction --routines --triggers --events --no-tablespaces --skip-lock-tables --skip-add-locks %s > %s 2>&1',
                     escapeshellarg($mysqldump_path),
                     escapeshellarg($db_config['host']),
                     escapeshellarg($db_config['username']),
                     escapeshellarg($db_config['password']),
                     escapeshellarg($db_config['database']),
-                    escapeshellarg($filepath)
+                    escapeshellarg($temp_file)
                 );
 
                 exec($command, $output, $return_var);
+                
+                // If mysqldump succeeded, wrap the output with foreign key checks
+                if ($return_var === 0 && file_exists($temp_file) && filesize($temp_file) > 0) {
+                    // Read the dump file - ensure proper encoding handling (like PowerShell script)
+                    $dump_content = file_get_contents($temp_file);
+                    
+                    // Normalize line endings to Unix format (\n) to prevent encoding issues
+                    $dump_content = str_replace(["\r\n", "\r"], "\n", $dump_content);
+                    
+                    // Remove any LOCK TABLES / UNLOCK TABLES statements that might cause issues during restore
+                    // These are not needed when FOREIGN_KEY_CHECKS=0 and can cause errors if table doesn't exist yet
+                    $dump_content = preg_replace('/LOCK\s+TABLES\s+[^;]+;/i', '', $dump_content);
+                    $dump_content = preg_replace('/UNLOCK\s+TABLES\s*;/i', '', $dump_content);
+                    
+                    // Fix formatting: Ensure newline after comment lines before INSERT statements
+                    // Fixes cases like "-- Dumping data for table `x`INSERT INTO..." 
+                    // Pattern: comment with backticks followed immediately by INSERT
+                    $dump_content = preg_replace('/(--[^\n]+`[^`]+`)(INSERT\s+INTO)/i', "$1\n\n$2", $dump_content);
+                    // Also fix cases where comment ends without backticks but INSERT follows immediately
+                    $dump_content = preg_replace('/(--[^\n]+)(INSERT\s+INTO)/i', "$1\n\n$2", $dump_content);
+                    
+                    // Add foreign key check disabling at the start
+                    $header = "-- Golden Z-5 HR System Database Backup\n";
+                    $header .= "-- Generated: " . date('Y-m-d H:i:s') . "\n";
+                    $header .= "-- Database: {$db_config['database']}\n\n";
+                    $header .= "SET SQL_MODE = \"NO_AUTO_VALUE_ON_ZERO\";\n";
+                    $header .= "SET time_zone = \"+00:00\";\n";
+                    $header .= "SET FOREIGN_KEY_CHECKS=0;\n";
+                    $header .= "SET UNIQUE_CHECKS=0;\n";
+                    $header .= "SET AUTOCOMMIT=0;\n\n";
+                    
+                    // Add foreign key check re-enabling at the end
+                    $footer = "\nSET FOREIGN_KEY_CHECKS=1;\n";
+                    $footer .= "SET UNIQUE_CHECKS=1;\n";
+                    $footer .= "COMMIT;\n";
+                    $footer .= "SET AUTOCOMMIT=1;\n";
+                    
+                    // Write the complete backup file with UTF-8 encoding (no BOM) - like PowerShell script
+                    // Use file_put_contents which writes UTF-8 by default, but ensure no BOM
+                    $final_content = $header . $dump_content . $footer;
+                    // Remove BOM if present and write with UTF-8
+                    if (substr($final_content, 0, 3) === "\xEF\xBB\xBF") {
+                        $final_content = substr($final_content, 3);
+                    }
+                    file_put_contents($filepath, $final_content);
+                    unlink($temp_file); // Remove temp file
+                }
 
                 if ($return_var !== 0 || !file_exists($filepath) || filesize($filepath) === 0) {
                     // Log the error for debugging
@@ -3973,7 +4029,11 @@ if (!function_exists('create_database_backup_php')) {
             $output .= "-- Generated: " . date('Y-m-d H:i:s') . "\n";
             $output .= "-- Database: {$database}\n\n";
             $output .= "SET SQL_MODE = \"NO_AUTO_VALUE_ON_ZERO\";\n";
-            $output .= "SET time_zone = \"+00:00\";\n\n";
+            $output .= "SET time_zone = \"+00:00\";\n";
+            // Disable foreign key checks to allow restoring in any order
+            $output .= "SET FOREIGN_KEY_CHECKS=0;\n";
+            $output .= "SET UNIQUE_CHECKS=0;\n";
+            $output .= "SET AUTOCOMMIT=0;\n\n";
 
             // Get all tables
             $tables = $pdo->query("SHOW TABLES")->fetchAll(PDO::FETCH_COLUMN);
@@ -3994,7 +4054,9 @@ if (!function_exists('create_database_backup_php')) {
                 $rows = $pdo->query("SELECT * FROM `{$table}`")->fetchAll(PDO::FETCH_ASSOC);
                 if (count($rows) > 0) {
                     $output .= "-- Dumping data for table `{$table}`\n";
-                    $output .= "LOCK TABLES `{$table}` WRITE;\n";
+                    // Don't use LOCK TABLES during restore - it can cause issues if table doesn't exist yet
+                    // Foreign key checks are already disabled, so we don't need table locking
+                    $output .= "\n"; // Ensure newline after comment
 
                     foreach ($rows as $row) {
                         $values = [];
@@ -4008,10 +4070,25 @@ if (!function_exists('create_database_backup_php')) {
                         $output .= "INSERT INTO `{$table}` VALUES (" . implode(',', $values) . ");\n";
                     }
 
-                    $output .= "UNLOCK TABLES;\n\n";
+                    $output .= "\n";
                 }
             }
+            
+            // Re-enable foreign key checks at the end
+            $output .= "\nSET FOREIGN_KEY_CHECKS=1;\n";
+            $output .= "SET UNIQUE_CHECKS=1;\n";
+            $output .= "COMMIT;\n";
+            $output .= "SET AUTOCOMMIT=1;\n";
 
+            // Ensure UTF-8 encoding (no BOM) - similar to PowerShell script encoding fix
+            // Remove BOM if present
+            if (substr($output, 0, 3) === "\xEF\xBB\xBF") {
+                $output = substr($output, 3);
+            }
+            
+            // Normalize line endings to Unix format
+            $output = str_replace(["\r\n", "\r"], "\n", $output);
+            
             if (file_put_contents($filepath, $output) === false) {
                 return ['success' => false, 'message' => 'Failed to write backup file'];
             }
