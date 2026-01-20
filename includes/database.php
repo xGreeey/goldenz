@@ -15,10 +15,11 @@ if (file_exists(__DIR__ . '/../bootstrap/autoload.php')) {
 // Database configuration (fallback if config not loaded)
 $db_config = [
     'host' => $_ENV['DB_HOST'] ?? 'localhost',
+    'port' => $_ENV['DB_PORT'] ?? '3306',
     'username' => $_ENV['DB_USERNAME'] ?? 'root',
     'password' => $_ENV['DB_PASSWORD'] ?? '',
     'database' => $_ENV['DB_DATABASE'] ?? 'goldenz_hr',
-    'charset' => 'utf8mb4'
+    'charset' => $_ENV['DB_CHARSET'] ?? 'utf8mb4'
 ];
 
 // Create database connection
@@ -51,19 +52,63 @@ if (!function_exists('get_db_connection')) {
         // Fallback to old method
         global $db_config;
 
-        if (!isset($db_config) || empty($db_config)) {
+        // Normalize config structure - handle both flat and nested config formats
+        if (!isset($db_config) || empty($db_config) || !isset($db_config['host'])) {
             // Try to load config if not available
             $config_file = __DIR__ . '/../config/database.php';
             if (file_exists($config_file)) {
-                $db_config = include $config_file;
+                $loaded_config = include $config_file;
+                
+                // Handle nested config structure (from config/database.php)
+                if (isset($loaded_config['connections']['mysql'])) {
+                    $mysql_config = $loaded_config['connections']['mysql'];
+                    $db_config = [
+                        'host' => $mysql_config['host'] ?? $_ENV['DB_HOST'] ?? 'localhost',
+                        'port' => $mysql_config['port'] ?? $_ENV['DB_PORT'] ?? '3306',
+                        'username' => $mysql_config['username'] ?? $_ENV['DB_USERNAME'] ?? 'root',
+                        'password' => $mysql_config['password'] ?? $_ENV['DB_PASSWORD'] ?? '',
+                        'database' => $mysql_config['database'] ?? $_ENV['DB_DATABASE'] ?? 'goldenz_hr',
+                        'charset' => $mysql_config['charset'] ?? $_ENV['DB_CHARSET'] ?? 'utf8mb4'
+                    ];
+                } else {
+                    // Handle flat config structure
+                    $db_config = $loaded_config;
+                }
             } else {
                 error_log('Database configuration not found');
                 throw new Exception('Database configuration not found');
             }
         }
 
+        // Ensure port is set
+        if (!isset($db_config['port'])) {
+            $db_config['port'] = $_ENV['DB_PORT'] ?? '3306';
+        }
+
+        // Reload environment variables to ensure we have the latest values (important for Docker)
+        // Environment variables take precedence over config file values
+        $db_config['host'] = $_ENV['DB_HOST'] ?? $db_config['host'] ?? 'localhost';
+        $db_config['port'] = $_ENV['DB_PORT'] ?? $db_config['port'] ?? '3306';
+        $db_config['username'] = $_ENV['DB_USERNAME'] ?? $db_config['username'] ?? 'root';
+        $db_config['password'] = $_ENV['DB_PASSWORD'] ?? $db_config['password'] ?? '';
+        $db_config['database'] = $_ENV['DB_DATABASE'] ?? $db_config['database'] ?? 'goldenz_hr';
+        $db_config['charset'] = $_ENV['DB_CHARSET'] ?? $db_config['charset'] ?? 'utf8mb4';
+
         try {
-            $dsn = "mysql:host={$db_config['host']};dbname={$db_config['database']};charset={$db_config['charset']}";
+            // Get connection parameters
+            $host = $db_config['host'];
+            $port = $db_config['port'];
+            $database = $db_config['database'];
+            $charset = $db_config['charset'];
+            
+            // For Docker: if host is 'localhost', we need to use the Docker service name instead
+            // Only convert to 127.0.0.1 if we're sure we're not in Docker (but this won't work in Docker anyway)
+            // Better approach: log a helpful error if localhost is used in what appears to be Docker
+            
+            // Build DSN with port for Docker compatibility
+            // Always use TCP/IP connection with explicit port
+            $dsn = "mysql:host={$host};port={$port};dbname={$database};charset={$charset}";
+            
             $db_connection = new PDO($dsn, $db_config['username'], $db_config['password'], [
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
@@ -72,8 +117,29 @@ if (!function_exists('get_db_connection')) {
             ]);
             return $db_connection;
         } catch (PDOException $e) {
-            error_log('Database connection failed: ' . $e->getMessage());
-            throw new Exception('Database connection failed: ' . $e->getMessage());
+            // Enhanced error logging with connection details (without password)
+            $error_details = [
+                'host' => $db_config['host'],
+                'port' => $db_config['port'],
+                'database' => $db_config['database'],
+                'username' => $db_config['username'],
+                'error' => $e->getMessage(),
+                'env_db_host' => $_ENV['DB_HOST'] ?? 'not_set'
+            ];
+            
+            $error_msg = 'Database connection failed: ' . $e->getMessage();
+            $error_msg .= "\nAttempted connection to: {$db_config['host']}:{$db_config['port']}";
+            
+            // Provide helpful Docker-specific guidance
+            if ($db_config['host'] === 'localhost' || $db_config['host'] === '127.0.0.1') {
+                $error_msg .= "\n\n⚠️  DOCKER DETECTED: You are using 'localhost' or '127.0.0.1' as DB_HOST.";
+                $error_msg .= "\nIn Docker, you must use your MySQL service name (e.g., 'mysql', 'db', 'database').";
+                $error_msg .= "\nSet DB_HOST environment variable to your Docker MySQL service name.";
+                $error_msg .= "\nCheck your docker-compose.yml to find the MySQL service name.";
+            }
+            
+            error_log('Database connection failed: ' . json_encode($error_details));
+            throw new Exception($error_msg);
         }
     }
 }
@@ -747,30 +813,105 @@ if (!function_exists('get_dashboard_stats')) {
         $result = $stmt->fetch();
         $stats['licensed_guards'] = (int)($result['licensed'] ?? 0);
 
-        // Expired licenses - only count valid dates, exclude NULL and '0000-00-00'
-        $sql = "SELECT COUNT(*) as expired
-                FROM employees
-                WHERE license_no IS NOT NULL
-                AND license_no != ''
-                AND license_exp_date IS NOT NULL
-                AND license_exp_date != ''
-                AND license_exp_date != '0000-00-00'
-                AND license_exp_date < CURDATE()";
-        $stmt = execute_query($sql);
-        $stats['expired_licenses'] = (int)$stmt->fetch()['expired'];
+        // Expired licenses - MySQL 8 strict mode can throw on DATE('') so validate in PHP instead
+        // Fetch license dates and validate/count in PHP to avoid MySQL strict mode issues
+        try {
+            $sql = "SELECT license_exp_date
+                    FROM employees
+                    WHERE license_no IS NOT NULL
+                    AND license_no != ''
+                    AND license_exp_date IS NOT NULL
+                    AND license_exp_date != ''
+                    AND license_exp_date != '0000-00-00'";
+            $stmt = execute_query($sql);
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            $expired_count = 0;
+            $today = date('Y-m-d');
+            
+            foreach ($rows as $row) {
+                $date_str = trim($row['license_exp_date'] ?? '');
+                
+                // Validate date format
+                if (empty($date_str) || strlen($date_str) != 10 || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $date_str)) {
+                    continue;
+                }
+                
+                // Parse and validate date
+                $date_parts = explode('-', $date_str);
+                if (count($date_parts) != 3) {
+                    continue;
+                }
+                
+                $year = (int)$date_parts[0];
+                $month = (int)$date_parts[1];
+                $day = (int)$date_parts[2];
+                
+                if (!checkdate($month, $day, $year)) {
+                    continue;
+                }
+                
+                // Compare dates
+                if ($date_str < $today) {
+                    $expired_count++;
+                }
+            }
+            
+            $stats['expired_licenses'] = $expired_count;
+        } catch (Exception $e) {
+            error_log("Error counting expired licenses: " . $e->getMessage());
+            $stats['expired_licenses'] = 0;
+        }
 
-        // Expiring licenses (next 30 days) - exclude already expired licenses
-        $sql = "SELECT COUNT(*) as expiring
-                FROM employees
-                WHERE license_no IS NOT NULL
-                AND license_no != ''
-                AND license_exp_date IS NOT NULL
-                AND license_exp_date != ''
-                AND license_exp_date != '0000-00-00'
-                AND license_exp_date >= CURDATE()
-                AND license_exp_date <= DATE_ADD(CURDATE(), INTERVAL 30 DAY)";
-        $stmt = execute_query($sql);
-        $stats['expiring_licenses'] = (int)$stmt->fetch()['expiring'];
+        // Expiring licenses (next 30 days) - validate in PHP
+        try {
+            $sql = "SELECT license_exp_date
+                    FROM employees
+                    WHERE license_no IS NOT NULL
+                    AND license_no != ''
+                    AND license_exp_date IS NOT NULL
+                    AND license_exp_date != ''
+                    AND license_exp_date != '0000-00-00'";
+            $stmt = execute_query($sql);
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            $expiring_count = 0;
+            $today = date('Y-m-d');
+            $future_date = date('Y-m-d', strtotime('+30 days'));
+            
+            foreach ($rows as $row) {
+                $date_str = trim($row['license_exp_date'] ?? '');
+                
+                // Validate date format
+                if (empty($date_str) || strlen($date_str) != 10 || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $date_str)) {
+                    continue;
+                }
+                
+                // Parse and validate date
+                $date_parts = explode('-', $date_str);
+                if (count($date_parts) != 3) {
+                    continue;
+                }
+                
+                $year = (int)$date_parts[0];
+                $month = (int)$date_parts[1];
+                $day = (int)$date_parts[2];
+                
+                if (!checkdate($month, $day, $year)) {
+                    continue;
+                }
+                
+                // Check if expiring within 30 days
+                if ($date_str >= $today && $date_str <= $future_date) {
+                    $expiring_count++;
+                }
+            }
+            
+            $stats['expiring_licenses'] = $expiring_count;
+        } catch (Exception $e) {
+            error_log("Error counting expiring licenses: " . $e->getMessage());
+            $stats['expiring_licenses'] = 0;
+        }
 
         return $stats;
     }
@@ -1413,8 +1554,22 @@ if (!function_exists('generate_license_expiry_alerts')) {
         $sql = "SELECT id, employee_no, surname, first_name, license_no, license_exp_date
                  FROM employees
                  WHERE license_no IS NOT NULL
+                 AND license_no != ''
                  AND license_exp_date IS NOT NULL
-                 AND license_exp_date BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 30 DAY)
+                 AND license_exp_date != ''
+                 AND license_exp_date != '0000-00-00'
+                 AND CHAR_LENGTH(TRIM(license_exp_date)) = 10
+                 AND TRIM(license_exp_date) REGEXP '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'
+                 AND CASE 
+                    WHEN CHAR_LENGTH(TRIM(COALESCE(license_exp_date, ''))) != 10 THEN NULL
+                    WHEN TRIM(license_exp_date) NOT REGEXP '^[0-9]{4}-[0-9]{2}-[0-9]{2}$' THEN NULL
+                    ELSE STR_TO_DATE(TRIM(license_exp_date), '%Y-%m-%d')
+                 END IS NOT NULL
+                 AND CASE 
+                    WHEN CHAR_LENGTH(TRIM(COALESCE(license_exp_date, ''))) != 10 THEN NULL
+                    WHEN TRIM(license_exp_date) NOT REGEXP '^[0-9]{4}-[0-9]{2}-[0-9]{2}$' THEN NULL
+                    ELSE STR_TO_DATE(TRIM(license_exp_date), '%Y-%m-%d')
+                 END BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 30 DAY)
                  AND id NOT IN (
                      SELECT employee_id FROM employee_alerts
                      WHERE alert_type = 'license_expiry'
@@ -2925,27 +3080,63 @@ if (!function_exists('get_super_admin_stats')) {
             $stmt = $pdo->query($sql);
             $stats['active_alerts'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['total'];
 
-            // LICENSE STATISTICS
-            $sql = "SELECT COUNT(*) as expired FROM employees
-                    WHERE license_no IS NOT NULL
-                    AND license_no != ''
-                    AND license_exp_date IS NOT NULL
-                    AND license_exp_date != ''
-                    AND license_exp_date != '0000-00-00'
-                    AND license_exp_date < CURDATE()";
-            $stmt = $pdo->query($sql);
-            $stats['expired_licenses'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['expired'];
-
-            $sql = "SELECT COUNT(*) as expiring FROM employees
-                    WHERE license_no IS NOT NULL
-                    AND license_no != ''
-                    AND license_exp_date IS NOT NULL
-                    AND license_exp_date != ''
-                    AND license_exp_date != '0000-00-00'
-                    AND license_exp_date >= CURDATE()
-                    AND license_exp_date <= DATE_ADD(CURDATE(), INTERVAL 30 DAY)";
-            $stmt = $pdo->query($sql);
-            $stats['expiring_licenses'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['expiring'];
+            // LICENSE STATISTICS - parse safely (MySQL 8 strict mode can throw on DATE(''))
+            // Validate in PHP to avoid MySQL strict mode issues
+            try {
+                $sql = "SELECT license_exp_date
+                        FROM employees
+                        WHERE license_no IS NOT NULL
+                        AND license_no != ''
+                        AND license_exp_date IS NOT NULL
+                        AND license_exp_date != ''
+                        AND license_exp_date != '0000-00-00'";
+                $stmt = $pdo->query($sql);
+                $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                
+                $expired_count = 0;
+                $expiring_count = 0;
+                $today = date('Y-m-d');
+                $future_date = date('Y-m-d', strtotime('+30 days'));
+                
+                foreach ($rows as $row) {
+                    $date_str = trim($row['license_exp_date'] ?? '');
+                    
+                    // Validate date format
+                    if (empty($date_str) || strlen($date_str) != 10 || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $date_str)) {
+                        continue;
+                    }
+                    
+                    // Parse and validate date
+                    $date_parts = explode('-', $date_str);
+                    if (count($date_parts) != 3) {
+                        continue;
+                    }
+                    
+                    $year = (int)$date_parts[0];
+                    $month = (int)$date_parts[1];
+                    $day = (int)$date_parts[2];
+                    
+                    if (!checkdate($month, $day, $year)) {
+                        continue;
+                    }
+                    
+                    // Count expired
+                    if ($date_str < $today) {
+                        $expired_count++;
+                    }
+                    // Count expiring within 30 days
+                    elseif ($date_str >= $today && $date_str <= $future_date) {
+                        $expiring_count++;
+                    }
+                }
+                
+                $stats['expired_licenses'] = $expired_count;
+                $stats['expiring_licenses'] = $expiring_count;
+            } catch (Exception $e) {
+                error_log("Error counting license statistics: " . $e->getMessage());
+                $stats['expired_licenses'] = 0;
+                $stats['expiring_licenses'] = 0;
+            }
 
             // SYSTEM ACTIVITY (from audit logs)
             $sql = "SELECT COUNT(DISTINCT user_id) as unique_users

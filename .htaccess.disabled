@@ -1,0 +1,14 @@
+RewriteEngine On
+
+# Default page
+DirectoryIndex index.php
+
+# Clean URLs
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^([^/]+)/?$ index.php?page=$1 [L,QSA]
+
+# Hide sensitive files
+<FilesMatch "\.(env|log)$">
+    Require all denied
+</FilesMatch>

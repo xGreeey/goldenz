@@ -71,8 +71,11 @@ try {
                                     AND license_exp_date IS NOT NULL 
                                     AND license_exp_date != '' 
                                     AND license_exp_date != '0000-00-00'
-                                    AND license_exp_date >= CURDATE() 
-                                    AND license_exp_date <= DATE_ADD(CURDATE(), INTERVAL 90 DAY)
+                                    AND LENGTH(TRIM(COALESCE(license_exp_date, ''))) > 0
+                                    AND TRIM(license_exp_date) REGEXP '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'
+                                    AND STR_TO_DATE(TRIM(license_exp_date), '%Y-%m-%d') IS NOT NULL
+                                    AND STR_TO_DATE(TRIM(license_exp_date), '%Y-%m-%d') >= CURDATE() 
+                                    AND STR_TO_DATE(TRIM(license_exp_date), '%Y-%m-%d') <= DATE_ADD(CURDATE(), INTERVAL 90 DAY)
                               ORDER BY license_exp_date ASC 
                               LIMIT 8");
     $expStmt->execute();
@@ -93,7 +96,10 @@ try {
                                         AND license_exp_date IS NOT NULL
                                         AND license_exp_date != ''
                                         AND license_exp_date != '0000-00-00'
-                                        AND license_exp_date < CURDATE()
+                                        AND LENGTH(TRIM(COALESCE(license_exp_date, ''))) > 0
+                                        AND TRIM(license_exp_date) REGEXP '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'
+                                        AND STR_TO_DATE(TRIM(license_exp_date), '%Y-%m-%d') IS NOT NULL
+                                        AND STR_TO_DATE(TRIM(license_exp_date), '%Y-%m-%d') < CURDATE()
                                   ORDER BY license_exp_date DESC
                                   LIMIT 8");
     $expiredStmt->execute();
@@ -275,7 +281,16 @@ try {
                         // Calculate new hires (employees hired in current month)
                         $newHires = 0;
                         try {
-                            $newHiresStmt = $pdo->query("SELECT COUNT(*) as total FROM employees WHERE MONTH(date_hired) = MONTH(CURDATE()) AND YEAR(date_hired) = YEAR(CURDATE())");
+                            $newHiresStmt = $pdo->query("SELECT COUNT(*) as total
+                                                         FROM employees
+                                                         WHERE date_hired IS NOT NULL
+                                                           AND date_hired != ''
+                                                           AND date_hired != '0000-00-00'
+                                                           AND LENGTH(TRIM(COALESCE(date_hired, ''))) > 0
+                                                           AND TRIM(date_hired) REGEXP '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'
+                                                           AND STR_TO_DATE(TRIM(date_hired), '%Y-%m-%d') IS NOT NULL
+                                                           AND MONTH(STR_TO_DATE(TRIM(date_hired), '%Y-%m-%d')) = MONTH(CURDATE())
+                                                           AND YEAR(STR_TO_DATE(TRIM(date_hired), '%Y-%m-%d')) = YEAR(CURDATE())");
                             $newHiresRow = $newHiresStmt->fetch(PDO::FETCH_ASSOC);
                             $newHires = (int)($newHiresRow['total'] ?? 0);
                         } catch (Exception $e) {
@@ -301,7 +316,16 @@ try {
                         // Calculate regular employees (hired more than 6 months ago)
                         $regularCount = 0;
                         try {
-                            $regularStmt = $pdo->query("SELECT COUNT(*) as total FROM employees WHERE status = 'Active' AND date_hired < DATE_SUB(CURDATE(), INTERVAL 6 MONTH)");
+                            $regularStmt = $pdo->query("SELECT COUNT(*) as total
+                                                        FROM employees
+                                                        WHERE status = 'Active'
+                                                          AND date_hired IS NOT NULL
+                                                          AND date_hired != ''
+                                                          AND date_hired != '0000-00-00'
+                                                          AND LENGTH(TRIM(COALESCE(date_hired, ''))) > 0
+                                                          AND TRIM(date_hired) REGEXP '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'
+                                                          AND STR_TO_DATE(TRIM(date_hired), '%Y-%m-%d') IS NOT NULL
+                                                          AND STR_TO_DATE(TRIM(date_hired), '%Y-%m-%d') < DATE_SUB(CURDATE(), INTERVAL 6 MONTH)");
                             $regularRow = $regularStmt->fetch(PDO::FETCH_ASSOC);
                             $regularCount = (int)($regularRow['total'] ?? 0);
                         } catch (Exception $e) {
@@ -327,7 +351,16 @@ try {
                         // Calculate probationary employees (hired within last 6 months)
                         $probationCount = 0;
                         try {
-                            $probStmt = $pdo->query("SELECT COUNT(*) as total FROM employees WHERE status = 'Active' AND date_hired >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)");
+                            $probStmt = $pdo->query("SELECT COUNT(*) as total
+                                                     FROM employees
+                                                     WHERE status = 'Active'
+                                                       AND date_hired IS NOT NULL
+                                                       AND date_hired != ''
+                                                       AND date_hired != '0000-00-00'
+                                                       AND LENGTH(TRIM(COALESCE(date_hired, ''))) > 0
+                                                       AND TRIM(date_hired) REGEXP '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'
+                                                       AND STR_TO_DATE(TRIM(date_hired), '%Y-%m-%d') IS NOT NULL
+                                                       AND STR_TO_DATE(TRIM(date_hired), '%Y-%m-%d') >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)");
                             $probRow = $probStmt->fetch(PDO::FETCH_ASSOC);
                             $probationCount = (int)($probRow['total'] ?? 0);
                         } catch (Exception $e) {
