@@ -49,6 +49,50 @@ if ($user_role === 'developer') {
             'page' => 'alerts',
             'section' => null,
         ],
+        [
+            'title' => 'Documents',
+            'page' => 'documents',
+            'section' => null,
+        ],
+        [
+            'title' => 'Leaves',
+            'page' => 'leaves',
+            'section' => 'leaves',
+            'children' => [
+                [
+                    'title' => 'Requests Inbox',
+                    'page' => 'leaves',
+                ],
+                [
+                    'title' => 'Leave Balance',
+                    'page' => 'leave_balance',
+                ],
+                [
+                    'title' => 'Leave Reports',
+                    'page' => 'leave_reports',
+                ],
+            ],
+        ],
+        [
+            'title' => 'Attendance',
+            'page' => 'attendance',
+            'section' => null,
+        ],
+        [
+            'title' => 'Violations',
+            'page' => 'violations',
+            'section' => 'violations',
+            'children' => [
+                [
+                    'title' => 'Violations List',
+                    'page' => 'violations',
+                ],
+                [
+                    'title' => 'Violation Types',
+                    'page' => 'violation_types',
+                ],
+            ],
+        ],
     ];
 }
 ?>

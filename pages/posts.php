@@ -18,78 +18,77 @@ $posts = get_posts($filters);
 <div class="container-fluid hrdash">
 
     <!-- Statistics Cards -->
-    <div class="row g-4">
-                <div class="col-xl-3 col-md-6">
-                    <div class="card hrdash-stat hrdash-stat--primary">
-                        <div class="hrdash-stat__header">
-                            <div class="hrdash-stat__label">Total Posts</div>
-                        </div>
-                        <div class="hrdash-stat__content">
-                            <div class="hrdash-stat__value"><?php echo number_format($post_stats['total_posts']); ?></div>
-                            <div class="hrdash-stat__trend hrdash-stat__trend--positive">
-                                <i class="fas fa-arrow-up"></i>
-                                <span>5%</span>
-                            </div>
-                        </div>
-                        <div class="hrdash-stat__meta">All posts tracked in the system.</div>
+    <div class="row g-4 mb-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="card hrdash-stat hrdash-stat--primary">
+                <div class="hrdash-stat__header">
+                    <div class="hrdash-stat__label">Total Posts</div>
+                </div>
+                <div class="hrdash-stat__content">
+                    <div class="hrdash-stat__value"><?php echo number_format($post_stats['total_posts']); ?></div>
+                    <div class="hrdash-stat__trend hrdash-stat__trend--positive">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>5%</span>
                     </div>
                 </div>
-
-                <div class="col-xl-3 col-md-6">
-                    <div class="card hrdash-stat">
-                        <div class="hrdash-stat__header">
-                            <div class="hrdash-stat__label">Required Positions</div>
-                        </div>
-                        <div class="hrdash-stat__content">
-                            <div class="hrdash-stat__value"><?php echo number_format($post_stats['total_required']); ?></div>
-                            <div class="hrdash-stat__trend hrdash-stat__trend--positive">
-                                <i class="fas fa-arrow-up"></i>
-                                <span><?php echo $post_stats['total_filled']; ?> filled</span>
-                            </div>
-                        </div>
-                        <div class="hrdash-stat__meta">Total staffing requirements across all posts.</div>
-                    </div>
-                </div>
-
-                <div class="col-xl-3 col-md-6">
-                    <div class="card hrdash-stat">
-                        <div class="hrdash-stat__header">
-                            <div class="hrdash-stat__label">Vacant Positions</div>
-                        </div>
-                        <div class="hrdash-stat__content">
-                            <div class="hrdash-stat__value"><?php echo number_format($post_stats['total_vacant']); ?></div>
-                            <div class="hrdash-stat__trend hrdash-stat__trend--negative">
-                                <i class="fas fa-arrow-down"></i>
-                                <span>2%</span>
-                            </div>
-                        </div>
-                        <div class="hrdash-stat__meta">Open positions that need to be filled.</div>
-                    </div>
-                </div>
-
-                <div class="col-xl-3 col-md-6">
-                    <div class="card hrdash-stat">
-                        <div class="hrdash-stat__header">
-                            <div class="hrdash-stat__label">Urgent Posts</div>
-                        </div>
-                        <div class="hrdash-stat__content">
-                            <div class="hrdash-stat__value"><?php echo number_format($post_stats['urgent_posts']); ?></div>
-                            <div class="hrdash-stat__trend hrdash-stat__trend--negative">
-                                <i class="fas fa-arrow-down"></i>
-                                <span>3%</span>
-                            </div>
-                        </div>
-                        <div class="hrdash-stat__meta">High priority posts requiring immediate attention.</div>
-                    </div>
-                </div>
+                <div class="hrdash-stat__meta">All posts tracked in the system.</div>
             </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card hrdash-stat">
+                <div class="hrdash-stat__header">
+                    <div class="hrdash-stat__label">Required Positions</div>
+                </div>
+                <div class="hrdash-stat__content">
+                    <div class="hrdash-stat__value"><?php echo number_format($post_stats['total_required']); ?></div>
+                    <div class="hrdash-stat__trend hrdash-stat__trend--positive">
+                        <i class="fas fa-arrow-up"></i>
+                        <span><?php echo $post_stats['total_filled']; ?> filled</span>
+                    </div>
+                </div>
+                <div class="hrdash-stat__meta">Total staffing requirements across all posts.</div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card hrdash-stat">
+                <div class="hrdash-stat__header">
+                    <div class="hrdash-stat__label">Vacant Positions</div>
+                </div>
+                <div class="hrdash-stat__content">
+                    <div class="hrdash-stat__value"><?php echo number_format($post_stats['total_vacant']); ?></div>
+                    <div class="hrdash-stat__trend hrdash-stat__trend--negative">
+                        <i class="fas fa-arrow-down"></i>
+                        <span>2%</span>
+                    </div>
+                </div>
+                <div class="hrdash-stat__meta">Open positions that need to be filled.</div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card hrdash-stat">
+                <div class="hrdash-stat__header">
+                    <div class="hrdash-stat__label">Urgent Posts</div>
+                </div>
+                <div class="hrdash-stat__content">
+                    <div class="hrdash-stat__value"><?php echo number_format($post_stats['urgent_posts']); ?></div>
+                    <div class="hrdash-stat__trend hrdash-stat__trend--negative">
+                        <i class="fas fa-arrow-down"></i>
+                        <span>3%</span>
+                    </div>
+                </div>
+                <div class="hrdash-stat__meta">High priority posts requiring immediate attention.</div>
+            </div>
+        </div>
     </div>
 
     <!-- Filters and Search -->
     <div class="card card-modern mb-4">
         <div class="card-body-modern">
             <div class="row g-3 align-items-end">
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <label class="form-label">Search Posts</label>
                     <div class="input-group">
                         <span class="input-group-text"><i class="fas fa-search"></i></span>
@@ -140,19 +139,10 @@ $posts = get_posts($filters);
                         <option value="Low" <?php echo $filters['priority'] === 'Low' ? 'selected' : ''; ?>>Low</option>
                     </select>
                 </div>
-                <div class="col-md-12 d-flex justify-content-end gap-2 mt-2">
-                    <button class="btn btn-outline-modern" onclick="resetFilters()">
-                        <i class="fas fa-times me-2"></i>Clear Filters
+                <div class="col-auto">
+                    <button class="btn btn-outline-modern" onclick="resetFilters()" title="Clear Filters">
+                        <i class="fas fa-times"></i>
                     </button>
-                    <button class="btn btn-outline-modern" onclick="exportToCSV()" title="Export post list">
-                        <i class="fas fa-download me-2"></i>Export CSV
-                    </button>
-                    <a href="?page=post_assignments" class="btn btn-outline-modern" title="View post assignments">
-                        <i class="fas fa-users-cog me-2"></i>Assignments
-                    </a>
-                    <a href="?page=add_post" class="btn btn-primary-modern">
-                        <span class="hr-icon hr-icon-plus me-2"></span>Add New Post
-                    </a>
                 </div>
             </div>
         </div>
@@ -161,9 +151,22 @@ $posts = get_posts($filters);
     <!-- Post List -->
     <div class="card card-modern mb-4">
         <div class="card-body-modern">
-            <div class="card-header-modern mb-4">
-                <h5 class="card-title-modern">Post List</h5>
-                <small class="card-subtitle">Viewing <?php echo count($posts); ?> posts</small>
+            <div class="card-header-modern mb-4 d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="card-title-modern">Post List</h5>
+                    <small class="card-subtitle">Viewing <?php echo count($posts); ?> posts</small>
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-modern" onclick="exportToCSV()" title="Export post list">
+                        <i class="fas fa-download me-2"></i>Export
+                    </button>
+                    <a href="?page=post_assignments" class="btn btn-outline-modern" title="View post assignments">
+                        <i class="fas fa-users-cog me-2"></i>Assignments
+                    </a>
+                    <a href="?page=add_post" class="btn btn-primary-modern">
+                        <span class="hr-icon hr-icon-plus me-2"></span>Add Post
+                    </a>
+                </div>
             </div>
             <div class="table-container">
                 <table class="table posts-table" id="postsTable">

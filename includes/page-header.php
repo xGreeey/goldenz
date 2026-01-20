@@ -39,6 +39,13 @@ $pageSubtitles = [
     'hiring' => 'Manage the recruitment and hiring process',
     'onboarding' => 'Manage employee onboarding procedures',
     'handbook' => 'Access the employee handbook and policies',
+    'documents' => 'Manage employee 201 files and documents',
+    'leaves' => 'View and manage leave requests',
+    'leave_balance' => 'View employee leave balances',
+    'leave_reports' => 'Generate leave reports and analytics',
+    'attendance' => 'Track and manage employee attendance',
+    'violations' => 'View and manage employee violations',
+    'violation_types' => 'Manage violation categories and sanctions',
 ];
 
 $pageSubtitle = $pageSubtitles[$page] ?? 'Manage your HR operations';
@@ -49,6 +56,7 @@ if ($userRole === 'hr_admin' || $userRole === 'super_admin' || $userRole === 'de
 <div class="hrdash-welcome">
     <div class="hrdash-welcome__left">
         <h2 class="hrdash-welcome__title"><?php echo htmlspecialchars($pageTitle); ?></h2>
+        <p class="hrdash-welcome__subtitle"><?php echo htmlspecialchars($pageSubtitle); ?></p>
     </div>
     <div class="hrdash-welcome__actions">
         <span id="current-time-global" class="hrdash-welcome__time"><?php echo strtoupper(date('g:i A')); ?></span>
