@@ -43,146 +43,12 @@ $pageSubtitles = [
 
 $pageSubtitle = $pageSubtitles[$page] ?? 'Manage your HR operations';
 
-// Generate breadcrumbs based on current page
-function generateBreadcrumbs($currentPage) {
-    $breadcrumbs = [];
-
-    // Define page hierarchy
-    $hierarchy = [
-        'dashboard' => [
-            ['title' => 'Dashboard', 'url' => null]
-        ],
-        'employees' => [
-            ['title' => 'Dashboard', 'url' => '?page=dashboard'],
-            ['title' => 'Employee Management', 'url' => null]
-        ],
-        'add_employee' => [
-            ['title' => 'Dashboard', 'url' => '?page=dashboard'],
-            ['title' => 'Employees', 'url' => '?page=employees'],
-            ['title' => 'Add New Employee', 'url' => null]
-        ],
-        'add_employee_page2' => [
-            ['title' => 'Dashboard', 'url' => '?page=dashboard'],
-            ['title' => 'Employees', 'url' => '?page=employees'],
-            ['title' => 'Add New Employee', 'url' => '?page=add_employee'],
-            ['title' => 'Page 2', 'url' => null]
-        ],
-        'edit_employee' => [
-            ['title' => 'Dashboard', 'url' => '?page=dashboard'],
-            ['title' => 'Employees', 'url' => '?page=employees'],
-            ['title' => 'Edit Employee', 'url' => null]
-        ],
-        'view_employee' => [
-            ['title' => 'Dashboard', 'url' => '?page=dashboard'],
-            ['title' => 'Employees', 'url' => '?page=employees'],
-            ['title' => 'View Employee', 'url' => null]
-        ],
-        'posts' => [
-            ['title' => 'Dashboard', 'url' => '?page=dashboard'],
-            ['title' => 'Posts & Locations', 'url' => null]
-        ],
-        'add_post' => [
-            ['title' => 'Dashboard', 'url' => '?page=dashboard'],
-            ['title' => 'Posts', 'url' => '?page=posts'],
-            ['title' => 'Add New Post', 'url' => null]
-        ],
-        'edit_post' => [
-            ['title' => 'Dashboard', 'url' => '?page=dashboard'],
-            ['title' => 'Posts', 'url' => '?page=posts'],
-            ['title' => 'Edit Post', 'url' => null]
-        ],
-        'post_assignments' => [
-            ['title' => 'Dashboard', 'url' => '?page=dashboard'],
-            ['title' => 'Posts', 'url' => '?page=posts'],
-            ['title' => 'Post Assignments', 'url' => null]
-        ],
-        'alerts' => [
-            ['title' => 'Dashboard', 'url' => '?page=dashboard'],
-            ['title' => 'Employee Alerts', 'url' => null]
-        ],
-        'add_alert' => [
-            ['title' => 'Dashboard', 'url' => '?page=dashboard'],
-            ['title' => 'Alerts', 'url' => '?page=alerts'],
-            ['title' => 'Add New Alert', 'url' => null]
-        ],
-        'tasks' => [
-            ['title' => 'Dashboard', 'url' => '?page=dashboard'],
-            ['title' => 'Tasks', 'url' => null]
-        ],
-        'settings' => [
-            ['title' => 'Dashboard', 'url' => '?page=dashboard'],
-            ['title' => 'Settings', 'url' => null]
-        ],
-        'profile' => [
-            ['title' => 'Dashboard', 'url' => '?page=dashboard'],
-            ['title' => 'My Profile', 'url' => null]
-        ],
-        'help' => [
-            ['title' => 'Dashboard', 'url' => '?page=dashboard'],
-            ['title' => 'Help & Support', 'url' => null]
-        ],
-        'system_logs' => [
-            ['title' => 'Dashboard', 'url' => '?page=dashboard'],
-            ['title' => 'System Logs', 'url' => null]
-        ],
-        'users' => [
-            ['title' => 'Dashboard', 'url' => '?page=dashboard'],
-            ['title' => 'User Management', 'url' => null]
-        ],
-        'teams' => [
-            ['title' => 'Dashboard', 'url' => '?page=dashboard'],
-            ['title' => 'Teams', 'url' => null]
-        ],
-        'integrations' => [
-            ['title' => 'Dashboard', 'url' => '?page=dashboard'],
-            ['title' => 'Integrations', 'url' => null]
-        ],
-        'hiring' => [
-            ['title' => 'Dashboard', 'url' => '?page=dashboard'],
-            ['title' => 'Hiring Process', 'url' => null]
-        ],
-        'onboarding' => [
-            ['title' => 'Dashboard', 'url' => '?page=dashboard'],
-            ['title' => 'Employee Onboarding', 'url' => null]
-        ],
-        'handbook' => [
-            ['title' => 'Dashboard', 'url' => '?page=dashboard'],
-            ['title' => 'Employee Handbook', 'url' => null]
-        ],
-    ];
-
-    return $hierarchy[$currentPage] ?? [['title' => 'Dashboard', 'url' => '?page=dashboard']];
-}
-
-$breadcrumbs = generateBreadcrumbs($page);
-
 // Only show header for HR Admin and Super Admin portals
 if ($userRole === 'hr_admin' || $userRole === 'super_admin' || $userRole === 'developer'):
 ?>
 <div class="hrdash-welcome">
     <div class="hrdash-welcome__left">
         <h2 class="hrdash-welcome__title"><?php echo htmlspecialchars($pageTitle); ?></h2>
-
-        <!-- Breadcrumb Navigation (hidden on dashboard) -->
-        <?php if ($page !== 'dashboard' && count($breadcrumbs) > 1): ?>
-        <nav class="hrdash-breadcrumb" aria-label="Breadcrumb">
-            <ol class="hrdash-breadcrumb__list">
-                <?php foreach ($breadcrumbs as $index => $crumb): ?>
-                    <?php if ($index < count($breadcrumbs) - 1): ?>
-                        <li class="hrdash-breadcrumb__item">
-                            <a href="<?php echo htmlspecialchars($crumb['url']); ?>" class="hrdash-breadcrumb__link">
-                                <?php echo htmlspecialchars($crumb['title']); ?>
-                            </a>
-                        </li>
-                    <?php else: ?>
-                        <li class="hrdash-breadcrumb__item hrdash-breadcrumb__current" aria-current="page">
-                            <?php echo htmlspecialchars($crumb['title']); ?>
-                        </li>
-                    <?php endif; ?>
-                <?php endforeach; ?>
-            </ol>
-        </nav>
-        <?php endif; ?>
     </div>
     <div class="hrdash-welcome__actions">
         <span id="current-time-global" class="hrdash-welcome__time"><?php echo strtoupper(date('g:i A')); ?></span>
@@ -251,7 +117,7 @@ if ($userRole === 'hr_admin' || $userRole === 'super_admin' || $userRole === 'de
                         }
                     ?>
                         <li>
-                            <a class="dropdown-item hrdash-notification-item" href="?page=alerts">
+                            <a class="dropdown-item hrdash-notification-item" href="?page=alerts&from=header">
                                 <div class="d-flex align-items-start">
                                     <i class="fas <?php echo $priorityIcon; ?> <?php echo $priorityClass; ?> me-2 mt-1"></i>
                                     <div class="flex-grow-1">
@@ -340,7 +206,7 @@ if ($userRole === 'hr_admin' || $userRole === 'super_admin' || $userRole === 'de
                                 <i class="fas fa-trash-alt"></i>
                             </button>
                         <?php endif; ?>
-                        <a href="?page=alerts" class="text-decoration-none">View All</a>
+                        <a href="?page=alerts&from=header" class="text-decoration-none">View All</a>
                     </div>
                 </li>
                 <li><hr class="dropdown-divider"></li>
@@ -550,8 +416,8 @@ if ($userRole === 'hr_admin' || $userRole === 'super_admin' || $userRole === 'de
                 <i class="fas fa-chevron-down hrdash-welcome__chevron"></i>
             </button>
             <ul class="dropdown-menu dropdown-menu-end">
-                <li><a class="dropdown-item" href="?page=profile"><i class="fas fa-user me-2"></i>Profile</a></li>
-                <li><a class="dropdown-item" href="?page=settings"><i class="fas fa-cog me-2"></i>Settings</a></li>
+                <li><a class="dropdown-item" href="?page=profile&from=header"><i class="fas fa-user me-2"></i>Profile</a></li>
+                <li><a class="dropdown-item" href="?page=settings&from=header"><i class="fas fa-cog me-2"></i>Settings</a></li>
                 <li><hr class="dropdown-divider"></li>
                 <li>
                     <a class="dropdown-item text-danger" href="<?php echo base_url(); ?>/index.php?logout=1" data-no-transition="true">

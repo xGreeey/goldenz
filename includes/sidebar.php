@@ -7,6 +7,9 @@ include_once __DIR__ . '/paths.php';
 // Get user role
 $user_role = $_SESSION['user_role'] ?? '';
 
+// Check if navigation was triggered from header dropdown
+$fromHeader = isset($_GET['from']) && $_GET['from'] === 'header';
+
 // Developer-specific menu (technical monitoring only)
 if ($user_role === 'developer') {
     $menu = [
@@ -79,7 +82,7 @@ if ($user_role === 'developer') {
                         <?php foreach ($item['children'] as $child): ?>
                             <li class="nav-item">
                         <a href="?page=<?php echo urlencode($child['page']); ?>"
-                           class="nav-link <?php echo ($page === $child['page']) ? 'active' : ''; ?>"
+                           class="nav-link <?php echo (($page === $child['page']) && !$fromHeader) ? 'active' : ''; ?>"
                            data-page="<?php echo htmlspecialchars($child['page']); ?>">
                         <span><?php echo htmlspecialchars($child['title']); ?></span>
                                 </a>
@@ -90,7 +93,7 @@ if ($user_role === 'developer') {
             <?php else: ?>
                 <li class="nav-item">
                     <a href="?page=<?php echo urlencode($item['page']); ?>"
-                       class="nav-link <?php echo ($page === $item['page']) ? 'active' : ''; ?>"
+                       class="nav-link <?php echo (($page === $item['page']) && !$fromHeader) ? 'active' : ''; ?>"
                        data-page="<?php echo htmlspecialchars($item['page']); ?>">
                         <?php if (!empty($item['icon'])): ?>
                             <i class="fas <?php echo htmlspecialchars($item['icon']); ?> me-2"></i>
@@ -138,7 +141,7 @@ if ($user_role === 'developer') {
         </li>
         <li class="nav-item">
             <a href="?page=help"
-               class="nav-link <?php echo ($page === 'help') ? 'active' : ''; ?>"
+               class="nav-link <?php echo (($page === 'help') && !$fromHeader) ? 'active' : ''; ?>"
                data-page="help">
                 <i class="fas fa-headset me-2"></i>
                 <span>Help & Support</span>
