@@ -3853,15 +3853,38 @@ if (!function_exists('create_database_backup')) {
                 error_log("Error recording backup in database: " . $e->getMessage());
             }
 
+            // Upload to MinIO if storage is configured for MinIO
+            $minio_uploaded = false;
+            if (function_exists('upload_to_storage')) {
+                require_once __DIR__ . '/storage.php';
+                $storage_driver = get_storage_driver();
+                
+                if ($storage_driver === 'minio') {
+                    $minio_path = 'db-backups/' . $filename;
+                    $minio_result = upload_to_storage($filepath, $minio_path, [
+                        'content_type' => 'application/sql'
+                    ]);
+                    
+                    if ($minio_result !== false) {
+                        $minio_uploaded = true;
+                        error_log("Database backup uploaded to MinIO: $minio_path");
+                    } else {
+                        error_log("Failed to upload database backup to MinIO: $minio_path");
+                    }
+                }
+            }
+            
             // Clean up old backups based on retention policy
             cleanup_old_backups();
 
             return [
                 'success' => true,
-                'message' => 'Backup created successfully',
+                'message' => 'Backup created successfully' . ($minio_uploaded ? ' and uploaded to MinIO' : ''),
                 'filename' => $filename,
                 'filepath' => $settings['backup_location'] . '/' . $filename,
-                'size' => filesize($filepath)
+                'size' => filesize($filepath),
+                'minio_uploaded' => $minio_uploaded,
+                'minio_path' => $minio_uploaded ? ('db-backups/' . $filename) : null
             ];
         } catch (Exception $e) {
             error_log("Error in create_database_backup: " . $e->getMessage());
@@ -3891,7 +3914,11 @@ if (!function_exists('create_database_backup_php')) {
 
                 // Get table structure
                 $create_table = $pdo->query("SHOW CREATE TABLE `{$table}`")->fetch(PDO::FETCH_ASSOC);
-                $output .= $create_table['Create Table'] . ";\n\n";
+                // Handle different MySQL versions - key might be 'Create Table' or 'Create Table'
+                $create_statement = $create_table['Create Table'] ?? $create_table['CREATE TABLE'] ?? '';
+                if (!empty($create_statement)) {
+                    $output .= $create_statement . ";\n\n";
+                }
 
                 // Get table data
                 $rows = $pdo->query("SELECT * FROM `{$table}`")->fetchAll(PDO::FETCH_ASSOC);

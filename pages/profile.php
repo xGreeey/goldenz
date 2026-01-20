@@ -8,6 +8,9 @@ if (!function_exists('get_avatar_url')) {
     require_once __DIR__ . '/../includes/paths.php';
 }
 
+// Include storage helper for MinIO uploads
+require_once __DIR__ . '/../includes/storage.php';
+
 // Get current user info
 $current_user_id = $_SESSION['user_id'] ?? null;
 $current_user = null;
@@ -40,43 +43,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         // Handle avatar upload (users table)
         if (isset($_FILES['avatar']) && is_uploaded_file($_FILES['avatar']['tmp_name'])) {
             if ($_FILES['avatar']['error'] === UPLOAD_ERR_OK) {
-                $upload_dir = __DIR__ . '/../uploads/users/';
-                if (!file_exists($upload_dir)) {
-                    if (!mkdir($upload_dir, 0755, true)) {
-                        $update_error = 'Failed to create upload directory. Please check permissions.';
-                    }
-                }
+                $file = $_FILES['avatar'];
+                $allowed_types = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+                $max_size = 2 * 1024 * 1024; // 2MB
                 
-                if (empty($update_error)) {
-                    $file = $_FILES['avatar'];
-                    $allowed_types = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
-                    $max_size = 2 * 1024 * 1024; // 2MB
+                if (in_array($file['type'], $allowed_types) && $file['size'] <= $max_size) {
+                    $extension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+                    $filename = 'user_' . $current_user_id . '_' . time() . '.' . $extension;
+                    $destination_path = 'uploads/users/' . $filename;
                     
-                    if (in_array($file['type'], $allowed_types) && $file['size'] <= $max_size) {
-                        $extension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-                        $filename = 'user_' . $current_user_id . '_' . time() . '.' . $extension;
-                        $target_path = $upload_dir . $filename;
-                        
-                        if (move_uploaded_file($file['tmp_name'], $target_path)) {
-                            // Delete old avatar if exists
-                            if (!empty($current_user['avatar'])) {
-                                $old_avatar_path = __DIR__ . '/../' . $current_user['avatar'];
-                                if (file_exists($old_avatar_path)) {
-                                    @unlink($old_avatar_path);
-                                }
-                            }
-                            
-                            $avatar_path = 'uploads/users/' . $filename;
-                            $user_updates[] = "avatar = ?";
-                            $user_params[] = $avatar_path;
-                        } else {
-                            $update_error = 'Failed to move uploaded file. Please check file permissions.';
-                            error_log('Avatar upload failed: Cannot move file from ' . $file['tmp_name'] . ' to ' . $target_path);
+                    // Upload to storage (MinIO or local)
+                    $uploaded_path = upload_to_storage($file['tmp_name'], $destination_path, [
+                        'content_type' => $file['type']
+                    ]);
+                    
+                    if ($uploaded_path !== false) {
+                        // Delete old avatar if exists
+                        if (!empty($current_user['avatar'])) {
+                            delete_from_storage($current_user['avatar']);
                         }
+                        
+                        $avatar_path = $uploaded_path;
+                        $user_updates[] = "avatar = ?";
+                        $user_params[] = $avatar_path;
                     } else {
-                        if (!in_array($file['type'], $allowed_types)) {
-                            $update_error = 'Invalid file type. Please upload a JPG, PNG, or GIF image.';
-                        } elseif ($file['size'] > $max_size) {
+                        $update_error = 'Failed to upload file to storage. Please try again.';
+                        error_log('Avatar upload failed: Cannot upload file from ' . $file['tmp_name'] . ' to ' . $destination_path);
+                    }
+                } else {
+                    if (!in_array($file['type'], $allowed_types)) {
+                        $update_error = 'Invalid file type. Please upload a JPG, PNG, or GIF image.';
+                    } elseif ($file['size'] > $max_size) {
                             $update_error = 'File size too large. Maximum size is 2MB.';
                         }
                     }
