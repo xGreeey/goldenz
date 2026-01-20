@@ -233,23 +233,23 @@ if (!empty($two_factor_secret)) {
                                             <div class="password-requirements mt-2" id="passwordRequirements">
                                                 <small class="d-block mb-1 fw-semibold text-muted">Requirements:</small>
                                                 <div class="requirement-item" data-requirement="length">
-                                                    <i class="fas fa-circle requirement-icon"></i>
+                                                    <i class="requirement-icon"></i>
                                                     <span>Minimum 8 characters</span>
                                                 </div>
                                                 <div class="requirement-item" data-requirement="lowercase">
-                                                    <i class="fas fa-circle requirement-icon"></i>
+                                                    <i class="requirement-icon"></i>
                                                     <span>Contains lowercase letter</span>
                                                 </div>
                                                 <div class="requirement-item" data-requirement="uppercase">
-                                                    <i class="fas fa-circle requirement-icon"></i>
+                                                    <i class="requirement-icon"></i>
                                                     <span>Contains uppercase letter</span>
                                                 </div>
                                                 <div class="requirement-item" data-requirement="number">
-                                                    <i class="fas fa-circle requirement-icon"></i>
+                                                    <i class="requirement-icon"></i>
                                                     <span>Contains number</span>
                                                 </div>
                                                 <div class="requirement-item" data-requirement="symbol">
-                                                    <i class="fas fa-circle requirement-icon"></i>
+                                                    <i class="requirement-icon"></i>
                                                     <span>Contains symbol</span>
                                                 </div>
                                             </div>
@@ -1150,6 +1150,14 @@ if (!empty($two_factor_secret)) {
     background: #f8fafc;
     border-radius: 6px;
     border: 1px solid #e2e8f0;
+    display: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.password-requirements.show {
+    display: block;
+    opacity: 1;
 }
 
 .requirement-item {
@@ -1167,24 +1175,24 @@ if (!empty($two_factor_secret)) {
 }
 
 .requirement-icon {
-    font-size: 0.5rem;
-    color: #cbd5e1;
+    font-size: 0.75rem;
     transition: all 0.2s ease;
 }
 
-.requirement-item.met .requirement-icon {
+.requirement-icon::before {
+    content: "\f00d";
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900;
+    color: #ef4444;
+}
+
+.requirement-item.met .requirement-icon::before {
+    content: "\f00c";
     color: #10b981;
 }
 
 .requirement-item.met {
     color: #059669;
-}
-
-.requirement-item.met .requirement-icon::before {
-    content: "\f00c";
-    font-family: "Font Awesome 5 Free";
-    font-weight: 900;
-    font-size: 0.75rem;
 }
 
 /* Password Match Indicator */
@@ -1434,9 +1442,17 @@ document.addEventListener('DOMContentLoaded', function() {
     const strengthBar = document.getElementById('passwordStrengthBar');
     const strengthLabel = document.getElementById('strengthLabel');
     const requirementItems = document.querySelectorAll('.requirement-item');
+    const passwordRequirementsDiv = document.getElementById('passwordRequirements');
     
     if (newPasswordInput && strengthBar && strengthLabel) {
         function checkPasswordStrength(password) {
+            // Show requirements div when user starts typing
+            if (password.length > 0) {
+                passwordRequirementsDiv.classList.add('show');
+            } else {
+                passwordRequirementsDiv.classList.remove('show');
+            }
+            
             const requirements = {
                 length: password.length >= 8,
                 lowercase: /[a-z]/.test(password),

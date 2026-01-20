@@ -115,7 +115,7 @@ try {
 
 <div class="container-fluid hrdash">
     <!-- Alert Statistics -->
-    <div class="d-flex justify-content-center">
+    <div class="d-flex justify-content-center mb-4">
         <div class="alert-stats-container">
             <div class="row g-4">
                 <div class="col-xl-3 col-md-6">
