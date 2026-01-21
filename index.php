@@ -1,9 +1,17 @@
 <?php
 /**
- * Golden Z-5 HR Management System - Main Entry Point
- * Role-Based Access Control System
- * Routes users to appropriate role-based interfaces
+ * Golden Z-5 HR Management System - Root Entry Point
+ * Handles logout and redirects to landing page
  */
+
+// Start session if not already started
+if (session_status() === PHP_SESSION_NONE) {
+    $sessionPath = __DIR__ . '/storage/sessions';
+    if (is_dir($sessionPath) || mkdir($sessionPath, 0755, true)) {
+        session_save_path($sessionPath);
+    }
+    session_start();
+}
 
 // Bootstrap application
 require_once __DIR__ . '/bootstrap/app.php';
@@ -12,35 +20,23 @@ require_once __DIR__ . '/bootstrap/app.php';
 require_once 'includes/security.php';
 require_once 'includes/database.php';
 
-// Handle logout
+// Handle logout before redirecting
 if (isset($_GET['logout'])) {
+    session_unset();
     session_destroy();
-    header('Location: landing/index.php');
+    // Clear session cookie
+    if (ini_get("session.use_cookies")) {
+        $params = session_get_cookie_params();
+        setcookie(session_name(), '', time() - 42000,
+            $params["path"], $params["domain"],
+            $params["secure"], $params["httponly"]
+        );
+    }
+    header('Location: /landing/');
     exit;
 }
 
-// Enforce login
-if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
-    header('Location: landing/index.php');
-    exit;
-}
-
-// Route based on allowed roles only
-$user_role = $_SESSION['user_role'] ?? null;
-switch ($user_role) {
-    case 'super_admin':
-        header('Location: super-admin/index.php');
-        exit;
-    case 'hr_admin':
-        header('Location: hr-admin/index.php');
-        exit;
-    case 'developer':
-        header('Location: developer/index.php');
-        exit;
-    default:
-        // Invalid role, redirect to login
-        session_destroy();
-        header('Location: landing/index.php');
-        exit;
-}
+// Redirect all other requests to landing page
+header('Location: /landing/');
+exit;
 ?>
