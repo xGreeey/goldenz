@@ -3990,21 +3990,6 @@ if (!function_exists('create_database_backup')) {
                     if ($minio_result !== false) {
                         $minio_uploaded = true;
                         error_log("Database backup uploaded to MinIO: $minio_path");
-                        
-                        // Delete local files after successful MinIO upload
-                        // Only delete if we're using temp directory (MinIO mode)
-                        if ($use_temp_dir) {
-                            // Delete compressed file if it exists
-                            if ($compression_success && file_exists($compressed_filepath)) {
-                                @unlink($compressed_filepath);
-                                error_log("Deleted temporary compressed backup file: $compressed_filepath");
-                            }
-                            // Delete uncompressed file
-                            if (file_exists($filepath)) {
-                                @unlink($filepath);
-                                error_log("Deleted temporary backup file: $filepath");
-                            }
-                        }
                     } else {
                         error_log("Failed to upload database backup to MinIO: $minio_path");
                         // If MinIO upload fails and we're using temp dir, move to permanent location as fallback
@@ -4024,7 +4009,48 @@ if (!function_exists('create_database_backup')) {
                 }
             }
             
-            // Record backup in database (after MinIO upload to get correct path)
+            // Upload to Google Drive using rclone (after MinIO upload)
+            $gdrive_uploaded = false;
+            $gdrive_path = null;
+            if (function_exists('upload_to_gdrive_rclone')) {
+                require_once __DIR__ . '/storage.php';
+                
+                // Only upload to Google Drive if MinIO upload was successful
+                if ($minio_uploaded) {
+                    // Upload compressed file if available, otherwise upload uncompressed
+                    $upload_filepath = $compression_success ? $compressed_filepath : $filepath;
+                    $upload_filename = $compression_success ? $compressed_filename : $filename;
+                    $gdrive_path = 'db-backups/' . $upload_filename;
+                    
+                    $gdrive_result = upload_to_gdrive_rclone($upload_filepath, $gdrive_path, [
+                        'remote_name' => $_ENV['RCLONE_REMOTE'] ?? 'gdrive'
+                    ]);
+                    
+                    if ($gdrive_result !== false) {
+                        $gdrive_uploaded = true;
+                        error_log("Database backup uploaded to Google Drive: $gdrive_path");
+                    } else {
+                        error_log("Failed to upload database backup to Google Drive: $gdrive_path");
+                    }
+                }
+            }
+            
+            // Delete local files after successful uploads (both MinIO and Google Drive if enabled)
+            // Only delete if we're using temp directory (MinIO mode) and MinIO upload succeeded
+            if ($use_temp_dir && $minio_uploaded) {
+                // Delete compressed file if it exists
+                if ($compression_success && file_exists($compressed_filepath)) {
+                    @unlink($compressed_filepath);
+                    error_log("Deleted temporary compressed backup file: $compressed_filepath");
+                }
+                // Delete uncompressed file
+                if (file_exists($filepath)) {
+                    @unlink($filepath);
+                    error_log("Deleted temporary backup file: $filepath");
+                }
+            }
+            
+            // Record backup in database (after MinIO and Google Drive uploads to get correct paths)
             try {
                 $pdo->exec("CREATE TABLE IF NOT EXISTS backup_history (
                     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -4038,10 +4064,17 @@ if (!function_exists('create_database_backup')) {
                 // Use compressed size if we uploaded compressed version, otherwise use uncompressed size
                 $record_size = ($minio_uploaded && $compression_success) ? $compressed_size_value : $backup_size;
                 
-                // Store MinIO path if uploaded, otherwise store local path
-                $record_filepath = ($minio_uploaded && $minio_path) 
-                    ? 'minio://' . $minio_path 
-                    : ($use_temp_dir ? 'temp://' . $filename : $settings['backup_location'] . '/' . $filename);
+                // Store path: prefer MinIO, then Google Drive, then local
+                if ($minio_uploaded && $minio_path) {
+                    $record_filepath = 'minio://' . $minio_path;
+                    if ($gdrive_uploaded && $gdrive_path) {
+                        $record_filepath .= ' | gdrive://' . $gdrive_path;
+                    }
+                } elseif ($gdrive_uploaded && $gdrive_path) {
+                    $record_filepath = 'gdrive://' . $gdrive_path;
+                } else {
+                    $record_filepath = $use_temp_dir ? 'temp://' . $filename : $settings['backup_location'] . '/' . $filename;
+                }
                 $stmt = $pdo->prepare("INSERT INTO backup_history (filename, filepath, file_size) VALUES (?, ?, ?)");
                 $stmt->execute([$filename, $record_filepath, $record_size]);
             } catch (Exception $e) {
@@ -4061,9 +4094,19 @@ if (!function_exists('create_database_backup')) {
             // Use compressed size in return if uploaded compressed version
             $return_size = ($minio_uploaded && $compression_success) ? $compressed_size_value : $backup_size;
             
+            // Build success message
+            $upload_messages = [];
+            if ($minio_uploaded) {
+                $upload_messages[] = 'MinIO';
+            }
+            if ($gdrive_uploaded) {
+                $upload_messages[] = 'Google Drive';
+            }
+            $upload_msg = !empty($upload_messages) ? ' and uploaded to ' . implode(' and ', $upload_messages) : '';
+            
             return [
                 'success' => true,
-                'message' => 'Backup created successfully' . ($minio_uploaded ? ' and uploaded to MinIO' : ''),
+                'message' => 'Backup created successfully' . $upload_msg,
                 'filename' => $filename,
                 'filepath' => $return_filepath,
                 'size' => $return_size,
@@ -4071,7 +4114,9 @@ if (!function_exists('create_database_backup')) {
                 'compressed_filename' => $compression_success ? $compressed_filename : null,
                 'compressed_size' => $compression_success ? $compressed_size_value : null,
                 'minio_uploaded' => $minio_uploaded,
-                'minio_path' => $minio_path
+                'minio_path' => $minio_path,
+                'gdrive_uploaded' => $gdrive_uploaded,
+                'gdrive_path' => $gdrive_path
             ];
         } catch (Exception $e) {
             error_log("Error in create_database_backup: " . $e->getMessage());
