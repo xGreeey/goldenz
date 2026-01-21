@@ -673,10 +673,17 @@ function upload_to_gdrive_rclone($source_path, $destination_path, $options = [])
     $rclone_path = 'rclone';
     $remote_dest = "$remote_name:$destination_path";
     
+    // Use rclone config (copied to /var/www/.config/rclone/rclone.conf by entrypoint)
+    // Fallback to root config if www-data config doesn't exist
+    $config_path = file_exists('/var/www/.config/rclone/rclone.conf') 
+        ? '/var/www/.config/rclone/rclone.conf' 
+        : '/root/.config/rclone/rclone.conf';
+    
     // Use copy command (doesn't delete source, idempotent)
     $command = sprintf(
-        '%s copy %s %s --progress=false --log-level=ERROR 2>&1',
+        '%s --config %s copy %s %s --progress=false --log-level=ERROR 2>&1',
         escapeshellarg($rclone_path),
+        escapeshellarg($config_path),
         escapeshellarg($source_path),
         escapeshellarg($remote_dest)
     );
@@ -719,9 +726,16 @@ function test_rclone_gdrive($remote_name = null) {
         ];
     }
     
+    // Use rclone config (copied to /var/www/.config/rclone/rclone.conf by entrypoint)
+    // Fallback to root config if www-data config doesn't exist
+    $config_path = file_exists('/var/www/.config/rclone/rclone.conf') 
+        ? '/var/www/.config/rclone/rclone.conf' 
+        : '/root/.config/rclone/rclone.conf';
+    
     // Test rclone remote connection by listing the remote
     $command = sprintf(
-        'rclone lsd %s: 2>&1',
+        'rclone --config %s lsd %s: 2>&1',
+        escapeshellarg($config_path),
         escapeshellarg($remote_name)
     );
     

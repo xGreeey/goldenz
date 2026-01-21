@@ -4020,7 +4020,7 @@ if (!function_exists('create_database_backup')) {
                     // Upload compressed file if available, otherwise upload uncompressed
                     $upload_filepath = $compression_success ? $compressed_filepath : $filepath;
                     $upload_filename = $compression_success ? $compressed_filename : $filename;
-                    $gdrive_path = 'db-backups/' . $upload_filename;
+                    $gdrive_path = 'GoldenZ5/backup/' . $upload_filename;
                     
                     $gdrive_result = upload_to_gdrive_rclone($upload_filepath, $gdrive_path, [
                         'remote_name' => $_ENV['RCLONE_REMOTE'] ?? 'gdrive'
