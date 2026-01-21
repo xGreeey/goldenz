@@ -3780,29 +3780,42 @@ if (!function_exists('create_database_backup')) {
                 'database' => $_ENV['DB_DATABASE'] ?? 'goldenz_hr',
             ];
 
-            // Create backup directory if it doesn't exist
-            // Build path relative to includes directory
-            $backup_dir = __DIR__ . '/../' . $settings['backup_location'];
-            
-            // Ensure directory exists with proper permissions (PHP handles .. resolution)
-            if (!file_exists($backup_dir)) {
-                $old_umask = umask(0);
-                $created = @mkdir($backup_dir, 0755, true);
-                umask($old_umask);
-                if (!$created) {
-                    $error = error_get_last();
-                    return ['success' => false, 'message' => 'Failed to create backup directory: ' . ($error['message'] ?? 'Unknown error') . ' (Path: ' . $backup_dir . ')'];
+            // Check storage driver - if MinIO, use temp directory instead of storage/backups
+            $use_temp_dir = false;
+            if (function_exists('get_storage_driver')) {
+                require_once __DIR__ . '/storage.php';
+                $storage_driver = get_storage_driver();
+                $use_temp_dir = ($storage_driver === 'minio');
+            }
+
+            // Determine backup directory
+            if ($use_temp_dir) {
+                // Use system temp directory for MinIO backups (will be deleted after upload)
+                $backup_dir = sys_get_temp_dir();
+            } else {
+                // Use configured backup location for local storage
+                $backup_dir = __DIR__ . '/../' . $settings['backup_location'];
+                
+                // Ensure directory exists with proper permissions (PHP handles .. resolution)
+                if (!file_exists($backup_dir)) {
+                    $old_umask = umask(0);
+                    $created = @mkdir($backup_dir, 0755, true);
+                    umask($old_umask);
+                    if (!$created) {
+                        $error = error_get_last();
+                        return ['success' => false, 'message' => 'Failed to create backup directory: ' . ($error['message'] ?? 'Unknown error') . ' (Path: ' . $backup_dir . ')'];
+                    }
                 }
-            }
-            // Verify directory exists and is writable
-            if (!is_dir($backup_dir)) {
-                return ['success' => false, 'message' => 'Backup directory does not exist: ' . $backup_dir];
-            }
-            if (!is_writable($backup_dir)) {
-                // Try to make it writable
-                @chmod($backup_dir, 0755);
+                // Verify directory exists and is writable
+                if (!is_dir($backup_dir)) {
+                    return ['success' => false, 'message' => 'Backup directory does not exist: ' . $backup_dir];
+                }
                 if (!is_writable($backup_dir)) {
-                    return ['success' => false, 'message' => 'Backup directory is not writable: ' . $backup_dir];
+                    // Try to make it writable
+                    @chmod($backup_dir, 0755);
+                    if (!is_writable($backup_dir)) {
+                        return ['success' => false, 'message' => 'Backup directory is not writable: ' . $backup_dir];
+                    }
                 }
             }
             
@@ -3952,28 +3965,14 @@ if (!function_exists('create_database_backup')) {
                 error_log("gzip compression not available (gzencode function missing)");
             }
 
-            // Record backup in database
-            try {
-                $pdo->exec("CREATE TABLE IF NOT EXISTS backup_history (
-                    id INT AUTO_INCREMENT PRIMARY KEY,
-                    filename VARCHAR(255) NOT NULL,
-                    filepath VARCHAR(500) NOT NULL,
-                    file_size BIGINT NOT NULL,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    INDEX idx_created_at (created_at)
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
-
-                $backup_size = filesize($filepath);
-                $stmt = $pdo->prepare("INSERT INTO backup_history (filename, filepath, file_size) VALUES (?, ?, ?)");
-                $stmt->execute([$filename, $settings['backup_location'] . '/' . $filename, $backup_size]);
-            } catch (Exception $e) {
-                error_log("Error recording backup in database: " . $e->getMessage());
-            }
+            // Capture file sizes before potential deletion
+            $backup_size = file_exists($filepath) ? filesize($filepath) : 0;
+            $compressed_size_value = ($compression_success && file_exists($compressed_filepath)) ? filesize($compressed_filepath) : 0;
 
             // Upload to MinIO if storage is configured for MinIO
             $minio_uploaded = false;
             $minio_path = null;
-            if (function_exists('upload_to_storage')) {
+            if (function_exists('upload_to_storage') && function_exists('get_storage_driver')) {
                 require_once __DIR__ . '/storage.php';
                 $storage_driver = get_storage_driver();
                 
@@ -3991,24 +3990,86 @@ if (!function_exists('create_database_backup')) {
                     if ($minio_result !== false) {
                         $minio_uploaded = true;
                         error_log("Database backup uploaded to MinIO: $minio_path");
+                        
+                        // Delete local files after successful MinIO upload
+                        // Only delete if we're using temp directory (MinIO mode)
+                        if ($use_temp_dir) {
+                            // Delete compressed file if it exists
+                            if ($compression_success && file_exists($compressed_filepath)) {
+                                @unlink($compressed_filepath);
+                                error_log("Deleted temporary compressed backup file: $compressed_filepath");
+                            }
+                            // Delete uncompressed file
+                            if (file_exists($filepath)) {
+                                @unlink($filepath);
+                                error_log("Deleted temporary backup file: $filepath");
+                            }
+                        }
                     } else {
                         error_log("Failed to upload database backup to MinIO: $minio_path");
+                        // If MinIO upload fails and we're using temp dir, move to permanent location as fallback
+                        if ($use_temp_dir && file_exists($filepath)) {
+                            $fallback_dir = __DIR__ . '/../' . $settings['backup_location'];
+                            if (!file_exists($fallback_dir)) {
+                                @mkdir($fallback_dir, 0755, true);
+                            }
+                            $fallback_path = $fallback_dir . '/' . $filename;
+                            if (@rename($filepath, $fallback_path)) {
+                                error_log("Moved backup to fallback location due to MinIO upload failure: $fallback_path");
+                                $filepath = $fallback_path;
+                                $backup_size = file_exists($filepath) ? filesize($filepath) : $backup_size;
+                            }
+                        }
                     }
                 }
             }
             
-            // Clean up old backups based on retention policy
-            cleanup_old_backups();
+            // Record backup in database (after MinIO upload to get correct path)
+            try {
+                $pdo->exec("CREATE TABLE IF NOT EXISTS backup_history (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    filename VARCHAR(255) NOT NULL,
+                    filepath VARCHAR(500) NOT NULL,
+                    file_size BIGINT NOT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    INDEX idx_created_at (created_at)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
+                // Use compressed size if we uploaded compressed version, otherwise use uncompressed size
+                $record_size = ($minio_uploaded && $compression_success) ? $compressed_size_value : $backup_size;
+                
+                // Store MinIO path if uploaded, otherwise store local path
+                $record_filepath = ($minio_uploaded && $minio_path) 
+                    ? 'minio://' . $minio_path 
+                    : ($use_temp_dir ? 'temp://' . $filename : $settings['backup_location'] . '/' . $filename);
+                $stmt = $pdo->prepare("INSERT INTO backup_history (filename, filepath, file_size) VALUES (?, ?, ?)");
+                $stmt->execute([$filename, $record_filepath, $record_size]);
+            } catch (Exception $e) {
+                error_log("Error recording backup in database: " . $e->getMessage());
+            }
+            
+            // Clean up old backups based on retention policy (only for local storage)
+            if (!$use_temp_dir) {
+                cleanup_old_backups();
+            }
+
+            // Determine filepath for return value
+            $return_filepath = $minio_uploaded && $use_temp_dir 
+                ? 'minio://' . $minio_path 
+                : ($use_temp_dir ? 'temp://' . $filename : $settings['backup_location'] . '/' . $filename);
+            
+            // Use compressed size in return if uploaded compressed version
+            $return_size = ($minio_uploaded && $compression_success) ? $compressed_size_value : $backup_size;
+            
             return [
                 'success' => true,
                 'message' => 'Backup created successfully' . ($minio_uploaded ? ' and uploaded to MinIO' : ''),
                 'filename' => $filename,
-                'filepath' => $settings['backup_location'] . '/' . $filename,
-                'size' => filesize($filepath),
+                'filepath' => $return_filepath,
+                'size' => $return_size,
                 'compressed' => $compression_success,
                 'compressed_filename' => $compression_success ? $compressed_filename : null,
-                'compressed_size' => $compression_success ? filesize($compressed_filepath) : null,
+                'compressed_size' => $compression_success ? $compressed_size_value : null,
                 'minio_uploaded' => $minio_uploaded,
                 'minio_path' => $minio_path
             ];
