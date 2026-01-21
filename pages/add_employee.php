@@ -1376,6 +1376,7 @@ if (isset($_SESSION['employee_redirect_url'])) {
                                     $references = $_POST['character_references'] ?? [];
                                     if (!is_array($references)) $references = [];
                                     if (count($references) === 0) $references = [[], [], []]; // Three blank records by default
+                                    $total_references = count($references);
                                     foreach ($references as $i => $ref):
                                         $ref_name = is_array($ref) ? ($ref['name'] ?? '') : '';
                                         $ref_occupation = is_array($ref) ? ($ref['occupation'] ?? '') : '';
@@ -1408,7 +1409,7 @@ if (isset($_SESSION['employee_redirect_url'])) {
                                                    maxlength="30" placeholder="Contact Number">
                                         </td>
                                         <td class="text-center">
-                                            <?php if (count($references) > 1 || $i > 0): ?>
+                                            <?php if ($total_references > 3): ?>
                                             <button type="button" class="btn btn-sm btn-icon-action character-reference-remove-btn" 
                                                     data-reference-index="<?php echo (int)$i; ?>" 
                                                     title="Remove row" aria-label="Remove character reference">
@@ -1423,8 +1424,8 @@ if (isset($_SESSION['employee_redirect_url'])) {
                         </div>
 
                         <div class="d-flex justify-content-end mt-2">
-                            <button type="button" class="btn btn-sm btn-icon-action btn-icon-action-primary" id="addCharacterReferenceBtn" title="Add character reference">
-                                <i class="fas fa-plus me-1"></i> Add Reference
+                            <button type="button" class="btn btn-primary-modern btn-sm" id="addCharacterReferenceBtn" title="Add character reference">
+                                <span class="hr-icon hr-icon-plus me-1"></span>Add Reference
                             </button>
                         </div>
                     </div>
