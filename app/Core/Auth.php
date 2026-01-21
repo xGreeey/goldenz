@@ -154,7 +154,7 @@ class Auth
     public static function requireAuth()
     {
         if (!self::check()) {
-            header('Location: ' . url('landing/index.php'));
+            header('Location: ' . url('landing/'));
             exit;
         }
     }
@@ -170,7 +170,7 @@ class Auth
         self::requireAuth();
         
         if (!self::hasRole($roles)) {
-            header('Location: ' . url('landing/index.php'));
+            header('Location: ' . url('landing/'));
             exit;
         }
     }

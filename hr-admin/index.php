@@ -13,7 +13,7 @@ require_once '../includes/database.php';
 
 // Check if user is logged in
 if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
-    header('Location: ../landing/index.php');
+    header('Location: /landing/');
     exit;
 }
 
@@ -23,7 +23,7 @@ $allowed_roles = ['hr_admin', 'hr', 'admin', 'accounting', 'operation', 'logisti
 if (!in_array($user_role, $allowed_roles)) {
     // Invalid role, redirect to login
     session_destroy();
-    header('Location: ../landing/index.php');
+    header('Location: /landing/');
     exit;
 }
 
