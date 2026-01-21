@@ -34,13 +34,13 @@ if (isset($_GET['logout'])) {
     session_destroy();
     
     // Redirect to login page
-    header('Location: ../landing/index.php');
+    header('Location: /landing/');
     exit;
 }
 
 // Check if user is logged in
 if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
-    header('Location: ../landing/index.php');
+    header('Location: /landing/');
     exit;
 }
 
@@ -49,7 +49,7 @@ $user_role = $_SESSION['user_role'] ?? null;
 if ($user_role !== 'super_admin') {
     // Invalid role, redirect to login
     session_destroy();
-    header('Location: ../landing/index.php');
+    header('Location: /landing/');
     exit;
 }
 
