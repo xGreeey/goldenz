@@ -42,6 +42,7 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 ini_set('log_errors', 1);
 
+
 // Start session first (before any output)
 if (session_status() === PHP_SESSION_NONE) {
     $sessionPath = __DIR__ . '/../storage/sessions';
@@ -74,8 +75,17 @@ require_once __DIR__ . '/../includes/database.php';
 
 // Handle logout
 if (isset($_GET['logout']) && $_GET['logout'] == '1') {
+    session_unset();
     session_destroy();
-    header('Location: index.php');
+    // Clear session cookie
+    if (ini_get("session.use_cookies")) {
+        $params = session_get_cookie_params();
+        setcookie(session_name(), '', time() - 42000,
+            $params["path"], $params["domain"],
+            $params["secure"], $params["httponly"]
+        );
+    }
+    header('Location: /landing/');
     exit;
 }
 
@@ -83,15 +93,15 @@ if (isset($_GET['logout']) && $_GET['logout'] == '1') {
 if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true && isset($_SESSION['user_role']) && !isset($_SESSION['require_password_change'])) {
     $role = $_SESSION['user_role'];
     if ($role === 'super_admin') {
-        header('Location: ../super-admin/index.php');
+        header('Location: /super-admin/dashboard');
         exit;
     }
     if ($role === 'hr_admin' || in_array($role, ['hr', 'admin', 'accounting', 'operation', 'logistics'])) {
-        header('Location: ../hr-admin/index.php');
+        header('Location: /hr-admin/dashboard');
         exit;
     }
     if ($role === 'developer') {
-        header('Location: ../developer/index.php');
+        header('Location: /developer/dashboard');
         exit;
     }
 }
@@ -178,13 +188,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
                 // Redirect based on role
                 $role = $_SESSION['user_role'];
                 if ($role === 'super_admin') {
-                    header('Location: ../super-admin/index.php');
+                    header('Location: /super-admin/dashboard');
                     exit;
                 } elseif ($role === 'developer') {
-                    header('Location: ../developer/index.php');
+                    header('Location: /developer/dashboard');
                     exit;
                 } else {
-                    header('Location: ../hr-admin/index.php');
+                    header('Location: /hr-admin/dashboard');
                     exit;
                 }
             } catch (Exception $e) {
@@ -270,7 +280,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
                     $error = 'inactive';
                     $debug_info[] = "User account is inactive - blocking login";
                     // Redirect back to login page to show the modal
-                    header('Location: index.php');
+                    header('Location: /landing/');
                     exit;
                 } elseif ($user['status'] === 'suspended') {
                     $_SESSION['login_status_error'] = 'suspended';
@@ -278,7 +288,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
                     $error = 'suspended';
                     $debug_info[] = "User account is suspended - blocking login";
                     // Redirect back to login page to show the modal
-                    header('Location: index.php');
+                    header('Location: /landing/');
                     exit;
                 } elseif (!empty($user['locked_until']) && strtotime($user['locked_until']) > time()) {
                     $error = 'Account is temporarily locked. Please try again later.';
@@ -371,17 +381,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
                             
                             // Redirect based on role (Role-Based Dashboard Access)
                             if ($user['role'] === 'super_admin') {
-                                $debug_info[] = "Redirecting to: ../super-admin/index.php";
-                                header('Location: ../super-admin/index.php');
+                                $debug_info[] = "Redirecting to: /super-admin/dashboard";
+                                header('Location: /super-admin/dashboard');
                                 exit;
                             } elseif ($user['role'] === 'developer') {
-                                $debug_info[] = "Redirecting to: ../developer/index.php";
-                                header('Location: ../developer/index.php');
+                                $debug_info[] = "Redirecting to: ../developer/dashboard";
+                                header('Location: /developer/dashboard');
                                 exit;
                             } else {
                                 // All other roles (hr_admin, hr, admin, accounting, operation, logistics) go to hr-admin portal
-                                $debug_info[] = "Redirecting to: ../hr-admin/index.php";
-                                header('Location: ../hr-admin/index.php');
+                                $debug_info[] = "Redirecting to: ../hr-admin/dashboard";
+                                header('Location: /hr-admin/dashboard');
                                 exit;
                             }
                         }
