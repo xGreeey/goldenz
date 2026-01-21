@@ -1,0 +1,4 @@
+# Always keep MAIN branch versions when mergin
+
+config/**   merge=ours
+includes/** merge=ours
