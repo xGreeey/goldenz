@@ -377,9 +377,14 @@
 .employees-table .employee-actions {
     display: inline-flex;
     align-items: center;
-    justify-content: flex-start;
+    justify-content: center;
     gap: 0.375rem;
     flex-wrap: wrap;
+}
+
+.employees-table tbody td:last-child {
+    vertical-align: middle;
+    text-align: center;
 }
 
 .employees-table .employee-actions .btn {
