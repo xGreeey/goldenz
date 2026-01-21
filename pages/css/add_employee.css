@@ -1399,12 +1399,6 @@ textarea.form-control:focus.is-valid {
     border-bottom: none;
 }
 
-.add-employee-container .character-reference-remove-buttons {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-}
-
 /* Employment remove buttons container */
 .add-employee-container .employment-remove-buttons {
     min-width: 48px;
