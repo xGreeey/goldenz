@@ -25,7 +25,7 @@ class RoleMiddleware
     public function handle()
     {
         if (!Auth::check()) {
-            header('Location: ' . url('landing/index.php'));
+            header('Location: ' . url('landing/'));
             exit;
         }
 
