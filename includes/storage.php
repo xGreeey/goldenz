@@ -638,6 +638,113 @@ function delete_from_storage($path) {
 }
 
 /**
+ * Upload file to Google Drive using rclone
+ * 
+ * @param string $source_path Local file path to upload
+ * @param string $destination_path Destination path in Google Drive (e.g., 'db-backups/backup.sql.gz')
+ * @param array $options Additional options (remote_name: rclone remote name, default 'gdrive')
+ * @return string|false Returns the Google Drive path on success, false on failure
+ */
+function upload_to_gdrive_rclone($source_path, $destination_path, $options = []) {
+    // Check if rclone is available
+    if (!function_exists('exec')) {
+        error_log("rclone upload: exec() function is not available");
+        return false;
+    }
+    
+    // Check if rclone is installed
+    exec('which rclone 2>&1', $which_output, $which_return);
+    if ($which_return !== 0) {
+        error_log("rclone is not installed. Please install rclone first.");
+        return false;
+    }
+    
+    // Get rclone remote name from options or environment variable
+    $remote_name = $options['remote_name'] ?? $_ENV['RCLONE_REMOTE'] ?? 'gdrive';
+    
+    // Verify source file exists
+    if (!file_exists($source_path)) {
+        error_log("rclone upload: Source file does not exist: $source_path");
+        return false;
+    }
+    
+    // Build rclone copy command
+    // rclone copy source remote:destination
+    $rclone_path = 'rclone';
+    $remote_dest = "$remote_name:$destination_path";
+    
+    // Use copy command (doesn't delete source, idempotent)
+    $command = sprintf(
+        '%s copy %s %s --progress=false --log-level=ERROR 2>&1',
+        escapeshellarg($rclone_path),
+        escapeshellarg($source_path),
+        escapeshellarg($remote_dest)
+    );
+    
+    error_log("rclone: Executing command: $command");
+    exec($command, $output, $return_var);
+    $output_str = implode("\n", $output);
+    
+    if ($return_var === 0) {
+        error_log("rclone: Successfully uploaded to Google Drive: $remote_dest");
+        return $destination_path;
+    } else {
+        error_log("rclone upload failed. Return code: $return_var. Output: $output_str");
+        return false;
+    }
+}
+
+/**
+ * Test rclone Google Drive connectivity
+ * 
+ * @param string $remote_name Rclone remote name (default: 'gdrive')
+ * @return array Test results
+ */
+function test_rclone_gdrive($remote_name = null) {
+    $remote_name = $remote_name ?? $_ENV['RCLONE_REMOTE'] ?? 'gdrive';
+    
+    if (!function_exists('exec')) {
+        return [
+            'success' => false,
+            'error' => 'exec() function is not available'
+        ];
+    }
+    
+    // Check if rclone is installed
+    exec('which rclone 2>&1', $which_output, $which_return);
+    if ($which_return !== 0) {
+        return [
+            'success' => false,
+            'error' => 'rclone is not installed'
+        ];
+    }
+    
+    // Test rclone remote connection by listing the remote
+    $command = sprintf(
+        'rclone lsd %s: 2>&1',
+        escapeshellarg($remote_name)
+    );
+    
+    exec($command, $output, $return_var);
+    $output_str = implode("\n", $output);
+    
+    if ($return_var === 0) {
+        return [
+            'success' => true,
+            'remote_name' => $remote_name,
+            'output' => $output_str
+        ];
+    } else {
+        return [
+            'success' => false,
+            'error' => "Failed to connect to rclone remote '$remote_name'",
+            'output' => $output_str,
+            'return_code' => $return_var
+        ];
+    }
+}
+
+/**
  * Delete file from MinIO
  */
 function delete_from_minio($path) {

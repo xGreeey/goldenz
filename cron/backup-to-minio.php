@@ -64,6 +64,12 @@ try {
             log_message("⚠ Backup NOT uploaded to MinIO (check storage configuration)");
         }
         
+        if (isset($result['gdrive_uploaded']) && $result['gdrive_uploaded']) {
+            log_message("✓ Backup uploaded to Google Drive: " . $result['gdrive_path']);
+        } else {
+            log_message("⚠ Backup NOT uploaded to Google Drive (check rclone configuration)");
+        }
+        
         log_message("=== Backup completed successfully ===");
         exit(0);
     } else {
