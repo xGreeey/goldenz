@@ -15,10 +15,11 @@ if (file_exists(__DIR__ . '/../bootstrap/autoload.php')) {
 // Database configuration (fallback if config not loaded)
 $db_config = [
     'host' => $_ENV['DB_HOST'] ?? 'localhost',
+    'port' => $_ENV['DB_PORT'] ?? '3306',
     'username' => $_ENV['DB_USERNAME'] ?? 'root',
-    'password' => $_ENV['DB_PASSWORD'] ?? '',
+    'password' => $_ENV['DB_PASSWORD'] ?? 'Suomynona027',
     'database' => $_ENV['DB_DATABASE'] ?? 'goldenz_hr',
-    'charset' => 'utf8mb4'
+    'charset' => $_ENV['DB_CHARSET'] ?? 'utf8mb4'
 ];
 
 // Create database connection
@@ -51,19 +52,63 @@ if (!function_exists('get_db_connection')) {
         // Fallback to old method
         global $db_config;
 
-        if (!isset($db_config) || empty($db_config)) {
+        // Normalize config structure - handle both flat and nested config formats
+        if (!isset($db_config) || empty($db_config) || !isset($db_config['host'])) {
             // Try to load config if not available
             $config_file = __DIR__ . '/../config/database.php';
             if (file_exists($config_file)) {
-                $db_config = include $config_file;
+                $loaded_config = include $config_file;
+                
+                // Handle nested config structure (from config/database.php)
+                if (isset($loaded_config['connections']['mysql'])) {
+                    $mysql_config = $loaded_config['connections']['mysql'];
+                    $db_config = [
+                        'host' => $mysql_config['host'] ?? $_ENV['DB_HOST'] ?? 'localhost',
+                        'port' => $mysql_config['port'] ?? $_ENV['DB_PORT'] ?? '3306',
+                        'username' => $mysql_config['username'] ?? $_ENV['DB_USERNAME'] ?? 'root',
+                        'password' => $mysql_config['password'] ?? $_ENV['DB_PASSWORD'] ?? '',
+                        'database' => $mysql_config['database'] ?? $_ENV['DB_DATABASE'] ?? 'goldenz_hr',
+                        'charset' => $mysql_config['charset'] ?? $_ENV['DB_CHARSET'] ?? 'utf8mb4'
+                    ];
+                } else {
+                    // Handle flat config structure
+                    $db_config = $loaded_config;
+                }
             } else {
                 error_log('Database configuration not found');
                 throw new Exception('Database configuration not found');
             }
         }
 
+        // Ensure port is set
+        if (!isset($db_config['port'])) {
+            $db_config['port'] = $_ENV['DB_PORT'] ?? '3306';
+        }
+
+        // Reload environment variables to ensure we have the latest values (important for Docker)
+        // Environment variables take precedence over config file values
+        $db_config['host'] = $_ENV['DB_HOST'] ?? $db_config['host'] ?? 'localhost';
+        $db_config['port'] = $_ENV['DB_PORT'] ?? $db_config['port'] ?? '3306';
+        $db_config['username'] = $_ENV['DB_USERNAME'] ?? $db_config['username'] ?? 'root';
+        $db_config['password'] = $_ENV['DB_PASSWORD'] ?? $db_config['password'] ?? '';
+        $db_config['database'] = $_ENV['DB_DATABASE'] ?? $db_config['database'] ?? 'goldenz_hr';
+        $db_config['charset'] = $_ENV['DB_CHARSET'] ?? $db_config['charset'] ?? 'utf8mb4';
+
         try {
-            $dsn = "mysql:host={$db_config['host']};dbname={$db_config['database']};charset={$db_config['charset']}";
+            // Get connection parameters
+            $host = $db_config['host'];
+            $port = $db_config['port'];
+            $database = $db_config['database'];
+            $charset = $db_config['charset'];
+            
+            // For Docker: if host is 'localhost', we need to use the Docker service name instead
+            // Only convert to 127.0.0.1 if we're sure we're not in Docker (but this won't work in Docker anyway)
+            // Better approach: log a helpful error if localhost is used in what appears to be Docker
+            
+            // Build DSN with port for Docker compatibility
+            // Always use TCP/IP connection with explicit port
+            $dsn = "mysql:host={$host};port={$port};dbname={$database};charset={$charset}";
+            
             $db_connection = new PDO($dsn, $db_config['username'], $db_config['password'], [
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
@@ -72,8 +117,29 @@ if (!function_exists('get_db_connection')) {
             ]);
             return $db_connection;
         } catch (PDOException $e) {
-            error_log('Database connection failed: ' . $e->getMessage());
-            throw new Exception('Database connection failed: ' . $e->getMessage());
+            // Enhanced error logging with connection details (without password)
+            $error_details = [
+                'host' => $db_config['host'],
+                'port' => $db_config['port'],
+                'database' => $db_config['database'],
+                'username' => $db_config['username'],
+                'error' => $e->getMessage(),
+                'env_db_host' => $_ENV['DB_HOST'] ?? 'not_set'
+            ];
+            
+            $error_msg = 'Database connection failed: ' . $e->getMessage();
+            $error_msg .= "\nAttempted connection to: {$db_config['host']}:{$db_config['port']}";
+            
+            // Provide helpful Docker-specific guidance
+            if ($db_config['host'] === 'localhost' || $db_config['host'] === '127.0.0.1') {
+                $error_msg .= "\n\n⚠️  DOCKER DETECTED: You are using 'localhost' or '127.0.0.1' as DB_HOST.";
+                $error_msg .= "\nIn Docker, you must use your MySQL service name (e.g., 'mysql', 'db', 'database').";
+                $error_msg .= "\nSet DB_HOST environment variable to your Docker MySQL service name.";
+                $error_msg .= "\nCheck your docker-compose.yml to find the MySQL service name.";
+            }
+            
+            error_log('Database connection failed: ' . json_encode($error_details));
+            throw new Exception($error_msg);
         }
     }
 }
@@ -747,30 +813,105 @@ if (!function_exists('get_dashboard_stats')) {
         $result = $stmt->fetch();
         $stats['licensed_guards'] = (int)($result['licensed'] ?? 0);
 
-        // Expired licenses - only count valid dates, exclude NULL and '0000-00-00'
-        $sql = "SELECT COUNT(*) as expired
-                FROM employees
-                WHERE license_no IS NOT NULL
-                AND license_no != ''
-                AND license_exp_date IS NOT NULL
-                AND license_exp_date != ''
-                AND license_exp_date != '0000-00-00'
-                AND license_exp_date < CURDATE()";
-        $stmt = execute_query($sql);
-        $stats['expired_licenses'] = (int)$stmt->fetch()['expired'];
+        // Expired licenses - MySQL 8 strict mode can throw on DATE('') so validate in PHP instead
+        // Fetch license dates and validate/count in PHP to avoid MySQL strict mode issues
+        try {
+            $sql = "SELECT license_exp_date
+                    FROM employees
+                    WHERE license_no IS NOT NULL
+                    AND license_no != ''
+                    AND license_exp_date IS NOT NULL
+                    AND license_exp_date != ''
+                    AND license_exp_date != '0000-00-00'";
+            $stmt = execute_query($sql);
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            $expired_count = 0;
+            $today = date('Y-m-d');
+            
+            foreach ($rows as $row) {
+                $date_str = trim($row['license_exp_date'] ?? '');
+                
+                // Validate date format
+                if (empty($date_str) || strlen($date_str) != 10 || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $date_str)) {
+                    continue;
+                }
+                
+                // Parse and validate date
+                $date_parts = explode('-', $date_str);
+                if (count($date_parts) != 3) {
+                    continue;
+                }
+                
+                $year = (int)$date_parts[0];
+                $month = (int)$date_parts[1];
+                $day = (int)$date_parts[2];
+                
+                if (!checkdate($month, $day, $year)) {
+                    continue;
+                }
+                
+                // Compare dates
+                if ($date_str < $today) {
+                    $expired_count++;
+                }
+            }
+            
+            $stats['expired_licenses'] = $expired_count;
+        } catch (Exception $e) {
+            error_log("Error counting expired licenses: " . $e->getMessage());
+            $stats['expired_licenses'] = 0;
+        }
 
-        // Expiring licenses (next 30 days) - exclude already expired licenses
-        $sql = "SELECT COUNT(*) as expiring
-                FROM employees
-                WHERE license_no IS NOT NULL
-                AND license_no != ''
-                AND license_exp_date IS NOT NULL
-                AND license_exp_date != ''
-                AND license_exp_date != '0000-00-00'
-                AND license_exp_date >= CURDATE()
-                AND license_exp_date <= DATE_ADD(CURDATE(), INTERVAL 30 DAY)";
-        $stmt = execute_query($sql);
-        $stats['expiring_licenses'] = (int)$stmt->fetch()['expiring'];
+        // Expiring licenses (next 30 days) - validate in PHP
+        try {
+            $sql = "SELECT license_exp_date
+                    FROM employees
+                    WHERE license_no IS NOT NULL
+                    AND license_no != ''
+                    AND license_exp_date IS NOT NULL
+                    AND license_exp_date != ''
+                    AND license_exp_date != '0000-00-00'";
+            $stmt = execute_query($sql);
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            $expiring_count = 0;
+            $today = date('Y-m-d');
+            $future_date = date('Y-m-d', strtotime('+30 days'));
+            
+            foreach ($rows as $row) {
+                $date_str = trim($row['license_exp_date'] ?? '');
+                
+                // Validate date format
+                if (empty($date_str) || strlen($date_str) != 10 || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $date_str)) {
+                    continue;
+                }
+                
+                // Parse and validate date
+                $date_parts = explode('-', $date_str);
+                if (count($date_parts) != 3) {
+                    continue;
+                }
+                
+                $year = (int)$date_parts[0];
+                $month = (int)$date_parts[1];
+                $day = (int)$date_parts[2];
+                
+                if (!checkdate($month, $day, $year)) {
+                    continue;
+                }
+                
+                // Check if expiring within 30 days
+                if ($date_str >= $today && $date_str <= $future_date) {
+                    $expiring_count++;
+                }
+            }
+            
+            $stats['expiring_licenses'] = $expiring_count;
+        } catch (Exception $e) {
+            error_log("Error counting expiring licenses: " . $e->getMessage());
+            $stats['expiring_licenses'] = 0;
+        }
 
         return $stats;
     }
@@ -1413,8 +1554,22 @@ if (!function_exists('generate_license_expiry_alerts')) {
         $sql = "SELECT id, employee_no, surname, first_name, license_no, license_exp_date
                  FROM employees
                  WHERE license_no IS NOT NULL
+                 AND license_no != ''
                  AND license_exp_date IS NOT NULL
-                 AND license_exp_date BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 30 DAY)
+                 AND license_exp_date != ''
+                 AND license_exp_date != '0000-00-00'
+                 AND CHAR_LENGTH(TRIM(license_exp_date)) = 10
+                 AND TRIM(license_exp_date) REGEXP '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'
+                 AND CASE 
+                    WHEN CHAR_LENGTH(TRIM(COALESCE(license_exp_date, ''))) != 10 THEN NULL
+                    WHEN TRIM(license_exp_date) NOT REGEXP '^[0-9]{4}-[0-9]{2}-[0-9]{2}$' THEN NULL
+                    ELSE STR_TO_DATE(TRIM(license_exp_date), '%Y-%m-%d')
+                 END IS NOT NULL
+                 AND CASE 
+                    WHEN CHAR_LENGTH(TRIM(COALESCE(license_exp_date, ''))) != 10 THEN NULL
+                    WHEN TRIM(license_exp_date) NOT REGEXP '^[0-9]{4}-[0-9]{2}-[0-9]{2}$' THEN NULL
+                    ELSE STR_TO_DATE(TRIM(license_exp_date), '%Y-%m-%d')
+                 END BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 30 DAY)
                  AND id NOT IN (
                      SELECT employee_id FROM employee_alerts
                      WHERE alert_type = 'license_expiry'
@@ -2925,27 +3080,63 @@ if (!function_exists('get_super_admin_stats')) {
             $stmt = $pdo->query($sql);
             $stats['active_alerts'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['total'];
 
-            // LICENSE STATISTICS
-            $sql = "SELECT COUNT(*) as expired FROM employees
-                    WHERE license_no IS NOT NULL
-                    AND license_no != ''
-                    AND license_exp_date IS NOT NULL
-                    AND license_exp_date != ''
-                    AND license_exp_date != '0000-00-00'
-                    AND license_exp_date < CURDATE()";
-            $stmt = $pdo->query($sql);
-            $stats['expired_licenses'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['expired'];
-
-            $sql = "SELECT COUNT(*) as expiring FROM employees
-                    WHERE license_no IS NOT NULL
-                    AND license_no != ''
-                    AND license_exp_date IS NOT NULL
-                    AND license_exp_date != ''
-                    AND license_exp_date != '0000-00-00'
-                    AND license_exp_date >= CURDATE()
-                    AND license_exp_date <= DATE_ADD(CURDATE(), INTERVAL 30 DAY)";
-            $stmt = $pdo->query($sql);
-            $stats['expiring_licenses'] = (int)$stmt->fetch(PDO::FETCH_ASSOC)['expiring'];
+            // LICENSE STATISTICS - parse safely (MySQL 8 strict mode can throw on DATE(''))
+            // Validate in PHP to avoid MySQL strict mode issues
+            try {
+                $sql = "SELECT license_exp_date
+                        FROM employees
+                        WHERE license_no IS NOT NULL
+                        AND license_no != ''
+                        AND license_exp_date IS NOT NULL
+                        AND license_exp_date != ''
+                        AND license_exp_date != '0000-00-00'";
+                $stmt = $pdo->query($sql);
+                $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                
+                $expired_count = 0;
+                $expiring_count = 0;
+                $today = date('Y-m-d');
+                $future_date = date('Y-m-d', strtotime('+30 days'));
+                
+                foreach ($rows as $row) {
+                    $date_str = trim($row['license_exp_date'] ?? '');
+                    
+                    // Validate date format
+                    if (empty($date_str) || strlen($date_str) != 10 || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $date_str)) {
+                        continue;
+                    }
+                    
+                    // Parse and validate date
+                    $date_parts = explode('-', $date_str);
+                    if (count($date_parts) != 3) {
+                        continue;
+                    }
+                    
+                    $year = (int)$date_parts[0];
+                    $month = (int)$date_parts[1];
+                    $day = (int)$date_parts[2];
+                    
+                    if (!checkdate($month, $day, $year)) {
+                        continue;
+                    }
+                    
+                    // Count expired
+                    if ($date_str < $today) {
+                        $expired_count++;
+                    }
+                    // Count expiring within 30 days
+                    elseif ($date_str >= $today && $date_str <= $future_date) {
+                        $expiring_count++;
+                    }
+                }
+                
+                $stats['expired_licenses'] = $expired_count;
+                $stats['expiring_licenses'] = $expiring_count;
+            } catch (Exception $e) {
+                error_log("Error counting license statistics: " . $e->getMessage());
+                $stats['expired_licenses'] = 0;
+                $stats['expiring_licenses'] = 0;
+            }
 
             // SYSTEM ACTIVITY (from audit logs)
             $sql = "SELECT COUNT(DISTINCT user_id) as unique_users
@@ -3589,18 +3780,57 @@ if (!function_exists('create_database_backup')) {
                 'database' => $_ENV['DB_DATABASE'] ?? 'goldenz_hr',
             ];
 
-            // Create backup directory if it doesn't exist
-            $backup_dir = __DIR__ . '/../' . $settings['backup_location'];
-            if (!file_exists($backup_dir)) {
-                if (!mkdir($backup_dir, 0755, true)) {
-                    return ['success' => false, 'message' => 'Failed to create backup directory'];
+            // Check storage driver - if MinIO, use temp directory instead of storage/backups
+            $use_temp_dir = false;
+            if (function_exists('get_storage_driver')) {
+                require_once __DIR__ . '/storage.php';
+                $storage_driver = get_storage_driver();
+                $use_temp_dir = ($storage_driver === 'minio');
+            }
+
+            // Determine backup directory
+            if ($use_temp_dir) {
+                // Use system temp directory for MinIO backups (will be deleted after upload)
+                $backup_dir = sys_get_temp_dir();
+            } else {
+                // Use configured backup location for local storage
+                $backup_dir = __DIR__ . '/../' . $settings['backup_location'];
+                
+                // Ensure directory exists with proper permissions (PHP handles .. resolution)
+                if (!file_exists($backup_dir)) {
+                    $old_umask = umask(0);
+                    $created = @mkdir($backup_dir, 0755, true);
+                    umask($old_umask);
+                    if (!$created) {
+                        $error = error_get_last();
+                        return ['success' => false, 'message' => 'Failed to create backup directory: ' . ($error['message'] ?? 'Unknown error') . ' (Path: ' . $backup_dir . ')'];
+                    }
                 }
+                // Verify directory exists and is writable
+                if (!is_dir($backup_dir)) {
+                    return ['success' => false, 'message' => 'Backup directory does not exist: ' . $backup_dir];
+                }
+                if (!is_writable($backup_dir)) {
+                    // Try to make it writable
+                    @chmod($backup_dir, 0755);
+                    if (!is_writable($backup_dir)) {
+                        return ['success' => false, 'message' => 'Backup directory is not writable: ' . $backup_dir];
+                    }
+                }
+            }
+            
+            // Get absolute path for use in shell commands (resolves ..)
+            $backup_dir_absolute = realpath($backup_dir);
+            if ($backup_dir_absolute === false) {
+                // If realpath fails, try to resolve manually
+                $backup_dir_absolute = $backup_dir;
             }
 
             // Generate backup filename
             $timestamp = date('Y-m-d_His');
             $filename = "backup_{$db_config['database']}_{$timestamp}.sql";
-            $filepath = $backup_dir . '/' . $filename;
+            // Use absolute path for file operations to avoid path resolution issues
+            $filepath = $backup_dir_absolute . '/' . $filename;
 
             // Use mysqldump if available (preferred method)
             $mysqldump_path = '';
@@ -3623,29 +3853,204 @@ if (!function_exists('create_database_backup')) {
             }
 
             if (!empty($mysqldump_path) && (file_exists($mysqldump_path) || $mysqldump_path === 'mysqldump')) {
-                // Use mysqldump
+                // Use mysqldump with proper flags for foreign key handling (Docker/Linux compatible)
+                // --single-transaction: Creates consistent snapshot
+                // --routines: Includes stored procedures and functions
+                // --triggers: Includes triggers
+                // --events: Includes events
+                // --no-tablespaces: Avoids tablespace issues
+                // --skip-lock-tables: Don't lock tables (not needed for restore, causes issues)
+                // --skip-add-locks: Don't add LOCK TABLES statements
+                // --default-character-set=utf8mb4: Ensure UTF-8 encoding
+                $temp_file = $filepath . '.tmp';
                 $command = sprintf(
-                    '"%s" --host=%s --user=%s --password=%s %s > "%s" 2>&1',
-                    $mysqldump_path,
+                    '%s --host=%s --user=%s --password=%s --default-character-set=utf8mb4 --single-transaction --routines --triggers --events --no-tablespaces --skip-lock-tables --skip-add-locks %s > %s 2>&1',
+                    escapeshellarg($mysqldump_path),
                     escapeshellarg($db_config['host']),
                     escapeshellarg($db_config['username']),
                     escapeshellarg($db_config['password']),
                     escapeshellarg($db_config['database']),
-                    escapeshellarg($filepath)
+                    escapeshellarg($temp_file)
                 );
 
                 exec($command, $output, $return_var);
+                
+                // If mysqldump succeeded, wrap the output with foreign key checks
+                if ($return_var === 0 && file_exists($temp_file) && filesize($temp_file) > 0) {
+                    // Read the dump file - ensure proper encoding handling (like PowerShell script)
+                    $dump_content = file_get_contents($temp_file);
+                    
+                    // Normalize line endings to Unix format (\n) to prevent encoding issues
+                    $dump_content = str_replace(["\r\n", "\r"], "\n", $dump_content);
+                    
+                    // Remove any LOCK TABLES / UNLOCK TABLES statements that might cause issues during restore
+                    // These are not needed when FOREIGN_KEY_CHECKS=0 and can cause errors if table doesn't exist yet
+                    $dump_content = preg_replace('/LOCK\s+TABLES\s+[^;]+;/i', '', $dump_content);
+                    $dump_content = preg_replace('/UNLOCK\s+TABLES\s*;/i', '', $dump_content);
+                    
+                    // Fix formatting: Ensure newline after comment lines before INSERT statements
+                    // Fixes cases like "-- Dumping data for table `x`INSERT INTO..." 
+                    // Pattern: comment with backticks followed immediately by INSERT
+                    $dump_content = preg_replace('/(--[^\n]+`[^`]+`)(INSERT\s+INTO)/i', "$1\n\n$2", $dump_content);
+                    // Also fix cases where comment ends without backticks but INSERT follows immediately
+                    $dump_content = preg_replace('/(--[^\n]+)(INSERT\s+INTO)/i', "$1\n\n$2", $dump_content);
+                    
+                    // Add foreign key check disabling at the start
+                    $header = "-- Golden Z-5 HR System Database Backup\n";
+                    $header .= "-- Generated: " . date('Y-m-d H:i:s') . "\n";
+                    $header .= "-- Database: {$db_config['database']}\n\n";
+                    $header .= "SET SQL_MODE = \"NO_AUTO_VALUE_ON_ZERO\";\n";
+                    $header .= "SET time_zone = \"+00:00\";\n";
+                    $header .= "SET FOREIGN_KEY_CHECKS=0;\n";
+                    $header .= "SET UNIQUE_CHECKS=0;\n";
+                    $header .= "SET AUTOCOMMIT=0;\n\n";
+                    
+                    // Add foreign key check re-enabling at the end
+                    $footer = "\nSET FOREIGN_KEY_CHECKS=1;\n";
+                    $footer .= "SET UNIQUE_CHECKS=1;\n";
+                    $footer .= "COMMIT;\n";
+                    $footer .= "SET AUTOCOMMIT=1;\n";
+                    
+                    // Write the complete backup file with UTF-8 encoding (no BOM) - like PowerShell script
+                    // Use file_put_contents which writes UTF-8 by default, but ensure no BOM
+                    $final_content = $header . $dump_content . $footer;
+                    // Remove BOM if present and write with UTF-8
+                    if (substr($final_content, 0, 3) === "\xEF\xBB\xBF") {
+                        $final_content = substr($final_content, 3);
+                    }
+                    file_put_contents($filepath, $final_content);
+                    unlink($temp_file); // Remove temp file
+                }
 
                 if ($return_var !== 0 || !file_exists($filepath) || filesize($filepath) === 0) {
+                    // Log the error for debugging
+                    if (!empty($output)) {
+                        error_log("mysqldump error: " . implode("\n", $output));
+                    }
                     // Fallback to PHP-based backup
-                    return create_database_backup_php($pdo, $filepath, $db_config['database']);
+                    $php_backup_result = create_database_backup_php($pdo, $filepath, $db_config['database']);
+                    if (!$php_backup_result['success']) {
+                        return $php_backup_result;
+                    }
+                    // Continue with compression and upload
                 }
             } else {
                 // Use PHP-based backup
-                return create_database_backup_php($pdo, $filepath, $db_config['database']);
+                $php_backup_result = create_database_backup_php($pdo, $filepath, $db_config['database']);
+                if (!$php_backup_result['success']) {
+                    return $php_backup_result;
+                }
+                // Continue with compression and upload
             }
 
-            // Record backup in database
+            // Compress the backup file to .sql.gz for MinIO upload
+            $compressed_filepath = $filepath . '.gz';
+            $compressed_filename = $filename . '.gz';
+            $compression_success = false;
+            
+            if (function_exists('gzencode')) {
+                $sql_content = file_get_contents($filepath);
+                if ($sql_content !== false) {
+                    $compressed_content = gzencode($sql_content, 9); // Level 9 = maximum compression
+                    if ($compressed_content !== false && file_put_contents($compressed_filepath, $compressed_content) !== false) {
+                        $compression_success = true;
+                        error_log("Backup compressed successfully: $compressed_filename");
+                    } else {
+                        error_log("Failed to write compressed backup file: $compressed_filepath");
+                    }
+                } else {
+                    error_log("Failed to read backup file for compression: $filepath");
+                }
+            } else {
+                error_log("gzip compression not available (gzencode function missing)");
+            }
+
+            // Capture file sizes before potential deletion
+            $backup_size = file_exists($filepath) ? filesize($filepath) : 0;
+            $compressed_size_value = ($compression_success && file_exists($compressed_filepath)) ? filesize($compressed_filepath) : 0;
+
+            // Upload to MinIO if storage is configured for MinIO
+            $minio_uploaded = false;
+            $minio_path = null;
+            if (function_exists('upload_to_storage') && function_exists('get_storage_driver')) {
+                require_once __DIR__ . '/storage.php';
+                $storage_driver = get_storage_driver();
+                
+                if ($storage_driver === 'minio') {
+                    // Upload compressed file if available, otherwise upload uncompressed
+                    $upload_filepath = $compression_success ? $compressed_filepath : $filepath;
+                    $upload_filename = $compression_success ? $compressed_filename : $filename;
+                    $minio_path = 'db-backups/' . $upload_filename;
+                    $content_type = $compression_success ? 'application/gzip' : 'application/sql';
+                    
+                    $minio_result = upload_to_storage($upload_filepath, $minio_path, [
+                        'content_type' => $content_type
+                    ]);
+                    
+                    if ($minio_result !== false) {
+                        $minio_uploaded = true;
+                        error_log("Database backup uploaded to MinIO: $minio_path");
+                    } else {
+                        error_log("Failed to upload database backup to MinIO: $minio_path");
+                        // If MinIO upload fails and we're using temp dir, move to permanent location as fallback
+                        if ($use_temp_dir && file_exists($filepath)) {
+                            $fallback_dir = __DIR__ . '/../' . $settings['backup_location'];
+                            if (!file_exists($fallback_dir)) {
+                                @mkdir($fallback_dir, 0755, true);
+                            }
+                            $fallback_path = $fallback_dir . '/' . $filename;
+                            if (@rename($filepath, $fallback_path)) {
+                                error_log("Moved backup to fallback location due to MinIO upload failure: $fallback_path");
+                                $filepath = $fallback_path;
+                                $backup_size = file_exists($filepath) ? filesize($filepath) : $backup_size;
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // Upload to Google Drive using rclone (after MinIO upload)
+            $gdrive_uploaded = false;
+            $gdrive_path = null;
+            if (function_exists('upload_to_gdrive_rclone')) {
+                require_once __DIR__ . '/storage.php';
+                
+                // Only upload to Google Drive if MinIO upload was successful
+                if ($minio_uploaded) {
+                    // Upload compressed file if available, otherwise upload uncompressed
+                    $upload_filepath = $compression_success ? $compressed_filepath : $filepath;
+                    $upload_filename = $compression_success ? $compressed_filename : $filename;
+                    $gdrive_path = 'GoldenZ5/backup/' . $upload_filename;
+                    
+                    $gdrive_result = upload_to_gdrive_rclone($upload_filepath, $gdrive_path, [
+                        'remote_name' => $_ENV['RCLONE_REMOTE'] ?? 'gdrive'
+                    ]);
+                    
+                    if ($gdrive_result !== false) {
+                        $gdrive_uploaded = true;
+                        error_log("Database backup uploaded to Google Drive: $gdrive_path");
+                    } else {
+                        error_log("Failed to upload database backup to Google Drive: $gdrive_path");
+                    }
+                }
+            }
+            
+            // Delete local files after successful uploads (both MinIO and Google Drive if enabled)
+            // Only delete if we're using temp directory (MinIO mode) and MinIO upload succeeded
+            if ($use_temp_dir && $minio_uploaded) {
+                // Delete compressed file if it exists
+                if ($compression_success && file_exists($compressed_filepath)) {
+                    @unlink($compressed_filepath);
+                    error_log("Deleted temporary compressed backup file: $compressed_filepath");
+                }
+                // Delete uncompressed file
+                if (file_exists($filepath)) {
+                    @unlink($filepath);
+                    error_log("Deleted temporary backup file: $filepath");
+                }
+            }
+            
+            // Record backup in database (after MinIO and Google Drive uploads to get correct paths)
             try {
                 $pdo->exec("CREATE TABLE IF NOT EXISTS backup_history (
                     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -3656,21 +4061,62 @@ if (!function_exists('create_database_backup')) {
                     INDEX idx_created_at (created_at)
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
+                // Use compressed size if we uploaded compressed version, otherwise use uncompressed size
+                $record_size = ($minio_uploaded && $compression_success) ? $compressed_size_value : $backup_size;
+                
+                // Store path: prefer MinIO, then Google Drive, then local
+                if ($minio_uploaded && $minio_path) {
+                    $record_filepath = 'minio://' . $minio_path;
+                    if ($gdrive_uploaded && $gdrive_path) {
+                        $record_filepath .= ' | gdrive://' . $gdrive_path;
+                    }
+                } elseif ($gdrive_uploaded && $gdrive_path) {
+                    $record_filepath = 'gdrive://' . $gdrive_path;
+                } else {
+                    $record_filepath = $use_temp_dir ? 'temp://' . $filename : $settings['backup_location'] . '/' . $filename;
+                }
                 $stmt = $pdo->prepare("INSERT INTO backup_history (filename, filepath, file_size) VALUES (?, ?, ?)");
-                $stmt->execute([$filename, $settings['backup_location'] . '/' . $filename, filesize($filepath)]);
+                $stmt->execute([$filename, $record_filepath, $record_size]);
             } catch (Exception $e) {
                 error_log("Error recording backup in database: " . $e->getMessage());
             }
+            
+            // Clean up old backups based on retention policy (only for local storage)
+            if (!$use_temp_dir) {
+                cleanup_old_backups();
+            }
 
-            // Clean up old backups based on retention policy
-            cleanup_old_backups();
-
+            // Determine filepath for return value
+            $return_filepath = $minio_uploaded && $use_temp_dir 
+                ? 'minio://' . $minio_path 
+                : ($use_temp_dir ? 'temp://' . $filename : $settings['backup_location'] . '/' . $filename);
+            
+            // Use compressed size in return if uploaded compressed version
+            $return_size = ($minio_uploaded && $compression_success) ? $compressed_size_value : $backup_size;
+            
+            // Build success message
+            $upload_messages = [];
+            if ($minio_uploaded) {
+                $upload_messages[] = 'MinIO';
+            }
+            if ($gdrive_uploaded) {
+                $upload_messages[] = 'Google Drive';
+            }
+            $upload_msg = !empty($upload_messages) ? ' and uploaded to ' . implode(' and ', $upload_messages) : '';
+            
             return [
                 'success' => true,
-                'message' => 'Backup created successfully',
+                'message' => 'Backup created successfully' . $upload_msg,
                 'filename' => $filename,
-                'filepath' => $settings['backup_location'] . '/' . $filename,
-                'size' => filesize($filepath)
+                'filepath' => $return_filepath,
+                'size' => $return_size,
+                'compressed' => $compression_success,
+                'compressed_filename' => $compression_success ? $compressed_filename : null,
+                'compressed_size' => $compression_success ? $compressed_size_value : null,
+                'minio_uploaded' => $minio_uploaded,
+                'minio_path' => $minio_path,
+                'gdrive_uploaded' => $gdrive_uploaded,
+                'gdrive_path' => $gdrive_path
             ];
         } catch (Exception $e) {
             error_log("Error in create_database_backup: " . $e->getMessage());
@@ -3689,7 +4135,11 @@ if (!function_exists('create_database_backup_php')) {
             $output .= "-- Generated: " . date('Y-m-d H:i:s') . "\n";
             $output .= "-- Database: {$database}\n\n";
             $output .= "SET SQL_MODE = \"NO_AUTO_VALUE_ON_ZERO\";\n";
-            $output .= "SET time_zone = \"+00:00\";\n\n";
+            $output .= "SET time_zone = \"+00:00\";\n";
+            // Disable foreign key checks to allow restoring in any order
+            $output .= "SET FOREIGN_KEY_CHECKS=0;\n";
+            $output .= "SET UNIQUE_CHECKS=0;\n";
+            $output .= "SET AUTOCOMMIT=0;\n\n";
 
             // Get all tables
             $tables = $pdo->query("SHOW TABLES")->fetchAll(PDO::FETCH_COLUMN);
@@ -3700,13 +4150,19 @@ if (!function_exists('create_database_backup_php')) {
 
                 // Get table structure
                 $create_table = $pdo->query("SHOW CREATE TABLE `{$table}`")->fetch(PDO::FETCH_ASSOC);
-                $output .= $create_table['Create Table'] . ";\n\n";
+                // Handle different MySQL versions - key might be 'Create Table' or 'Create Table'
+                $create_statement = $create_table['Create Table'] ?? $create_table['CREATE TABLE'] ?? '';
+                if (!empty($create_statement)) {
+                    $output .= $create_statement . ";\n\n";
+                }
 
                 // Get table data
                 $rows = $pdo->query("SELECT * FROM `{$table}`")->fetchAll(PDO::FETCH_ASSOC);
                 if (count($rows) > 0) {
                     $output .= "-- Dumping data for table `{$table}`\n";
-                    $output .= "LOCK TABLES `{$table}` WRITE;\n";
+                    // Don't use LOCK TABLES during restore - it can cause issues if table doesn't exist yet
+                    // Foreign key checks are already disabled, so we don't need table locking
+                    $output .= "\n"; // Ensure newline after comment
 
                     foreach ($rows as $row) {
                         $values = [];
@@ -3720,10 +4176,25 @@ if (!function_exists('create_database_backup_php')) {
                         $output .= "INSERT INTO `{$table}` VALUES (" . implode(',', $values) . ");\n";
                     }
 
-                    $output .= "UNLOCK TABLES;\n\n";
+                    $output .= "\n";
                 }
             }
+            
+            // Re-enable foreign key checks at the end
+            $output .= "\nSET FOREIGN_KEY_CHECKS=1;\n";
+            $output .= "SET UNIQUE_CHECKS=1;\n";
+            $output .= "COMMIT;\n";
+            $output .= "SET AUTOCOMMIT=1;\n";
 
+            // Ensure UTF-8 encoding (no BOM) - similar to PowerShell script encoding fix
+            // Remove BOM if present
+            if (substr($output, 0, 3) === "\xEF\xBB\xBF") {
+                $output = substr($output, 3);
+            }
+            
+            // Normalize line endings to Unix format
+            $output = str_replace(["\r\n", "\r"], "\n", $output);
+            
             if (file_put_contents($filepath, $output) === false) {
                 return ['success' => false, 'message' => 'Failed to write backup file'];
             }
@@ -5082,6 +5553,3 @@ if (!function_exists('get_employee_documents')) {
         return $stmt->fetchAll();
     }
 }
-
-?>
-
