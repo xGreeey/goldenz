@@ -710,3 +710,75 @@ AND (`reference_no` IS NULL OR `reference_no` NOT IN (
 -- Add comment to table
 ALTER TABLE `violation_types` 
 COMMENT = 'Violation types including RA 5487 Major Violations, Minor Violations, and RA 5487 Offenses with progressive sanctions';
+
+-- ============================================================================
+-- CREATE EMPLOYEE_VIOLATIONS TABLE IF IT DOES NOT EXIST
+-- ============================================================================
+-- This section creates the employee_violations table to track employee violations
+-- If the table already exists, it will be skipped
+-- ============================================================================
+
+CREATE TABLE IF NOT EXISTS `employee_violations` (
+  `id` INT(11) NOT NULL AUTO_INCREMENT,
+  `employee_id` INT(11) NOT NULL,
+  `violation_type_id` INT(11) NOT NULL,
+  `violation_date` DATE NOT NULL,
+  `description` TEXT,
+  `severity` ENUM('Major', 'Minor') NOT NULL,
+  `offense_number` INT(11) DEFAULT 1 COMMENT '1st, 2nd, 3rd, 4th, or 5th offense for this violation type',
+  `sanction` VARCHAR(200),
+  `sanction_date` DATE DEFAULT NULL,
+  `reported_by` VARCHAR(100),
+  `status` ENUM('Pending', 'Under Review', 'Resolved') NOT NULL DEFAULT 'Pending',
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_employee_id` (`employee_id`),
+  KEY `idx_violation_type_id` (`violation_type_id`),
+  KEY `idx_severity` (`severity`),
+  KEY `idx_status` (`status`),
+  KEY `idx_violation_date` (`violation_date`),
+  KEY `idx_offense_number` (`offense_number`),
+  KEY `idx_employee_violation_type` (`employee_id`, `violation_type_id`),
+  CONSTRAINT `fk_violations_employee` FOREIGN KEY (`employee_id`) REFERENCES `employees` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_violations_type` FOREIGN KEY (`violation_type_id`) REFERENCES `violation_types` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Add offense_number column to existing table if it doesn't exist
+SET @preparedStatement = (SELECT IF(
+  (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS 
+   WHERE TABLE_SCHEMA = @dbname 
+   AND TABLE_NAME = 'employee_violations' 
+   AND COLUMN_NAME = 'offense_number') > 0,
+  'SELECT 1',
+  'ALTER TABLE `employee_violations` ADD COLUMN `offense_number` INT(11) DEFAULT 1 COMMENT ''1st, 2nd, 3rd, 4th, or 5th offense for this violation type'' AFTER `severity`'
+));
+PREPARE alterIfNotExists FROM @preparedStatement;
+EXECUTE alterIfNotExists;
+DEALLOCATE PREPARE alterIfNotExists;
+
+-- Add index for offense_number if it doesn't exist
+SET @preparedStatement = (SELECT IF(
+  (SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS 
+   WHERE TABLE_SCHEMA = @dbname 
+   AND TABLE_NAME = 'employee_violations' 
+   AND INDEX_NAME = 'idx_offense_number') > 0,
+  'SELECT 1',
+  'ALTER TABLE `employee_violations` ADD INDEX `idx_offense_number` (`offense_number`)'
+));
+PREPARE alterIfNotExists FROM @preparedStatement;
+EXECUTE alterIfNotExists;
+DEALLOCATE PREPARE alterIfNotExists;
+
+-- Add composite index for employee_id and violation_type_id if it doesn't exist
+SET @preparedStatement = (SELECT IF(
+  (SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS 
+   WHERE TABLE_SCHEMA = @dbname 
+   AND TABLE_NAME = 'employee_violations' 
+   AND INDEX_NAME = 'idx_employee_violation_type') > 0,
+  'SELECT 1',
+  'ALTER TABLE `employee_violations` ADD INDEX `idx_employee_violation_type` (`employee_id`, `violation_type_id`)'
+));
+PREPARE alterIfNotExists FROM @preparedStatement;
+EXECUTE alterIfNotExists;
+DEALLOCATE PREPARE alterIfNotExists;

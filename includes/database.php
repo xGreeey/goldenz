@@ -5526,6 +5526,118 @@ if (!function_exists('get_employee_violations')) {
     }
 }
 
+/**
+ * Get offense count for an employee and violation type
+ * Returns the number of times an employee has committed a specific violation type
+ */
+if (!function_exists('get_employee_violation_count')) {
+    function get_employee_violation_count($employee_id, $violation_type_id) {
+        $sql = "SELECT COUNT(*) as count 
+                FROM employee_violations 
+                WHERE employee_id = ? AND violation_type_id = ?";
+        
+        $stmt = execute_query($sql, [$employee_id, $violation_type_id]);
+        $result = $stmt->fetch();
+        return (int)($result['count'] ?? 0);
+    }
+}
+
+/**
+ * Get suggested sanction based on violation type and offense number
+ * Returns the appropriate sanction from violation_types table based on offense number
+ */
+if (!function_exists('get_suggested_sanction')) {
+    function get_suggested_sanction($violation_type_id, $offense_number) {
+        $sql = "SELECT first_offense, second_offense, third_offense, fourth_offense, fifth_offense 
+                FROM violation_types 
+                WHERE id = ? AND is_active = 1";
+        
+        $stmt = execute_query($sql, [$violation_type_id]);
+        $violation_type = $stmt->fetch();
+        
+        if (!$violation_type) {
+            return null;
+        }
+        
+        // Determine which offense field to use
+        switch ($offense_number) {
+            case 1:
+                return $violation_type['first_offense'] ?? null;
+            case 2:
+                return $violation_type['second_offense'] ?? null;
+            case 3:
+                return $violation_type['third_offense'] ?? null;
+            case 4:
+                return $violation_type['fourth_offense'] ?? null;
+            case 5:
+                return $violation_type['fifth_offense'] ?? null;
+            default:
+                // If more than 5 offenses, use the 5th offense sanction
+                return $violation_type['fifth_offense'] ?? $violation_type['fourth_offense'] ?? $violation_type['third_offense'] ?? null;
+        }
+    }
+}
+
+/**
+ * Add employee violation with automatic offense number calculation and sanction suggestion
+ * This function automatically:
+ * 1. Counts previous violations of the same type for the employee
+ * 2. Calculates the offense number (1st, 2nd, 3rd, etc.)
+ * 3. Suggests the appropriate sanction based on RA 5487 progressive sanctions
+ */
+if (!function_exists('add_employee_violation')) {
+    function add_employee_violation($data) {
+        // Required fields
+        $required = ['employee_id', 'violation_type_id', 'violation_date', 'severity', 'description', 'reported_by'];
+        foreach ($required as $field) {
+            if (empty($data[$field])) {
+                throw new Exception("Required field missing: $field");
+            }
+        }
+        
+        // Calculate offense number
+        $offense_count = get_employee_violation_count($data['employee_id'], $data['violation_type_id']);
+        $offense_number = $offense_count + 1;
+        
+        // Get suggested sanction if not provided
+        $sanction = $data['sanction'] ?? null;
+        if (empty($sanction)) {
+            $suggested_sanction = get_suggested_sanction($data['violation_type_id'], $offense_number);
+            if ($suggested_sanction) {
+                $sanction = $suggested_sanction;
+            }
+        }
+        
+        // Prepare insert statement
+        $sql = "INSERT INTO employee_violations (
+                    employee_id, violation_type_id, violation_date, description,
+                    severity, offense_number, sanction, sanction_date, reported_by, status
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        
+        $params = [
+            $data['employee_id'],
+            $data['violation_type_id'],
+            $data['violation_date'],
+            trim($data['description']),
+            $data['severity'],
+            $offense_number,
+            $sanction,
+            $data['sanction_date'] ?? null,
+            trim($data['reported_by']),
+            $data['status'] ?? 'Pending'
+        ];
+        
+        $stmt = execute_query($sql, $params);
+        $violation_id = get_db_connection()->lastInsertId();
+        
+        return [
+            'id' => $violation_id,
+            'offense_number' => $offense_number,
+            'suggested_sanction' => $sanction
+        ];
+    }
+}
+
 // ============================================================================
 // DOCUMENT MANAGEMENT FUNCTIONS
 // ============================================================================
