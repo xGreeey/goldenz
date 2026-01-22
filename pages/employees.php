@@ -270,6 +270,24 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
     <div class="tab-content">
         <div class="tab-pane active" id="employee-list">
     <!-- Success Messages -->
+    <?php 
+    // Display session messages (from redirect_with_message)
+    if (isset($_SESSION['message'])) {
+        $message = $_SESSION['message'];
+        $type = $_SESSION['message_type'] ?? 'info';
+        $alertClass = [
+            'success' => 'alert-success',
+            'error' => 'alert-danger',
+            'warning' => 'alert-warning',
+            'info' => 'alert-info'
+        ][$type] ?? 'alert-info';
+        echo '<div class="alert ' . $alertClass . ' alert-dismissible fade show" role="alert">';
+        echo '<i class="fas fa-check-circle me-2"></i>' . htmlspecialchars($message);
+        echo '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>';
+        echo '</div>';
+        unset($_SESSION['message'], $_SESSION['message_type']);
+    }
+    ?>
     <?php if (isset($_GET['success']) && $_GET['success'] == '1'): ?>
         <div class="alert alert-success-modern alert-dismissible fade show">
             <i class="fas fa-circle-check me-2"></i>

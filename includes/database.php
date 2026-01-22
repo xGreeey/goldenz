@@ -485,8 +485,17 @@ if (!function_exists('update_employee')) {
             $id
         ];
 
-        $stmt = execute_query($sql, $params);
-        return $stmt->rowCount() > 0;
+        try {
+            $stmt = execute_query($sql, $params);
+            // Return true if update executed successfully (even if no rows changed)
+            // rowCount() can be 0 if values are the same, but that's still a successful update
+            $rowCount = $stmt->rowCount();
+            error_log("update_employee: Updated employee ID {$id}, rows affected: {$rowCount}");
+            return true; // Return true if query executed without error
+        } catch (Exception $e) {
+            error_log("update_employee error for ID {$id}: " . $e->getMessage());
+            throw $e; // Re-throw to be caught by calling code
+        }
     }
 }
 
