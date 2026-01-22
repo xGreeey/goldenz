@@ -1,5 +1,5 @@
 <?php
-$page_title = 'Violations - Golden Z-5 HR System';
+$page_title = 'Employee Violation - Golden Z-5 HR System';
 $page = 'violations';
 
 // Get database connection
@@ -9,59 +9,84 @@ $pdo = get_db_connection();
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     $action = $_POST['action'];
     
-    if ($action === 'add_violation') {
-        // Handle adding violation (to be implemented with database)
-        redirect_with_message('?page=violations', 'Violation record added successfully!', 'success');
-    } elseif ($action === 'update_violation') {
-        // Handle updating violation (to be implemented with database)
-        redirect_with_message('?page=violations', 'Violation record updated successfully!', 'success');
-    } elseif ($action === 'delete_violation' && isset($_POST['violation_id'])) {
-        // Handle deletion (to be implemented with database)
-        redirect_with_message('?page=violations', 'Violation record deleted successfully!', 'success');
+    if ($action === 'delete_violation' && isset($_POST['violation_id'])) {
+        // Handle deletion
+        try {
+            $stmt = $pdo->prepare("DELETE FROM employee_violations WHERE id = ?");
+            $stmt->execute([$_POST['violation_id']]);
+            redirect_with_message('?page=violations', 'Violation record deleted successfully!', 'success');
+        } catch (PDOException $e) {
+            error_log("Error deleting violation: " . $e->getMessage());
+            redirect_with_message('?page=violations', 'Error deleting violation: ' . $e->getMessage(), 'error');
+        }
     }
 }
 
 // Get filter parameters
 $employee_id = $_GET['employee_id'] ?? '';
 $severity = $_GET['severity'] ?? '';
-$violation_type = $_GET['violation_type'] ?? '';
+$violation_type_id = $_GET['violation_type'] ?? '';
 
 // Get all employees for filter dropdown
 $employees = get_employees();
 
-// Mock violation types
-$violation_types_list = [
-    'AWOL' => 'Major',
-    'Tardiness' => 'Minor',
-    'Insubordination' => 'Major',
-    'Dress Code Violation' => 'Minor',
-    'Safety Violation' => 'Major',
-    'Unauthorized Leave' => 'Minor',
-    'Theft' => 'Major',
-    'Harassment' => 'Major',
-];
-
-// Mock violation data
+// Get employee violations from database (or use mock data if table doesn't exist)
 $violations = [];
-for ($i = 1; $i <= 25; $i++) {
-    $type = array_rand($violation_types_list);
-    $severity_val = $violation_types_list[$type];
-    
-    $violations[] = [
-        'id' => $i,
-        'employee_id' => rand(1, 50),
-        'employee_name' => 'Employee ' . $i,
-        'employee_post' => 'Post ' . rand(1, 10),
-        'violation_type' => $type,
-        'severity' => $severity_val,
-        'description' => 'Description of the violation and circumstances.',
-        'violation_date' => date('Y-m-d', strtotime('-' . rand(1, 365) . ' days')),
-        'reported_by' => 'Supervisor ' . rand(1, 5),
-        'sanction' => $severity_val === 'Major' ? ['Suspension', 'Final Warning', 'Termination'][rand(0, 2)] : ['Verbal Warning', 'Written Warning', '1-day Suspension'][rand(0, 2)],
-        'sanction_date' => date('Y-m-d', strtotime('-' . rand(1, 365) . ' days')),
-        'status' => ['Pending', 'Resolved', 'Under Review'][rand(0, 2)],
-    ];
+try {
+    if (function_exists('get_employee_violations')) {
+        $violations = get_employee_violations($employee_id ?: null, $severity ?: null, $violation_type_id ?: null);
+    } else {
+        // Fallback: try direct query
+        $sql = "SELECT ev.*, 
+                       e.first_name, e.surname, e.post,
+                       CONCAT(e.surname, ', ', e.first_name) as employee_name,
+                       vt.name as violation_type_name,
+                       vt.category as violation_category
+                FROM employee_violations ev
+                LEFT JOIN employees e ON ev.employee_id = e.id
+                LEFT JOIN violation_types vt ON ev.violation_type_id = vt.id
+                WHERE 1=1";
+        $params = [];
+        if ($employee_id) {
+            $sql .= " AND ev.employee_id = ?";
+            $params[] = $employee_id;
+        }
+        if ($severity) {
+            $sql .= " AND ev.severity = ?";
+            $params[] = $severity;
+        }
+        if ($violation_type_id) {
+            $sql .= " AND ev.violation_type_id = ?";
+            $params[] = $violation_type_id;
+        }
+        $sql .= " ORDER BY ev.violation_date DESC LIMIT 100";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
+        $violations = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+} catch (PDOException $e) {
+    error_log("Error fetching violations: " . $e->getMessage());
+    // Fallback to mock data if table doesn't exist
+    $violations = [];
 }
+
+// Get violation types from database
+$violation_types_list = [];
+try {
+    $stmt = $pdo->query("SELECT id, name, category, reference_no FROM violation_types WHERE is_active = 1 ORDER BY category, reference_no");
+    $violation_types = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    foreach ($violation_types as $vt) {
+        $violation_types_list[$vt['id']] = [
+            'name' => $vt['name'],
+            'category' => $vt['category'],
+            'reference_no' => $vt['reference_no']
+        ];
+    }
+} catch (PDOException $e) {
+    error_log("Error fetching violation types: " . $e->getMessage());
+}
+
+// If no violations found and table doesn't exist, show empty state
 
 // Get statistics
 $stats = [
@@ -126,13 +151,13 @@ $stats = [
     <div class="card card-modern">
         <div class="card-header-modern d-flex justify-content-between align-items-center">
             <div>
-                <h5 class="card-title-modern">Violation Records</h5>
+                <h5 class="card-title-modern">Employee Violation</h5>
                 <div class="card-subtitle">Employee violations and sanctions</div>
             </div>
             <div class="d-flex gap-2">
-                <button type="button" class="btn btn-primary-modern" data-bs-toggle="modal" data-bs-target="#addViolationModal">
+                <a href="?page=add_violation" class="btn btn-primary-modern">
                     <i class="fas fa-plus me-2"></i>Add Violation
-                </button>
+                </a>
                 <button type="button" class="btn btn-outline-modern" id="exportViolationsBtn">
                     <i class="fas fa-file-export me-2"></i>Export
                 </button>
@@ -163,15 +188,26 @@ $stats = [
                             <option value="Minor" <?php echo $severity === 'Minor' ? 'selected' : ''; ?>>Minor</option>
                         </select>
                     </div>
-                    <div class="col-md-3">
+                        <div class="col-md-3">
                         <label class="form-label">Violation Type</label>
                         <select name="violation_type" class="form-select">
                             <option value="">All Types</option>
-                            <?php foreach (array_keys($violation_types_list) as $type): ?>
-                                <option value="<?php echo htmlspecialchars($type); ?>" <?php echo $violation_type === $type ? 'selected' : ''; ?>>
-                                    <?php echo htmlspecialchars($type); ?>
+                            <?php 
+                            $current_category = '';
+                            foreach ($violation_types_list as $vt_id => $vt): 
+                                if ($current_category !== $vt['category']):
+                                    if ($current_category !== '') echo '</optgroup>';
+                                    echo '<optgroup label="' . htmlspecialchars($vt['category']) . ' Violations">';
+                                    $current_category = $vt['category'];
+                                endif;
+                            ?>
+                                <option value="<?php echo $vt_id; ?>" <?php echo $violation_type_id == $vt_id ? 'selected' : ''; ?>>
+                                    <?php echo htmlspecialchars($vt['reference_no'] ?? ''); ?> - <?php echo htmlspecialchars($vt['name']); ?>
                                 </option>
-                            <?php endforeach; ?>
+                            <?php 
+                            endforeach; 
+                            if ($current_category !== '') echo '</optgroup>';
+                            ?>
                         </select>
                     </div>
                     <div class="col-auto">
@@ -212,41 +248,53 @@ $stats = [
                         <?php else: ?>
                             <?php foreach ($violations as $violation): ?>
                                 <tr>
-                                    <td><?php echo date('M d, Y', strtotime($violation['violation_date'])); ?></td>
+                                    <td><?php echo $violation['violation_date'] ? date('M d, Y', strtotime($violation['violation_date'])) : 'N/A'; ?></td>
                                     <td>
-                                        <div class="fw-semibold"><?php echo htmlspecialchars($violation['employee_name']); ?></div>
-                                        <small class="text-muted"><?php echo htmlspecialchars($violation['employee_post']); ?></small>
+                                        <div class="fw-semibold"><?php echo htmlspecialchars($violation['employee_name'] ?? 'Unknown Employee'); ?></div>
+                                        <small class="text-muted"><?php echo htmlspecialchars($violation['post'] ?? $violation['employee_post'] ?? 'N/A'); ?></small>
                                     </td>
-                                    <td><?php echo htmlspecialchars($violation['violation_type']); ?></td>
+                                    <td>
+                                        <?php 
+                                        $vt_name = $violation['violation_type_name'] ?? 'Unknown';
+                                        $vt_ref = '';
+                                        if (isset($violation['violation_type_id']) && isset($violation_types_list[$violation['violation_type_id']])) {
+                                            $vt_ref = $violation_types_list[$violation['violation_type_id']]['reference_no'] ?? '';
+                                            $vt_name = $violation_types_list[$violation['violation_type_id']]['name'] ?? $vt_name;
+                                        }
+                                        if ($vt_ref) {
+                                            echo '<span class="text-muted small">' . htmlspecialchars($vt_ref) . '</span><br>';
+                                        }
+                                        echo htmlspecialchars($vt_name); 
+                                        ?>
+                                    </td>
                                     <td>
                                         <span class="badge bg-<?php echo $violation['severity'] === 'Major' ? 'danger' : 'warning'; ?>">
                                             <?php echo htmlspecialchars($violation['severity']); ?>
                                         </span>
                                     </td>
-                                    <td><?php echo htmlspecialchars($violation['sanction']); ?></td>
+                                    <td><?php echo htmlspecialchars($violation['sanction'] ?? 'N/A'); ?></td>
                                     <td>
                                         <?php
+                                        $status = $violation['status'] ?? 'Pending';
                                         $status_class = 'bg-secondary';
-                                        if ($violation['status'] === 'Resolved') $status_class = 'bg-success';
-                                        elseif ($violation['status'] === 'Pending') $status_class = 'bg-warning';
-                                        elseif ($violation['status'] === 'Under Review') $status_class = 'bg-info';
+                                        if ($status === 'Resolved') $status_class = 'bg-success';
+                                        elseif ($status === 'Pending') $status_class = 'bg-warning';
+                                        elseif ($status === 'Under Review') $status_class = 'bg-info';
                                         ?>
-                                        <span class="badge <?php echo $status_class; ?>"><?php echo htmlspecialchars($violation['status']); ?></span>
+                                        <span class="badge <?php echo $status_class; ?>"><?php echo htmlspecialchars($status); ?></span>
                                     </td>
                                     <td>
                                         <div class="btn-group btn-group-sm">
                                             <button type="button" class="btn btn-outline-primary view-violation-btn" 
-                                                    data-violation='<?php echo json_encode($violation); ?>'
+                                                    data-violation='<?php echo json_encode($violation, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>'
                                                     data-bs-toggle="modal" data-bs-target="#viewViolationModal"
                                                     title="View Details">
                                                 <i class="fas fa-eye"></i>
                                             </button>
-                                            <button type="button" class="btn btn-outline-success edit-violation-btn" 
-                                                    data-violation='<?php echo json_encode($violation); ?>'
-                                                    data-bs-toggle="modal" data-bs-target="#editViolationModal"
-                                                    title="Edit">
+                                            <a href="?page=edit_violation&id=<?php echo $violation['id']; ?>" 
+                                               class="btn btn-outline-success" title="Edit">
                                                 <i class="fas fa-edit"></i>
-                                            </button>
+                                            </a>
                                             <button type="button" class="btn btn-outline-danger delete-violation-btn" 
                                                     data-violation-id="<?php echo $violation['id']; ?>"
                                                     title="Delete">
@@ -260,83 +308,6 @@ $stats = [
                     </tbody>
                 </table>
             </div>
-        </div>
-    </div>
-</div>
-
-<!-- Add Violation Modal -->
-<div class="modal fade" id="addViolationModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Add Violation Record</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form method="POST">
-                <div class="modal-body">
-                    <input type="hidden" name="action" value="add_violation">
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label">Employee <span class="text-danger">*</span></label>
-                            <select name="employee_id" class="form-select" required>
-                                <option value="">Select Employee</option>
-                                <?php foreach ($employees as $emp): ?>
-                                    <option value="<?php echo $emp['id']; ?>">
-                                        <?php echo htmlspecialchars(($emp['surname'] ?? '') . ', ' . ($emp['first_name'] ?? '')); ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Violation Date <span class="text-danger">*</span></label>
-                            <input type="date" name="violation_date" class="form-control" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Violation Type <span class="text-danger">*</span></label>
-                            <select name="violation_type" class="form-select" required>
-                                <option value="">Select Type</option>
-                                <?php foreach (array_keys($violation_types_list) as $type): ?>
-                                    <option value="<?php echo htmlspecialchars($type); ?>">
-                                        <?php echo htmlspecialchars($type); ?> (<?php echo $violation_types_list[$type]; ?>)
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Severity <span class="text-danger">*</span></label>
-                            <select name="severity" class="form-select" required>
-                                <option value="">Select Severity</option>
-                                <option value="Major">Major</option>
-                                <option value="Minor">Minor</option>
-                            </select>
-                        </div>
-                        <div class="col-12">
-                            <label class="form-label">Description <span class="text-danger">*</span></label>
-                            <textarea name="description" class="form-control" rows="3" placeholder="Detailed description of the violation..." required></textarea>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Sanction <span class="text-danger">*</span></label>
-                            <select name="sanction" class="form-select" required>
-                                <option value="">Select Sanction</option>
-                                <option value="Verbal Warning">Verbal Warning</option>
-                                <option value="Written Warning">Written Warning</option>
-                                <option value="1-day Suspension">1-day Suspension</option>
-                                <option value="3-day Suspension">3-day Suspension</option>
-                                <option value="Final Warning">Final Warning</option>
-                                <option value="Termination">Termination</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Reported By <span class="text-danger">*</span></label>
-                            <input type="text" name="reported_by" class="form-control" placeholder="Supervisor name" required>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Add Violation</button>
-                </div>
-            </form>
         </div>
     </div>
 </div>
@@ -359,74 +330,52 @@ $stats = [
     </div>
 </div>
 
-<!-- Edit Violation Modal (similar to Add, but with pre-filled data) -->
-<div class="modal fade" id="editViolationModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Edit Violation Record</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form method="POST">
-                <div class="modal-body">
-                    <input type="hidden" name="action" value="update_violation">
-                    <input type="hidden" name="violation_id" id="edit_violation_id">
-                    <!-- Similar fields as Add modal -->
-                    <p class="text-muted">Edit functionality to be implemented...</p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Update Violation</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // View violation details
     document.querySelectorAll('.view-violation-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             const violation = JSON.parse(this.dataset.violation);
+            const violationDate = violation.violation_date ? new Date(violation.violation_date).toLocaleDateString('en-US', {year: 'numeric', month: 'long', day: 'numeric'}) : 'N/A';
+            const sanctionDate = violation.sanction_date ? new Date(violation.sanction_date).toLocaleDateString('en-US', {year: 'numeric', month: 'long', day: 'numeric'}) : 'N/A';
             const content = `
                 <div class="row g-3">
                     <div class="col-md-6">
                         <strong>Employee:</strong><br>
-                        ${violation.employee_name}<br>
-                        <small class="text-muted">${violation.employee_post}</small>
+                        ${violation.employee_name || 'Unknown Employee'}<br>
+                        <small class="text-muted">${violation.post || violation.employee_post || 'N/A'}</small>
                     </div>
                     <div class="col-md-6">
                         <strong>Violation Date:</strong><br>
-                        ${new Date(violation.violation_date).toLocaleDateString('en-US', {year: 'numeric', month: 'long', day: 'numeric'})}
+                        ${violationDate}
                     </div>
                     <div class="col-md-6">
                         <strong>Violation Type:</strong><br>
-                        ${violation.violation_type}
+                        ${violation.violation_type_name || 'Unknown'}
                     </div>
                     <div class="col-md-6">
                         <strong>Severity:</strong><br>
-                        <span class="badge bg-${violation.severity === 'Major' ? 'danger' : 'warning'}">${violation.severity}</span>
+                        <span class="badge bg-${violation.severity === 'Major' ? 'danger' : 'warning'}">${violation.severity || 'N/A'}</span>
                     </div>
                     <div class="col-12">
                         <strong>Description:</strong><br>
-                        <p class="mb-0">${violation.description}</p>
+                        <p class="mb-0">${violation.description || 'No description provided'}</p>
                     </div>
                     <div class="col-md-6">
                         <strong>Sanction:</strong><br>
-                        ${violation.sanction}
+                        ${violation.sanction || 'N/A'}
                     </div>
                     <div class="col-md-6">
                         <strong>Sanction Date:</strong><br>
-                        ${new Date(violation.sanction_date).toLocaleDateString('en-US', {year: 'numeric', month: 'long', day: 'numeric'})}
+                        ${sanctionDate}
                     </div>
                     <div class="col-md-6">
                         <strong>Reported By:</strong><br>
-                        ${violation.reported_by}
+                        ${violation.reported_by || 'N/A'}
                     </div>
                     <div class="col-md-6">
                         <strong>Status:</strong><br>
-                        <span class="badge bg-${violation.status === 'Resolved' ? 'success' : violation.status === 'Pending' ? 'warning' : 'info'}">${violation.status}</span>
+                        <span class="badge bg-${violation.status === 'Resolved' ? 'success' : violation.status === 'Pending' ? 'warning' : 'info'}">${violation.status || 'Pending'}</span>
                     </div>
                 </div>
             `;
