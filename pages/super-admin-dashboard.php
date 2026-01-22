@@ -47,58 +47,6 @@ $users_by_role = $stats['users_by_role'] ?? [];
         <div class="page-title-modern">
             <h1 class="page-title-main"><?php echo $greeting; ?>, <?php echo htmlspecialchars($_SESSION['name'] ?? $_SESSION['username'] ?? 'Super Admin'); ?>! Here's what's happening today.</h1>
         </div>
-        <div class="page-actions-modern">
-            <button class="btn btn-outline-modern" type="button" data-bs-toggle="collapse" data-bs-target="#filtersCollapse" aria-expanded="false">
-                <i class="fas fa-filter me-2"></i>Filters
-            </button>
-        </div>
-    </div>
-
-    <!-- Filters Panel -->
-    <div class="collapse mb-4" id="filtersCollapse">
-        <div class="card card-modern">
-            <div class="card-body-modern">
-                <form method="GET" action="" class="row g-3">
-                    <input type="hidden" name="page" value="dashboard">
-                    <div class="col-md-3">
-                        <label class="form-label">Date From</label>
-                        <input type="date" name="date_from" class="form-control" value="<?php echo htmlspecialchars($filters['date_from']); ?>">
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">Date To</label>
-                        <input type="date" name="date_to" class="form-control" value="<?php echo htmlspecialchars($filters['date_to']); ?>">
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">User Role</label>
-                        <select name="role" class="form-select">
-                            <option value="">All Roles</option>
-                            <option value="super_admin" <?php echo $filters['role'] === 'super_admin' ? 'selected' : ''; ?>>Super Admin</option>
-                            <option value="hr_admin" <?php echo $filters['role'] === 'hr_admin' ? 'selected' : ''; ?>>HR Admin</option>
-                            <option value="hr" <?php echo $filters['role'] === 'hr' ? 'selected' : ''; ?>>HR Staff</option>
-                            <option value="admin" <?php echo $filters['role'] === 'admin' ? 'selected' : ''; ?>>Admin</option>
-                            <option value="developer" <?php echo $filters['role'] === 'developer' ? 'selected' : ''; ?>>Developer</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">Status</label>
-                        <select name="status" class="form-select">
-                            <option value="">All Statuses</option>
-                            <option value="active" <?php echo $filters['status'] === 'active' ? 'selected' : ''; ?>>Active</option>
-                            <option value="inactive" <?php echo $filters['status'] === 'inactive' ? 'selected' : ''; ?>>Inactive</option>
-                            <option value="suspended" <?php echo $filters['status'] === 'suspended' ? 'selected' : ''; ?>>Suspended</option>
-                        </select>
-                    </div>
-                    <div class="col-12">
-                        <button type="submit" class="btn btn-primary-modern">
-                            <i class="fas fa-search me-2"></i>Apply Filters
-                        </button>
-                        <a href="?page=dashboard" class="btn btn-outline-modern ms-2">
-                            <i class="fas fa-times me-2"></i>Clear
-                        </a>
-                    </div>
-                </form>
-            </div>
-        </div>
     </div>
 
     <!-- Top Statistics Cards -->
