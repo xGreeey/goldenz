@@ -2,6 +2,37 @@
 $page_title = 'Add New Employee Violation - Golden Z-5 HR System';
 $page = 'add_violation';
 
+// Helper function to get ordinal number (1st, 2nd, 3rd, etc.)
+if (!function_exists('get_ordinal')) {
+    function get_ordinal($number) {
+        $ends = ['th', 'st', 'nd', 'rd', 'th', 'th', 'th', 'th', 'th', 'th'];
+        if ((($number % 100) >= 11) && (($number % 100) <= 13)) {
+            return $number . 'th';
+        }
+        return $number . $ends[$number % 10];
+    }
+}
+
+// Handle AJAX request for offense count
+if (isset($_GET['action']) && $_GET['action'] === 'get_offense_count' && isset($_GET['employee_id']) && isset($_GET['violation_type_id'])) {
+    header('Content-Type: application/json');
+    $employee_id = (int)$_GET['employee_id'];
+    $violation_type_id = (int)$_GET['violation_type_id'];
+    
+    if (function_exists('get_employee_violation_count')) {
+        $count = get_employee_violation_count($employee_id, $violation_type_id);
+        $offense_number = $count + 1;
+        echo json_encode([
+            'success' => true, 
+            'offense_count' => $count,
+            'offense_number' => $offense_number
+        ]);
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Function not available']);
+    }
+    exit;
+}
+
 // Get database connection
 $pdo = get_db_connection();
 
@@ -36,36 +67,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['employee_id'])) {
     // If no errors, insert the violation
     if (empty($errors)) {
         try {
-            $stmt = $pdo->prepare("
-                INSERT INTO employee_violations (
-                    employee_id, violation_type_id, violation_date, description,
-                    severity, sanction, sanction_date, reported_by, status
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ");
+            // Use the new add_employee_violation function which automatically calculates offense number and suggests sanction
+            $violation_data = [
+                'employee_id' => $_POST['employee_id'],
+                'violation_type_id' => $_POST['violation_type_id'],
+                'violation_date' => $_POST['violation_date'],
+                'description' => trim($_POST['description']),
+                'severity' => $_POST['severity'],
+                'sanction' => !empty(trim($_POST['sanction'] ?? '')) ? trim($_POST['sanction']) : null,
+                'sanction_date' => !empty($_POST['sanction_date']) ? $_POST['sanction_date'] : null,
+                'reported_by' => trim($_POST['reported_by']),
+                'status' => $_POST['status'] ?? 'Pending'
+            ];
             
-            $sanction_date = !empty($_POST['sanction_date']) ? $_POST['sanction_date'] : null;
-            $status = $_POST['status'] ?? 'Pending';
-            
-            $stmt->execute([
-                $_POST['employee_id'],
-                $_POST['violation_type_id'],
-                $_POST['violation_date'],
-                trim($_POST['description']),
-                $_POST['severity'],
-                trim($_POST['sanction']),
-                $sanction_date,
-                trim($_POST['reported_by']),
-                $status
-            ]);
+            $result = add_employee_violation($violation_data);
             
             $success = true;
-            $_SESSION['violation_created_success'] = true;
-            $_SESSION['violation_created_message'] = 'Employee violation record added successfully!';
+            $message = 'Employee violation record added successfully! ' . 
+                'This is the ' . get_ordinal($result['offense_number']) . ' offense for this violation type.';
             
-            // Redirect to violations page
-            header('Location: ?page=violations&success=created');
-            exit;
-        } catch (PDOException $e) {
+            // Set session message
+            $_SESSION['violation_created_success'] = true;
+            $_SESSION['violation_created_message'] = $message;
+            
+            // Try to redirect - if headers already sent, we'll use JavaScript redirect in the page
+            if (!headers_sent()) {
+                // Clear any output buffers
+                while (ob_get_level()) {
+                    ob_end_clean();
+                }
+                header('Location: ?page=violations&success=created');
+                exit;
+            }
+            // If headers already sent, set a flag to use JavaScript redirect
+            // The redirect will happen via JavaScript in the page output
+            $redirect_needed = true;
+            $redirect_url = '?page=violations&success=created';
+        } catch (Exception $e) {
             $errors[] = 'Error saving violation: ' . $e->getMessage();
             error_log("Error adding violation: " . $e->getMessage());
         }
@@ -75,16 +113,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['employee_id'])) {
 // Get all employees for dropdown
 $employees = get_employees();
 
-// Get violation types from database
+// Get violation types from database with sanction information
 $violation_types_list = [];
 try {
-    $stmt = $pdo->query("SELECT id, name, category, reference_no FROM violation_types WHERE is_active = 1 ORDER BY category, reference_no");
+    $stmt = $pdo->query("SELECT id, name, category, reference_no, first_offense, second_offense, third_offense, fourth_offense, fifth_offense 
+                         FROM violation_types 
+                         WHERE is_active = 1 
+                         ORDER BY category, reference_no");
     $violation_types = $stmt->fetchAll(PDO::FETCH_ASSOC);
     foreach ($violation_types as $vt) {
         $violation_types_list[$vt['id']] = [
             'name' => $vt['name'],
             'category' => $vt['category'],
-            'reference_no' => $vt['reference_no']
+            'reference_no' => $vt['reference_no'],
+            'first_offense' => $vt['first_offense'],
+            'second_offense' => $vt['second_offense'],
+            'third_offense' => $vt['third_offense'],
+            'fourth_offense' => $vt['fourth_offense'],
+            'fifth_offense' => $vt['fifth_offense']
         ];
     }
 } catch (PDOException $e) {
@@ -113,6 +159,15 @@ if ($current_user_id && function_exists('get_db_connection')) {
     }
 }
 ?>
+
+<?php if (isset($redirect_needed) && $redirect_needed): ?>
+<script type="text/javascript">
+    window.location.href = "<?php echo htmlspecialchars($redirect_url); ?>";
+</script>
+<noscript>
+    <meta http-equiv="refresh" content="0;url=<?php echo htmlspecialchars($redirect_url); ?>">
+</noscript>
+<?php endif; ?>
 
 <div class="container-fluid hrdash">
     <div class="card hrdash-card hrdash-license">
@@ -222,10 +277,13 @@ if ($current_user_id && function_exists('get_db_connection')) {
                     
                     <div class="col-md-6">
                         <label class="form-label">Sanction <span class="text-danger">*</span></label>
-                        <input type="text" name="sanction" class="form-control" required 
+                        <input type="text" name="sanction" id="sanction_input" class="form-control" required 
                                value="<?php echo isset($_POST['sanction']) ? htmlspecialchars($_POST['sanction']) : ''; ?>"
                                placeholder="e.g., 15 days suspension, Written Warning">
-                        <small class="form-text text-muted">Enter the sanction applied for this violation</small>
+                        <small class="form-text text-muted">
+                            <span id="sanction_hint">Sanction will be auto-suggested based on violation type and offense number</span>
+                            <span id="offense_info" class="text-primary fw-bold" style="display: none;"></span>
+                        </small>
                     </div>
                     
                     <div class="col-md-6">
@@ -377,10 +435,17 @@ if ($current_user_id && function_exists('get_db_connection')) {
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Auto-set severity based on violation type selection
+    // Violation types data from PHP
+    const violationTypes = <?php echo json_encode($violation_types_list); ?>;
+    
     const violationTypeSelect = document.getElementById('violation_type_select');
     const severitySelect = document.getElementById('severity_select');
+    const sanctionInput = document.getElementById('sanction_input');
+    const employeeSelect = document.querySelector('select[name="employee_id"]');
+    const offenseInfo = document.getElementById('offense_info');
+    const sanctionHint = document.getElementById('sanction_hint');
     
+    // Auto-set severity based on violation type selection
     if (violationTypeSelect && severitySelect) {
         violationTypeSelect.addEventListener('change', function() {
             const selectedOption = this.options[this.selectedIndex];
@@ -389,8 +454,94 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (category) {
                     severitySelect.value = category;
                 }
+                updateSanctionSuggestion();
             }
         });
+    }
+    
+    // Update sanction when employee or violation type changes
+    if (employeeSelect) {
+        employeeSelect.addEventListener('change', function() {
+            if (this.value && violationTypeSelect.value) {
+                updateSanctionSuggestion();
+            }
+        });
+    }
+    
+    // Function to update sanction suggestion based on violation type and offense count
+    async function updateSanctionSuggestion() {
+        const employeeId = employeeSelect?.value;
+        const violationTypeId = violationTypeSelect?.value;
+        
+        if (!employeeId || !violationTypeId) {
+            offenseInfo.style.display = 'none';
+            sanctionHint.style.display = 'inline';
+            return;
+        }
+        
+        try {
+            // Get offense count via AJAX
+            const response = await fetch('?page=add_violation&action=get_offense_count&employee_id=' + employeeId + '&violation_type_id=' + violationTypeId);
+            const data = await response.json();
+            
+            if (data.success) {
+                const offenseNumber = data.offense_number;
+                const violationType = violationTypes[violationTypeId];
+                
+                if (violationType) {
+                    let suggestedSanction = '';
+                    switch(offenseNumber) {
+                        case 1:
+                            suggestedSanction = violationType.first_offense || '';
+                            break;
+                        case 2:
+                            suggestedSanction = violationType.second_offense || violationType.first_offense || '';
+                            break;
+                        case 3:
+                            suggestedSanction = violationType.third_offense || violationType.second_offense || violationType.first_offense || '';
+                            break;
+                        case 4:
+                            suggestedSanction = violationType.fourth_offense || violationType.third_offense || violationType.second_offense || '';
+                            break;
+                        case 5:
+                        default:
+                            suggestedSanction = violationType.fifth_offense || violationType.fourth_offense || violationType.third_offense || '';
+                            break;
+                    }
+                    
+                    if (suggestedSanction) {
+                        sanctionInput.value = suggestedSanction;
+                        offenseInfo.textContent = 'This will be the ' + getOrdinal(offenseNumber) + ' offense for this violation type';
+                        offenseInfo.style.display = 'inline';
+                        sanctionHint.style.display = 'none';
+                    } else {
+                        offenseInfo.style.display = 'none';
+                        sanctionHint.style.display = 'inline';
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Error fetching offense count:', error);
+            // Fallback: just show the first offense sanction
+            const violationType = violationTypes[violationTypeId];
+            if (violationType && violationType.first_offense) {
+                sanctionInput.value = violationType.first_offense;
+            }
+        }
+    }
+    
+    // Helper function to get ordinal number
+    function getOrdinal(number) {
+        const ends = ['th', 'st', 'nd', 'rd', 'th', 'th', 'th', 'th', 'th', 'th'];
+        if ((number % 100 >= 11) && (number % 100 <= 13)) {
+            return number + 'th';
+        }
+        return number + ends[number % 10];
+    }
+    
+    // Initial update if form is pre-filled
+    if (violationTypeSelect?.value && employeeSelect?.value) {
+        updateSanctionSuggestion();
     }
 });
 </script>
