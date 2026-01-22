@@ -883,9 +883,9 @@ if (isset($_SESSION['employee_redirect_url'])) {
                             <div class="specimen-row">
                                 <span class="specimen-number">2.</span>
                                 <input type="text" class="specimen-underline" id="signature_2" name="signature_2">
-                            </div>
                         </div>
-                        
+                    </div>
+                    
                         <!-- Right Column: Initial -->
                         <div class="specimen-column">
                             <div class="specimen-column-header">INITIAL (PINAIKLING PIRMA)</div>
@@ -899,7 +899,7 @@ if (isset($_SESSION['employee_redirect_url'])) {
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Certification Statement -->
                     <div class="specimen-certification">
                         <p>I HEREBY CERTIFY that the above specimen is my <strong>OFFICIAL</strong> signatures and initial of which I <strong>CONFIRM</strong> by my signature below.</p>
@@ -1502,82 +1502,82 @@ if (isset($_SESSION['employee_redirect_url'])) {
                     <div class="fingerprints-section">
                         <div class="formal-section-title">
                             <h4>FINGERPRINTS</h4>
-                        </div>
-                        
+                    </div>
+                    
                         <table class="fingerprints-table">
-                            <tbody>
+                                <tbody>
                                 <!-- RIGHT Hand Row -->
-                                <tr>
+                                    <tr>
                                     <td class="fingerprint-cell">
                                         <div class="fingerprint-label">RIGHT<br>THUMB</div>
                                         <input type="file" class="fingerprint-upload" name="fingerprint_right_thumb" accept="image/*">
-                                    </td>
+                                        </td>
                                     <td class="fingerprint-cell">
                                         <div class="fingerprint-label">RIGHT<br>INDEX FINGER</div>
                                         <input type="file" class="fingerprint-upload" name="fingerprint_right_index" accept="image/*">
-                                    </td>
+                                        </td>
                                     <td class="fingerprint-cell">
                                         <div class="fingerprint-label">RIGHT<br>MIDDLE FINGER</div>
                                         <input type="file" class="fingerprint-upload" name="fingerprint_right_middle" accept="image/*">
-                                    </td>
+                                        </td>
                                     <td class="fingerprint-cell">
                                         <div class="fingerprint-label">RIGHT<br>RING FINGER</div>
                                         <input type="file" class="fingerprint-upload" name="fingerprint_right_ring" accept="image/*">
-                                    </td>
+                                        </td>
                                     <td class="fingerprint-cell">
                                         <div class="fingerprint-label">RIGHT<br>LITTLE FINGER</div>
                                         <input type="file" class="fingerprint-upload" name="fingerprint_right_little" accept="image/*">
-                                    </td>
-                                </tr>
+                                        </td>
+                                    </tr>
                                 
                                 <!-- LEFT Hand Row -->
                                 <tr>
                                     <td class="fingerprint-cell">
                                         <div class="fingerprint-label">LEFT<br>THUMB</div>
                                         <input type="file" class="fingerprint-upload" name="fingerprint_left_thumb" accept="image/*">
-                                    </td>
+                                        </td>
                                     <td class="fingerprint-cell">
                                         <div class="fingerprint-label">LEFT<br>INDEX FINGER</div>
                                         <input type="file" class="fingerprint-upload" name="fingerprint_left_index" accept="image/*">
-                                    </td>
+                                        </td>
                                     <td class="fingerprint-cell">
                                         <div class="fingerprint-label">LEFT<br>MIDDLE FINGER</div>
                                         <input type="file" class="fingerprint-upload" name="fingerprint_left_middle" accept="image/*">
-                                    </td>
+                                        </td>
                                     <td class="fingerprint-cell">
                                         <div class="fingerprint-label">LEFT<br>RING FINGER</div>
                                         <input type="file" class="fingerprint-upload" name="fingerprint_left_ring" accept="image/*">
-                                    </td>
+                                        </td>
                                     <td class="fingerprint-cell">
                                         <div class="fingerprint-label">LEFT<br>LITTLE FINGER</div>
                                         <input type="file" class="fingerprint-upload" name="fingerprint_left_little" accept="image/*">
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                </div>
 
                     <!-- Right Side: Basic Requirements -->
                     <div class="requirements-section">
                         <div class="formal-section-title">
                             <h4>BASIC REQUIREMENTS</h4>
-                        </div>
-                        
+                    </div>
+                    
                         <!-- Signature Line -->
                         <div class="requirements-signature">
                             <span class="req-sig-label">Signature Over Printed Name:</span>
                             <input type="text" class="req-signature-underline" id="requirements_signature" name="requirements_signature">
-                        </div>
-                        
+                    </div>
+
                         <!-- Requirements List -->
                         <div class="requirements-header">
                             <span class="req-header-label">Provided on Application:</span>
                             <div class="req-header-checkboxes">
                                 <span>Y</span>
                                 <span>N</span>
-                            </div>
                         </div>
-                        
+                    </div>
+
                         <div class="requirements-list">
                             <!-- Items 1-9 -->
                             <div class="req-item">
@@ -1586,8 +1586,8 @@ if (isset($_SESSION['employee_redirect_url'])) {
                                 <div class="req-checkboxes">
                                     <input type="checkbox" name="req_2x2" id="req_2x2_y" value="YO">
                                     <input type="checkbox" name="req_2x2" id="req_2x2_n" value="NO">
-                                </div>
-                            </div>
+                                        </div>
+                                        </div>
                             
                             <div class="req-item">
                                 <span class="req-number">2.</span>
@@ -1595,8 +1595,8 @@ if (isset($_SESSION['employee_redirect_url'])) {
                                 <div class="req-checkboxes">
                                     <input type="checkbox" name="req_birth_cert" id="req_birth_cert_y" value="YO">
                                     <input type="checkbox" name="req_birth_cert" id="req_birth_cert_n" value="NO">
+                                    </div>
                                 </div>
-                            </div>
                             
                             <div class="req-item">
                                 <span class="req-number">3.</span>
@@ -1604,8 +1604,8 @@ if (isset($_SESSION['employee_redirect_url'])) {
                                 <div class="req-checkboxes">
                                     <input type="checkbox" name="req_barangay" id="req_barangay_y" value="YO">
                                     <input type="checkbox" name="req_barangay" id="req_barangay_n" value="NO">
-                                </div>
                             </div>
+                                        </div>
                             
                             <div class="req-item">
                                 <span class="req-number">4.</span>
@@ -1613,8 +1613,8 @@ if (isset($_SESSION['employee_redirect_url'])) {
                                 <div class="req-checkboxes">
                                     <input type="checkbox" name="req_police" id="req_police_y" value="YO">
                                     <input type="checkbox" name="req_police" id="req_police_n" value="NO">
-                                </div>
-                            </div>
+                                        </div>
+                                    </div>
                             
                             <div class="req-item">
                                 <span class="req-number">5.</span>
@@ -1631,8 +1631,8 @@ if (isset($_SESSION['employee_redirect_url'])) {
                                 <div class="req-checkboxes">
                                     <input type="checkbox" name="req_di" id="req_di_y" value="YO">
                                     <input type="checkbox" name="req_di" id="req_di_n" value="NO">
-                                </div>
-                            </div>
+                                        </div>
+                                        </div>
                             
                             <div class="req-item">
                                 <span class="req-number">7.</span>
@@ -1640,8 +1640,8 @@ if (isset($_SESSION['employee_redirect_url'])) {
                                 <div class="req-checkboxes">
                                     <input type="checkbox" name="req_diploma" id="req_diploma_y" value="YO">
                                     <input type="checkbox" name="req_diploma" id="req_diploma_n" value="NO">
+                                    </div>
                                 </div>
-                            </div>
                             
                             <div class="req-item">
                                 <span class="req-number">8.</span>
@@ -1649,8 +1649,8 @@ if (isset($_SESSION['employee_redirect_url'])) {
                                 <div class="req-checkboxes">
                                     <input type="checkbox" name="req_neuro_drug" id="req_neuro_drug_y" value="YO">
                                     <input type="checkbox" name="req_neuro_drug" id="req_neuro_drug_n" value="NO">
-                                </div>
                             </div>
+                                        </div>
                             
                             <div class="req-item">
                                 <span class="req-number">9.</span>
@@ -1658,14 +1658,14 @@ if (isset($_SESSION['employee_redirect_url'])) {
                                 <div class="req-checkboxes">
                                     <input type="checkbox" name="req_sec_license" id="req_sec_license_y" value="YO">
                                     <input type="checkbox" name="req_sec_license" id="req_sec_license_n" value="NO">
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                        </div>
                         
                         <!-- ID Copy Provision Section -->
                         <div class="requirements-header">
                             <span class="req-header-label">I.D. copy provision:</span>
-                        </div>
+                            </div>
                         
                         <div class="requirements-list">
                             <!-- Items 10-14 with ID number inputs -->
@@ -1676,8 +1676,8 @@ if (isset($_SESSION['employee_redirect_url'])) {
                                 <div class="req-checkboxes">
                                     <input type="checkbox" name="req_sec_lic_no" id="req_sec_lic_no_y" value="YO">
                                     <input type="checkbox" name="req_sec_lic_no" id="req_sec_lic_no_n" value="NO">
-                                </div>
-                            </div>
+                                        </div>
+                                        </div>
                             
                             <div class="req-item-with-input">
                                 <span class="req-number">11.</span>
@@ -1686,8 +1686,8 @@ if (isset($_SESSION['employee_redirect_url'])) {
                                 <div class="req-checkboxes">
                                     <input type="checkbox" name="req_sss" id="req_sss_y" value="YO">
                                     <input type="checkbox" name="req_sss" id="req_sss_n" value="NO">
+                                    </div>
                                 </div>
-                            </div>
                             
                             <div class="req-item-with-input">
                                 <span class="req-number">12.</span>
@@ -1696,8 +1696,8 @@ if (isset($_SESSION['employee_redirect_url'])) {
                                 <div class="req-checkboxes">
                                     <input type="checkbox" name="req_pagibig" id="req_pagibig_y" value="YO">
                                     <input type="checkbox" name="req_pagibig" id="req_pagibig_n" value="NO">
-                                </div>
                             </div>
+                                        </div>
                             
                             <div class="req-item-with-input">
                                 <span class="req-number">13.</span>
@@ -1706,8 +1706,8 @@ if (isset($_SESSION['employee_redirect_url'])) {
                                 <div class="req-checkboxes">
                                     <input type="checkbox" name="req_philhealth" id="req_philhealth_y" value="YO">
                                     <input type="checkbox" name="req_philhealth" id="req_philhealth_n" value="NO">
-                                </div>
-                            </div>
+                                        </div>
+                                    </div>
                             
                             <div class="req-item-with-input">
                                 <span class="req-number">14.</span>
@@ -1737,13 +1737,13 @@ if (isset($_SESSION['employee_redirect_url'])) {
                         
                         <p>I HEREBY CERTIFY that all information given in this application form are true and correct and any false statement or misrepresentation shall be a ground for the termination of my employment with the Company without prejudice to the filing of <strong>APPROPRIATE CRIMINAL PROCEEDINGS</strong> by reason thereof.</p>
                     </div>
-                    
+
                     <!-- Signature Line -->
                     <div class="sworn-signature-line">
                         <input type="text" class="sworn-signature-input" id="sworn_signature" name="sworn_signature" placeholder="">
                         <label class="sworn-signature-label">Signature Over Printed Name</label>
                     </div>
-                    
+
                     <!-- Subscription Clause -->
                     <div class="sworn-subscription">
                         <span class="subscription-text">SUBSCRIBED AND SWORN to before me this</span>
@@ -1756,7 +1756,7 @@ if (isset($_SESSION['employee_redirect_url'])) {
                         <input type="text" class="subscription-input subscription-input-wide" id="tax_cert_issued_at" name="tax_cert_issued_at" placeholder="">
                         <span class="subscription-text">.</span>
                     </div>
-                    
+
                     <!-- Bottom Section: Notarial Details -->
                     <div class="sworn-footer">
                         <!-- Left: Doc/Page/Book/Series -->
@@ -1765,28 +1765,28 @@ if (isset($_SESSION['employee_redirect_url'])) {
                                 <span class="notarial-label">Doc No.</span>
                                 <input type="text" class="notarial-underline" id="doc_no" name="doc_no" placeholder="">
                                 <span class="notarial-semicolon">;</span>
-                            </div>
+                        </div>
                             <div class="notarial-field">
                                 <span class="notarial-label">Page No.</span>
                                 <input type="text" class="notarial-underline" id="page_no" name="page_no" placeholder="" value="2" readonly>
                                 <span class="notarial-semicolon">;</span>
-                            </div>
+                    </div>
                             <div class="notarial-field">
                                 <span class="notarial-label">Book No.</span>
                                 <input type="text" class="notarial-underline" id="book_no" name="book_no" placeholder="">
                                 <span class="notarial-semicolon">;</span>
-                            </div>
+                        </div>
                             <div class="notarial-field">
                                 <span class="notarial-label">Series of</span>
                                 <input type="text" class="notarial-underline" id="series_of" name="series_of" placeholder="">
                                 <span class="notarial-semicolon">;</span>
-                            </div>
-                        </div>
-                        
+                    </div>
+                </div>
+
                         <!-- Right: Notary Public -->
                         <div class="notarial-details-right">
                             <div class="notary-public-label">NOTARY PUBLIC</div>
-                        </div>
+                            </div>
                     </div>
                 </div>
 
