@@ -1,12 +1,12 @@
 <?php
 // Scheduled Database Backup to MinIO
-// This script should be run every 5 minutes via cron (for testing).
+// This script should be run every 30 minutes via cron.
 //
 // Usage:
 //   php backup-to-minio.php
 //
-// Example crontab (every 5 minutes):
-//   */5 * * * * /usr/local/bin/php /var/www/html/cron/backup-to-minio.php >> /var/www/html/storage/logs/backup-cron.log 2>&1
+// Example crontab (every 30 minutes):
+//   0,30 * * * * /usr/local/bin/php /var/www/html/cron/backup-to-minio.php >> /var/www/html/storage/logs/backup-cron.log 2>&1
 
 // Set error reporting
 error_reporting(E_ALL);
