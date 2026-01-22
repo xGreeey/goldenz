@@ -384,7 +384,14 @@ class PageTransitionManager {
             'profile': 'My Profile',
             'integrations': 'Integrations',
             'help': 'Help & Support',
-            'system_logs': 'System Logs'
+            'system_logs': 'System Logs',
+            'documents': '201 Files - Document Management',
+            'leaves': 'Leave Requests',
+            'leave_balance': 'Leave Balance',
+            'leave_reports': 'Leave Reports',
+            'attendance': 'Attendance Management',
+            'violations': 'Employee Violations',
+            'violation_types': 'Violation Types & Sanctions'
         };
 
         // Page subtitles mapping
@@ -413,7 +420,14 @@ class PageTransitionManager {
             'checklist': 'View and manage employee checklists',
             'hiring': 'Manage the recruitment and hiring process',
             'onboarding': 'Manage employee onboarding procedures',
-            'handbook': 'Access the employee handbook and policies'
+            'handbook': 'Access the employee handbook and policies',
+            'documents': 'Manage employee 201 files and documents',
+            'leaves': 'View and manage leave requests',
+            'leave_balance': 'View employee leave balances',
+            'leave_reports': 'Generate leave reports and analytics',
+            'attendance': 'Track and manage employee attendance',
+            'violations': 'View and manage employee violations',
+            'violation_types': 'Manage violation categories and sanctions'
         };
 
         // Get title and subtitle

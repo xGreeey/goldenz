@@ -222,6 +222,27 @@ function getEmployeeTypeLabel($type) {
 // Get employees for the table (limit to active employees, or all if needed)
 $all_employees = get_employees();
 $display_employees = array_slice($all_employees, 0, 10); // Show first 10 employees
+
+// Get today's schedule (alerts for today)
+$today_schedule = [];
+try {
+    $todayDate = date('Y-m-d');
+    $scheduleStmt = $pdo->prepare("SELECT ea.id, ea.title, ea.description, ea.priority, ea.status, 
+                                           ea.created_at, e.first_name, e.surname, e.post
+                                    FROM employee_alerts ea
+                                    LEFT JOIN employees e ON ea.employee_id = e.id
+                                    WHERE DATE(ea.created_at) = ?
+                                        OR (ea.status = 'active' AND ea.priority IN ('Urgent', 'High'))
+                                    ORDER BY 
+                                        FIELD(ea.priority, 'Urgent', 'High', 'Medium', 'Low'),
+                                        ea.created_at DESC
+                                    LIMIT 10");
+    $scheduleStmt->execute([$todayDate]);
+    $today_schedule = $scheduleStmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (Exception $e) {
+    error_log("Error fetching today's schedule: " . $e->getMessage());
+    $today_schedule = [];
+}
 ?>
 
 <?php if (($_SESSION['user_role'] ?? '') === 'hr_admin'): ?>
@@ -397,9 +418,10 @@ $display_employees = array_slice($all_employees, 0, 10); // Show first 10 employ
             </div>
         </div>
 
-        <!-- Today's schedule -->
-        <div class="col-xl-4 d-flex">
-            <div class="card hrdash-card hrdash-schedule h-100 d-flex flex-column">
+        <!-- Right column: Today's schedule and Shortcuts -->
+        <div class="col-xl-4 d-flex flex-column gap-4">
+            <!-- Today's schedule -->
+            <div class="card hrdash-card hrdash-schedule d-flex flex-column">
                 <div class="hrdash-card__header">
                     <div>
                         <h5 class="hrdash-card__title">Today's Schedule</h5>
@@ -433,41 +455,116 @@ $display_employees = array_slice($all_employees, 0, 10); // Show first 10 employ
                     <!-- Date display and schedule count -->
                     <div class="hrdash-schedule__date-info">
                         <div class="hrdash-schedule__date-full"><?php echo $today->format('F d, Y'); ?></div>
-                        <a href="?page=alerts" class="hrdash-schedule__count-link"><?php echo $scheduleCount; ?> Schedule</a>
+                        <a href="?page=alerts" class="hrdash-schedule__count-link"><?php echo count($today_schedule); ?> Schedule<?php echo count($today_schedule) != 1 ? 's' : ''; ?></a>
                     </div>
 
-                    <!-- Timeline (placeholder for now) -->
+                    <!-- Timeline -->
                     <div class="hrdash-schedule__timeline">
-                        <div class="hrdash-schedule__empty">
-                            <i class="fas fa-calendar-day"></i>
-                            <div>No schedule connected yet.</div>
-                            <small class="text-muted">Hook this to your calendar/events when ready.</small>
-                        </div>
+                        <?php if (empty($today_schedule)): ?>
+                            <div class="hrdash-schedule__empty">
+                                <i class="fas fa-calendar-check"></i>
+                                <div>No alerts for today</div>
+                                <small class="text-muted">All clear! No urgent items require attention.</small>
+                            </div>
+                        <?php else: ?>
+                            <div class="hrdash-schedule__events">
+                                <?php foreach ($today_schedule as $event): 
+                                    $priorityClass = '';
+                                    $priorityIcon = 'fa-circle-info';
+                                    switch(strtolower($event['priority'] ?? '')) {
+                                        case 'urgent':
+                                            $priorityClass = 'event--urgent';
+                                            $priorityIcon = 'fa-exclamation-triangle';
+                                            break;
+                                        case 'high':
+                                            $priorityClass = 'event--high';
+                                            $priorityIcon = 'fa-exclamation-circle';
+                                            break;
+                                        case 'medium':
+                                            $priorityClass = 'event--medium';
+                                            $priorityIcon = 'fa-circle-exclamation';
+                                            break;
+                                        default:
+                                            $priorityClass = 'event--low';
+                                            $priorityIcon = 'fa-circle-info';
+                                    }
+                                    $eventTime = date('g:i A', strtotime($event['created_at']));
+                                    $employeeName = trim(($event['first_name'] ?? '') . ' ' . ($event['surname'] ?? ''));
+                                ?>
+                                    <div class="hrdash-schedule__event <?php echo $priorityClass; ?>">
+                                        <div class="event__time"><?php echo $eventTime; ?></div>
+                                        <div class="event__content">
+                                            <div class="event__header">
+                                                <i class="fas <?php echo $priorityIcon; ?> event__icon"></i>
+                                                <span class="event__title"><?php echo htmlspecialchars($event['title']); ?></span>
+                                            </div>
+                                            <?php if (!empty($employeeName)): ?>
+                                                <div class="event__meta">
+                                                    <i class="fas fa-user"></i>
+                                                    <?php echo htmlspecialchars($employeeName); ?>
+                                                    <?php if (!empty($event['post'])): ?>
+                                                        <span class="text-muted">· <?php echo htmlspecialchars($event['post']); ?></span>
+                                                    <?php endif; ?>
+                                                </div>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Shortcuts (horizontal, compact layout) - below both cards -->
-        <div class="col-12">
-            <div class="hrdash-shortcuts-compact">
-                <span class="hrdash-shortcuts-compact__title">Shortcut</span>
-                <div class="hrdash-shortcuts-compact__buttons">
+            <!-- Shortcuts -->
+            <div class="card hrdash-card hrdash-shortcuts-card">
+                <div class="hrdash-card__header">
+                    <div>
+                        <h5 class="hrdash-card__title">Quick Actions</h5>
+                        <div class="hrdash-card__subtitle">Frequently used shortcuts</div>
+                    </div>
+                </div>
+                <div class="hrdash-shortcuts-grid">
                     <a class="hrdash-shortcut-btn" href="?page=add_employee" title="Add New Employee">
                         <i class="fas fa-user-plus"></i>
                         <span>Add Employee</span>
-                    </a>
-                    <a class="hrdash-shortcut-btn" href="?page=add_alert" title="Add New Alert">
-                        <i class="fas fa-bell-plus"></i>
-                        <span>Add Alert</span>
                     </a>
                     <a class="hrdash-shortcut-btn" href="?page=employees" title="View All Employees">
                         <i class="fas fa-users"></i>
                         <span>Employees</span>
                     </a>
-                    <button class="hrdash-shortcut-btn hrdash-shortcut-btn--add" type="button" title="Add more shortcuts" aria-label="Add shortcut">
-                        <i class="fas fa-plus"></i>
-                    </button>
+                    <a class="hrdash-shortcut-btn" href="?page=add_alert" title="Add New Alert">
+                        <i class="fas fa-bell-plus"></i>
+                        <span>Add Alert</span>
+                    </a>
+                    <a class="hrdash-shortcut-btn" href="?page=alerts" title="View All Alerts">
+                        <i class="fas fa-bell"></i>
+                        <span>Alerts</span>
+                    </a>
+                    <a class="hrdash-shortcut-btn" href="?page=posts" title="Manage Posts">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>Posts</span>
+                    </a>
+                    <a class="hrdash-shortcut-btn" href="?page=tasks" title="View Tasks">
+                        <i class="fas fa-tasks"></i>
+                        <span>Tasks</span>
+                    </a>
+                    <a class="hrdash-shortcut-btn" href="?page=teams" title="View Teams">
+                        <i class="fas fa-user-friends"></i>
+                        <span>Teams</span>
+                    </a>
+                    <a class="hrdash-shortcut-btn" href="?page=system_logs" title="System Logs">
+                        <i class="fas fa-file-alt"></i>
+                        <span>System Logs</span>
+                    </a>
+                    <a class="hrdash-shortcut-btn" href="?page=hr-admin-settings" title="Settings">
+                        <i class="fas fa-cog"></i>
+                        <span>Settings</span>
+                    </a>
+                    <a class="hrdash-shortcut-btn" href="?page=help" title="Help & Support">
+                        <i class="fas fa-question-circle"></i>
+                        <span>Help</span>
+                    </a>
                 </div>
             </div>
         </div>
@@ -1111,7 +1208,90 @@ $display_employees = array_slice($all_employees, 0, 10); // Show first 10 employ
 }
 .hrdash-schedule__empty i {
     font-size: 1.25rem;
-    color: #1f75cb;
+    color: #10b981;
+}
+.hrdash-schedule__events {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+.hrdash-schedule__event {
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.875rem;
+    border-radius: 8px;
+    border-left: 3px solid #cbd5e1;
+    background: #f8fafc;
+    transition: all 0.2s ease;
+}
+.hrdash-schedule__event:hover {
+    background: #f1f5f9;
+    transform: translateX(2px);
+}
+.hrdash-schedule__event.event--urgent {
+    border-left-color: #dc2626;
+    background: #fef2f2;
+}
+.hrdash-schedule__event.event--high {
+    border-left-color: #f59e0b;
+    background: #fffbeb;
+}
+.hrdash-schedule__event.event--medium {
+    border-left-color: #3b82f6;
+    background: #eff6ff;
+}
+.hrdash-schedule__event.event--low {
+    border-left-color: #10b981;
+    background: #f0fdf4;
+}
+.event__time {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #64748b;
+    min-width: 60px;
+    flex-shrink: 0;
+}
+.event__content {
+    flex: 1;
+    min-width: 0;
+}
+.event__header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.25rem;
+}
+.event__icon {
+    font-size: 0.875rem;
+    flex-shrink: 0;
+}
+.event--urgent .event__icon {
+    color: #dc2626;
+}
+.event--high .event__icon {
+    color: #f59e0b;
+}
+.event--medium .event__icon {
+    color: #3b82f6;
+}
+.event--low .event__icon {
+    color: #10b981;
+}
+.event__title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #0f172a;
+    line-height: 1.4;
+}
+.event__meta {
+    font-size: 0.75rem;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+}
+.event__meta i {
+    font-size: 0.625rem;
 }
 .hrdash-segment {
     display: inline-flex;
@@ -1149,62 +1329,55 @@ $display_employees = array_slice($all_employees, 0, 10); // Show first 10 employ
     letter-spacing: 0.08em;
     border-bottom: 1px solid #e2e8f0;
 }
-/* Compact horizontal shortcuts */
-.hrdash-shortcuts-compact {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 0.875rem 1.25rem;
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    flex-wrap: wrap;
+/* Shortcuts Grid */
+.hrdash-shortcuts-card .hrdash-card__header {
+    min-height: auto;
 }
-.hrdash-shortcuts-compact__title {
-    font-weight: 700;
-    font-size: 0.9375rem;
-    color: #0f172a;
-    margin-right: 0.5rem;
-}
-.hrdash-shortcuts-compact__buttons {
-    display: flex;
-    align-items: center;
+.hrdash-shortcuts-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
     gap: 0.75rem;
-    flex: 1;
-    flex-wrap: wrap;
+    padding: 1.25rem;
+    background: #ffffff;
 }
 .hrdash-shortcut-btn {
-    display: inline-flex;
+    display: flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.625rem 1rem;
+    justify-content: flex-start;
+    gap: 0.625rem;
+    padding: 0.875rem 1rem;
     border-radius: 8px;
     border: 1px solid #e2e8f0;
-    background: #f8fafc;
+    background: #ffffff;
     color: #0f172a;
     text-decoration: none;
     font-weight: 500;
     font-size: 0.875rem;
     transition: all 0.2s ease;
     cursor: pointer;
+    min-height: 44px;
 }
 .hrdash-shortcut-btn:hover {
-    background: #e2e8f0;
+    background: #f8fafc;
+    border-color: #cbd5e1;
     transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 .hrdash-shortcut-btn i {
-    font-size: 0.875rem;
-    color: #475569;
-}
-.hrdash-shortcut-btn--add {
-    width: 36px;
-    height: 36px;
-    padding: 0;
-    justify-content: center;
-    border-radius: 8px;
-}
-.hrdash-shortcut-btn--add i {
     font-size: 1rem;
+    color: #475569;
+    width: 20px;
+    text-align: center;
+    flex-shrink: 0;
+}
+.hrdash-shortcut-btn:hover i {
+    color: #1e293b;
+}
+.hrdash-shortcut-btn span {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 /* Ensure consistent card alignment */
 .row.g-4 > [class*="col-"] {
@@ -1219,16 +1392,21 @@ $display_employees = array_slice($all_employees, 0, 10); // Show first 10 employ
     .hrdash-license__body {
         min-height: 220px;
     }
-    .hrdash-shortcuts-compact {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-    .hrdash-shortcuts-compact__buttons {
-        width: 100%;
+    .hrdash-shortcuts-grid {
+        grid-template-columns: 1fr;
     }
     /* Stack cards on mobile */
     .row.g-4 > [class*="col-"] {
         display: block;
+    }
+}
+@media (max-width: 576px) {
+    .hrdash-shortcut-btn {
+        padding: 0.75rem 0.875rem;
+        font-size: 0.8125rem;
+    }
+    .hrdash-shortcut-btn i {
+        font-size: 0.875rem;
     }
 }
 </style>
@@ -1369,8 +1547,6 @@ $display_employees = array_slice($all_employees, 0, 10); // Show first 10 employ
         initTimeDisplay();
         initShortcuts();
         initProfileDropdown();
-    }
-    
     }
     
     // Initialize on DOM ready

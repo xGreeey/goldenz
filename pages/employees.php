@@ -329,7 +329,7 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
     <?php endif; ?>
 
     <!-- Summary Cards -->
-    <div class="row g-4">
+    <div class="row g-4 mb-4">
         <div class="col-xl-4 col-md-6">
             <div class="card hrdash-stat hrdash-stat--primary">
                 <div class="hrdash-stat__header">
@@ -380,9 +380,9 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
     <!-- Search and Filter Bar -->
     <div class="card card-modern mb-4">
         <div class="card-body-modern">
-            <form method="GET" action="" id="employeeFilterForm" class="row g-3">
+            <form method="GET" action="" id="employeeFilterForm" class="row g-3 align-items-end">
                 <input type="hidden" name="page" value="employees">
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <label class="form-label">Search Employees</label>
                     <div class="input-group">
                         <span class="input-group-text"><i class="fas fa-search"></i></span>
@@ -441,9 +441,9 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
                         <option value="desc" <?php echo $sort_order === 'desc' ? 'selected' : ''; ?>>Descending</option>
                     </select>
                 </div>
-                <div class="col-md-12 d-flex justify-content-end gap-2 mt-4">
-                    <button type="button" class="btn btn-outline-modern" id="clearFilters">
-                        <i class="fas fa-times me-2"></i>Clear Filters
+                <div class="col-auto">
+                    <button type="button" class="btn btn-outline-modern" id="clearFilters" title="Clear Filters">
+                        <i class="fas fa-times"></i>
                     </button>
                 </div>
             </form>
@@ -453,9 +453,19 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
     <!-- Employee Table -->
     <div class="card card-modern mb-4">
         <div class="card-body-modern">
-            <div class="card-header-modern mb-4">
-                <h5 class="card-title-modern">Employee List</h5>
-                <small class="card-subtitle">Viewing <?php echo count($paginated_employees); ?> of <?php echo number_format($total_all_employees); ?> total employees</small>
+            <div class="card-header-modern mb-4 d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="card-title-modern">Employee List</h5>
+                    <small class="card-subtitle">Viewing <?php echo count($paginated_employees); ?> of <?php echo number_format($total_all_employees); ?> total employees</small>
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-modern" id="exportBtn" title="Export employee list">
+                        <i class="fas fa-download me-2"></i>Export
+                    </button>
+                    <a href="?page=add_employee" class="btn btn-primary-modern">
+                        <span class="hr-icon hr-icon-plus me-2"></span>Add Employee
+                    </a>
+                </div>
             </div>
             <div class="table-container">
                 <table class="employees-table">
