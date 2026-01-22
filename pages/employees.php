@@ -639,11 +639,18 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
                                 </td>
                                 <!-- Actions -->
                                 <td>
-                                    <a href="?page=view_employee&id=<?php echo $employee['id']; ?>" 
-                                       class="btn btn-sm btn-outline-modern" 
-                                       title="View Employee Details">
-                                        <i class="fas fa-eye me-1"></i>View
-                                    </a>
+                                    <div class="employee-actions">
+                                        <a href="?page=view_employee&id=<?php echo $employee['id']; ?>" 
+                                           class="btn btn-sm btn-primary-modern" 
+                                           title="View Employee Details">
+                                            <i class="fas fa-eye me-1"></i>View
+                                        </a>
+                                        <a href="?page=edit_employee&id=<?php echo $employee['id']; ?>" 
+                                           class="btn btn-sm btn-outline-modern" 
+                                           title="Edit Employee">
+                                            <i class="fas fa-edit me-1"></i>Edit
+                                        </a>
+                                    </div>
                                 </td>
                                 </tr>
                                 <?php endforeach; ?>
