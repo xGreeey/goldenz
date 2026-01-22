@@ -22,48 +22,69 @@ $current_user_name = $_SESSION['user_name'] ?? $_SESSION['name'] ?? $_SESSION['u
 
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    error_log('Edit Employee: POST request received for employee ID: ' . ($employee_id ?? 'unknown'));
+    error_log('Edit Employee: POST data: ' . print_r($_POST, true));
     $errors = [];
     
     // Validate required fields
-    $required_fields = ['first_name', 'surname', 'employee_no', 'employee_type', 'post', 'date_hired', 'status'];
+    $required_fields = ['first_name', 'surname', 'employee_no', 'employee_type', 'post', 'date_hired', 'status', 'cp_number'];
+    $required_labels = [
+        'first_name' => 'First Name',
+        'surname' => 'Last Name',
+        'employee_no' => 'Employee Number',
+        'employee_type' => 'Employee Type',
+        'post' => 'Post / Position',
+        'date_hired' => 'Date Hired',
+        'status' => 'Status',
+        'cp_number' => 'Contact Phone Number'
+    ];
     foreach ($required_fields as $field) {
         if (empty($_POST[$field])) {
-            $errors[] = ucfirst(str_replace('_', ' ', $field)) . ' is required.';
+            $label = $required_labels[$field] ?? ucfirst(str_replace('_', ' ', $field));
+            $errors[] = $label . ' is required.';
         }
     }
     
     // If no errors, update in database
     if (empty($errors)) {
         try {
-            // Prepare employee data with all fields
+            // Helper function to convert empty strings to null
+            $nullIfEmpty = function($value) {
+                return ($value === '' || $value === null) ? null : trim($value);
+            };
+            
+            // Prepare employee data with all fields - convert empty strings to null
             $employee_data = [
-                'employee_no' => $_POST['employee_no'],
+                'employee_no' => trim($_POST['employee_no']),
                 'employee_type' => $_POST['employee_type'],
-                'surname' => $_POST['surname'],
-                'first_name' => $_POST['first_name'],
-                'middle_name' => $_POST['middle_name'] ?? null,
-                'post' => $_POST['post'],
-                'license_no' => $_POST['license_no'] ?? null,
-                'license_exp_date' => !empty($_POST['license_exp_date']) ? $_POST['license_exp_date'] : null,
-                'rlm_exp' => !empty($_POST['rlm_exp']) ? $_POST['rlm_exp'] : null,
+                'surname' => trim($_POST['surname']),
+                'first_name' => trim($_POST['first_name']),
+                'middle_name' => $nullIfEmpty($_POST['middle_name'] ?? ''),
+                'post' => trim($_POST['post']),
+                'license_no' => $nullIfEmpty($_POST['license_no'] ?? ''),
+                'license_exp_date' => $nullIfEmpty($_POST['license_exp_date'] ?? ''),
+                'rlm_exp' => $nullIfEmpty($_POST['rlm_exp'] ?? ''),
                 'date_hired' => $_POST['date_hired'],
-                'cp_number' => $_POST['cp_number'] ?? null,
-                'sss_no' => $_POST['sss_no'] ?? null,
-                'pagibig_no' => $_POST['pagibig_no'] ?? null,
-                'tin_number' => $_POST['tin_number'] ?? null,
-                'philhealth_no' => $_POST['philhealth_no'] ?? null,
-                'birth_date' => !empty($_POST['birth_date']) ? $_POST['birth_date'] : null,
-                'height' => $_POST['height'] ?? null,
-                'weight' => $_POST['weight'] ?? null,
-                'address' => $_POST['address'] ?? null,
-                'contact_person' => $_POST['contact_person'] ?? null,
-                'relationship' => $_POST['relationship'] ?? null,
-                'contact_person_address' => $_POST['contact_person_address'] ?? null,
-                'contact_person_number' => $_POST['contact_person_number'] ?? null,
-                'blood_type' => $_POST['blood_type'] ?? null,
-                'religion' => $_POST['religion'] ?? null,
+                'cp_number' => $nullIfEmpty($_POST['cp_number'] ?? ''),
+                'sss_no' => $nullIfEmpty($_POST['sss_no'] ?? ''),
+                'pagibig_no' => $nullIfEmpty($_POST['pagibig_no'] ?? ''),
+                'tin_number' => $nullIfEmpty($_POST['tin_number'] ?? ''),
+                'philhealth_no' => $nullIfEmpty($_POST['philhealth_no'] ?? ''),
+                'birth_date' => $nullIfEmpty($_POST['birth_date'] ?? ''),
+                'height' => $nullIfEmpty($_POST['height'] ?? ''),
+                'weight' => $nullIfEmpty($_POST['weight'] ?? ''),
+                'address' => $nullIfEmpty($_POST['address'] ?? ''),
+                'contact_person' => $nullIfEmpty($_POST['contact_person'] ?? ''),
+                'relationship' => $nullIfEmpty($_POST['relationship'] ?? ''),
+                'contact_person_address' => $nullIfEmpty($_POST['contact_person_address'] ?? ''),
+                'contact_person_number' => $nullIfEmpty($_POST['contact_person_number'] ?? ''),
+                'blood_type' => $nullIfEmpty($_POST['blood_type'] ?? ''),
+                'religion' => $nullIfEmpty($_POST['religion'] ?? ''),
                 'status' => $_POST['status']
             ];
+            
+            // Log the update attempt
+            error_log('Updating employee ID: ' . $employee_id . ' with data: ' . print_r($employee_data, true));
             
             // Use the update_employee function from database.php
             $result = update_employee($employee_id, $employee_data);
@@ -74,14 +95,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     log_audit_event('UPDATE', 'employees', $employee_id, $employee, $employee_data, $current_user_id);
                 }
                 
-                redirect_with_message('?page=employees', 'Employee updated successfully!', 'success');
+                error_log('Employee ID ' . $employee_id . ' updated successfully');
+                
+                // Store success message in session
+                $_SESSION['message'] = 'Employee updated successfully!';
+                $_SESSION['message_type'] = 'success';
+                
+                // Use JavaScript redirect to ensure full page reload (bypasses AJAX transition system)
+                $redirect_url = '?page=employees';
+                echo '<script>
+                    window.location.href = ' . json_encode($redirect_url) . ';
+                </script>';
                 exit;
             } else {
-                $errors[] = 'Failed to update employee. Please try again.';
+                error_log('Failed to update employee ID: ' . $employee_id);
+                $errors[] = 'Failed to update employee. Please check the error logs for details.';
             }
         } catch (Exception $e) {
-            $errors[] = 'Database error: ' . $e->getMessage();
+            $error_msg = 'Database error: ' . $e->getMessage();
+            $errors[] = $error_msg;
             error_log('Edit Employee Error: ' . $e->getMessage());
+            error_log('Stack trace: ' . $e->getTraceAsString());
+        } catch (PDOException $e) {
+            $error_msg = 'Database error: ' . $e->getMessage();
+            $errors[] = $error_msg;
+            error_log('Edit Employee PDO Error: ' . $e->getMessage());
+            error_log('SQL State: ' . $e->getCode());
         }
     }
 }
@@ -153,17 +192,36 @@ if (!empty($employee['contact_person_number'])) {
         </div>
         <div class="card-body">
                 <?php if (!empty($errors)): ?>
-                    <div class="alert alert-danger">
+                    <div class="alert alert-danger" id="errorAlert" style="margin-bottom: 1.5rem;">
                         <i class="fas fa-exclamation-circle me-2"></i>
-                        <ul class="mb-0">
+                        <strong>Please fix the following errors:</strong>
+                        <ul class="mb-0 mt-2">
                             <?php foreach ($errors as $error): ?>
                                 <li><?php echo htmlspecialchars($error); ?></li>
                             <?php endforeach; ?>
                         </ul>
                     </div>
+                    <script>
+                        // Scroll to error message when page loads with errors
+                        document.addEventListener('DOMContentLoaded', function() {
+                            const errorAlert = document.getElementById('errorAlert');
+                            if (errorAlert) {
+                                errorAlert.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                // Also highlight invalid fields
+                                const requiredFields = ['first_name', 'surname', 'employee_no', 'employee_type', 'post', 'date_hired', 'status'];
+                                requiredFields.forEach(fieldName => {
+                                    const field = document.getElementById(fieldName) || document.querySelector(`[name="${fieldName}"]`);
+                                    if (field && !field.value.trim()) {
+                                        field.classList.add('is-invalid');
+                                        field.style.borderColor = '#dc3545';
+                                    }
+                                });
+                            }
+                        });
+                    </script>
                 <?php endif; ?>
 
-                <form method="POST" id="editEmployeeForm">
+                <form method="POST" action="?page=edit_employee&id=<?php echo htmlspecialchars($employee_id); ?>" id="editEmployeeForm" data-no-transition="true" novalidate>
                     <!-- Basic Information Section -->
                     <div class="row g-3 mb-4">
                         <div class="col-12">
@@ -174,7 +232,7 @@ if (!empty($employee['contact_person_number'])) {
                                 <label for="employee_no" class="form-label">Employee Number <span class="text-danger">*</span></label>
                                 <input 
                                     type="text" 
-                                    class="form-control numeric-only" 
+                                    class="form-control numeric-only <?php echo (isset($errors) && empty($_POST['employee_no'] ?? '')) ? 'is-invalid' : ''; ?>" 
                                     id="employee_no" 
                                     name="employee_no" 
                                     inputmode="numeric" 
@@ -183,29 +241,32 @@ if (!empty($employee['contact_person_number'])) {
                                     value="<?php echo htmlspecialchars($employee['employee_no'] ?? ''); ?>" 
                                     required
                                 >
+                                <div class="invalid-feedback">Employee Number is required.</div>
                             </div>
                         </div>
                         <div class="col-md-4">
                             <div class="form-group">
                                 <label for="employee_type" class="form-label">Employee Type <span class="text-danger">*</span></label>
-                                <select class="form-select" id="employee_type" name="employee_type" required>
+                                <select class="form-select <?php echo (isset($errors) && empty($_POST['employee_type'] ?? '')) ? 'is-invalid' : ''; ?>" id="employee_type" name="employee_type" required>
                                     <option value="">Select Employee Type</option>
                                     <option value="SG" <?php echo (($employee['employee_type'] ?? '') === 'SG') ? 'selected' : ''; ?>>Security Guard (SG)</option>
                                     <option value="LG" <?php echo (($employee['employee_type'] ?? '') === 'LG') ? 'selected' : ''; ?>>Lady Guard (LG)</option>
                                     <option value="SO" <?php echo (($employee['employee_type'] ?? '') === 'SO') ? 'selected' : ''; ?>>Security Officer (SO)</option>
                                 </select>
+                                <div class="invalid-feedback">Employee Type is required.</div>
                             </div>
                         </div>
                         <div class="col-md-4">
                             <div class="form-group">
                                 <label for="status" class="form-label">Status <span class="text-danger">*</span></label>
-                                <select class="form-select" id="status" name="status" required>
+                                <select class="form-select <?php echo (isset($errors) && empty($_POST['status'] ?? '')) ? 'is-invalid' : ''; ?>" id="status" name="status" required>
                                     <option value="">Select Status</option>
                                     <option value="Active" <?php echo (($employee['status'] ?? '') === 'Active') ? 'selected' : ''; ?>>Active</option>
                                     <option value="Inactive" <?php echo (($employee['status'] ?? '') === 'Inactive') ? 'selected' : ''; ?>>Inactive</option>
                                     <option value="Terminated" <?php echo (($employee['status'] ?? '') === 'Terminated') ? 'selected' : ''; ?>>Terminated</option>
                                     <option value="Suspended" <?php echo (($employee['status'] ?? '') === 'Suspended') ? 'selected' : ''; ?>>Suspended</option>
                                 </select>
+                                <div class="invalid-feedback">Status is required.</div>
                             </div>
                         </div>
                     </div>
@@ -218,15 +279,17 @@ if (!empty($employee['contact_person_number'])) {
                         <div class="col-md-4">
                             <div class="form-group">
                                 <label for="surname" class="form-label">Last Name <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control text-uppercase" id="surname" name="surname" maxlength="50"
+                                <input type="text" class="form-control text-uppercase <?php echo (isset($errors) && empty($_POST['surname'] ?? '')) ? 'is-invalid' : ''; ?>" id="surname" name="surname" maxlength="50"
                                        value="<?php echo htmlspecialchars($employee['surname'] ?? ''); ?>" required>
+                                <div class="invalid-feedback">Last Name is required.</div>
                             </div>
                         </div>
                         <div class="col-md-4">
                             <div class="form-group">
                                 <label for="first_name" class="form-label">First Name <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control text-uppercase" id="first_name" name="first_name" maxlength="50"
+                                <input type="text" class="form-control text-uppercase <?php echo (isset($errors) && empty($_POST['first_name'] ?? '')) ? 'is-invalid' : ''; ?>" id="first_name" name="first_name" maxlength="50"
                                        value="<?php echo htmlspecialchars($employee['first_name'] ?? ''); ?>" required>
+                                <div class="invalid-feedback">First Name is required.</div>
                             </div>
                         </div>
                         <div class="col-md-4">
@@ -389,7 +452,7 @@ if (!empty($employee['contact_person_number'])) {
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="post" class="form-label">Post / Position <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control text-uppercase" id="post" name="post" maxlength="100" placeholder="Unassigned or current post"
+                                <input type="text" class="form-control text-uppercase <?php echo (isset($errors) && empty($_POST['post'] ?? '')) ? 'is-invalid' : ''; ?>" id="post" name="post" maxlength="100" placeholder="Unassigned or current post"
                                        value="<?php echo htmlspecialchars($employee['post'] ?? ''); ?>" list="postSuggestions" required>
                                 <datalist id="postSuggestions">
                                     <option value="Unassigned"></option>
@@ -397,13 +460,15 @@ if (!empty($employee['contact_person_number'])) {
                                         <option value="<?php echo htmlspecialchars($post['post_title']); ?>"></option>
                                     <?php endforeach; ?>
                                 </datalist>
+                                <div class="invalid-feedback">Post / Position is required.</div>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="date_hired" class="form-label">Date Hired <span class="text-danger">*</span></label>
-                                <input type="date" class="form-control" id="date_hired" name="date_hired" 
+                                <input type="date" class="form-control <?php echo (isset($errors) && empty($_POST['date_hired'] ?? '')) ? 'is-invalid' : ''; ?>" id="date_hired" name="date_hired" 
                                        value="<?php echo htmlspecialchars($employee['date_hired'] ?? ''); ?>" max="<?php echo date('Y-m-d'); ?>" required>
+                                <div class="invalid-feedback">Date Hired is required.</div>
                             </div>
                         </div>
                     </div>
@@ -669,6 +734,158 @@ document.addEventListener('DOMContentLoaded', function() {
             input.value = lettersOnly(input.value);
         });
     });
+
+    // Form submission handler - ensure all hidden fields are synced before submit
+    const editForm = document.getElementById('editEmployeeForm');
+    if (editForm) {
+        editForm.addEventListener('submit', function(e) {
+            console.log('Form submitting...');
+            
+            // Normalize and sync phone numbers before submission
+            const normalizePhNumber = (value) => {
+                let digits = value.replace(/\D/g, '');
+                if (digits.startsWith('0')) {
+                    digits = digits.substring(1);
+                }
+                return digits;
+            };
+            const syncPhoneBeforeSubmit = (hiddenId, ccId, numId) => {
+                const hidden = document.getElementById(hiddenId);
+                const cc = document.getElementById(ccId);
+                const num = document.getElementById(numId);
+                if (hidden && cc && num) {
+                    const n = normalizePhNumber(num.value || '');
+                    num.value = n;
+                    hidden.value = n ? `${cc.value}-${n}` : '';
+                }
+            };
+            
+            syncPhoneBeforeSubmit('cp_number', 'cc_cp', 'num_cp_full');
+            syncPhoneBeforeSubmit('contact_person_number', 'cc_em', 'num_em_full');
+            
+            // Sync height before submission
+            if (heightHidden && (heightFt || heightIn)) {
+                syncHeight();
+            }
+            
+            // Validate required fields before submission
+            const requiredFields = ['first_name', 'surname', 'employee_no', 'employee_type', 'post', 'date_hired', 'status', 'num_cp_full'];
+            let hasErrors = false;
+            let firstInvalidField = null;
+            
+            // Clear previous invalid states
+            editForm.querySelectorAll('.is-invalid').forEach(field => {
+                field.classList.remove('is-invalid');
+            });
+            
+            requiredFields.forEach(fieldName => {
+                const field = document.getElementById(fieldName) || document.querySelector(`[name="${fieldName}"]`);
+                if (field) {
+                    let value = field.value ? field.value.trim() : '';
+                    if (fieldName === 'num_cp_full') {
+                        value = normalizePhNumber(value);
+                        field.value = value;
+                    }
+                    if (!value) {
+                        hasErrors = true;
+                        field.classList.add('is-invalid');
+                        field.style.borderColor = '#dc3545';
+                        if (!firstInvalidField) {
+                            firstInvalidField = field;
+                        }
+                    } else {
+                        field.classList.remove('is-invalid');
+                        field.style.borderColor = '';
+                    }
+                }
+            });
+            
+            // Validate PH mobile format (must start with 9 and be 10 digits)
+            const cpInput = document.getElementById('num_cp_full');
+            if (cpInput) {
+                const digits = normalizePhNumber(cpInput.value || '');
+                const isValid = digits.length === 10 && digits.startsWith('9');
+                if (!isValid) {
+                    hasErrors = true;
+                    cpInput.classList.add('is-invalid');
+                    cpInput.style.borderColor = '#dc3545';
+                    if (!firstInvalidField) {
+                        firstInvalidField = cpInput;
+                    }
+                }
+            }
+            
+            if (hasErrors) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // Create or update error alert
+                let errorAlert = document.getElementById('errorAlert');
+                if (!errorAlert) {
+                    errorAlert = document.createElement('div');
+                    errorAlert.id = 'errorAlert';
+                    errorAlert.className = 'alert alert-danger';
+                    errorAlert.style.marginBottom = '1.5rem';
+                    errorAlert.innerHTML = '<i class="fas fa-exclamation-circle me-2"></i><strong>Please fix the following errors:</strong><ul class="mb-0 mt-2" id="errorList"></ul>';
+                    editForm.insertBefore(errorAlert, editForm.firstChild);
+                }
+                
+                const errorList = document.getElementById('errorList') || errorAlert.querySelector('ul');
+                errorList.innerHTML = '';
+                
+                requiredFields.forEach(fieldName => {
+                    const field = document.getElementById(fieldName) || document.querySelector(`[name="${fieldName}"]`);
+                    if (field && !field.value.trim()) {
+                        const label = document.querySelector(`label[for="${fieldName}"]`) || 
+                                     field.closest('.form-group')?.querySelector('label');
+                        const fieldLabel = label ? label.textContent.replace('*', '').trim() : fieldName.replace('_', ' ');
+                        const li = document.createElement('li');
+                        li.textContent = fieldLabel + ' is required.';
+                        errorList.appendChild(li);
+                    }
+                });
+                
+                if (cpInput) {
+                    const digits = normalizePhNumber(cpInput.value || '');
+                    if (digits && !(digits.length === 10 && digits.startsWith('9'))) {
+                        const li = document.createElement('li');
+                        li.textContent = 'Contact Phone Number must be 10 digits and start with 9.';
+                        errorList.appendChild(li);
+                    }
+                }
+                
+                // Scroll to error message
+                errorAlert.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                
+                // Focus on first invalid field
+                if (firstInvalidField) {
+                    setTimeout(() => {
+                        firstInvalidField.focus();
+                        firstInvalidField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 300);
+                }
+                
+                return false;
+            }
+            
+            // Show loading state
+            const submitBtn = editForm.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                const originalText = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Updating...';
+                
+                // Re-enable after 10 seconds as a failsafe (in case of redirect issues)
+                setTimeout(() => {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalText;
+                }, 10000);
+            }
+            
+            // Allow form to submit normally (don't prevent default)
+            console.log('Form submission allowed, proceeding...');
+        });
+    }
 });
 </script>
 
