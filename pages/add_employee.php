@@ -1200,7 +1200,7 @@ if (isset($_SESSION['employee_redirect_url'])) {
                                         <th style="min-width: 260px;">Program / Title</th>
                                         <th style="min-width: 220px;">Conducted By</th>
                                         <th style="min-width: 240px;">Date of Training</th>
-                                        <th style="width: 50px;"></th>
+                                        <th style="width: 50px; display: none;"></th>
                                     </tr>
                                 </thead>
                                 <tbody id="trainingsTbody">
@@ -1231,14 +1231,12 @@ if (isset($_SESSION['employee_redirect_url'])) {
                                                    name="trainings[<?php echo (int)$i; ?>][date]"
                                                    value="<?php echo htmlspecialchars($date); ?>">
                                         </td>
-                                        <td class="text-center">
-                                            <?php if (count($trainings) > 1 || $i > 0): ?>
+                                        <td class="text-center training-remove-cell" style="display: none;">
                                             <button type="button" class="btn btn-sm btn-icon-action training-remove-btn" 
                                                     data-training-index="<?php echo (int)$i; ?>" 
                                                     title="Remove row" aria-label="Remove training">
-                                                <i class="fas fa-trash-alt"></i>
+                                                <i class="fas fa-minus"></i>
                                             </button>
-                                            <?php endif; ?>
                                         </td>
                                     </tr>
                                     <?php endforeach; ?>
@@ -1246,9 +1244,13 @@ if (isset($_SESSION['employee_redirect_url'])) {
                             </table>
                         </div>
 
-                        <div class="d-flex justify-content-end mt-2">
-                            <button type="button" class="btn btn-sm btn-icon-action btn-icon-action-primary" id="addTrainingBtn" title="Add training row">
-                                <i class="fas fa-plus me-1"></i> Add Training
+                        <!-- Trainings Action Buttons -->
+                        <div class="trainings-actions d-flex justify-content-center align-items-center gap-2 mt-3">
+                            <button type="button" class="btn btn-icon-action training-add-btn" id="addTrainingBtn" title="Add training row" aria-label="Add training">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                            <button type="button" class="btn btn-icon-action training-remove-action-btn" id="removeTrainingBtn" title="Remove last training" aria-label="Remove last training">
+                                <i class="fas fa-minus"></i>
                             </button>
                         </div>
                     </div>
@@ -1269,7 +1271,7 @@ if (isset($_SESSION['employee_redirect_url'])) {
                                         <th style="min-width: 320px;">COMPANY</th>
                                         <th style="min-width: 190px;">PERIOD COVERED</th>
                                         <th style="min-width: 260px;">REASON/S FOR LEAVING</th>
-                                        <th style="width: 50px;"></th>
+                                        <th style="width: 50px; display: none;"></th>
                                     </tr>
                                 </thead>
                                 <tbody id="employmentTbody">
@@ -1344,9 +1346,13 @@ if (isset($_SESSION['employee_redirect_url'])) {
                             </table>
                         </div>
 
-                        <div class="d-flex justify-content-end mt-2">
-                            <button type="button" class="btn btn-sm btn-icon-action btn-icon-action-primary" id="addEmploymentBtn" title="Add employment record">
-                                <i class="fas fa-plus me-1"></i> Add Employment
+                        <!-- Employment History Action Buttons -->
+                        <div class="employment-actions d-flex justify-content-center align-items-center gap-2 mt-3">
+                            <button type="button" class="btn btn-icon-action employment-add-btn" id="addEmploymentBtn" title="Add employment record" aria-label="Add employment record">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                            <button type="button" class="btn btn-icon-action employment-remove-action-btn" id="removeEmploymentBtn" title="Remove last employment" aria-label="Remove last employment record">
+                                <i class="fas fa-minus"></i>
                             </button>
                         </div>
                     </div>
@@ -1408,14 +1414,12 @@ if (isset($_SESSION['employee_redirect_url'])) {
                                                    value="<?php echo htmlspecialchars($ref_contact); ?>"
                                                    maxlength="30" placeholder="Contact Number">
                                         </td>
-                                        <td class="text-center">
-                                            <?php if ($total_references > 3): ?>
+                                        <td class="text-center character-reference-remove-cell" style="display: none;">
                                             <button type="button" class="btn btn-sm btn-icon-action character-reference-remove-btn" 
                                                     data-reference-index="<?php echo (int)$i; ?>" 
                                                     title="Remove row" aria-label="Remove character reference">
-                                                <i class="fas fa-trash-alt"></i>
+                                                <i class="fas fa-minus"></i>
                                             </button>
-                                            <?php endif; ?>
                                         </td>
                                     </tr>
                                     <?php endforeach; ?>
@@ -1423,9 +1427,13 @@ if (isset($_SESSION['employee_redirect_url'])) {
                             </table>
                         </div>
 
-                        <div class="d-flex justify-content-end mt-2">
-                            <button type="button" class="btn btn-primary-modern btn-sm" id="addCharacterReferenceBtn" title="Add character reference">
-                                <span class="hr-icon hr-icon-plus me-1"></span>Add Reference
+                        <!-- Character References Action Buttons -->
+                        <div class="character-references-actions d-flex justify-content-center align-items-center gap-2 mt-3">
+                            <button type="button" class="btn btn-icon-action character-reference-add-btn" id="addCharacterReferenceBtn" title="Add character reference" aria-label="Add character reference">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                            <button type="button" class="btn btn-icon-action character-reference-remove-action-btn" id="removeCharacterReferenceBtn" title="Remove last reference" aria-label="Remove last character reference">
+                                <i class="fas fa-minus"></i>
                             </button>
                         </div>
                     </div>
@@ -1975,11 +1983,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     <input type="date" class="form-control"
                            name="trainings[${idx}][date]">
                 </td>
-                <td class="text-center">
+                <td class="text-center training-remove-cell" style="display: none;">
                     <button type="button" class="btn btn-sm btn-icon-action training-remove-btn" 
                             data-training-index="${idx}" 
                             title="Remove row" aria-label="Remove training">
-                        <i class="fas fa-trash-alt"></i>
+                        <i class="fas fa-minus"></i>
                     </button>
                 </td>
             `;
@@ -1987,6 +1995,29 @@ document.addEventListener('DOMContentLoaded', function() {
             trainingsTbody.appendChild(tr);
             reindexTrainingRows();
         });
+    }
+
+    // Handle training remove button below table
+    const removeTrainingBtn = document.getElementById('removeTrainingBtn');
+    if (removeTrainingBtn && trainingsTbody) {
+        removeTrainingBtn.addEventListener('click', () => {
+            const allRows = trainingsTbody.querySelectorAll('.training-row');
+            if (allRows.length <= 1) {
+                // Clear last record instead of removing
+                allRows[0]?.querySelectorAll('input').forEach(el => el.value = '');
+                reindexTrainingRows();
+                return;
+            }
+            // Remove last row
+            const lastRow = allRows[allRows.length - 1];
+            lastRow.remove();
+            reindexTrainingRows();
+        });
+    }
+
+    // Initial visibility check for trainings
+    if (trainingsTbody) {
+        reindexTrainingRows();
     }
 
     // Employment History (repeatable rows with expandable company details; newest first)
@@ -2008,18 +2039,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 el.setAttribute('name', name.replace(/^employment_history\[\d+\]/, `employment_history[${idx}]`));
             });
             
-            // Update remove button data attribute and visibility
+            // Update remove button data attribute (buttons are hidden in table)
             const removeBtn = mainRow.querySelector('.employment-remove-btn');
             if (removeBtn) {
                 removeBtn.setAttribute('data-employment-index', idx);
-                // Show/hide remove button based on row count
-                if (mainRows.length === 1) {
-                    removeBtn.style.display = 'none';
-                } else {
-                    removeBtn.style.display = '';
-                }
             }
         });
+
+        // Update remove button visibility below table
+        const removeEmploymentBtn = document.getElementById('removeEmploymentBtn');
+        if (removeEmploymentBtn) {
+            removeEmploymentBtn.style.display = mainRows.length > 1 ? 'inline-flex' : 'none';
+        }
     };
 
     // Event delegation for employment remove buttons
@@ -2115,6 +2146,29 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Handle employment remove button below table
+    const removeEmploymentBtn = document.getElementById('removeEmploymentBtn');
+    if (removeEmploymentBtn && employmentTbody) {
+        removeEmploymentBtn.addEventListener('click', () => {
+            const allRows = employmentTbody.querySelectorAll('.employment-row');
+            if (allRows.length <= 1) {
+                // Clear last record instead of removing
+                allRows[0]?.querySelectorAll('input, textarea').forEach(el => el.value = '');
+                reindexEmployment();
+                return;
+            }
+            // Remove last row (oldest, since newest are first)
+            const lastRow = allRows[allRows.length - 1];
+            lastRow.remove();
+            reindexEmployment();
+        });
+    }
+
+    // Initial visibility check for employment
+    if (employmentTbody) {
+        reindexEmployment();
+    }
+
     // Character References (repeatable rows)
     const characterReferencesTbody = document.getElementById('characterReferencesTbody');
     const addCharacterReferenceBtn = document.getElementById('addCharacterReferenceBtn');
@@ -2134,18 +2188,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 el.setAttribute('name', name.replace(/^character_references\[\d+\]/, `character_references[${idx}]`));
             });
             
-            // Update remove button data attribute and visibility
+            // Update remove button data attribute (buttons are hidden in table)
             const removeBtn = mainRow.querySelector('.character-reference-remove-btn');
             if (removeBtn) {
                 removeBtn.setAttribute('data-reference-index', idx);
-                // Show/hide remove button based on row count
-                if (mainRows.length === 1) {
-                    removeBtn.style.display = 'none';
-                } else {
-                    removeBtn.style.display = '';
-                }
             }
         });
+
+        // Update remove button visibility below table
+        const removeCharacterReferenceBtn = document.getElementById('removeCharacterReferenceBtn');
+        if (removeCharacterReferenceBtn) {
+            removeCharacterReferenceBtn.style.display = mainRows.length > 1 ? 'inline-flex' : 'none';
+        }
     };
 
     // Event delegation for character reference remove buttons
@@ -2199,11 +2253,11 @@ document.addEventListener('DOMContentLoaded', function() {
                            name="character_references[${idx}][contact]"
                            maxlength="30" placeholder="Contact Number">
                 </td>
-                <td class="text-center">
+                <td class="text-center character-reference-remove-cell" style="display: none;">
                     <button type="button" class="btn btn-sm btn-icon-action character-reference-remove-btn" 
                             data-reference-index="${idx}" 
                             title="Remove row" aria-label="Remove character reference">
-                        <i class="fas fa-trash-alt"></i>
+                        <i class="fas fa-minus"></i>
                     </button>
                 </td>
             `;
@@ -2211,6 +2265,29 @@ document.addEventListener('DOMContentLoaded', function() {
             characterReferencesTbody.appendChild(mainRow);
             reindexCharacterReferences();
         });
+    }
+
+    // Handle remove button below table
+    const removeCharacterReferenceBtn = document.getElementById('removeCharacterReferenceBtn');
+    if (removeCharacterReferenceBtn && characterReferencesTbody) {
+        removeCharacterReferenceBtn.addEventListener('click', () => {
+            const allRows = characterReferencesTbody.querySelectorAll('.character-reference-row');
+            if (allRows.length <= 1) {
+                // Clear last record instead of removing
+                allRows[0]?.querySelectorAll('input').forEach(el => el.value = '');
+                reindexCharacterReferences();
+                return;
+            }
+            // Remove last row
+            const lastRow = allRows[allRows.length - 1];
+            lastRow.remove();
+            reindexCharacterReferences();
+        });
+    }
+
+    // Initial visibility check
+    if (characterReferencesTbody) {
+        reindexCharacterReferences();
     }
 
     // Government Examination (conditional + repeatable rows)
