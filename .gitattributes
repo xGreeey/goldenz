@@ -1,4 +1,4 @@
-# Always keep MAIN branch versions when mergin
+# Makes file untouched during merge
 
 config/**   merge=ours
-includes/** merge=ours
+includes/database.php   merge=ours
