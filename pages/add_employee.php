@@ -497,6 +497,60 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['first_name'])) {
             'created_by' => $current_user_id,
             'created_by_name' => $current_user_name
         ];
+
+        // Enforce column length limits to prevent insert errors
+        $length_limits = [
+            'surname' => 50,
+            'first_name' => 50,
+            'middle_name' => 50,
+            'post' => 100,
+            'license_no' => 50,
+            'rlm_exp' => 50,
+            'cp_number' => 20,
+            'sss_no' => 20,
+            'pagibig_no' => 20,
+            'tin_number' => 20,
+            'philhealth_no' => 20,
+            'gender' => 10,
+            'civil_status' => 20,
+            'birthplace' => 150,
+            'citizenship' => 80,
+            'provincial_address' => 255,
+            'spouse_name' => 150,
+            'spouse_occupation' => 150,
+            'father_name' => 150,
+            'father_occupation' => 150,
+            'mother_name' => 150,
+            'mother_occupation' => 150,
+            'college_course' => 150,
+            'college_school_name' => 200,
+            'college_school_address' => 255,
+            'college_years' => 15,
+            'vocational_course' => 150,
+            'vocational_school_name' => 200,
+            'vocational_school_address' => 255,
+            'vocational_years' => 15,
+            'highschool_school_name' => 200,
+            'highschool_school_address' => 255,
+            'highschool_years' => 15,
+            'elementary_school_name' => 200,
+            'elementary_school_address' => 255,
+            'elementary_years' => 15,
+            'height' => 10,
+            'weight' => 10,
+            'contact_person' => 100,
+            'relationship' => 50,
+            'contact_person_number' => 20,
+            'blood_type' => 5,
+            'religion' => 50,
+            'created_by_name' => 100
+        ];
+
+        foreach ($length_limits as $field => $max_len) {
+            if (isset($employee_data[$field]) && $employee_data[$field] !== null) {
+                $employee_data[$field] = mb_substr((string)$employee_data[$field], 0, $max_len);
+            }
+        }
         
         // ========================================================================
         // STORE DATA IN SESSION FOR PAGE 2 (DEFERRED DATABASE SAVE)
@@ -2465,22 +2519,25 @@ document.addEventListener('DOMContentLoaded', function() {
                     isValid = false;
                     errorMessage = 'Please enter a valid email address';
                 }
-                // Validate phone format (if pattern exists or if it's a PH phone number field)
+                // Validate phone format (only enforce PH format when a pattern is present)
                 if (field.type === 'tel') {
-                    // Check if it's a PH phone number (must start with 9, 10 digits)
                     const phoneDigits = fieldValue.replace(/\D/g, '');
-                    if (field.hasAttribute('required') || phoneDigits.length > 0) {
-                        if (phoneDigits.length === 0 && field.hasAttribute('required')) {
-                            isValid = false;
-                            errorMessage = getFieldLabel(field) + ' is required';
-                        } else if (phoneDigits.length > 0 && (phoneDigits.length !== 10 || !phoneDigits.startsWith('9'))) {
-                            isValid = false;
-                            errorMessage = 'Phone number must be 10 digits starting with 9';
-                        } else if (field.hasAttribute('pattern')) {
-                            const pattern = new RegExp(field.getAttribute('pattern'));
-                            if (!pattern.test(phoneDigits)) {
+                    const enforcePH = field.hasAttribute('pattern');
+                    if (enforcePH) {
+                        // Check if it's a PH phone number (must start with 9, 10 digits)
+                        if (field.hasAttribute('required') || phoneDigits.length > 0) {
+                            if (phoneDigits.length === 0 && field.hasAttribute('required')) {
                                 isValid = false;
-                                errorMessage = 'Please enter a valid phone number format';
+                                errorMessage = getFieldLabel(field) + ' is required';
+                            } else if (phoneDigits.length > 0 && (phoneDigits.length !== 10 || !phoneDigits.startsWith('9'))) {
+                                isValid = false;
+                                errorMessage = 'Phone number must be 10 digits starting with 9';
+                            } else if (field.hasAttribute('pattern')) {
+                                const pattern = new RegExp(field.getAttribute('pattern'));
+                                if (!pattern.test(phoneDigits)) {
+                                    isValid = false;
+                                    errorMessage = 'Please enter a valid phone number format';
+                                }
                             }
                         }
                     }
