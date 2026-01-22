@@ -391,10 +391,24 @@ function resetTimer() {
 resetTimer();
 
 // Sidebar dropdown toggles (fallback to ensure menus open/close)
+// NOTE: SidebarNavigation class handles toggles via event delegation with capture phase
+// This is kept as a fallback but should not conflict since SidebarNavigation stops propagation
 document.addEventListener('DOMContentLoaded', function() {
+    // Only set up if SidebarNavigation is not available
+    // SidebarNavigation uses capture phase and stops propagation, so this won't run if it's active
+    if (window.sidebarNav && window.sidebarNav._toggleHandler) {
+        console.log('SidebarNavigation available, skipping app.js toggle handler');
+        return;
+    }
+    
     const toggles = document.querySelectorAll('.nav-toggle');
     toggles.forEach(toggle => {
         toggle.addEventListener('click', function(e) {
+            // Double-check - if SidebarNavigation is handling it, don't interfere
+            if (window.sidebarNav && window.sidebarNav._toggleHandler) {
+                return;
+            }
+            
             e.preventDefault();
             const targetId = toggle.getAttribute('data-target');
             const submenu = document.getElementById(targetId);
