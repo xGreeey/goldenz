@@ -1,72 +1,105 @@
 /**
  * Sidebar Dropdown Menu Handler
  * Handles expanding/collapsing of sidebar dropdown menus
+ * Uses event delegation to work immediately without removing existing listeners
  */
 
 (function() {
     'use strict';
     
-    function initSidebarDropdowns() {
-        console.log('🔧 Initializing sidebar dropdowns...');
+    // Track if delegation is set up to prevent duplicates
+    let delegationSetup = false;
+    
+    function setupDropdownDelegation() {
+        // Only set up once
+        if (delegationSetup) {
+            return;
+        }
         
-        const toggles = document.querySelectorAll('.nav-toggle');
-        console.log(`Found ${toggles.length} dropdown toggles`);
+        console.log('🔧 Setting up sidebar dropdown event delegation...');
         
-        toggles.forEach((toggle, index) => {
-            console.log(`Setting up toggle ${index + 1}:`, toggle.textContent.trim());
+        // Use event delegation on document - works immediately, even before DOMContentLoaded
+        // Use bubbling phase so it runs after SidebarNavigation's capture phase handler
+        document.addEventListener('click', function(e) {
+            // Only handle if event wasn't already handled by SidebarNavigation
+            if (e._handledBySidebarNav) {
+                console.log('ℹ️ Event already handled by SidebarNavigation, skipping fallback');
+                return;
+            }
             
-            // Remove any existing listeners to prevent duplicates
-            const newToggle = toggle.cloneNode(true);
-            toggle.parentNode.replaceChild(newToggle, toggle);
+            const toggle = e.target.closest('.nav-toggle');
+            if (!toggle) return;
             
-            newToggle.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                
-                console.log('🖱️ Toggle clicked:', this.textContent.trim());
-                
-                const targetId = this.getAttribute('data-target');
-                console.log('Target ID:', targetId);
-                
-                const submenu = document.getElementById(targetId);
-                const arrow = this.querySelector('.nav-arrow');
-                
-                if (!submenu) {
-                    console.error('❌ Submenu not found for target:', targetId);
+            // Verify it's actually a nav-toggle button
+            if (!toggle.classList.contains('nav-toggle') || toggle.tagName !== 'BUTTON') {
+                return;
+            }
+            
+            // If SidebarNavigation exists and is ready, let it handle it
+            // But if it didn't handle it (maybe error), we'll handle it here
+            if (window.sidebarNav && window.sidebarNav._toggleHandler) {
+                // Give SidebarNavigation a chance, but if it didn't mark as handled, we'll handle it
+                // This handles the case where SidebarNavigation failed
+                if (!e._handledBySidebarNav) {
+                    console.log('⚠️ SidebarNavigation exists but didn\'t handle click, using fallback');
+                } else {
                     return;
                 }
-                
-                const isExpanded = submenu.classList.contains('expanded');
-                console.log('Current state:', isExpanded ? 'expanded' : 'collapsed');
-                
-                // Toggle submenu
-                if (isExpanded) {
-                    submenu.classList.remove('expanded');
-                    this.setAttribute('aria-expanded', 'false');
-                    this.classList.remove('active');
-                    if (arrow) arrow.classList.remove('rotated');
-                    console.log('✅ Collapsed');
-                } else {
-                    submenu.classList.add('expanded');
-                    this.setAttribute('aria-expanded', 'true');
-                    this.classList.add('active');
-                    if (arrow) arrow.classList.add('rotated');
-                    console.log('✅ Expanded');
-                }
-            });
-        });
+            }
+            
+            // Fallback handler - only runs if SidebarNavigation isn't available or didn't handle it
+            const targetId = toggle.getAttribute('data-target');
+            if (!targetId) {
+                console.warn('❌ No data-target on toggle:', toggle);
+                return;
+            }
+            
+            console.log('🔍 Fallback: Looking for submenu:', targetId);
+            const submenu = document.getElementById(targetId);
+            if (!submenu) {
+                console.error('❌ Fallback: Submenu not found:', targetId);
+                return;
+            }
+            
+            e.preventDefault();
+            e.stopPropagation();
+            
+            console.log('🖱️ Toggle clicked (fallback):', toggle.textContent.trim(), 'Target:', targetId);
+            
+            const arrow = toggle.querySelector('.nav-arrow');
+            const isExpanded = submenu.classList.contains('expanded');
+            
+            console.log('📊 Fallback: Current state - Expanded:', isExpanded);
+            
+            // Toggle submenu
+            if (isExpanded) {
+                submenu.classList.remove('expanded');
+                toggle.setAttribute('aria-expanded', 'false');
+                toggle.classList.remove('active');
+                if (arrow) arrow.classList.remove('rotated');
+                console.log('✅ Fallback: Collapsed');
+            } else {
+                submenu.classList.add('expanded');
+                toggle.setAttribute('aria-expanded', 'true');
+                toggle.classList.add('active');
+                if (arrow) arrow.classList.add('rotated');
+                console.log('✅ Fallback: Expanded');
+            }
+        }, false); // Bubbling phase - runs after capture phase handlers
         
-        console.log('✅ Sidebar dropdowns initialized');
+        delegationSetup = true;
+        console.log('✅ Sidebar dropdown delegation initialized');
     }
     
-    // Initialize on DOM ready
+    // Set up immediately - event delegation works even before DOM is ready
+    setupDropdownDelegation();
+    
+    // Also ensure it's set up on DOM ready (in case script loads late)
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initSidebarDropdowns);
-    } else {
-        initSidebarDropdowns();
+        document.addEventListener('DOMContentLoaded', setupDropdownDelegation);
     }
     
-    // Re-initialize after page transitions
-    document.addEventListener('pageLoaded', initSidebarDropdowns);
+    // Re-setup after page transitions (though delegation should persist)
+    document.addEventListener('pageLoaded', setupDropdownDelegation);
     
 })();

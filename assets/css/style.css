@@ -870,6 +870,7 @@ body {
 /* Enhanced Navigation Sections */
 .nav-section {
     position: relative;
+    z-index: 1;
 }
 
 .nav-toggle {
@@ -895,6 +896,8 @@ body {
     border-left: 3px solid transparent;
     position: relative;
     line-height: 1.5;
+    pointer-events: auto;
+    z-index: 1;
 }
 
 .nav-toggle::before {
