@@ -3480,9 +3480,6 @@ body.portal-super-admin .hrdash-welcome__time {
     font-weight: 600 !important;
     color: #64748b !important;
     margin-right: 0.25rem !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    padding: 0.5rem 0 !important;
 }
 
 body.portal-super-admin .hrdash-welcome__subtitle {
@@ -3762,11 +3759,15 @@ body.portal-super-admin .hrdash-welcome__profile-btn:hover {
     opacity: 0.8 !important;
 }
 
+body.portal-super-admin .hrdash-welcome__profile-btn:hover .hrdash-welcome__avatar {
+    opacity: 0.9 !important;
+}
+
 body.portal-super-admin .hrdash-welcome__avatar {
     width: 40px !important;
     height: 40px !important;
     border-radius: 8px !important;
-    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
+    background: #2A64E0 !important;
     color: #ffffff !important;
     display: inline-flex !important;
     align-items: center !important;
@@ -3787,16 +3788,14 @@ body.portal-super-admin .hrdash-welcome__avatar-img {
 
 body.portal-super-admin .hrdash-welcome__chevron {
     font-size: 0.75rem !important;
-    color: #64748b !important;
-    margin-left: 0.25rem !important;
+    color: #545454 !important;
+    margin-left: 0 !important;
+    display: inline-block !important;
+    vertical-align: middle !important;
 }
 
 body.portal-super-admin .hrdash-welcome__user-name {
-    font-size: 0.875rem !important;
-    font-weight: 600 !important;
-    color: #1e293b !important;
-    margin-right: 0.5rem !important;
-    white-space: nowrap !important;
+    display: none !important;
 }
 
 /* Super Admin: Notification dropdown menu - match HR Admin exactly */
