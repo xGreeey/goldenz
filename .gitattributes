@@ -1,4 +1,0 @@
-# Makes file untouched during merge
-
-config/**   merge=ours
-includes/database.php   merge=ours
