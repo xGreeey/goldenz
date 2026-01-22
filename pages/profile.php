@@ -74,8 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                     if (!in_array($file['type'], $allowed_types)) {
                         $update_error = 'Invalid file type. Please upload a JPG, PNG, or GIF image.';
                     } elseif ($file['size'] > $max_size) {
-                            $update_error = 'File size too large. Maximum size is 2MB.';
-                        }
+                        $update_error = 'File size too large. Maximum size is 2MB.';
                     }
                 }
             } else {
