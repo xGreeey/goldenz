@@ -114,23 +114,102 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST)) {
         try {
             $pdo = get_db_connection();
             
+            // Ensure all Page 2 columns exist in the database
+            if (function_exists('ensure_employee_columns')) {
+                ensure_employee_columns([
+                    // General Information
+                    'vacancy_source' => 'TEXT NULL',
+                    'referral_name' => 'VARCHAR(150) NULL',
+                    'knows_agency_person' => "ENUM('Yes','No') NULL",
+                    'agency_person_name' => 'VARCHAR(200) NULL',
+                    'physical_defect' => "ENUM('Yes','No') NULL",
+                    'physical_defect_specify' => 'TEXT NULL',
+                    'drives' => "ENUM('Yes','No') NULL",
+                    'drivers_license_no' => 'VARCHAR(50) NULL',
+                    'drivers_license_exp' => 'VARCHAR(50) NULL',
+                    'drinks_alcohol' => "ENUM('Yes','No') NULL",
+                    'alcohol_frequency' => 'VARCHAR(100) NULL',
+                    'prohibited_drugs' => "ENUM('Yes','No') NULL",
+                    'security_guard_experience' => 'VARCHAR(100) NULL',
+                    'convicted' => "ENUM('Yes','No') NULL",
+                    'conviction_details' => 'TEXT NULL',
+                    'filed_case' => "ENUM('Yes','No') NULL",
+                    'case_specify' => 'TEXT NULL',
+                    'action_after_termination' => 'TEXT NULL',
+                    // Signatures and Initials
+                    'signature_1' => 'VARCHAR(200) NULL',
+                    'signature_2' => 'VARCHAR(200) NULL',
+                    'signature_3' => 'VARCHAR(200) NULL',
+                    'initial_1' => 'VARCHAR(100) NULL',
+                    'initial_2' => 'VARCHAR(100) NULL',
+                    'initial_3' => 'VARCHAR(100) NULL',
+                    // Requirements
+                    'requirements_signature' => 'VARCHAR(200) NULL',
+                    'req_2x2' => "ENUM('YO','NO') NULL",
+                    'req_birth_cert' => "ENUM('YO','NO') NULL",
+                    'req_barangay' => "ENUM('YO','NO') NULL",
+                    'req_police' => "ENUM('YO','NO') NULL",
+                    'req_nbi' => "ENUM('YO','NO') NULL",
+                    'req_di' => "ENUM('YO','NO') NULL",
+                    'req_diploma' => "ENUM('YO','NO') NULL",
+                    'req_neuro_drug' => "ENUM('YO','NO') NULL",
+                    'req_sec_license' => "ENUM('YO','NO') NULL",
+                    'sec_lic_no' => 'VARCHAR(50) NULL',
+                    'req_sec_lic_no' => "ENUM('YO','NO') NULL",
+                    'req_sss' => "ENUM('YO','NO') NULL",
+                    'req_pagibig' => "ENUM('YO','NO') NULL",
+                    'req_philhealth' => "ENUM('YO','NO') NULL",
+                    'req_tin' => "ENUM('YO','NO') NULL",
+                    // Sworn Statement
+                    'sworn_day' => 'VARCHAR(10) NULL',
+                    'sworn_month' => 'VARCHAR(50) NULL',
+                    'sworn_year' => 'VARCHAR(10) NULL',
+                    'tax_cert_no' => 'VARCHAR(100) NULL',
+                    'tax_cert_issued_at' => 'VARCHAR(200) NULL',
+                    'sworn_signature' => 'VARCHAR(200) NULL',
+                    'affiant_community' => 'VARCHAR(200) NULL',
+                    // Form Footer
+                    'doc_no' => 'VARCHAR(50) NULL',
+                    'page_no' => 'VARCHAR(10) NULL',
+                    'book_no' => 'VARCHAR(50) NULL',
+                    'series_of' => 'VARCHAR(50) NULL',
+                    // Fingerprints
+                    'fingerprint_right_thumb' => 'VARCHAR(255) NULL',
+                    'fingerprint_right_index' => 'VARCHAR(255) NULL',
+                    'fingerprint_right_middle' => 'VARCHAR(255) NULL',
+                    'fingerprint_right_ring' => 'VARCHAR(255) NULL',
+                    'fingerprint_right_little' => 'VARCHAR(255) NULL',
+                    'fingerprint_left_thumb' => 'VARCHAR(255) NULL',
+                    'fingerprint_left_index' => 'VARCHAR(255) NULL',
+                    'fingerprint_left_middle' => 'VARCHAR(255) NULL',
+                    'fingerprint_left_ring' => 'VARCHAR(255) NULL',
+                    'fingerprint_left_little' => 'VARCHAR(255) NULL',
+                ]);
+            }
+            
             // Prepare page 2 data
             $page2_data = [];
             
             // General Information
             $page2_data['vacancy_source'] = !empty($_POST['vacancy_source']) ? json_encode($_POST['vacancy_source']) : null;
-            $page2_data['referral_name'] = !empty($_POST['referral_name']) ? trim($_POST['referral_name']) : null;
+            // referral_name is VARCHAR(150) - truncate to 150 characters
+            $page2_data['referral_name'] = !empty($_POST['referral_name']) ? mb_substr(trim($_POST['referral_name']), 0, 150) : null;
             $page2_data['knows_agency_person'] = !empty($_POST['knows_agency_person']) ? $_POST['knows_agency_person'] : null;
-            $page2_data['agency_person_name'] = !empty($_POST['agency_person_name']) ? trim($_POST['agency_person_name']) : null;
+            // agency_person_name is VARCHAR(200) - truncate to 200 characters
+            $page2_data['agency_person_name'] = !empty($_POST['agency_person_name']) ? mb_substr(trim($_POST['agency_person_name']), 0, 200) : null;
             $page2_data['physical_defect'] = !empty($_POST['physical_defect']) ? $_POST['physical_defect'] : null;
             $page2_data['physical_defect_specify'] = !empty($_POST['physical_defect_specify']) ? trim($_POST['physical_defect_specify']) : null;
             $page2_data['drives'] = !empty($_POST['drives']) ? $_POST['drives'] : null;
-            $page2_data['drivers_license_no'] = !empty($_POST['drivers_license_no']) ? trim($_POST['drivers_license_no']) : null;
-            $page2_data['drivers_license_exp'] = !empty($_POST['drivers_license_exp']) ? trim($_POST['drivers_license_exp']) : null;
+            // drivers_license_no is VARCHAR(50) - truncate to 50 characters
+            $page2_data['drivers_license_no'] = !empty($_POST['drivers_license_no']) ? mb_substr(trim($_POST['drivers_license_no']), 0, 50) : null;
+            // drivers_license_exp is VARCHAR(50) - truncate to 50 characters
+            $page2_data['drivers_license_exp'] = !empty($_POST['drivers_license_exp']) ? mb_substr(trim($_POST['drivers_license_exp']), 0, 50) : null;
             $page2_data['drinks_alcohol'] = !empty($_POST['drinks_alcohol']) ? $_POST['drinks_alcohol'] : null;
-            $page2_data['alcohol_frequency'] = !empty($_POST['alcohol_frequency']) ? trim($_POST['alcohol_frequency']) : null;
+            // alcohol_frequency is VARCHAR(100) - truncate to 100 characters
+            $page2_data['alcohol_frequency'] = !empty($_POST['alcohol_frequency']) ? mb_substr(trim($_POST['alcohol_frequency']), 0, 100) : null;
             $page2_data['prohibited_drugs'] = !empty($_POST['prohibited_drugs']) ? $_POST['prohibited_drugs'] : null;
-            $page2_data['security_guard_experience'] = !empty($_POST['security_guard_experience']) ? trim($_POST['security_guard_experience']) : null;
+            // security_guard_experience is VARCHAR(100) - truncate to 100 characters
+            $page2_data['security_guard_experience'] = !empty($_POST['security_guard_experience']) ? mb_substr(trim($_POST['security_guard_experience']), 0, 100) : null;
             $page2_data['convicted'] = !empty($_POST['convicted']) ? $_POST['convicted'] : null;
             $page2_data['conviction_details'] = !empty($_POST['conviction_details']) ? trim($_POST['conviction_details']) : null;
             $page2_data['filed_case'] = !empty($_POST['filed_case']) ? $_POST['filed_case'] : null;
@@ -138,15 +217,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST)) {
             $page2_data['action_after_termination'] = !empty($_POST['action_after_termination']) ? trim($_POST['action_after_termination']) : null;
             
             // Specimen Signature and Initial
-            $page2_data['signature_1'] = !empty($_POST['signature_1']) ? trim($_POST['signature_1']) : null;
-            $page2_data['signature_2'] = !empty($_POST['signature_2']) ? trim($_POST['signature_2']) : null;
-            $page2_data['signature_3'] = !empty($_POST['signature_3']) ? trim($_POST['signature_3']) : null;
-            $page2_data['initial_1'] = !empty($_POST['initial_1']) ? trim($_POST['initial_1']) : null;
-            $page2_data['initial_2'] = !empty($_POST['initial_2']) ? trim($_POST['initial_2']) : null;
-            $page2_data['initial_3'] = !empty($_POST['initial_3']) ? trim($_POST['initial_3']) : null;
+            // signature_1, signature_2, signature_3 are VARCHAR(200) - truncate to 200 characters
+            $page2_data['signature_1'] = !empty($_POST['signature_1']) ? mb_substr(trim($_POST['signature_1']), 0, 200) : null;
+            $page2_data['signature_2'] = !empty($_POST['signature_2']) ? mb_substr(trim($_POST['signature_2']), 0, 200) : null;
+            $page2_data['signature_3'] = !empty($_POST['signature_3']) ? mb_substr(trim($_POST['signature_3']), 0, 200) : null;
+            // initial_1, initial_2, initial_3 are VARCHAR(100) - truncate to 100 characters
+            $page2_data['initial_1'] = !empty($_POST['initial_1']) ? mb_substr(trim($_POST['initial_1']), 0, 100) : null;
+            $page2_data['initial_2'] = !empty($_POST['initial_2']) ? mb_substr(trim($_POST['initial_2']), 0, 100) : null;
+            $page2_data['initial_3'] = !empty($_POST['initial_3']) ? mb_substr(trim($_POST['initial_3']), 0, 100) : null;
             
             // Basic Requirements
-            $page2_data['requirements_signature'] = !empty($_POST['requirements_signature']) ? trim($_POST['requirements_signature']) : null;
+            // requirements_signature is VARCHAR(200) - truncate to 200 characters
+            $page2_data['requirements_signature'] = !empty($_POST['requirements_signature']) ? mb_substr(trim($_POST['requirements_signature']), 0, 200) : null;
             $page2_data['req_2x2'] = !empty($_POST['req_2x2']) ? $_POST['req_2x2'] : null;
             $page2_data['req_birth_cert'] = !empty($_POST['req_birth_cert']) ? $_POST['req_birth_cert'] : null;
             $page2_data['req_barangay'] = !empty($_POST['req_barangay']) ? $_POST['req_barangay'] : null;
@@ -156,7 +238,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST)) {
             $page2_data['req_diploma'] = !empty($_POST['req_diploma']) ? $_POST['req_diploma'] : null;
             $page2_data['req_neuro_drug'] = !empty($_POST['req_neuro_drug']) ? $_POST['req_neuro_drug'] : null;
             $page2_data['req_sec_license'] = !empty($_POST['req_sec_license']) ? $_POST['req_sec_license'] : null;
-            $page2_data['sec_lic_no'] = !empty($_POST['sec_lic_no']) ? trim($_POST['sec_lic_no']) : null;
+            // sec_lic_no is VARCHAR(50) - truncate to 50 characters
+            $page2_data['sec_lic_no'] = !empty($_POST['sec_lic_no']) ? mb_substr(trim($_POST['sec_lic_no']), 0, 50) : null;
             $page2_data['req_sec_lic_no'] = !empty($_POST['req_sec_lic_no']) ? $_POST['req_sec_lic_no'] : null;
             $page2_data['req_sss'] = !empty($_POST['req_sss']) ? $_POST['req_sss'] : null;
             $page2_data['req_pagibig'] = !empty($_POST['req_pagibig']) ? $_POST['req_pagibig'] : null;
@@ -164,19 +247,73 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST)) {
             $page2_data['req_tin'] = !empty($_POST['req_tin']) ? $_POST['req_tin'] : null;
             
             // Sworn Statement
-            $page2_data['sworn_day'] = !empty($_POST['sworn_day']) ? trim($_POST['sworn_day']) : null;
-            $page2_data['sworn_month'] = !empty($_POST['sworn_month']) ? trim($_POST['sworn_month']) : null;
-            $page2_data['sworn_year'] = !empty($_POST['sworn_year']) ? trim($_POST['sworn_year']) : null;
-            $page2_data['tax_cert_no'] = !empty($_POST['tax_cert_no']) ? trim($_POST['tax_cert_no']) : null;
-            $page2_data['tax_cert_issued_at'] = !empty($_POST['tax_cert_issued_at']) ? trim($_POST['tax_cert_issued_at']) : null;
-            $page2_data['sworn_signature'] = !empty($_POST['sworn_signature']) ? trim($_POST['sworn_signature']) : null;
-            $page2_data['affiant_community'] = !empty($_POST['affiant_community']) ? trim($_POST['affiant_community']) : null;
+            // sworn_day is VARCHAR(10) - truncate to 10 characters
+            $page2_data['sworn_day'] = !empty($_POST['sworn_day']) ? mb_substr(trim($_POST['sworn_day']), 0, 10) : null;
+            // Handle sworn_month_year - split if it contains both month and year
+            if (!empty($_POST['sworn_month_year'])) {
+                $sworn_month_year = trim($_POST['sworn_month_year']);
+                // Try to split if it contains a space or separator
+                if (preg_match('/^(.+?)\s+(\d{4})$/', $sworn_month_year, $matches)) {
+                    // sworn_month is VARCHAR(50) - truncate to 50 characters
+                    $page2_data['sworn_month'] = mb_substr(trim($matches[1]), 0, 50);
+                    // sworn_year is VARCHAR(10) - truncate to 10 characters
+                    $page2_data['sworn_year'] = mb_substr(trim($matches[2]), 0, 10);
+                } else {
+                    // If no clear separator, try to extract year (4 digits at end)
+                    if (preg_match('/(\d{4})$/', $sworn_month_year, $year_match)) {
+                        $page2_data['sworn_year'] = mb_substr($year_match[1], 0, 10);
+                        $page2_data['sworn_month'] = mb_substr(trim(str_replace($year_match[1], '', $sworn_month_year)), 0, 50);
+                    } else {
+                        // If no year found, treat entire value as month
+                        $page2_data['sworn_month'] = mb_substr($sworn_month_year, 0, 50);
+                        $page2_data['sworn_year'] = null;
+                    }
+                }
+            } else {
+                // Fallback to separate fields if they exist
+                // sworn_month is VARCHAR(50) - truncate to 50 characters
+                $page2_data['sworn_month'] = !empty($_POST['sworn_month']) ? mb_substr(trim($_POST['sworn_month']), 0, 50) : null;
+                // sworn_year is VARCHAR(10) - truncate to 10 characters
+                $page2_data['sworn_year'] = !empty($_POST['sworn_year']) ? mb_substr(trim($_POST['sworn_year']), 0, 10) : null;
+            }
+            // tax_cert_no is VARCHAR(100) - truncate to 100 characters
+            $page2_data['tax_cert_no'] = !empty($_POST['tax_cert_no']) ? mb_substr(trim($_POST['tax_cert_no']), 0, 100) : null;
+            // tax_cert_issued_at is VARCHAR(200) - truncate to 200 characters
+            $page2_data['tax_cert_issued_at'] = !empty($_POST['tax_cert_issued_at']) ? mb_substr(trim($_POST['tax_cert_issued_at']), 0, 200) : null;
+            // sworn_signature is VARCHAR(200) - truncate to 200 characters
+            $page2_data['sworn_signature'] = !empty($_POST['sworn_signature']) ? mb_substr(trim($_POST['sworn_signature']), 0, 200) : null;
+            // affiant_community is VARCHAR(200) - truncate to 200 characters
+            $page2_data['affiant_community'] = !empty($_POST['affiant_community']) ? mb_substr(trim($_POST['affiant_community']), 0, 200) : null;
             
             // Form Footer
-            $page2_data['doc_no'] = !empty($_POST['doc_no']) ? trim($_POST['doc_no']) : null;
-            $page2_data['page_no'] = !empty($_POST['page_no']) ? trim($_POST['page_no']) : null;
-            $page2_data['book_no'] = !empty($_POST['book_no']) ? trim($_POST['book_no']) : null;
-            $page2_data['series_of'] = !empty($_POST['series_of']) ? trim($_POST['series_of']) : null;
+            // doc_no is VARCHAR(50) - truncate to 50 characters
+            $page2_data['doc_no'] = !empty($_POST['doc_no']) ? mb_substr(trim($_POST['doc_no']), 0, 50) : null;
+            // page_no is VARCHAR(10) - truncate to 10 characters
+            $page2_data['page_no'] = !empty($_POST['page_no']) ? mb_substr(trim($_POST['page_no']), 0, 10) : null;
+            // book_no is VARCHAR(50) - truncate to 50 characters
+            $page2_data['book_no'] = !empty($_POST['book_no']) ? mb_substr(trim($_POST['book_no']), 0, 50) : null;
+            // series_of is VARCHAR(50) - truncate to 50 characters
+            $page2_data['series_of'] = !empty($_POST['series_of']) ? mb_substr(trim($_POST['series_of']), 0, 50) : null;
+            
+            // Handle Page 2 ID number fields - these may update Page 1 fields if provided
+            // Only update if the Page 2 values are different and not empty
+            // Note: These fields are VARCHAR(20) in the database - truncate to 20 characters
+            if (!empty($_POST['sss_no_page2']) && trim($_POST['sss_no_page2']) !== '') {
+                // Update sss_no if provided in Page 2 (for verification/update)
+                $page2_data['sss_no'] = mb_substr(trim($_POST['sss_no_page2']), 0, 20);
+            }
+            if (!empty($_POST['pagibig_no_page2']) && trim($_POST['pagibig_no_page2']) !== '') {
+                // Update pagibig_no if provided in Page 2
+                $page2_data['pagibig_no'] = mb_substr(trim($_POST['pagibig_no_page2']), 0, 20);
+            }
+            if (!empty($_POST['philhealth_no_page2']) && trim($_POST['philhealth_no_page2']) !== '') {
+                // Update philhealth_no if provided in Page 2
+                $page2_data['philhealth_no'] = mb_substr(trim($_POST['philhealth_no_page2']), 0, 20);
+            }
+            if (!empty($_POST['tin_no_page2']) && trim($_POST['tin_no_page2']) !== '') {
+                // Update tin_number if provided in Page 2
+                $page2_data['tin_number'] = mb_substr(trim($_POST['tin_no_page2']), 0, 20);
+            }
             
             // ========================================================================
             // MERGE PAGE 1 AND PAGE 2 DATA, THEN INSERT
@@ -192,9 +329,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST)) {
                     'page2_fields_count' => count($page2_data)
                 ]);
             }
-            
+
+            // Check for duplicate license number before insert (license_no is UNIQUE)
+            if (!empty($page1_data['license_no'])) {
+                try {
+                    $dup_stmt = $pdo->prepare("SELECT id FROM employees WHERE license_no = ? LIMIT 1");
+                    $dup_stmt->execute([$page1_data['license_no']]);
+                    if ($dup_stmt->fetch()) {
+                        $errors[] = 'License number already exists. Please use a unique License No.';
+                    }
+                } catch (Exception $dup_e) {
+                    // Ignore duplicate check errors and proceed with insert
+                }
+            }
+
             // First, insert Page 1 data using the add_employee function
-            $new_employee_id = add_employee($page1_data);
+            $new_employee_id = empty($errors) ? add_employee($page1_data) : false;
             
             if ($new_employee_id && $new_employee_id > 0) {
                 $new_employee_id = (int)$new_employee_id;

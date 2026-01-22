@@ -60,51 +60,121 @@ while ($row = $postStmt->fetch(PDO::FETCH_ASSOC)) {
     $posts[] = $row;
 }
 
-// Expiring licenses list (next 90 days) - only active employees with valid dates
-$expiring = [];
-try {
-    $expStmt = $pdo->prepare("SELECT id, first_name, surname, post, license_no, license_exp_date 
-                              FROM employees 
-                              WHERE status = 'Active'
-                                    AND license_no IS NOT NULL 
-                                    AND license_no != ''
-                                    AND license_exp_date IS NOT NULL 
-                                    AND license_exp_date != '' 
-                                    AND license_exp_date != '0000-00-00'
-                                    AND LENGTH(TRIM(COALESCE(license_exp_date, ''))) > 0
-                                    AND TRIM(license_exp_date) REGEXP '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'
-                                    AND STR_TO_DATE(TRIM(license_exp_date), '%Y-%m-%d') IS NOT NULL
-                                    AND STR_TO_DATE(TRIM(license_exp_date), '%Y-%m-%d') >= CURDATE() 
-                                    AND STR_TO_DATE(TRIM(license_exp_date), '%Y-%m-%d') <= DATE_ADD(CURDATE(), INTERVAL 90 DAY)
-                              ORDER BY license_exp_date ASC 
-                              LIMIT 8");
-    $expStmt->execute();
-    $expiring = $expStmt->fetchAll(PDO::FETCH_ASSOC);
-} catch (Exception $e) {
-    error_log("Error fetching expiring licenses: " . $e->getMessage());
-    $expiring = [];
+// Helper function to parse license expiration date
+function parseLicenseExpDate($dateValue) {
+    if (empty($dateValue) || $dateValue === '0000-00-00' || $dateValue === null) {
+        return null;
+    }
+    
+    // Convert to string and trim
+    $dateStr = trim((string)$dateValue);
+    
+    // Remove any time portion if present (e.g., "2025-01-15 00:00:00")
+    if (strpos($dateStr, ' ') !== false) {
+        $dateStr = substr($dateStr, 0, strpos($dateStr, ' '));
+    }
+    
+    // Handle year-only format (e.g., "2025")
+    if (preg_match('/^\d{4}$/', $dateStr)) {
+        // Treat year-only as December 31 of that year
+        return $dateStr . '-12-31';
+    }
+    
+    // Handle various date formats
+    // Try MySQL date format first (YYYY-MM-DD)
+    if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $dateStr)) {
+        $timestamp = strtotime($dateStr);
+        if ($timestamp !== false) {
+            return date('Y-m-d', $timestamp);
+        }
+    }
+    
+    // Try with slashes (YYYY/MM/DD)
+    if (preg_match('/^\d{4}\/\d{2}\/\d{2}$/', $dateStr)) {
+        $timestamp = strtotime(str_replace('/', '-', $dateStr));
+        if ($timestamp !== false) {
+            return date('Y-m-d', $timestamp);
+        }
+    }
+    
+    // Try general date parsing
+    $timestamp = strtotime($dateStr);
+    if ($timestamp !== false) {
+        return date('Y-m-d', $timestamp);
+    }
+    
+    return null;
 }
 
-// Expired licenses list (past) - only active employees with valid dates
+// Expiring licenses list (next 90 days) - all employees with valid dates
+$expiring = [];
+// Expired licenses list (past) - all employees with valid dates
 $expired_licenses = [];
+
 try {
-    $expiredStmt = $pdo->prepare("SELECT id, first_name, surname, post, license_no, license_exp_date
-                                  FROM employees
-                                  WHERE status = 'Active'
-                                        AND license_no IS NOT NULL
-                                        AND license_no != ''
-                                        AND license_exp_date IS NOT NULL
-                                        AND license_exp_date != ''
-                                        AND license_exp_date != '0000-00-00'
-                                        AND LENGTH(TRIM(COALESCE(license_exp_date, ''))) > 0
-                                        AND TRIM(license_exp_date) REGEXP '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'
-                                        AND STR_TO_DATE(TRIM(license_exp_date), '%Y-%m-%d') IS NOT NULL
-                                        AND STR_TO_DATE(TRIM(license_exp_date), '%Y-%m-%d') < CURDATE()
-                                  ORDER BY license_exp_date DESC
-                                  LIMIT 8");
-    $expiredStmt->execute();
-    $expired_licenses = $expiredStmt->fetchAll(PDO::FETCH_ASSOC);
+    // Fetch ALL employees - we'll filter in PHP to catch all date formats
+    $stmt = $pdo->query("SELECT id, first_name, surname, post, license_no, license_exp_date
+                         FROM employees");
+    $all_employees = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    // Parse dates and filter in PHP
+    $today = date('Y-m-d');
+    $future_date = date('Y-m-d', strtotime('+90 days'));
+    
+    foreach ($all_employees as $employee) {
+        // Get the raw license expiration date
+        $rawDate = $employee['license_exp_date'] ?? null;
+        
+        // Skip if no license expiration date at all
+        if (empty($rawDate) || 
+            $rawDate === '0000-00-00' || 
+            $rawDate === null ||
+            trim((string)$rawDate) === '') {
+            continue;
+        }
+        
+        // Parse the date
+        $parsedDate = parseLicenseExpDate($rawDate);
+        
+        // If we couldn't parse it, skip
+        if (!$parsedDate) {
+            continue;
+        }
+        
+        // Add parsed date to employee array
+        $employee['parsed_license_exp_date'] = $parsedDate;
+        
+        // Categorize as expired or expiring
+        if ($parsedDate < $today) {
+            // Expired
+            $expired_licenses[] = $employee;
+        } elseif ($parsedDate >= $today && $parsedDate <= $future_date) {
+            // Expiring (within 90 days)
+            $expiring[] = $employee;
+        }
+    }
+    
+    // Sort expiring by expiration date (ascending - soonest first)
+    usort($expiring, function($a, $b) {
+        $dateA = $a['parsed_license_exp_date'] ?? '';
+        $dateB = $b['parsed_license_exp_date'] ?? '';
+        return strcmp($dateA, $dateB);
+    });
+    
+    // Sort expired by expiration date (descending - most recently expired first)
+    usort($expired_licenses, function($a, $b) {
+        $dateA = $a['parsed_license_exp_date'] ?? '';
+        $dateB = $b['parsed_license_exp_date'] ?? '';
+        return strcmp($dateB, $dateA);
+    });
+    
+    // Limit to 8 results each
+    $expiring = array_slice($expiring, 0, 8);
+    $expired_licenses = array_slice($expired_licenses, 0, 8);
+    
 } catch (Exception $e) {
+    error_log("Error fetching license data: " . $e->getMessage());
+    $expiring = [];
     $expired_licenses = [];
 }
 
@@ -410,7 +480,16 @@ try {
                                 <tr><td colspan="5" class="text-center py-4 text-muted">No expiring licenses found.</td></tr>
                             <?php else: ?>
                                 <?php foreach ($expiring as $e): ?>
-                                    <?php $ind = getLicenseExpirationIndicator($e['license_exp_date'] ?? ''); ?>
+                                    <?php
+                                    $expDateValue = $e['parsed_license_exp_date'] ?? ($e['license_exp_date'] ?? '');
+                                    $ind = getLicenseExpirationIndicator($expDateValue);
+                                    $expDateTimestamp = $expDateValue ? strtotime($expDateValue) : false;
+                                    $expDateDisplay = $expDateTimestamp ? date('M d, Y', $expDateTimestamp) : ($expDateValue ?: 'N/A');
+                                    $licenseNo = trim((string)($e['license_no'] ?? ''));
+                                    if ($licenseNo === '') {
+                                        $licenseNo = 'N/A';
+                                    }
+                                    ?>
                                     <tr>
                                         <td>
                                             <a href="?page=view_employee&id=<?php echo (int)($e['id'] ?? 0); ?>" class="text-decoration-none fw-semibold">
@@ -418,8 +497,8 @@ try {
                                             </a>
                                         </td>
                                         <td class="text-muted"><?php echo htmlspecialchars($e['post'] ?? 'Unassigned'); ?></td>
-                                        <td><code class="license-code"><?php echo htmlspecialchars($e['license_no'] ?? ''); ?></code></td>
-                                        <td><?php echo htmlspecialchars(date('M d, Y', strtotime($e['license_exp_date']))); ?></td>
+                                        <td><code class="license-code"><?php echo htmlspecialchars($licenseNo); ?></code></td>
+                                        <td><?php echo htmlspecialchars($expDateDisplay); ?></td>
                                         <td><span class="<?php echo htmlspecialchars($ind['class'] ?? ''); ?>"><?php echo htmlspecialchars($ind['text'] ?? ''); ?></span></td>
                                     </tr>
                                 <?php endforeach; ?>
@@ -430,7 +509,16 @@ try {
                                 <tr><td colspan="5" class="text-center py-4 text-muted">No expired licenses found.</td></tr>
                             <?php else: ?>
                                 <?php foreach ($expired_licenses as $e): ?>
-                                    <?php $ind = getLicenseExpirationIndicator($e['license_exp_date'] ?? ''); ?>
+                                    <?php
+                                    $expDateValue = $e['parsed_license_exp_date'] ?? ($e['license_exp_date'] ?? '');
+                                    $ind = getLicenseExpirationIndicator($expDateValue);
+                                    $expDateTimestamp = $expDateValue ? strtotime($expDateValue) : false;
+                                    $expDateDisplay = $expDateTimestamp ? date('M d, Y', $expDateTimestamp) : ($expDateValue ?: 'N/A');
+                                    $licenseNo = trim((string)($e['license_no'] ?? ''));
+                                    if ($licenseNo === '') {
+                                        $licenseNo = 'N/A';
+                                    }
+                                    ?>
                                     <tr>
                                         <td>
                                             <a href="?page=view_employee&id=<?php echo (int)($e['id'] ?? 0); ?>" class="text-decoration-none fw-semibold">
@@ -438,8 +526,8 @@ try {
                                             </a>
                                         </td>
                                         <td class="text-muted"><?php echo htmlspecialchars($e['post'] ?? 'Unassigned'); ?></td>
-                                        <td><code class="license-code"><?php echo htmlspecialchars($e['license_no'] ?? ''); ?></code></td>
-                                        <td><?php echo htmlspecialchars(date('M d, Y', strtotime($e['license_exp_date']))); ?></td>
+                                        <td><code class="license-code"><?php echo htmlspecialchars($licenseNo); ?></code></td>
+                                        <td><?php echo htmlspecialchars($expDateDisplay); ?></td>
                                         <td><span class="<?php echo htmlspecialchars($ind['class'] ?? ''); ?>"><?php echo htmlspecialchars($ind['text'] ?? ''); ?></span></td>
                                     </tr>
                                 <?php endforeach; ?>
