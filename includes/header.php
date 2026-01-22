@@ -40,7 +40,10 @@ function getPageTitle($page) {
         'leave_reports' => 'Leave Reports',
         'attendance' => 'Attendance Management',
         'violations' => 'Employee Violations',
+        'add_violation' => 'Add New Employee Violation',
+        'edit_violation' => 'Edit Employee Violation',
         'violation_types' => 'Violation Types & Sanctions',
+        'violation_history' => 'Violation History',
     ];
     
     return $titles[$page] ?? 'Dashboard';
@@ -207,6 +210,15 @@ if ($userRole === 'hr_admin') {
                     break;
                 case 'violation_types':
                     include $pagesPath . 'violation_types.php';
+                    break;
+                case 'add_violation':
+                    include $pagesPath . 'add_violation.php';
+                    break;
+                case 'edit_violation':
+                    include $pagesPath . 'edit_violation.php';
+                    break;
+                case 'violation_history':
+                    include $pagesPath . 'violation_history.php';
                     break;
                 default:
                     include $pagesPath . 'dashboard.php';
