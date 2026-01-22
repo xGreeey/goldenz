@@ -71,7 +71,69 @@
             
             this.storageKey = 'goldenz_sidebar_state';
             
+            // CRITICAL: Set up event delegation IMMEDIATELY in constructor
+            // This ensures clicks work even before full initialization
+            this.setupImmediateEventDelegation();
+            
             this.init();
+        }
+        
+        setupImmediateEventDelegation() {
+            // Set up toggle handler immediately - don't wait for bindEvents
+            const toggleHandler = (e) => {
+                // Find the toggle button - handle clicks on button or its children
+                const toggle = e.target.closest('.nav-toggle');
+                if (!toggle) return;
+                
+                // Verify it's actually a nav-toggle button (not just a parent with that class)
+                if (!toggle.classList.contains('nav-toggle') || toggle.tagName !== 'BUTTON') {
+                    return;
+                }
+                
+                console.log('🖱️ SidebarNavigation: Toggle clicked:', toggle.textContent.trim(), 'Target:', toggle.getAttribute('data-target'));
+                
+                // Stop propagation to prevent other handlers from interfering
+                e.stopPropagation();
+                // Don't use stopImmediatePropagation - let other handlers run if needed
+                
+                // Mark that we're handling this
+                e._handledBySidebarNav = true;
+                
+                // Call toggleSection with proper context
+                try {
+                    this.toggleSection(e);
+                } catch (error) {
+                    console.error('❌ Error in toggleSection:', error);
+                    // If toggleSection fails, try fallback
+                    const targetId = toggle.getAttribute('data-target');
+                    if (targetId) {
+                        const submenu = document.getElementById(targetId);
+                        if (submenu) {
+                            const isExpanded = submenu.classList.contains('expanded');
+                            const arrow = toggle.querySelector('.nav-arrow');
+                            
+                            if (isExpanded) {
+                                submenu.classList.remove('expanded');
+                                toggle.setAttribute('aria-expanded', 'false');
+                                toggle.classList.remove('active');
+                                if (arrow) arrow.classList.remove('rotated');
+                            } else {
+                                submenu.classList.add('expanded');
+                                toggle.setAttribute('aria-expanded', 'true');
+                                toggle.classList.add('active');
+                                if (arrow) arrow.classList.add('rotated');
+                            }
+                        }
+                    }
+                }
+            };
+            
+            // Store handler reference
+            this._toggleHandler = toggleHandler;
+            
+            // Use capture phase with high priority - runs before other handlers
+            document.addEventListener('click', toggleHandler, { capture: true, passive: false });
+            console.log('✅ SidebarNavigation event delegation set up immediately');
         }
         
         init() {
@@ -92,9 +154,15 @@
                 this.sidebarOverlay.addEventListener('click', () => this.closeSidebar());
             }
             
-            // Navigation toggles
+            // NOTE: Navigation toggle event delegation is set up in setupImmediateEventDelegation()
+            // which runs in the constructor, so it's available immediately
+            
+            // Also bind directly for keyboard navigation
             document.querySelectorAll('.nav-toggle').forEach(toggle => {
-                toggle.addEventListener('click', (e) => this.toggleSection(e));
+                // Ensure button is properly set up
+                if (!toggle.hasAttribute('tabindex')) {
+                    toggle.setAttribute('tabindex', '0');
+                }
                 toggle.addEventListener('keydown', (e) => this.handleToggleKeydown(e));
             });
             
@@ -158,40 +226,87 @@
         
         toggleSection(event) {
             event.preventDefault();
-            const toggle = event.currentTarget;
+            // Don't stop propagation here - already stopped in setupImmediateEventDelegation
+            
+            // Get the toggle button - handle both event delegation and direct binding
+            const toggle = event.currentTarget || event.target.closest('.nav-toggle');
+            if (!toggle) {
+                console.warn('❌ Toggle button not found');
+                return;
+            }
+            
             const targetId = toggle.getAttribute('data-target');
+            if (!targetId) {
+                console.warn('❌ No data-target attribute found on toggle:', toggle);
+                return;
+            }
+            
+            console.log('🔍 Looking for submenu with ID:', targetId);
             const submenu = document.getElementById(targetId);
+            if (!submenu) {
+                console.warn('❌ Submenu not found:', targetId, 'Available elements:', 
+                    Array.from(document.querySelectorAll('[id*="submenu"]')).map(el => el.id));
+                return;
+            }
+            
+            console.log('✅ Submenu found:', submenu.id);
             const arrow = toggle.querySelector('.nav-arrow');
             const isExpanded = submenu.classList.contains('expanded');
             
+            console.log('📊 Current state - Expanded:', isExpanded, 'Submenu classes:', submenu.className);
+            
             if (isExpanded) {
                 this.closeSection(toggle, submenu, arrow);
+                console.log('✅ Section closed');
             } else {
                 this.openSection(toggle, submenu, arrow);
+                console.log('✅ Section opened');
             }
             
             this.saveState();
         }
         
         openSection(toggle, submenu, arrow) {
+            console.log('📂 Opening section - Submenu:', submenu.id, 'Current classes:', submenu.className);
             submenu.classList.add('expanded');
-            arrow.classList.add('rotated');
+            console.log('📂 After adding expanded - Classes:', submenu.className);
+            
+            if (arrow) {
+                arrow.classList.add('rotated');
+            } else {
+                console.warn('⚠️ Arrow element not found for toggle');
+            }
+            
+            toggle.classList.add('active');
             toggle.setAttribute('aria-expanded', 'true');
+            
+            // Force a reflow to ensure CSS transition works
+            submenu.offsetHeight;
+            
+            console.log('✅ Section opened - Final classes:', submenu.className, 'Display:', window.getComputedStyle(submenu).display);
             
             // Dispatch custom event
             this.dispatchEvent('section:open', { 
-                section: toggle.closest('.nav-section').dataset.section 
+                section: toggle.closest('.nav-section')?.dataset.section 
             });
         }
         
         closeSection(toggle, submenu, arrow) {
+            console.log('📁 Closing section - Submenu:', submenu.id);
             submenu.classList.remove('expanded');
-            arrow.classList.remove('rotated');
+            
+            if (arrow) {
+                arrow.classList.remove('rotated');
+            }
+            
+            toggle.classList.remove('active');
             toggle.setAttribute('aria-expanded', 'false');
+            
+            console.log('✅ Section closed');
             
             // Dispatch custom event
             this.dispatchEvent('section:close', { 
-                section: toggle.closest('.nav-section').dataset.section 
+                section: toggle.closest('.nav-section')?.dataset.section 
             });
         }
         
@@ -498,32 +613,78 @@
     // Set up auto-save
     autoSaveTimer = setInterval(autoSave, autoSaveInterval);
     
-    // Initialize sidebar navigation when DOM is loaded
-    document.addEventListener('DOMContentLoaded', function() {
-        window.sidebarNav = new SidebarNavigation();
+    // Initialize sidebar navigation immediately if DOM is ready, otherwise wait
+    // This ensures event delegation is set up as early as possible
+    function initializeSidebarNav() {
+        // Only create if it doesn't exist
+        if (!window.sidebarNav) {
+            try {
+                window.sidebarNav = new SidebarNavigation();
+                console.log('✅ SidebarNavigation initialized');
+            } catch (error) {
+                console.error('❌ Error initializing SidebarNavigation:', error);
+                // If initialization fails, ensure fallback handler can still work
+                return;
+            }
+        }
         
         // Ensure correct active state on initial load
         if (window.sidebarNav && typeof window.sidebarNav.updateActiveLinks === 'function') {
             window.sidebarNav.updateActiveLinks();
         }
         
-        // Listen for custom events
-        document.addEventListener('panel:open', (e) => {
-            console.log('Sidebar opened');
-        });
-        
-        document.addEventListener('panel:close', (e) => {
-            console.log('Sidebar closed');
-        });
-        
-        document.addEventListener('section:open', (e) => {
-            console.log('Section opened:', e.detail.section);
-        });
-        
-        document.addEventListener('section:close', (e) => {
-            console.log('Section closed:', e.detail.section);
-        });
-    });
+        // Listen for custom events (only set up once)
+        if (!window._sidebarNavEventsSetup) {
+            document.addEventListener('panel:open', (e) => {
+                console.log('Sidebar opened');
+            });
+            
+            document.addEventListener('panel:close', (e) => {
+                console.log('Sidebar closed');
+            });
+            
+            document.addEventListener('section:open', (e) => {
+                console.log('Section opened:', e.detail.section);
+            });
+            
+            document.addEventListener('section:close', (e) => {
+                console.log('Section closed:', e.detail.section);
+            });
+            
+            window._sidebarNavEventsSetup = true;
+        }
+    }
+    
+    // Try to initialize immediately - event delegation works even if DOM isn't fully ready
+    // Event delegation works on document level, so we can set it up even before sidebar exists
+    function tryInitialize() {
+        // Try to initialize - event delegation will work even if sidebar doesn't exist yet
+        try {
+            initializeSidebarNav();
+        } catch (error) {
+            console.error('❌ Error initializing SidebarNavigation:', error);
+            // Retry on DOMContentLoaded
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', () => {
+                    try {
+                        initializeSidebarNav();
+                    } catch (e) {
+                        console.error('❌ Error on DOMContentLoaded retry:', e);
+                    }
+                });
+            }
+        }
+    }
+    
+    if (document.readyState === 'loading') {
+        // Try immediately (event delegation works even if elements don't exist)
+        tryInitialize();
+        // Also try on DOMContentLoaded as backup
+        document.addEventListener('DOMContentLoaded', tryInitialize);
+    } else {
+        // DOM is already ready, initialize immediately
+        tryInitialize();
+    }
 
     // After AJAX page transitions, update sidebar active highlight
     document.addEventListener('pageLoaded', function() {

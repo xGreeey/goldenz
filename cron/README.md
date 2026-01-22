@@ -2,11 +2,11 @@
 
 ## Overview
 
-The system automatically creates database backups every 5 minutes (for testing) and uploads them to MinIO in the `db-backups` folder.
+The system automatically creates database backups every 30 minutes and uploads them to MinIO in the `db-backups` folder.
 
 ## How It Works
 
-1. **Cron Job**: Runs `backup-to-minio.php` every 5 minutes (for testing)
+1. **Cron Job**: Runs `backup-to-minio.php` every 30 minutes
 2. **Backup Creation**: Uses `mysqldump` or PHP fallback to create SQL backup
 3. **MinIO Upload**: Automatically uploads to MinIO bucket `goldenz-uploads` in folder `db-backups/`
 4. **Logging**: All backup operations are logged to `storage/logs/backup-cron.log`
@@ -53,7 +53,7 @@ The backup schedule can be changed in `docker-compose.yml` by modifying the cron
 docker exec hr_web crontab -e
 ```
 
-Current schedule: `*/5 * * * *` (every 5 minutes for testing)
+Current schedule: `*/30 * * * *` (every 30 minutes)
 
 ## Troubleshooting
 

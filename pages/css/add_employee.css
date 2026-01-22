@@ -1372,7 +1372,42 @@ textarea.form-control:focus.is-valid {
     border-right: 1px solid #e2e8f0;
 }
 
-.add-employee-container #characterReferencesTable tbody td:last-child {
+/* Hide remove button column in Character References table */
+.add-employee-container #characterReferencesTable thead th:last-child {
+    display: none !important;
+}
+
+.add-employee-container #characterReferencesTable tbody td.character-reference-remove-cell {
+    display: none !important;
+}
+
+.add-employee-container #characterReferencesTable tbody td:last-child:not(.character-reference-remove-cell) {
+    border-right: none;
+}
+
+/* Hide remove button column in Trainings table */
+.add-employee-container #trainingsTable thead th:last-child {
+    display: none !important;
+}
+
+.add-employee-container #trainingsTable tbody td.training-remove-cell {
+    display: none !important;
+}
+
+.add-employee-container #trainingsTable tbody td:last-child:not(.training-remove-cell) {
+    border-right: none;
+}
+
+/* Hide remove button column in Employment History table */
+.add-employee-container #employmentTable thead th:last-child {
+    display: none !important;
+}
+
+.add-employee-container #employmentTable tbody td.employment-remove-cell {
+    display: none !important;
+}
+
+.add-employee-container #employmentTable tbody td:last-child:not(.employment-remove-cell) {
     border-right: none;
 }
 
