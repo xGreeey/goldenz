@@ -1851,6 +1851,384 @@ if (isset($_SESSION['employee_redirect_url'])) {
     minusIcon.src = '<?php echo asset_url("icons/minus-icon.png"); ?>?v=2';
 })();
 
+// ============================================================================
+// EVENT DELEGATION HANDLERS - Set up immediately (outside DOMContentLoaded)
+// This ensures buttons work on first click, even before DOM is fully ready
+// ============================================================================
+
+// Trainings / Seminars handlers
+(function() {
+    'use strict';
+    
+    const reindexTrainingRows = () => {
+        const tbody = document.getElementById('trainingsTbody');
+        if (!tbody) return;
+        const rows = Array.from(tbody.querySelectorAll('.training-row'));
+        
+        rows.forEach((row, idx) => {
+            row.setAttribute('data-training-index', idx);
+            row.querySelectorAll('input').forEach((inp) => {
+                const name = inp.getAttribute('name') || '';
+                if (!name) return;
+                const updated = name.replace(/^trainings\[\d+\]/, `trainings[${idx}]`);
+                inp.setAttribute('name', updated);
+            });
+            
+            const removeBtn = row.querySelector('.training-remove-btn');
+            if (removeBtn) {
+                removeBtn.setAttribute('data-training-index', idx);
+                removeBtn.style.display = rows.length === 1 ? 'none' : '';
+            }
+        });
+    };
+    
+    // Expose globally for DOMContentLoaded and pageLoaded handlers
+    window.reindexTrainingRows = reindexTrainingRows;
+
+    const addTrainingRow = () => {
+        const tbody = document.getElementById('trainingsTbody');
+        if (!tbody) {
+            console.warn('trainingsTbody not found');
+            return;
+        }
+        
+        const currentRowCount = tbody.querySelectorAll('.training-row').length;
+        const idx = currentRowCount;
+        
+        const tr = document.createElement('tr');
+        tr.className = 'training-row';
+        tr.setAttribute('data-training-index', idx);
+        tr.innerHTML = `
+            <td>
+                <input type="text" class="form-control text-uppercase"
+                       name="trainings[${idx}][title]"
+                       placeholder="Program or Title of Training / Seminar" maxlength="200">
+            </td>
+            <td>
+                <input type="text" class="form-control text-uppercase"
+                       name="trainings[${idx}][by]"
+                       placeholder="Conducted By" maxlength="200">
+            </td>
+            <td>
+                <input type="date" class="form-control"
+                       name="trainings[${idx}][date]">
+            </td>
+            <td class="text-center training-remove-cell" style="display: none;">
+                <button type="button" class="btn btn-sm btn-icon-action training-remove-btn" 
+                        data-training-index="${idx}" 
+                        title="Remove row" aria-label="Remove training">
+                    <i class="fas fa-minus"></i>
+                </button>
+            </td>
+        `;
+        
+        tbody.appendChild(tr);
+        reindexTrainingRows();
+    };
+
+    // Event delegation - works immediately
+    document.addEventListener('click', (e) => {
+        const addBtn = e.target.closest('#addTrainingBtn, .training-add-btn');
+        if (addBtn && addBtn.id === 'addTrainingBtn') {
+            e.preventDefault();
+            e.stopPropagation();
+            addTrainingRow();
+        }
+        
+        const removeBtn = e.target.closest('.training-remove-btn, #removeTrainingBtn');
+        if (removeBtn) {
+            const tbody = document.getElementById('trainingsTbody');
+            if (!tbody) return;
+            
+            if (removeBtn.id === 'removeTrainingBtn') {
+                // Button below table
+                const allRows = tbody.querySelectorAll('.training-row');
+                if (allRows.length <= 1) {
+                    allRows[0]?.querySelectorAll('input').forEach(el => el.value = '');
+                    reindexTrainingRows();
+                    return;
+                }
+                const lastRow = allRows[allRows.length - 1];
+                lastRow.remove();
+                reindexTrainingRows();
+            } else {
+                // In-row button
+                const row = removeBtn.closest('.training-row');
+                if (!row) return;
+                const allRows = tbody.querySelectorAll('.training-row');
+                if (allRows.length <= 1) {
+                    row.querySelectorAll('input').forEach(el => el.value = '');
+                    reindexTrainingRows();
+                    return;
+                }
+                row.remove();
+                reindexTrainingRows();
+            }
+        }
+    }, true);
+})();
+
+// Employment History handlers
+(function() {
+    'use strict';
+    
+    const reindexEmployment = () => {
+        const tbody = document.getElementById('employmentTbody');
+        if (!tbody) return;
+        const mainRows = Array.from(tbody.querySelectorAll('tr.employment-row'));
+        
+        mainRows.forEach((mainRow, idx) => {
+            mainRow.setAttribute('data-employment-index', idx);
+            mainRow.querySelectorAll('input, textarea').forEach((el) => {
+                const name = el.getAttribute('name') || '';
+                if (!name) return;
+                el.setAttribute('name', name.replace(/^employment_history\[\d+\]/, `employment_history[${idx}]`));
+            });
+            
+            const removeBtn = mainRow.querySelector('.employment-remove-btn');
+            if (removeBtn) {
+                removeBtn.setAttribute('data-employment-index', idx);
+            }
+        });
+
+        const removeEmploymentBtn = document.getElementById('removeEmploymentBtn');
+        if (removeEmploymentBtn) {
+            removeEmploymentBtn.style.display = mainRows.length > 1 ? 'inline-flex' : 'none';
+        }
+    };
+
+    const addEmploymentRow = () => {
+        const tbody = document.getElementById('employmentTbody');
+        if (!tbody) {
+            console.warn('employmentTbody not found');
+            return;
+        }
+        
+        const currentRowCount = tbody.querySelectorAll('.employment-row').length;
+        const idx = currentRowCount;
+
+        const mainRow = document.createElement('tr');
+        mainRow.className = 'employment-row';
+        mainRow.setAttribute('data-employment-index', idx);
+        mainRow.innerHTML = `
+            <td class="employment-position-cell">
+                <input type="text" class="form-control text-uppercase"
+                       name="employment_history[${idx}][position]"
+                       maxlength="120" placeholder="Position">
+            </td>
+            <td class="employment-company-cell">
+                <div class="employment-company-fields">
+                    <div class="employment-company-field">
+                        <label class="employment-field-label">NAME:</label>
+                        <input type="text" class="form-control text-uppercase employment-company-name"
+                               name="employment_history[${idx}][company_name]"
+                               maxlength="200" placeholder="">
+                    </div>
+                    <div class="employment-company-field">
+                        <label class="employment-field-label">ADDRESS:</label>
+                        <textarea class="form-control text-uppercase employment-company-address"
+                                  name="employment_history[${idx}][company_address]"
+                                  rows="1" maxlength="255" placeholder=""></textarea>
+                    </div>
+                    <div class="employment-company-field">
+                        <label class="employment-field-label">PHONE NO.</label>
+                        <input type="tel" class="form-control employment-company-phone"
+                               name="employment_history[${idx}][company_phone]"
+                               maxlength="30" placeholder="">
+                    </div>
+                </div>
+            </td>
+            <td class="employment-period-cell">
+                <input type="text" class="form-control employment-period-input"
+                       name="employment_history[${idx}][period]"
+                       maxlength="17" placeholder="MM/YYYY - MM/YYYY"
+                       inputmode="numeric">
+            </td>
+            <td class="employment-reason-cell">
+                <textarea class="form-control"
+                          name="employment_history[${idx}][reason]"
+                          rows="2" maxlength="300"
+                          placeholder="Reason for leaving"></textarea>
+            </td>
+            <td class="text-center">
+                <button type="button" class="btn btn-sm btn-icon-action employment-remove-btn" 
+                        data-employment-index="${idx}" 
+                        title="Remove row" aria-label="Remove employment record">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+            </td>
+        `;
+        
+        tbody.insertBefore(mainRow, tbody.firstChild);
+        
+        setTimeout(() => {
+            if (window.initEmploymentPeriodInputs) {
+                window.initEmploymentPeriodInputs();
+            }
+        }, 50);
+        
+        reindexEmployment();
+    };
+
+    // Event delegation - works immediately
+    document.addEventListener('click', (e) => {
+        const addBtn = e.target.closest('#addEmploymentBtn, .employment-add-btn');
+        if (addBtn && addBtn.id === 'addEmploymentBtn') {
+            e.preventDefault();
+            e.stopPropagation();
+            addEmploymentRow();
+        }
+        
+        const removeBtn = e.target.closest('.employment-remove-btn, #removeEmploymentBtn');
+        if (removeBtn) {
+            const tbody = document.getElementById('employmentTbody');
+            if (!tbody) return;
+            
+            if (removeBtn.id === 'removeEmploymentBtn') {
+                const allRows = tbody.querySelectorAll('.employment-row');
+                if (allRows.length <= 1) {
+                    allRows[0]?.querySelectorAll('input, textarea').forEach(el => el.value = '');
+                    reindexEmployment();
+                    return;
+                }
+                const lastRow = allRows[allRows.length - 1];
+                lastRow.remove();
+                reindexEmployment();
+            } else {
+                const mainRow = removeBtn.closest('.employment-row');
+                if (!mainRow) return;
+                const allMain = tbody.querySelectorAll('tr.employment-row');
+                if (allMain.length <= 1) {
+                    mainRow.querySelectorAll('input, textarea').forEach(el => el.value = '');
+                    reindexEmployment();
+                    return;
+                }
+                mainRow.remove();
+                reindexEmployment();
+            }
+        }
+    }, true);
+})();
+
+// Character References handlers
+(function() {
+    'use strict';
+    
+    const reindexCharacterReferences = () => {
+        const tbody = document.getElementById('characterReferencesTbody');
+        if (!tbody) return;
+        const mainRows = Array.from(tbody.querySelectorAll('tr.character-reference-row'));
+        
+        mainRows.forEach((mainRow, idx) => {
+            mainRow.setAttribute('data-reference-index', idx);
+            mainRow.querySelectorAll('input').forEach((el) => {
+                const name = el.getAttribute('name') || '';
+                if (!name) return;
+                el.setAttribute('name', name.replace(/^character_references\[\d+\]/, `character_references[${idx}]`));
+            });
+            
+            const removeBtn = mainRow.querySelector('.character-reference-remove-btn');
+            if (removeBtn) {
+                removeBtn.setAttribute('data-reference-index', idx);
+            }
+        });
+
+        const removeCharacterReferenceBtn = document.getElementById('removeCharacterReferenceBtn');
+        if (removeCharacterReferenceBtn) {
+            removeCharacterReferenceBtn.style.display = mainRows.length > 1 ? 'inline-flex' : 'none';
+        }
+    };
+    
+    // Expose globally for DOMContentLoaded and pageLoaded handlers
+    window.reindexCharacterReferences = reindexCharacterReferences;
+
+    const addCharacterReferenceRow = () => {
+        const tbody = document.getElementById('characterReferencesTbody');
+        if (!tbody) {
+            console.warn('characterReferencesTbody not found');
+            return;
+        }
+        
+        const currentRowCount = tbody.querySelectorAll('.character-reference-row').length;
+        const idx = currentRowCount;
+
+        const mainRow = document.createElement('tr');
+        mainRow.className = 'character-reference-row';
+        mainRow.setAttribute('data-reference-index', idx);
+        mainRow.innerHTML = `
+            <td>
+                <input type="text" class="form-control text-uppercase"
+                       name="character_references[${idx}][name]"
+                       maxlength="150" placeholder="Full Name">
+            </td>
+            <td>
+                <input type="text" class="form-control text-uppercase"
+                       name="character_references[${idx}][occupation]"
+                       maxlength="100" placeholder="Occupation">
+            </td>
+            <td>
+                <input type="text" class="form-control text-uppercase"
+                       name="character_references[${idx}][company]"
+                       maxlength="200" placeholder="Company Name">
+            </td>
+            <td>
+                <input type="tel" class="form-control"
+                       name="character_references[${idx}][contact]"
+                       maxlength="30" placeholder="Contact Number">
+            </td>
+            <td class="text-center character-reference-remove-cell" style="display: none;">
+                <button type="button" class="btn btn-sm btn-icon-action character-reference-remove-btn" 
+                        data-reference-index="${idx}" 
+                        title="Remove row" aria-label="Remove character reference">
+                    <i class="fas fa-minus"></i>
+                </button>
+            </td>
+        `;
+        
+        tbody.appendChild(mainRow);
+        reindexCharacterReferences();
+    };
+
+    // Event delegation - works immediately
+    document.addEventListener('click', (e) => {
+        const addBtn = e.target.closest('#addCharacterReferenceBtn, .character-reference-add-btn');
+        if (addBtn && addBtn.id === 'addCharacterReferenceBtn') {
+            e.preventDefault();
+            e.stopPropagation();
+            addCharacterReferenceRow();
+        }
+        
+        const removeBtn = e.target.closest('.character-reference-remove-btn, #removeCharacterReferenceBtn');
+        if (removeBtn) {
+            const tbody = document.getElementById('characterReferencesTbody');
+            if (!tbody) return;
+            
+            if (removeBtn.id === 'removeCharacterReferenceBtn') {
+                const allRows = tbody.querySelectorAll('.character-reference-row');
+                if (allRows.length <= 1) {
+                    allRows[0]?.querySelectorAll('input').forEach(el => el.value = '');
+                    reindexCharacterReferences();
+                    return;
+                }
+                const lastRow = allRows[allRows.length - 1];
+                lastRow.remove();
+                reindexCharacterReferences();
+            } else {
+                const mainRow = removeBtn.closest('.character-reference-row');
+                if (!mainRow) return;
+                const allMain = tbody.querySelectorAll('tr.character-reference-row');
+                if (allMain.length <= 1) {
+                    mainRow.querySelectorAll('input').forEach(el => el.value = '');
+                    reindexCharacterReferences();
+                    return;
+                }
+                mainRow.remove();
+                reindexCharacterReferences();
+            }
+        }
+    }, true);
+})();
+
 document.addEventListener('DOMContentLoaded', function() {
     // Check for redirect to page 2 (backup in case immediate redirect didn't work)
     <?php if (isset($_SESSION['employee_redirect_url'])): ?>
@@ -1904,391 +2282,32 @@ document.addEventListener('DOMContentLoaded', function() {
         syncAge();
     }
 
-    // Trainings / Seminars (repeatable rows)
-    const trainingsTbody = document.getElementById('trainingsTbody');
-    const addTrainingBtn = document.getElementById('addTrainingBtn');
-
-    const reindexTrainingRows = () => {
-        if (!trainingsTbody) return;
-        const rows = Array.from(trainingsTbody.querySelectorAll('.training-row'));
-        
-        rows.forEach((row, idx) => {
-            // Update data attribute
-            row.setAttribute('data-training-index', idx);
-            
-            // Update form field names
-            row.querySelectorAll('input').forEach((inp) => {
-                const name = inp.getAttribute('name') || '';
-                if (!name) return;
-                const updated = name.replace(/^trainings\[\d+\]/, `trainings[${idx}]`);
-                inp.setAttribute('name', updated);
-            });
-            
-            // Update remove button data attribute and visibility
-            const removeBtn = row.querySelector('.training-remove-btn');
-            if (removeBtn) {
-                removeBtn.setAttribute('data-training-index', idx);
-                // Show/hide remove button based on row count
-                if (rows.length === 1) {
-                    removeBtn.style.display = 'none';
-                } else {
-                    removeBtn.style.display = '';
-                }
-            }
-        });
-    };
-
-    // Event delegation for training remove buttons
-    if (trainingsTbody) {
-        trainingsTbody.addEventListener('click', (e) => {
-            const removeBtn = e.target.closest('.training-remove-btn');
-            if (removeBtn) {
-                const row = removeBtn.closest('.training-row');
-                if (!row) return;
-                
-                const allRows = trainingsTbody.querySelectorAll('.training-row');
-                if (allRows.length <= 1) {
-                    // Clear last record instead of removing
-                    row.querySelectorAll('input').forEach(el => el.value = '');
-                    return;
-                }
-                
-                row.remove();
-                reindexTrainingRows();
-            }
-        });
+    // Initial visibility checks and re-indexing on DOMContentLoaded
+    // (Event delegation handlers are set up outside DOMContentLoaded above)
+    if (window.reindexTrainingRows) {
+        window.reindexTrainingRows();
     }
 
-    if (addTrainingBtn && trainingsTbody) {
-        addTrainingBtn.addEventListener('click', () => {
-            const currentRowCount = trainingsTbody.querySelectorAll('.training-row').length;
-            const idx = currentRowCount;
-            
-            // Create new row
-            const tr = document.createElement('tr');
-            tr.className = 'training-row';
-            tr.setAttribute('data-training-index', idx);
-            tr.innerHTML = `
-                <td>
-                    <input type="text" class="form-control text-uppercase"
-                           name="trainings[${idx}][title]"
-                           placeholder="Program or Title of Training / Seminar" maxlength="200">
-                </td>
-                <td>
-                    <input type="text" class="form-control text-uppercase"
-                           name="trainings[${idx}][by]"
-                           placeholder="Conducted By" maxlength="200">
-                </td>
-                <td>
-                    <input type="date" class="form-control"
-                           name="trainings[${idx}][date]">
-                </td>
-                <td class="text-center training-remove-cell" style="display: none;">
-                    <button type="button" class="btn btn-sm btn-icon-action training-remove-btn" 
-                            data-training-index="${idx}" 
-                            title="Remove row" aria-label="Remove training">
-                        <i class="fas fa-minus"></i>
-                    </button>
-                </td>
-            `;
-            
-            trainingsTbody.appendChild(tr);
-            reindexTrainingRows();
-        });
+    if (window.reindexEmployment) {
+        window.reindexEmployment();
     }
 
-    // Handle training remove button below table
-    const removeTrainingBtn = document.getElementById('removeTrainingBtn');
-    if (removeTrainingBtn && trainingsTbody) {
-        removeTrainingBtn.addEventListener('click', () => {
-            const allRows = trainingsTbody.querySelectorAll('.training-row');
-            if (allRows.length <= 1) {
-                // Clear last record instead of removing
-                allRows[0]?.querySelectorAll('input').forEach(el => el.value = '');
-                reindexTrainingRows();
-                return;
-            }
-            // Remove last row
-            const lastRow = allRows[allRows.length - 1];
-            lastRow.remove();
-            reindexTrainingRows();
-        });
+    if (window.reindexCharacterReferences) {
+        window.reindexCharacterReferences();
     }
-
-    // Initial visibility check for trainings
-    if (trainingsTbody) {
-        reindexTrainingRows();
-    }
-
-    // Employment History (repeatable rows with expandable company details; newest first)
-    const employmentTbody = document.getElementById('employmentTbody');
-    const addEmploymentBtn = document.getElementById('addEmploymentBtn');
-
-    const reindexEmployment = () => {
-        if (!employmentTbody) return;
-        const mainRows = Array.from(employmentTbody.querySelectorAll('tr.employment-row'));
-        
-        mainRows.forEach((mainRow, idx) => {
-            // Update data attribute
-            mainRow.setAttribute('data-employment-index', idx);
-            
-            // Update form field names
-            mainRow.querySelectorAll('input, textarea').forEach((el) => {
-                const name = el.getAttribute('name') || '';
-                if (!name) return;
-                el.setAttribute('name', name.replace(/^employment_history\[\d+\]/, `employment_history[${idx}]`));
-            });
-            
-            // Update remove button data attribute (buttons are hidden in table)
-            const removeBtn = mainRow.querySelector('.employment-remove-btn');
-            if (removeBtn) {
-                removeBtn.setAttribute('data-employment-index', idx);
-            }
-        });
-
-        // Update remove button visibility below table
-        const removeEmploymentBtn = document.getElementById('removeEmploymentBtn');
-        if (removeEmploymentBtn) {
-            removeEmploymentBtn.style.display = mainRows.length > 1 ? 'inline-flex' : 'none';
+    
+    // Re-initialize on pageLoaded event (for AJAX page transitions)
+    document.addEventListener('pageLoaded', function() {
+        if (window.reindexTrainingRows) {
+            window.reindexTrainingRows();
         }
-    };
-
-    // Event delegation for employment remove buttons
-    if (employmentTbody) {
-        employmentTbody.addEventListener('click', (e) => {
-            const removeBtn = e.target.closest('.employment-remove-btn');
-            if (removeBtn) {
-                const mainRow = removeBtn.closest('.employment-row');
-                if (!mainRow) return;
-                
-                const allMain = employmentTbody.querySelectorAll('tr.employment-row');
-                if (allMain.length <= 1) {
-                    // Clear last record instead of removing
-                    mainRow.querySelectorAll('input, textarea').forEach(el => el.value = '');
-                    return;
-                }
-                
-                mainRow.remove();
-                reindexEmployment();
-            }
-        });
-    }
-
-    if (addEmploymentBtn && employmentTbody) {
-        addEmploymentBtn.addEventListener('click', () => {
-            const currentRowCount = employmentTbody.querySelectorAll('.employment-row').length;
-            const idx = currentRowCount;
-
-            // Create new row
-            const mainRow = document.createElement('tr');
-            mainRow.className = 'employment-row';
-            mainRow.setAttribute('data-employment-index', idx);
-            mainRow.innerHTML = `
-                <td class="employment-position-cell">
-                    <input type="text" class="form-control text-uppercase"
-                           name="employment_history[${idx}][position]"
-                           maxlength="120" placeholder="Position">
-                </td>
-                <td class="employment-company-cell">
-                    <div class="employment-company-fields">
-                        <div class="employment-company-field">
-                            <label class="employment-field-label">NAME:</label>
-                            <input type="text" class="form-control text-uppercase employment-company-name"
-                                   name="employment_history[${idx}][company_name]"
-                                   maxlength="200" placeholder="">
-                        </div>
-                        <div class="employment-company-field">
-                            <label class="employment-field-label">ADDRESS:</label>
-                            <textarea class="form-control text-uppercase employment-company-address"
-                                      name="employment_history[${idx}][company_address]"
-                                      rows="1" maxlength="255" placeholder=""></textarea>
-                        </div>
-                        <div class="employment-company-field">
-                            <label class="employment-field-label">PHONE NO.</label>
-                            <input type="tel" class="form-control employment-company-phone"
-                                   name="employment_history[${idx}][company_phone]"
-                                   maxlength="30" placeholder="">
-                        </div>
-                    </div>
-                </td>
-                <td class="employment-period-cell">
-                    <input type="text" class="form-control employment-period-input"
-                           name="employment_history[${idx}][period]"
-                           maxlength="17" placeholder="MM/YYYY - MM/YYYY"
-                           inputmode="numeric">
-                </td>
-                <td class="employment-reason-cell">
-                    <textarea class="form-control"
-                              name="employment_history[${idx}][reason]"
-                              rows="2" maxlength="300"
-                              placeholder="Reason for leaving"></textarea>
-                </td>
-                <td class="text-center">
-                    <button type="button" class="btn btn-sm btn-icon-action employment-remove-btn" 
-                            data-employment-index="${idx}" 
-                            title="Remove row" aria-label="Remove employment record">
-                        <i class="fas fa-trash-alt"></i>
-                    </button>
-                </td>
-            `;
-            
-            // Add row first (prepend for newest first)
-            employmentTbody.insertBefore(mainRow, employmentTbody.firstChild);
-            
-            // Initialize period input formatting for the new row
-            setTimeout(() => {
-                if (window.initEmploymentPeriodInputs) {
-                    window.initEmploymentPeriodInputs();
-                }
-            }, 50);
-            
-            reindexEmployment();
-        });
-    }
-
-    // Handle employment remove button below table
-    const removeEmploymentBtn = document.getElementById('removeEmploymentBtn');
-    if (removeEmploymentBtn && employmentTbody) {
-        removeEmploymentBtn.addEventListener('click', () => {
-            const allRows = employmentTbody.querySelectorAll('.employment-row');
-            if (allRows.length <= 1) {
-                // Clear last record instead of removing
-                allRows[0]?.querySelectorAll('input, textarea').forEach(el => el.value = '');
-                reindexEmployment();
-                return;
-            }
-            // Remove last row (oldest, since newest are first)
-            const lastRow = allRows[allRows.length - 1];
-            lastRow.remove();
-            reindexEmployment();
-        });
-    }
-
-    // Initial visibility check for employment
-    if (employmentTbody) {
-        reindexEmployment();
-    }
-
-    // Character References (repeatable rows)
-    const characterReferencesTbody = document.getElementById('characterReferencesTbody');
-    const addCharacterReferenceBtn = document.getElementById('addCharacterReferenceBtn');
-
-    const reindexCharacterReferences = () => {
-        if (!characterReferencesTbody) return;
-        const mainRows = Array.from(characterReferencesTbody.querySelectorAll('tr.character-reference-row'));
-        
-        mainRows.forEach((mainRow, idx) => {
-            // Update data attribute
-            mainRow.setAttribute('data-reference-index', idx);
-            
-            // Update form field names
-            mainRow.querySelectorAll('input').forEach((el) => {
-                const name = el.getAttribute('name') || '';
-                if (!name) return;
-                el.setAttribute('name', name.replace(/^character_references\[\d+\]/, `character_references[${idx}]`));
-            });
-            
-            // Update remove button data attribute (buttons are hidden in table)
-            const removeBtn = mainRow.querySelector('.character-reference-remove-btn');
-            if (removeBtn) {
-                removeBtn.setAttribute('data-reference-index', idx);
-            }
-        });
-
-        // Update remove button visibility below table
-        const removeCharacterReferenceBtn = document.getElementById('removeCharacterReferenceBtn');
-        if (removeCharacterReferenceBtn) {
-            removeCharacterReferenceBtn.style.display = mainRows.length > 1 ? 'inline-flex' : 'none';
+        if (window.reindexEmployment) {
+            window.reindexEmployment();
         }
-    };
-
-    // Event delegation for character reference remove buttons
-    if (characterReferencesTbody) {
-        characterReferencesTbody.addEventListener('click', (e) => {
-            const removeBtn = e.target.closest('.character-reference-remove-btn');
-            if (removeBtn) {
-                const mainRow = removeBtn.closest('.character-reference-row');
-                if (!mainRow) return;
-                
-                const allMain = characterReferencesTbody.querySelectorAll('tr.character-reference-row');
-                if (allMain.length <= 1) {
-                    // Clear last record instead of removing
-                    mainRow.querySelectorAll('input').forEach(el => el.value = '');
-                    return;
-                }
-                
-                mainRow.remove();
-                reindexCharacterReferences();
-            }
-        });
-    }
-
-    if (addCharacterReferenceBtn && characterReferencesTbody) {
-        addCharacterReferenceBtn.addEventListener('click', () => {
-            const currentRowCount = characterReferencesTbody.querySelectorAll('.character-reference-row').length;
-            const idx = currentRowCount;
-
-            // Create new row
-            const mainRow = document.createElement('tr');
-            mainRow.className = 'character-reference-row';
-            mainRow.setAttribute('data-reference-index', idx);
-            mainRow.innerHTML = `
-                <td>
-                    <input type="text" class="form-control text-uppercase"
-                           name="character_references[${idx}][name]"
-                           maxlength="150" placeholder="Full Name">
-                </td>
-                <td>
-                    <input type="text" class="form-control text-uppercase"
-                           name="character_references[${idx}][occupation]"
-                           maxlength="100" placeholder="Occupation">
-                </td>
-                <td>
-                    <input type="text" class="form-control text-uppercase"
-                           name="character_references[${idx}][company]"
-                           maxlength="200" placeholder="Company Name">
-                </td>
-                <td>
-                    <input type="tel" class="form-control"
-                           name="character_references[${idx}][contact]"
-                           maxlength="30" placeholder="Contact Number">
-                </td>
-                <td class="text-center character-reference-remove-cell" style="display: none;">
-                    <button type="button" class="btn btn-sm btn-icon-action character-reference-remove-btn" 
-                            data-reference-index="${idx}" 
-                            title="Remove row" aria-label="Remove character reference">
-                        <i class="fas fa-minus"></i>
-                    </button>
-                </td>
-            `;
-            
-            characterReferencesTbody.appendChild(mainRow);
-            reindexCharacterReferences();
-        });
-    }
-
-    // Handle remove button below table
-    const removeCharacterReferenceBtn = document.getElementById('removeCharacterReferenceBtn');
-    if (removeCharacterReferenceBtn && characterReferencesTbody) {
-        removeCharacterReferenceBtn.addEventListener('click', () => {
-            const allRows = characterReferencesTbody.querySelectorAll('.character-reference-row');
-            if (allRows.length <= 1) {
-                // Clear last record instead of removing
-                allRows[0]?.querySelectorAll('input').forEach(el => el.value = '');
-                reindexCharacterReferences();
-                return;
-            }
-            // Remove last row
-            const lastRow = allRows[allRows.length - 1];
-            lastRow.remove();
-            reindexCharacterReferences();
-        });
-    }
-
-    // Initial visibility check
-    if (characterReferencesTbody) {
-        reindexCharacterReferences();
-    }
+        if (window.reindexCharacterReferences) {
+            window.reindexCharacterReferences();
+        }
+    });
 
     // Government Examination (conditional + repeatable rows)
     const govYes = document.getElementById('gov_exam_yes');
@@ -2743,13 +2762,8 @@ document.addEventListener('DOMContentLoaded', function() {
     window.initEmploymentPeriodInputs();
     
     // Re-initialize when new employment rows are added
-    if (addEmploymentBtn) {
-        addEmploymentBtn.addEventListener('click', function() {
-            setTimeout(() => {
-                window.initEmploymentPeriodInputs();
-            }, 100);
-        });
-    }
+    // This is handled by the event delegation handler above which calls addEmploymentRow()
+    // The addEmploymentRow() function already calls initEmploymentPeriodInputs() after adding a row
     
     // Show post details when selected
     const postSelect = document.getElementById('post');
