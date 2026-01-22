@@ -645,6 +645,38 @@ function delete_from_storage($path) {
  * @param array $options Additional options (remote_name: rclone remote name, default 'gdrive')
  * @return string|false Returns the Google Drive path on success, false on failure
  */
+if (!function_exists('get_rclone_config_path')) {
+    function get_rclone_config_path() {
+        if (file_exists('/var/www/.config/rclone/rclone.conf') && is_readable('/var/www/.config/rclone/rclone.conf')) {
+            return '/var/www/.config/rclone/rclone.conf';
+        }
+        if (file_exists('/root/.config/rclone/rclone.conf') && is_readable('/root/.config/rclone/rclone.conf')) {
+            return '/root/.config/rclone/rclone.conf';
+        }
+        return null;
+    }
+}
+
+if (!function_exists('get_rclone_remotes')) {
+    function get_rclone_remotes($config_path) {
+        if (empty($config_path) || !is_readable($config_path)) {
+            return [];
+        }
+        $remotes = [];
+        $lines = file($config_path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        foreach ($lines as $line) {
+            $line = trim($line);
+            if ($line === '' || $line[0] !== '[') {
+                continue;
+            }
+            if (substr($line, -1) === ']') {
+                $remotes[] = trim($line, "[] \t");
+            }
+        }
+        return $remotes;
+    }
+}
+
 function upload_to_gdrive_rclone($source_path, $destination_path, $options = []) {
     // Check if rclone is available
     if (!function_exists('exec')) {
@@ -659,8 +691,33 @@ function upload_to_gdrive_rclone($source_path, $destination_path, $options = [])
         return false;
     }
     
-    // Get rclone remote name from options or environment variable
-    $remote_name = $options['remote_name'] ?? $_ENV['RCLONE_REMOTE'] ?? 'gdrive';
+    // Use rclone config (copied to /var/www/.config/rclone/rclone.conf by entrypoint)
+    // Fallback to root config if www-data config doesn't exist
+    $config_path = get_rclone_config_path();
+    if (empty($config_path)) {
+        error_log("rclone upload: rclone.conf not found in /var/www/.config/rclone or /root/.config/rclone");
+        return false;
+    }
+
+    // Choose remote name from options/env, with fallback to available remotes
+    $requested_remote = $options['remote_name'] ?? ($_ENV['RCLONE_REMOTE'] ?? null);
+    $available_remotes = get_rclone_remotes($config_path);
+    if ($requested_remote && in_array($requested_remote, $available_remotes, true)) {
+        $remote_name = $requested_remote;
+    } elseif (in_array('gdrive', $available_remotes, true)) {
+        $remote_name = 'gdrive';
+        if ($requested_remote) {
+            error_log("rclone upload: Remote '$requested_remote' not found, falling back to 'gdrive'");
+        }
+    } elseif (!empty($available_remotes)) {
+        $remote_name = $available_remotes[0];
+        if ($requested_remote) {
+            error_log("rclone upload: Remote '$requested_remote' not found, falling back to '$remote_name'");
+        }
+    } else {
+        error_log("rclone upload: No remotes found in config: $config_path");
+        return false;
+    }
     
     // Verify source file exists
     if (!file_exists($source_path)) {
@@ -672,12 +729,6 @@ function upload_to_gdrive_rclone($source_path, $destination_path, $options = [])
     // rclone copy source remote:destination
     $rclone_path = 'rclone';
     $remote_dest = "$remote_name:$destination_path";
-    
-    // Use rclone config (copied to /var/www/.config/rclone/rclone.conf by entrypoint)
-    // Fallback to root config if www-data config doesn't exist
-    $config_path = file_exists('/var/www/.config/rclone/rclone.conf') 
-        ? '/var/www/.config/rclone/rclone.conf' 
-        : '/root/.config/rclone/rclone.conf';
     
     // Use copy command (doesn't delete source, idempotent)
     $command = sprintf(
@@ -708,7 +759,23 @@ function upload_to_gdrive_rclone($source_path, $destination_path, $options = [])
  * @return array Test results
  */
 function test_rclone_gdrive($remote_name = null) {
-    $remote_name = $remote_name ?? $_ENV['RCLONE_REMOTE'] ?? 'gdrive';
+    $config_path = get_rclone_config_path();
+    if (empty($config_path)) {
+        return [
+            'success' => false,
+            'error' => 'rclone.conf not found in /var/www/.config/rclone or /root/.config/rclone'
+        ];
+    }
+
+    $available_remotes = get_rclone_remotes($config_path);
+    $remote_name = $remote_name ?? ($_ENV['RCLONE_REMOTE'] ?? null);
+    if (!$remote_name || !in_array($remote_name, $available_remotes, true)) {
+        if (in_array('gdrive', $available_remotes, true)) {
+            $remote_name = 'gdrive';
+        } elseif (!empty($available_remotes)) {
+            $remote_name = $available_remotes[0];
+        }
+    }
     
     if (!function_exists('exec')) {
         return [
@@ -725,12 +792,6 @@ function test_rclone_gdrive($remote_name = null) {
             'error' => 'rclone is not installed'
         ];
     }
-    
-    // Use rclone config (copied to /var/www/.config/rclone/rclone.conf by entrypoint)
-    // Fallback to root config if www-data config doesn't exist
-    $config_path = file_exists('/var/www/.config/rclone/rclone.conf') 
-        ? '/var/www/.config/rclone/rclone.conf' 
-        : '/root/.config/rclone/rclone.conf';
     
     // Test rclone remote connection by listing the remote
     $command = sprintf(
