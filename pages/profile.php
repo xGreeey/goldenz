@@ -281,13 +281,6 @@ if (!empty($display_first_name) || !empty($display_last_name)) {
 ?>
 
 <div class="container-fluid profile-page">
-    <div class="page-header-modern mb-4">
-        <div class="page-title-modern">
-            <h1 class="page-title-main">My Profile</h1>
-            <p class="page-subtitle">View and manage your personal information and work details.</p>
-        </div>
-    </div>
-
     <?php if (isset($_GET['updated']) && $_GET['updated'] == '1'): ?>
     <div class="alert alert-success alert-dismissible fade show" role="alert">
         <i class="fas fa-check-circle me-2"></i>Profile updated successfully!
