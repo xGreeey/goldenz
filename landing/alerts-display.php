@@ -20,60 +20,73 @@ try {
 // Include database functions
 require_once __DIR__ . '/../includes/database.php';
 
-// Get employees with expiring licenses (active employees only)
+// Helper function to parse license expiration date
+function parseLicenseExpDate($dateValue) {
+    if (empty($dateValue) || $dateValue === '0000-00-00' || $dateValue === null) {
+        return null;
+    }
+    
+    // Convert to string and trim
+    $dateStr = trim((string)$dateValue);
+    
+    // Remove any time portion if present (e.g., "2025-01-15 00:00:00")
+    if (strpos($dateStr, ' ') !== false) {
+        $dateStr = substr($dateStr, 0, strpos($dateStr, ' '));
+    }
+    
+    // Handle year-only format (e.g., "2025")
+    if (preg_match('/^\d{4}$/', $dateStr)) {
+        // Treat year-only as December 31 of that year
+        return $dateStr . '-12-31';
+    }
+    
+    // Handle various date formats
+    // Try MySQL date format first (YYYY-MM-DD)
+    if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $dateStr)) {
+        $timestamp = strtotime($dateStr);
+        if ($timestamp !== false) {
+            return date('Y-m-d', $timestamp);
+        }
+    }
+    
+    // Try with slashes (YYYY/MM/DD)
+    if (preg_match('/^\d{4}\/\d{2}\/\d{2}$/', $dateStr)) {
+        $timestamp = strtotime(str_replace('/', '-', $dateStr));
+        if ($timestamp !== false) {
+            return date('Y-m-d', $timestamp);
+        }
+    }
+    
+    // Try general date parsing
+    $timestamp = strtotime($dateStr);
+    if ($timestamp !== false) {
+        return date('Y-m-d', $timestamp);
+    }
+    
+    return null;
+}
+
+// Get employees with expiring licenses (all employees)
 $expiring_employees = [];
 
 try {
     $pdo = get_db_connection();
     
-    // Query for active employees with expiring licenses (within 30 days or expired)
-    $sql = "SELECT 
-                e.id,
-                e.employee_no,
-                e.surname,
-                e.first_name,
-                e.middle_name,
-                e.post,
-                e.license_no,
-                e.license_exp_date,
-                e.status,
-                CASE 
-                    WHEN e.license_exp_date < CURDATE() THEN 'expired'
-                    WHEN DATEDIFF(e.license_exp_date, CURDATE()) <= 7 THEN 'critical'
-                    WHEN DATEDIFF(e.license_exp_date, CURDATE()) <= 15 THEN 'high'
-                    WHEN DATEDIFF(e.license_exp_date, CURDATE()) <= 30 THEN 'medium'
-                    ELSE 'valid'
-                END as urgency_level,
-                CASE 
-                    WHEN e.license_exp_date < CURDATE() THEN ABS(DATEDIFF(e.license_exp_date, CURDATE()))
-                    ELSE DATEDIFF(e.license_exp_date, CURDATE())
-                END as days_diff
-            FROM employees e
-            WHERE e.status = 'Active'
-            AND e.license_no IS NOT NULL 
-            AND e.license_no != ''
-            AND e.license_exp_date IS NOT NULL 
-            AND e.license_exp_date != ''
-            AND e.license_exp_date != '0000-00-00'
-            AND (
-                e.license_exp_date < CURDATE() 
-                OR e.license_exp_date <= DATE_ADD(CURDATE(), INTERVAL 30 DAY)
-            )
-            ORDER BY 
-                CASE urgency_level
-                    WHEN 'expired' THEN 1
-                    WHEN 'critical' THEN 2
-                    WHEN 'high' THEN 3
-                    WHEN 'medium' THEN 4
-                    ELSE 5
-                END,
-                e.license_exp_date ASC";
-    
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute();
+    // Fetch ALL employees - we'll filter in PHP to catch all date formats
+    $stmt = $pdo->query("SELECT 
+                            id,
+                            employee_no,
+                            surname,
+                            first_name,
+                            middle_name,
+                            post,
+                            license_no,
+                            license_exp_date,
+                            status
+                         FROM employees");
     $all_employees = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
-    // Group employees by urgency level
+    // Initialize urgency groups
     $expiring_employees = [
         'expired' => [],
         'critical' => [],
@@ -81,14 +94,84 @@ try {
         'medium' => []
     ];
     
+    $today = date('Y-m-d');
+    $today_timestamp = strtotime($today);
+    
+    // Process each employee
     foreach ($all_employees as $employee) {
-        $urgency = $employee['urgency_level'];
-        if (isset($expiring_employees[$urgency])) {
-            $expiring_employees[$urgency][] = $employee;
+        // Get the raw license expiration date
+        $rawDate = $employee['license_exp_date'] ?? null;
+        
+        // Skip if no license expiration date at all
+        if (empty($rawDate) || 
+            $rawDate === '0000-00-00' || 
+            $rawDate === null ||
+            trim((string)$rawDate) === '') {
+            continue;
+        }
+        
+        // Parse the date
+        $parsedDate = parseLicenseExpDate($rawDate);
+        
+        // If we couldn't parse it, skip
+        if (!$parsedDate) {
+            continue;
+        }
+        
+        // Calculate days difference
+        $parsed_timestamp = strtotime($parsedDate);
+        $days_diff = floor(($parsed_timestamp - $today_timestamp) / (60 * 60 * 24));
+        
+        // Determine urgency level
+        $urgency_level = 'valid';
+        if ($days_diff < 0) {
+            // Expired
+            $urgency_level = 'expired';
+            $days_diff = abs($days_diff); // Make it positive for display
+        } elseif ($days_diff <= 7) {
+            // Critical (0-7 days)
+            $urgency_level = 'critical';
+        } elseif ($days_diff <= 15) {
+            // High (8-15 days)
+            $urgency_level = 'high';
+        } elseif ($days_diff <= 30) {
+            // Medium (16-30 days)
+            $urgency_level = 'medium';
+        } else {
+            // More than 30 days - skip
+            continue;
+        }
+        
+        // Add to appropriate urgency group
+        if (isset($expiring_employees[$urgency_level])) {
+            $employee['parsed_license_exp_date'] = $parsedDate;
+            $employee['urgency_level'] = $urgency_level;
+            $employee['days_diff'] = $days_diff;
+            $expiring_employees[$urgency_level][] = $employee;
         }
     }
     
-    $total_count = count($all_employees);
+    // Sort each group by expiration date
+    foreach ($expiring_employees as $urgency => &$employees) {
+        usort($employees, function($a, $b) use ($urgency) {
+            $dateA = $a['parsed_license_exp_date'] ?? '';
+            $dateB = $b['parsed_license_exp_date'] ?? '';
+            // For expired, sort descending (most recently expired first)
+            // For others, sort ascending (soonest first)
+            if ($urgency === 'expired') {
+                return strcmp($dateB, $dateA);
+            } else {
+                return strcmp($dateA, $dateB);
+            }
+        });
+    }
+    unset($employees);
+    
+    // Calculate total count
+    $total_count = count($expiring_employees['expired']) + 
+                   count($expiring_employees['critical']) + 
+                   count($expiring_employees['high']) + 
+                   count($expiring_employees['medium']);
     
 } catch (Exception $e) {
     error_log('Error fetching expiring licenses: ' . $e->getMessage());
@@ -1014,8 +1097,9 @@ ob_end_flush();
                                 $display_employees = $count > 10 ? array_merge($employees, $employees) : $employees;
                                 foreach ($display_employees as $employee): 
                                     $full_name = trim(($employee['first_name'] ?? '') . ' ' . ($employee['middle_name'] ?? '') . ' ' . ($employee['surname'] ?? ''));
-                                    $days = $employee['days_diff'];
-                                    $exp_date = !empty($employee['license_exp_date']) ? $employee['license_exp_date'] : null;
+                                    $days = $employee['days_diff'] ?? 0;
+                                    // Use parsed date if available, otherwise fall back to original
+                                    $exp_date = $employee['parsed_license_exp_date'] ?? ($employee['license_exp_date'] ?? null);
                                     $employee_no = function_exists('format_employee_no') ? format_employee_no($employee['employee_no']) : $employee['employee_no'];
                                     $employee_id = $employee['id'] ?? $employee_no;
                                     
@@ -1023,26 +1107,28 @@ ob_end_flush();
                                     $deadline_text = '';
                                     if ($exp_date && $exp_date !== '0000-00-00') {
                                         $exp_timestamp = strtotime($exp_date);
-                                        $day = date('j', $exp_timestamp);
-                                        $month = date('F', $exp_timestamp);
-                                        $year = date('Y', $exp_timestamp);
-                                        $current_year = date('Y');
-                                        
-                                        // Format date elegantly
-                                        if ($year == $current_year) {
-                                            $formatted_date = $month . ' ' . $day;
-                                        } else {
-                                            $formatted_date = $month . ' ' . $day . ', ' . $year;
-                                        }
-                                        
-                                        if ($urgency === 'expired') {
-                                            $deadline_text = 'Expired on ' . $formatted_date;
-                                        } elseif ($urgency === 'critical') {
-                                            $deadline_text = 'Expires ' . $formatted_date;
-                                        } elseif ($urgency === 'high') {
-                                            $deadline_text = 'Expires ' . $formatted_date;
-                                        } else {
-                                            $deadline_text = 'Expires ' . $formatted_date;
+                                        if ($exp_timestamp !== false) {
+                                            $day = date('j', $exp_timestamp);
+                                            $month = date('F', $exp_timestamp);
+                                            $year = date('Y', $exp_timestamp);
+                                            $current_year = date('Y');
+                                            
+                                            // Format date elegantly
+                                            if ($year == $current_year) {
+                                                $formatted_date = $month . ' ' . $day;
+                                            } else {
+                                                $formatted_date = $month . ' ' . $day . ', ' . $year;
+                                            }
+                                            
+                                            if ($urgency === 'expired') {
+                                                $deadline_text = 'Expired on ' . $formatted_date;
+                                            } elseif ($urgency === 'critical') {
+                                                $deadline_text = 'Expires ' . $formatted_date;
+                                            } elseif ($urgency === 'high') {
+                                                $deadline_text = 'Expires ' . $formatted_date;
+                                            } else {
+                                                $deadline_text = 'Expires ' . $formatted_date;
+                                            }
                                         }
                                     }
                                     
@@ -1113,12 +1199,23 @@ ob_end_flush();
                                                         <div class="detail-item-hover">
                                                             <i class="fas fa-certificate"></i>
                                                             <span class="label">License #:</span>
-                                                            <span class="value license-number"><?php echo htmlspecialchars($employee['license_no'] ?? 'N/A'); ?></span>
+                                                            <span class="value license-number"><?php 
+                                                                $licenseNo = trim((string)($employee['license_no'] ?? ''));
+                                                                echo htmlspecialchars($licenseNo === '' ? 'N/A' : $licenseNo); 
+                                                            ?></span>
                                                         </div>
                                                         <div class="detail-item-hover">
                                                             <i class="fas fa-calendar-alt"></i>
                                                             <span class="label">Expires:</span>
-                                                            <span class="value"><?php echo $exp_date ? date('M d, Y', strtotime($exp_date)) : 'N/A'; ?></span>
+                                                            <span class="value"><?php 
+                                                                $display_date = $employee['parsed_license_exp_date'] ?? $exp_date;
+                                                                if ($display_date && $display_date !== '0000-00-00') {
+                                                                    $date_timestamp = strtotime($display_date);
+                                                                    echo $date_timestamp !== false ? date('M d, Y', $date_timestamp) : htmlspecialchars($display_date);
+                                                                } else {
+                                                                    echo 'N/A';
+                                                                }
+                                                            ?></span>
                                                         </div>
                                                         <div class="detail-item-hover">
                                                             <i class="fas fa-clock"></i>
