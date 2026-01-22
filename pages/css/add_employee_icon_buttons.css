@@ -62,8 +62,7 @@
 
 /* Remove/Delete button in table rows */
 .btn-icon-action.training-remove-btn,
-.btn-icon-action.employment-remove-btn,
-.btn-icon-action.character-reference-remove-btn {
+.btn-icon-action.employment-remove-btn {
     padding: 0.25rem 0.5rem;
     font-size: 0.75rem;
     border-color: #dc3545;
@@ -72,21 +71,369 @@
 }
 
 .btn-icon-action.training-remove-btn:hover,
-.btn-icon-action.employment-remove-btn:hover,
-.btn-icon-action.character-reference-remove-btn:hover {
+.btn-icon-action.employment-remove-btn:hover {
     background-color: #dc3545;
     border-color: #dc3545;
     color: #ffffff;
 }
 
 .btn-icon-action.training-remove-btn:focus,
-.btn-icon-action.employment-remove-btn:focus,
-.btn-icon-action.character-reference-remove-btn:focus {
+.btn-icon-action.employment-remove-btn:focus {
     box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
 }
 
 .btn-icon-action.training-remove-btn i,
-.btn-icon-action.employment-remove-btn i,
-.btn-icon-action.character-reference-remove-btn i {
+.btn-icon-action.employment-remove-btn i {
     font-size: 0.75rem;
+}
+
+/* Character Reference Remove Button - Subtle Icon Style */
+.btn-icon-action.character-reference-remove-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 38px;
+    min-width: 36px;
+    min-height: 38px;
+    max-width: 36px;
+    max-height: 38px;
+    padding: 0;
+    margin: 0;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    background-color: #ffffff;
+    color: #64748b;
+    font-size: 0.8125rem;
+    line-height: 1;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    cursor: pointer;
+    outline: none;
+    box-shadow: none;
+    vertical-align: middle;
+}
+
+.btn-icon-action.character-reference-remove-btn:hover {
+    background-color: #fee2e2;
+    border-color: #dc3545;
+    color: #dc3545;
+}
+
+.btn-icon-action.character-reference-remove-btn:focus {
+    outline: none;
+    border-color: #dc3545;
+    box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
+}
+
+.btn-icon-action.character-reference-remove-btn:active {
+    background-color: #fecaca;
+}
+
+.btn-icon-action.character-reference-remove-btn i {
+    font-size: 0.875rem;
+    line-height: 1;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+}
+
+/* Character References Action Buttons (Below Table) */
+.character-references-actions {
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+    gap: 0.75rem;
+}
+
+.character-reference-add-btn,
+.character-reference-remove-action-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px !important;
+    min-height: 36px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 4px !important;
+    background-color: #ffffff !important;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease !important;
+    cursor: pointer !important;
+    outline: none !important;
+    box-shadow: none !important;
+    font-size: 0 !important;
+    line-height: 0 !important;
+    text-align: center !important;
+}
+
+
+.character-reference-add-btn {
+    color: #3b82f6;
+    border-color: #cbd5e1;
+}
+
+.character-reference-add-btn:hover {
+    background-color: #eff6ff;
+    border-color: #3b82f6;
+    color: #2563eb;
+}
+
+.character-reference-add-btn:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.character-reference-add-btn:active {
+    background-color: #dbeafe;
+}
+
+.character-reference-remove-action-btn {
+    color: #64748b;
+    border-color: #cbd5e1;
+}
+
+.character-reference-remove-action-btn:hover {
+    background-color: #fee2e2;
+    border-color: #dc3545;
+    color: #dc2626;
+}
+
+.character-reference-remove-action-btn:focus {
+    outline: none;
+    border-color: #dc3545;
+    box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
+}
+
+.character-reference-remove-action-btn:active {
+    background-color: #fecaca;
+}
+
+.character-reference-add-btn i,
+.character-reference-remove-action-btn i {
+    font-family: "Font Awesome 6 Free", "Font Awesome 5 Free", "FontAwesome" !important;
+    font-weight: 900 !important;
+    font-style: normal !important;
+    font-size: 16px !important;
+    line-height: 1 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: inline-block !important;
+    width: auto !important;
+    height: auto !important;
+    vertical-align: middle !important;
+    color: inherit !important;
+    text-rendering: auto !important;
+    -webkit-font-smoothing: antialiased !important;
+    -moz-osx-font-smoothing: grayscale !important;
+    speak: none;
+    text-transform: none;
+    letter-spacing: normal;
+    word-wrap: normal;
+    white-space: nowrap;
+    direction: ltr;
+}
+
+/* Hide remove button when only one row exists */
+.character-reference-remove-action-btn[style*="display: none"] {
+    display: none !important;
+}
+
+/* Trainings Action Buttons (Below Table) */
+.trainings-actions {
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+    gap: 0.75rem;
+}
+
+.training-add-btn,
+.training-remove-action-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px !important;
+    min-height: 36px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 4px !important;
+    background-color: #ffffff !important;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease !important;
+    cursor: pointer !important;
+    outline: none !important;
+    box-shadow: none !important;
+    font-size: 0 !important;
+    line-height: 0 !important;
+    text-align: center !important;
+}
+
+.training-add-btn {
+    color: #3b82f6;
+    border-color: #cbd5e1;
+}
+
+.training-add-btn:hover {
+    background-color: #eff6ff;
+    border-color: #3b82f6;
+    color: #2563eb;
+}
+
+.training-add-btn:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.training-add-btn:active {
+    background-color: #dbeafe;
+}
+
+.training-remove-action-btn {
+    color: #64748b;
+    border-color: #cbd5e1;
+}
+
+.training-remove-action-btn:hover {
+    background-color: #fee2e2;
+    border-color: #dc3545;
+    color: #dc2626;
+}
+
+.training-remove-action-btn:focus {
+    outline: none;
+    border-color: #dc3545;
+    box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
+}
+
+.training-remove-action-btn:active {
+    background-color: #fecaca;
+}
+
+.training-add-btn i,
+.training-remove-action-btn i {
+    font-family: "Font Awesome 6 Free", "Font Awesome 5 Free", "FontAwesome" !important;
+    font-weight: 900 !important;
+    font-style: normal !important;
+    font-size: 16px !important;
+    line-height: 1 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: inline-block !important;
+    width: auto !important;
+    height: auto !important;
+    vertical-align: middle !important;
+    color: inherit !important;
+    text-rendering: auto !important;
+    -webkit-font-smoothing: antialiased !important;
+    -moz-osx-font-smoothing: grayscale !important;
+    speak: none;
+    text-transform: none;
+    letter-spacing: normal;
+    word-wrap: normal;
+    white-space: nowrap;
+    direction: ltr;
+}
+
+/* Employment History Action Buttons (Below Table) */
+.employment-actions {
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+    gap: 0.75rem;
+}
+
+.employment-add-btn,
+.employment-remove-action-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px !important;
+    min-height: 36px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 4px !important;
+    background-color: #ffffff !important;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease !important;
+    cursor: pointer !important;
+    outline: none !important;
+    box-shadow: none !important;
+    font-size: 0 !important;
+    line-height: 0 !important;
+    text-align: center !important;
+}
+
+.employment-add-btn {
+    color: #3b82f6;
+    border-color: #cbd5e1;
+}
+
+.employment-add-btn:hover {
+    background-color: #eff6ff;
+    border-color: #3b82f6;
+    color: #2563eb;
+}
+
+.employment-add-btn:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.employment-add-btn:active {
+    background-color: #dbeafe;
+}
+
+.employment-remove-action-btn {
+    color: #64748b;
+    border-color: #cbd5e1;
+}
+
+.employment-remove-action-btn:hover {
+    background-color: #fee2e2;
+    border-color: #dc3545;
+    color: #dc2626;
+}
+
+.employment-remove-action-btn:focus {
+    outline: none;
+    border-color: #dc3545;
+    box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
+}
+
+.employment-remove-action-btn:active {
+    background-color: #fecaca;
+}
+
+.employment-add-btn i,
+.employment-remove-action-btn i {
+    font-family: "Font Awesome 6 Free", "Font Awesome 5 Free", "FontAwesome" !important;
+    font-weight: 900 !important;
+    font-style: normal !important;
+    font-size: 16px !important;
+    line-height: 1 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: inline-block !important;
+    width: auto !important;
+    height: auto !important;
+    vertical-align: middle !important;
+    color: inherit !important;
+    text-rendering: auto !important;
+    -webkit-font-smoothing: antialiased !important;
+    -moz-osx-font-smoothing: grayscale !important;
+    speak: none;
+    text-transform: none;
+    letter-spacing: normal;
+    word-wrap: normal;
+    white-space: nowrap;
+    direction: ltr;
 }
