@@ -52,7 +52,7 @@ $page_subtitle = $current_page === 'dashboard'
         <p class="hrdash-welcome__subtitle"><?php echo htmlspecialchars($page_subtitle); ?></p>
     </div>
     <div class="hrdash-welcome__actions">
-        <span id="current-time-super-admin" class="hrdash-welcome__time"><?php echo strtolower(date('g:i:s A')); ?></span>
+        <span id="current-time-super-admin" class="hrdash-welcome__time"><?php echo strtolower(date('g:i A')); ?></span>
         
         <!-- Messages Dropdown -->
         <?php
@@ -262,8 +262,7 @@ $page_subtitle = $current_page === 'dashboard'
         }
         ?>
         <div class="dropdown">
-            <button class="hrdash-welcome__profile-btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Profile menu">
-                <span class="hrdash-welcome__user-name"><?php echo htmlspecialchars($headerDisplayName); ?></span>
+            <button class="hrdash-welcome__profile-btn dropdown-toggle d-inline-flex align-items-center" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Profile menu">
                 <?php if ($current_user_avatar): ?>
                     <img src="<?php echo htmlspecialchars($current_user_avatar); ?>" 
                          alt="<?php echo htmlspecialchars($displayName); ?>" 
@@ -288,7 +287,7 @@ $page_subtitle = $current_page === 'dashboard'
 </div>
 
 <script>
-// Update time display every second for super admin (with seconds)
+// Update time display every minute
 (function() {
     function updateTime() {
         const timeElement = document.getElementById('current-time-super-admin');
@@ -296,19 +295,17 @@ $page_subtitle = $current_page === 'dashboard'
             const now = new Date();
             const hours = now.getHours();
             const minutes = now.getMinutes();
-            const seconds = now.getSeconds();
             const ampm = hours >= 12 ? 'PM' : 'AM';
             const displayHours = hours % 12 || 12;
             const displayMinutes = minutes < 10 ? '0' + minutes : minutes;
-            const displaySeconds = seconds < 10 ? '0' + seconds : seconds;
-            timeElement.textContent = displayHours + ':' + displayMinutes + ':' + displaySeconds + ' ' + ampm.toLowerCase();
+            timeElement.textContent = displayHours + ':' + displayMinutes + ' ' + ampm.toLowerCase();
         }
     }
     
     // Update immediately
     updateTime();
     
-    // Update every second for live seconds display
-    setInterval(updateTime, 1000);
+    // Update every minute
+    setInterval(updateTime, 60000);
 })();
 </script>
