@@ -1636,9 +1636,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 },
                 body: formData
             })
-            .then(response => response.json())
+            .then(response => {
+                // Check if response is JSON
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('application/json')) {
+                    return response.json();
+                } else {
+                    // If not JSON, might be HTML error page
+                    return response.text().then(text => {
+                        console.error('Non-JSON response:', text);
+                        throw new Error('Server returned non-JSON response');
+                    });
+                }
+            })
             .then(data => {
-                if (data.success) {
+                if (data && data.success) {
                     // Close modal
                     const modal = bootstrap.Modal.getInstance(document.getElementById('addViolationModal'));
                     if (modal) {
@@ -1650,17 +1662,22 @@ document.addEventListener('DOMContentLoaded', function() {
                     window.location.reload();
                 } else {
                     // Show errors
-                    if (data.errors && data.errors.length > 0) {
+                    if (data && data.errors && data.errors.length > 0) {
                         errorsList.innerHTML = data.errors.map(error => `<li>${error}</li>`).join('');
                         errorsDiv.style.display = 'block';
                     } else {
-                        alert('Error: ' + (data.message || 'Failed to add violation type'));
+                        alert('Error: ' + (data && data.message ? data.message : 'Failed to add violation type'));
                     }
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
                 alert('An error occurred while submitting the form. Please try again.');
+                // Show error in form
+                if (errorsDiv && errorsList) {
+                    errorsList.innerHTML = '<li>An error occurred. Please check your connection and try again.</li>';
+                    errorsDiv.style.display = 'block';
+                }
             });
         });
     }
@@ -1705,6 +1722,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Re-apply filters and update count after tab switch
                 setTimeout(() => {
                     filterViolations();
+                    updateViolationCount();
                 }, 50);
             }
         });
@@ -1808,10 +1826,8 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
-        // Update results count
-        if (violationCount) {
-            violationCount.textContent = totalVisibleCount.toLocaleString();
-        }
+        // Update results count - use the updateViolationCount function
+        updateViolationCount();
     }
     
     // Live search as you type
@@ -1857,26 +1873,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    function updateViolationCount() {
-        const allTabs = document.querySelectorAll('.violation-tab-content');
-        let totalCount = 0;
-        
-        allTabs.forEach(tab => {
-            const allRows = tab.querySelectorAll('tbody tr:not(.no-results-row)');
-            allRows.forEach(row => {
-                // Skip empty state rows
-                if (!row.querySelector('td[colspan]') && row.style.display !== 'none') {
-                    totalCount++;
-                }
-            });
-        });
-        
-        if (violationCount) {
-            violationCount.textContent = totalCount.toLocaleString();
-        }
-    }
-
-    // Update violation count function
+    // Update violation count function - counts only visible rows in active tab
     function updateViolationCount() {
         // Find the currently visible/active tab
         let activeTab = null;
@@ -1911,10 +1908,11 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Initial count on page load (before any filters)
-    updateViolationCount();
-    
-    // Initial filter on page load (if any filters are set)
-    filterViolations();
+    // Wait a bit for DOM to be fully ready
+    setTimeout(() => {
+        updateViolationCount();
+        filterViolations();
+    }, 100);
     
     // Violation history functionality moved to separate page (violation_history.php)
 

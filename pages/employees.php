@@ -381,11 +381,88 @@ $offset = ($page_num - 1) * $per_page;
 $paginated_employees = array_slice($filtered_employees, $offset, $per_page);
 
 // Get statistics from database (accurate counts)
-$employee_stats = get_employee_statistics();
-$total_all_employees = $employee_stats['total_employees'];
-$active_employees = $employee_stats['active_employees'];
-$inactive_employees = $employee_stats['inactive_employees'];
-$onboarding_employees = $employee_stats['onboarding_employees'];
+// Get database connection for direct queries (matching dashboard logic)
+$pdo = get_db_connection();
+
+// Calculate stats directly from database with proper thresholds
+// Total employees
+$total_all_employees = 0;
+try {
+    $stmt = $pdo->query("SELECT COUNT(*) as total FROM employees");
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    $total_all_employees = (int)($result['total'] ?? 0);
+} catch (Exception $e) {
+    $total_all_employees = 0;
+}
+
+// Active employees (matching dashboard: status = 'Active')
+$active_employees = 0;
+try {
+    $stmt = $pdo->query("SELECT COUNT(*) as active FROM employees WHERE status = 'Active'");
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    $active_employees = (int)($result['active'] ?? 0);
+} catch (Exception $e) {
+    $active_employees = 0;
+}
+
+// New Hires (employees hired in current month)
+$new_hires = 0;
+try {
+    $stmt = $pdo->query("SELECT COUNT(*) as total
+                         FROM employees
+                         WHERE date_hired IS NOT NULL
+                           AND date_hired != ''
+                           AND date_hired != '0000-00-00'
+                           AND LENGTH(TRIM(COALESCE(date_hired, ''))) > 0
+                           AND TRIM(date_hired) REGEXP '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'
+                           AND STR_TO_DATE(TRIM(date_hired), '%Y-%m-%d') IS NOT NULL
+                           AND MONTH(STR_TO_DATE(TRIM(date_hired), '%Y-%m-%d')) = MONTH(CURDATE())
+                           AND YEAR(STR_TO_DATE(TRIM(date_hired), '%Y-%m-%d')) = YEAR(CURDATE())");
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    $new_hires = (int)($result['total'] ?? 0);
+} catch (Exception $e) {
+    $new_hires = 0;
+}
+
+// Regular employees (hired more than 6 months ago) - matching dashboard threshold
+$regular_employees = 0;
+try {
+    $stmt = $pdo->query("SELECT COUNT(*) as total
+                         FROM employees
+                         WHERE status = 'Active'
+                           AND date_hired IS NOT NULL
+                           AND date_hired != ''
+                           AND date_hired != '0000-00-00'
+                           AND LENGTH(TRIM(COALESCE(date_hired, ''))) > 0
+                           AND TRIM(date_hired) REGEXP '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'
+                           AND STR_TO_DATE(TRIM(date_hired), '%Y-%m-%d') IS NOT NULL
+                           AND STR_TO_DATE(TRIM(date_hired), '%Y-%m-%d') < DATE_SUB(CURDATE(), INTERVAL 6 MONTH)");
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    $regular_employees = (int)($result['total'] ?? 0);
+} catch (Exception $e) {
+    $regular_employees = 0;
+}
+
+// Probationary employees - count employees with Probationary status (hired within last 6 months)
+$probationary_employees = 0;
+try {
+    // Use the same logic as getEmploymentStatus() - employees hired within last 6 months
+    $stmt = $pdo->query("SELECT COUNT(*) as total
+                          FROM employees
+                          WHERE status = 'Active'
+                            AND date_hired IS NOT NULL
+                            AND date_hired != ''
+                            AND date_hired != '0000-00-00'
+                            AND LENGTH(TRIM(COALESCE(date_hired, ''))) > 0
+                            AND TRIM(date_hired) REGEXP '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'
+                            AND STR_TO_DATE(TRIM(date_hired), '%Y-%m-%d') IS NOT NULL
+                            AND STR_TO_DATE(TRIM(date_hired), '%Y-%m-%d') >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
+                            AND STR_TO_DATE(TRIM(date_hired), '%Y-%m-%d') <= CURDATE()");
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    $probationary_employees = (int)($result['total'] ?? 0);
+} catch (Exception $e) {
+    $probationary_employees = 0;
+}
 ?>
 
 <div class="container-fluid hrdash">
@@ -471,7 +548,7 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
 
     <!-- Summary Cards -->
     <div class="row g-4 mb-4">
-        <div class="col-xl-4 col-md-6">
+        <div class="col-xl-3 col-md-6">
             <div class="card hrdash-stat hrdash-stat--primary">
                 <div class="hrdash-stat__header">
                     <div class="hrdash-stat__label">Total Employees</div>
@@ -479,41 +556,52 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
                 <div class="hrdash-stat__content">
                     <div class="hrdash-stat__value"><?php echo number_format($total_all_employees); ?></div>
                     <div class="hrdash-stat__trend hrdash-stat__trend--positive">
-                        <i class="fas fa-arrow-up"></i>
                         <span><?php echo ($total_all_employees ?? 0) > 0 ? round(($active_employees / max(1, $total_all_employees)) * 100) : 0; ?>%</span>
                     </div>
                 </div>
                 <div class="hrdash-stat__meta">The total number of employees in the system.</div>
             </div>
         </div>
-        <div class="col-xl-4 col-md-6">
+        <div class="col-xl-3 col-md-6">
             <div class="card hrdash-stat">
                 <div class="hrdash-stat__header">
-                    <div class="hrdash-stat__label">Active Employees</div>
+                    <div class="hrdash-stat__label">New Hires</div>
                 </div>
                 <div class="hrdash-stat__content">
-                    <div class="hrdash-stat__value"><?php echo number_format($active_employees); ?></div>
+                    <div class="hrdash-stat__value"><?php echo number_format($new_hires); ?></div>
                     <div class="hrdash-stat__trend hrdash-stat__trend--positive">
-                        <i class="fas fa-user-check"></i>
-                        <span><?php echo number_format($active_employees); ?></span>
+                        <span><?php echo ($total_all_employees ?? 0) > 0 ? round(($new_hires / max(1, $total_all_employees)) * 100) : 0; ?>%</span>
                     </div>
                 </div>
-                <div class="hrdash-stat__meta">Employees currently active and on roster.</div>
+                <div class="hrdash-stat__meta">Employees hired this month.</div>
             </div>
         </div>
-        <div class="col-xl-4 col-md-6">
+        <div class="col-xl-3 col-md-6">
             <div class="card hrdash-stat">
                 <div class="hrdash-stat__header">
-                    <div class="hrdash-stat__label">Inactive Employees</div>
+                    <div class="hrdash-stat__label">Regular</div>
                 </div>
                 <div class="hrdash-stat__content">
-                    <div class="hrdash-stat__value"><?php echo number_format($inactive_employees); ?></div>
-                    <div class="hrdash-stat__trend hrdash-stat__trend--negative">
-                        <i class="fas fa-user-slash"></i>
-                        <span><?php echo number_format($inactive_employees); ?></span>
+                    <div class="hrdash-stat__value"><?php echo number_format($regular_employees); ?></div>
+                    <div class="hrdash-stat__trend hrdash-stat__trend--positive">
+                        <span><?php echo ($active_employees ?? 0) > 0 ? round(($regular_employees / max(1, $active_employees)) * 100) : 0; ?>%</span>
                     </div>
                 </div>
-                <div class="hrdash-stat__meta">Employees currently inactive or off roster.</div>
+                <div class="hrdash-stat__meta">The number of employees who have completed their probation period.</div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card hrdash-stat">
+                <div class="hrdash-stat__header">
+                    <div class="hrdash-stat__label">Probation</div>
+                </div>
+                <div class="hrdash-stat__content">
+                    <div class="hrdash-stat__value"><?php echo number_format($probationary_employees); ?></div>
+                    <div class="hrdash-stat__trend hrdash-stat__trend--positive">
+                        <span><?php echo ($active_employees ?? 0) > 0 ? round(($probationary_employees / max(1, $active_employees)) * 100) : 0; ?>%</span>
+                    </div>
+                </div>
+                <div class="hrdash-stat__meta">The number of employees currently in their probation period.</div>
             </div>
         </div>
     </div>
@@ -699,37 +787,40 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
                                 <!-- License and RLM (styled similar to Employee Info column) -->
                                 <td>
                                     <div class="employee-info-combined license-rlm-info">
-                                        <!-- Top line: License number or No License -->
-                                        <div class="employee-info-line fw-semibold">
-                                            <?php if (!empty($employee['license_no'])): ?>
-                                                    <?php echo htmlspecialchars($employee['license_no']); ?>
-                                            <?php else: ?>
-                                                <span class="text-danger">No License</span>
+                                        <!-- License Group: License number and expiration date together -->
+                                        <div class="license-group">
+                                            <!-- Top line: License number or No License -->
+                                            <div class="employee-info-line fw-semibold">
+                                                <?php if (!empty($employee['license_no'])): ?>
+                                                        <?php echo htmlspecialchars($employee['license_no']); ?>
+                                                <?php else: ?>
+                                                    <span class="text-danger">No License</span>
+                                                <?php endif; ?>
+                                            </div>
+
+                                            <!-- Second line: License expiration date (no label, no margin) -->
+                                            <?php if ($license_formatted): ?>
+                                                <div class="employee-post text-muted fs-13" style="margin-top: 0; line-height: 1.2;">
+                                                    <?php
+                                                    // Match violation history color scheme
+                                                    if ($license_formatted['days'] < 0) {
+                                                        $exp_color_class = 'license-expired';
+                                                    } elseif ($license_formatted['days'] <= 30) {
+                                                        $exp_color_class = 'license-expiring';
+                                                    } else {
+                                                        $exp_color_class = 'license-valid';
+                                                    }
+                                                    ?>
+                                                    <span class="<?php echo $exp_color_class; ?>">
+                                                        <?php echo htmlspecialchars($license_formatted['text']); ?>
+                                                    </span>
+                                                </div>
                                             <?php endif; ?>
                                         </div>
 
-                                        <!-- Second line: License expiration date (no label, no margin) -->
-                                            <?php if ($license_formatted): ?>
-                                            <div class="employee-post text-muted fs-13" style="margin-top: 0; line-height: 1.3;">
-                                                <?php
-                                                // Match violation history color scheme
-                                                if ($license_formatted['days'] < 0) {
-                                                    $exp_color_class = 'license-expired';
-                                                } elseif ($license_formatted['days'] <= 30) {
-                                                    $exp_color_class = 'license-expiring';
-                                                } else {
-                                                    $exp_color_class = 'license-valid';
-                                                }
-                                                ?>
-                                                <span class="<?php echo $exp_color_class; ?>">
-                                                    <?php echo htmlspecialchars($license_formatted['text']); ?>
-                                                </span>
-                                        </div>
-                                        <?php endif; ?>
-
-                                        <!-- Third line: RLM info, only if present -->
+                                        <!-- RLM info, only if present - separated from license group -->
                                         <?php if (!empty($employee['rlm_exp'])): ?>
-                                            <div class="employee-status-badge" style="margin-top: 0.125rem;">
+                                            <div class="employee-status-badge rlm-section">
                                                 <?php if ($rlm_formatted): ?>
                                                     <?php
                                                     // Match violation history color scheme for RLM
@@ -742,7 +833,7 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
                                                     }
                                                     ?>
                                                     <span class="badge <?php echo $rlm_class; ?> fs-11 px-2 py-1">
-                                                        RLM <span style="margin-left: 0.375rem;"><?php echo htmlspecialchars($rlm_formatted['text']); ?></span>
+                                                        RLM<span style="margin-left: 0.5rem;"><?php echo htmlspecialchars($rlm_formatted['text']); ?></span>
                                                     </span>
                                                 <?php else: ?>
                                                     <span class="badge badge-rlm-valid fs-11 px-2 py-1">
@@ -1047,6 +1138,39 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
 </div>
 
 <style>
+/* Employee Stats - Enhanced Badge Style */
+.hrdash-stat__content {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.hrdash-stat__trend {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.375rem 0.625rem;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    white-space: nowrap;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.hrdash-stat__trend--positive {
+    background: #dcfce7;
+    color: #16a34a;
+    border: 1px solid #86efac;
+}
+
+.hrdash-stat--primary .hrdash-stat__trend {
+    background: rgba(255, 255, 255, 0.3);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
 /* Employee Filter Form Styles - Matching Violation Types Design */
 #employeeFilterForm {
     display: flex;
@@ -1248,19 +1372,29 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
     gap: 0 !important;
 }
 
-.employees-table .license-rlm-info .employee-info-line {
-    margin-bottom: 0;
-    line-height: 1.3;
+/* License Group: License number and expiration date together */
+.employees-table .license-rlm-info .license-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
 }
 
-.employees-table .license-rlm-info .employee-post {
+.employees-table .license-rlm-info .license-group .employee-info-line {
+    margin-bottom: 0;
+    line-height: 1.2;
+    padding-bottom: 0;
+}
+
+.employees-table .license-rlm-info .license-group .employee-post {
     margin-top: 0 !important;
     margin-bottom: 0 !important;
-    line-height: 1.3;
+    padding-top: 0 !important;
+    line-height: 1.2;
 }
 
-.employees-table .license-rlm-info .employee-status-badge {
-    margin-top: 0.125rem !important;
+/* RLM Section: Separated from license group with space */
+.employees-table .license-rlm-info .rlm-section {
+    margin-top: 0.5rem !important;
     margin-bottom: 0 !important;
 }
 
@@ -1430,6 +1564,71 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
 
 .employees-table tbody tr:last-child {
     border-bottom: none;
+}
+
+/* Compact Column Widths - Fit Content with Padding */
+.employees-table {
+    table-layout: auto;
+}
+
+.employees-table thead th:nth-child(1),
+.employees-table tbody td:nth-child(1) {
+    width: 50px;
+    min-width: 50px;
+    max-width: 50px;
+    padding: 0.5rem !important;
+}
+
+.employees-table thead th:nth-child(2),
+.employees-table tbody td:nth-child(2) {
+    width: auto;
+    min-width: 200px;
+    padding: 0.5rem 0.75rem !important;
+}
+
+.employees-table thead th:nth-child(3),
+.employees-table tbody td:nth-child(3) {
+    width: auto;
+    min-width: 140px;
+    padding: 0.5rem 0.75rem !important;
+}
+
+/* Status Column - Compact */
+.employees-table thead th:nth-child(4),
+.employees-table tbody td:nth-child(4) {
+    width: auto;
+    min-width: 90px;
+    max-width: 110px;
+    padding: 0.5rem 0.625rem !important;
+    white-space: nowrap;
+}
+
+/* Created By Column - Compact */
+.employees-table thead th:nth-child(5),
+.employees-table tbody td:nth-child(5) {
+    width: auto;
+    min-width: 110px;
+    max-width: 140px;
+    padding: 0.5rem 0.625rem !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.employees-table thead th:nth-child(5) {
+    overflow: visible;
+    text-overflow: clip;
+}
+
+/* Actions Column - Compact */
+.employees-table thead th:nth-child(6),
+.employees-table tbody td:nth-child(6) {
+    width: auto;
+    min-width: 90px;
+    max-width: 110px;
+    padding: 0.5rem 0.625rem !important;
+    white-space: nowrap;
+    text-align: center;
 }
 
 /* Compact Employee List Container */
