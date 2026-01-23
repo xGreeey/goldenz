@@ -1,0 +1,18 @@
+<?php
+/**
+ * AI Help Configuration Template
+ * 
+ * Copy this file to 'ai.php' (without .example) and add your Gemini API key.
+ * 
+ * IMPORTANT: Never commit 'ai.php' to version control!
+ * 
+ * This file is a fallback if GEMINI_API_KEY environment variable is not set.
+ */
+
+// Google Gemini API Key
+// Get your API key from: https://aistudio.google.com/app/apikey
+$AI_GEMINI_API_KEY = '';
+
+// Optional: Override the default model
+// Default is 'gemini-2.5-flash' if GEMINI_MODEL env var is not set
+// $AI_GEMINI_MODEL = 'gemini-2.5-flash';
