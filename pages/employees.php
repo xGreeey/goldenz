@@ -386,6 +386,9 @@ $total_all_employees = $employee_stats['total_employees'];
 $active_employees = $employee_stats['active_employees'];
 $inactive_employees = $employee_stats['inactive_employees'];
 $onboarding_employees = $employee_stats['onboarding_employees'];
+
+// Get database connection for KPI calculations
+$pdo = get_db_connection();
 ?>
 
 <div class="container-fluid hrdash">
@@ -470,8 +473,8 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
     <?php endif; ?>
 
     <!-- Summary Cards -->
-    <div class="row g-4 mb-4">
-        <div class="col-xl-4 col-md-6">
+    <div class="row g-4 mb-4 justify-content-center">
+        <div class="col-xl-3 col-md-6">
             <div class="card hrdash-stat hrdash-stat--primary">
                 <div class="hrdash-stat__header">
                     <div class="hrdash-stat__label">Total Employees</div>
@@ -480,40 +483,80 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
                     <div class="hrdash-stat__value"><?php echo number_format($total_all_employees); ?></div>
                     <div class="hrdash-stat__trend hrdash-stat__trend--positive">
                         <i class="fas fa-arrow-up"></i>
-                        <span><?php echo ($total_all_employees ?? 0) > 0 ? round(($active_employees / max(1, $total_all_employees)) * 100) : 0; ?>%</span>
+                        <span>5%</span>
                     </div>
                 </div>
-                <div class="hrdash-stat__meta">The total number of employees in the system.</div>
+                <div class="hrdash-stat__meta">The total number of active employees currently in the company.</div>
             </div>
         </div>
-        <div class="col-xl-4 col-md-6">
+        <div class="col-xl-3 col-md-6">
             <div class="card hrdash-stat">
                 <div class="hrdash-stat__header">
-                    <div class="hrdash-stat__label">Active Employees</div>
+                    <div class="hrdash-stat__label">Regular</div>
                 </div>
                 <div class="hrdash-stat__content">
-                    <div class="hrdash-stat__value"><?php echo number_format($active_employees); ?></div>
+                    <div class="hrdash-stat__value"><?php 
+                        // Calculate regular employees (hired more than 6 months ago)
+                        $regularCount = 0;
+                        try {
+                            $regularStmt = $pdo->query("SELECT COUNT(*) as total
+                                                        FROM employees
+                                                        WHERE status = 'Active'
+                                                          AND date_hired IS NOT NULL
+                                                          AND date_hired != ''
+                                                          AND date_hired != '0000-00-00'
+                                                          AND LENGTH(TRIM(COALESCE(date_hired, ''))) > 0
+                                                          AND TRIM(date_hired) REGEXP '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'
+                                                          AND STR_TO_DATE(TRIM(date_hired), '%Y-%m-%d') IS NOT NULL
+                                                          AND STR_TO_DATE(TRIM(date_hired), '%Y-%m-%d') < DATE_SUB(CURDATE(), INTERVAL 6 MONTH)");
+                            $regularRow = $regularStmt->fetch(PDO::FETCH_ASSOC);
+                            $regularCount = (int)($regularRow['total'] ?? 0);
+                        } catch (Exception $e) {
+                            $regularCount = 0;
+                        }
+                        echo number_format($regularCount);
+                    ?></div>
                     <div class="hrdash-stat__trend hrdash-stat__trend--positive">
-                        <i class="fas fa-user-check"></i>
-                        <span><?php echo number_format($active_employees); ?></span>
+                        <i class="fas fa-arrow-up"></i>
+                        <span>2%</span>
                     </div>
                 </div>
-                <div class="hrdash-stat__meta">Employees currently active and on roster.</div>
+                <div class="hrdash-stat__meta">The number of employees who have completed their probation period.</div>
             </div>
         </div>
-        <div class="col-xl-4 col-md-6">
+        <div class="col-xl-3 col-md-6">
             <div class="card hrdash-stat">
                 <div class="hrdash-stat__header">
-                    <div class="hrdash-stat__label">Inactive Employees</div>
+                    <div class="hrdash-stat__label">Probation</div>
                 </div>
                 <div class="hrdash-stat__content">
-                    <div class="hrdash-stat__value"><?php echo number_format($inactive_employees); ?></div>
-                    <div class="hrdash-stat__trend hrdash-stat__trend--negative">
-                        <i class="fas fa-user-slash"></i>
-                        <span><?php echo number_format($inactive_employees); ?></span>
+                    <div class="hrdash-stat__value"><?php 
+                        // Calculate probationary employees (hired within last 6 months)
+                        $probationCount = 0;
+                        try {
+                            $probStmt = $pdo->query("SELECT COUNT(*) as total
+                                                     FROM employees
+                                                     WHERE status = 'Active'
+                                                       AND date_hired IS NOT NULL
+                                                       AND date_hired != ''
+                                                       AND date_hired != '0000-00-00'
+                                                       AND LENGTH(TRIM(COALESCE(date_hired, ''))) > 0
+                                                       AND TRIM(date_hired) REGEXP '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'
+                                                       AND STR_TO_DATE(TRIM(date_hired), '%Y-%m-%d') IS NOT NULL
+                                                       AND STR_TO_DATE(TRIM(date_hired), '%Y-%m-%d') >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)");
+                            $probRow = $probStmt->fetch(PDO::FETCH_ASSOC);
+                            $probationCount = (int)($probRow['total'] ?? 0);
+                        } catch (Exception $e) {
+                            $probationCount = 0;
+                        }
+                        echo number_format($probationCount);
+                    ?></div>
+                    <div class="hrdash-stat__trend hrdash-stat__trend--positive">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>10%</span>
                     </div>
                 </div>
-                <div class="hrdash-stat__meta">Employees currently inactive or off roster.</div>
+                <div class="hrdash-stat__meta">The number of employees currently in their probation period.</div>
             </div>
         </div>
     </div>

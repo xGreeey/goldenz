@@ -837,6 +837,7 @@ if (isset($_SESSION['employee_redirect_url'])) {
                                 <option value="Inactive" <?php echo (($_POST['status'] ?? '') === 'Inactive') ? 'selected' : ''; ?>>Inactive</option>
                                 <option value="Terminated" <?php echo (($_POST['status'] ?? '') === 'Terminated') ? 'selected' : ''; ?>>Terminated</option>
                                 <option value="Suspended" <?php echo (($_POST['status'] ?? '') === 'Suspended') ? 'selected' : ''; ?>>Suspended</option>
+                                <option value="Probationary" <?php echo (($_POST['status'] ?? '') === 'Probationary') ? 'selected' : ''; ?>>Probationary</option>
                             </select>
                             <small class="form-text text-muted" style="visibility: hidden;">Placeholder</small>
                                 </div>
@@ -2500,7 +2501,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Validate based on field type
         if (field.tagName === 'SELECT') {
-            if (isRequired && (!fieldValue || fieldValue === '')) {
+            if (isRequired && (!fieldValue || fieldValue === '' || fieldValue === 'Select Status')) {
                 isValid = false;
                 errorMessage = getFieldLabel(field) + ' is required';
             }
@@ -2706,7 +2707,8 @@ document.addEventListener('DOMContentLoaded', function() {
             field.addEventListener('input', function() {
                 clearTimeout(timeout);
                 timeout = setTimeout(() => {
-                    if (this.value.trim() || this.hasAttribute('required')) {
+                    // Always validate required fields, or fields with values
+                    if (this.hasAttribute('required') || this.value.trim()) {
                         validateField(this);
                     }
                 }, 300); // Debounce for better performance
