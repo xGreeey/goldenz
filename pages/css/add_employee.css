@@ -13,12 +13,15 @@
 .add-employee-container div.card,
 .add-employee-container div.card-modern {
     background: transparent !important;
+    background-color: transparent !important;
     border: none !important;
     border-radius: 0 !important;
     box-shadow: none !important;
     margin: 0 !important;
+    margin-top: 0 !important;
     padding: 0 !important;
     overflow: visible !important;
+    position: relative !important;
 }
 
 .add-employee-container .card-header,
@@ -26,6 +29,7 @@
 .add-employee-container .card-body,
 .add-employee-container .card-body-modern {
     background: transparent !important;
+    background-color: transparent !important;
     border: none !important;
     padding: 0 !important;
     margin: 0 !important;
@@ -70,35 +74,7 @@ body.portal-hr-admin .add-employee-modern .page-subtitle-modern {
     font-size: 0.8rem !important;
 }
 
-/* Override any card styling in add-employee-container */
-.add-employee-container .card,
-.add-employee-container .card-modern {
-    border: none !important;
-    border-radius: 0 !important;
-    margin: 0 !important;
-    margin-top: 0 !important;
-    box-shadow: none !important;
-    overflow: visible !important;
-    background-color: transparent !important;
-    position: relative !important;
-}
-
-.add-employee-container .card-header,
-.add-employee-container .card-header-modern {
-    background: transparent !important;
-    border: none !important;
-    padding: 0 !important;
-    margin: 0 !important;
-}
-
-.add-employee-container .card-body,
-.add-employee-container .card-body-modern {
-    padding: 0 !important;
-    border: none !important;
-    margin: 0 !important;
-    background-color: transparent !important;
-    overflow: visible !important;
-}
+/* Duplicate card reset block removed (merged into the aggressive reset above). */
 
 /* Form Wrapper - COMPACT SMALL BOX */
 .add-employee-container .add-employee-form-wrapper,
@@ -116,18 +92,7 @@ body.portal-hr-admin .add-employee-modern .page-subtitle-modern {
     width: 100% !important;
 }
 
-/* Force remove card styling from any element */
-.add-employee-container .card,
-.add-employee-container .card-modern,
-.add-employee-container .add-employee-form-wrapper.card,
-.add-employee-container .add-employee-form-wrapper.card-modern {
-    background: transparent !important;
-    border: none !important;
-    border-radius: 0 !important;
-    box-shadow: none !important;
-    margin: 0 !important;
-    padding: 0 !important;
-}
+/* Duplicate card reset block removed (merged into the aggressive reset above). */
 
 .add-employee-container .form-header-compact {
     background: #f8fafc !important;

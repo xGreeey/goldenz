@@ -541,21 +541,30 @@ foreach ($violation_history as $history) {
         </div>
     </div>
 
-    <!-- Search and Filter Container - Above Violation Types Card -->
-    <div class="card mb-4" style="border: 1px solid #e5e7eb; background: #ffffff;">
-        <div class="card-body p-3">
-            <div class="row g-3 align-items-end">
-                <div class="col-md-4">
-                    <label for="violation-search" class="form-label small text-muted mb-1">Search All Violations</label>
-                    <input type="text" 
-                           class="form-control form-control-sm" 
-                           id="violation-search" 
-                           placeholder="Search by reference, name, or category...">
+    <!-- Filter Bar -->
+    <div class="card card-modern mb-3" style="border-radius: 8px;">
+        <div class="card-body-modern" style="padding: 0.75rem 1rem;">
+            <form id="violation-types-filter-form" class="d-flex gap-2 align-items-end" style="flex-wrap: nowrap;">
+                <div class="flex-grow-1" style="min-width: 0;">
+                    <label class="form-label" style="font-size: 0.75rem; margin-bottom: 0.25rem; font-weight: 500;">Search</label>
+                    <div class="search-input-wrapper">
+                        <div class="search-icon-container">
+                            <span class="hr-icon hr-icon-search search-icon"></span>
+                        </div>
+                        <input type="text" 
+                               class="form-control search-input" 
+                               id="filter-search" 
+                               placeholder="search by name or ref #"
+                               autocomplete="off">
+                        <button type="button" class="search-clear-btn" id="search-clear-btn" style="display: none;">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
                 </div>
-                <div class="col-md-3">
-                    <label for="violation-category-filter" class="form-label small text-muted mb-1">Filter by Category</label>
-                    <select class="form-select form-select-sm" id="violation-category-filter">
-                        <option value="">All Categories</option>
+                <div style="flex: 0 0 auto; min-width: 160px;">
+                    <label class="form-label" style="font-size: 0.75rem; margin-bottom: 0.25rem; font-weight: 500;">Category</label>
+                    <select class="form-select form-select-sm" id="filter-category" style="padding: 0.375rem 0.5rem; font-size: 0.8125rem;">
+                        <option value="">All</option>
                         <option value="Uniform & Appearance">Uniform & Appearance</option>
                         <option value="Attendance & Punctuality">Attendance & Punctuality</option>
                         <option value="Safety & Security">Safety & Security</option>
@@ -569,16 +578,17 @@ foreach ($violation_history as $history) {
                         <option value="General Violation">General Violation</option>
                     </select>
                 </div>
-                <div class="col-md-3">
-                    <button type="button" class="btn btn-sm btn-outline-secondary w-100" id="clear-filters">
-                        <i class="fas fa-times me-1"></i>Clear Filters
+                <div style="flex: 0 0 auto;">
+                    <label class="form-label" style="font-size: 0.75rem; margin-bottom: 0.25rem; font-weight: 500; visibility: hidden;">Reset</label>
+                    <button type="button" class="btn-reset-icon" id="filter-reset-btn" title="Reset filters">
+                        <span class="hr-icon hr-icon-dismiss"></span>
                     </button>
                 </div>
-                <div class="col-md-2 text-end">
-                    <div class="small text-muted mb-1">Results</div>
-                    <div class="fw-bold" id="violation-count">0</div>
+                <div style="flex: 0 0 30%; min-width: 120px; text-align: right;">
+                    <div style="font-size: 0.6875rem; color: #64748b; margin-bottom: 0.125rem;">Results</div>
+                    <div id="violation-count" style="font-size: 1rem; font-weight: 600; color: #1e3a8a;">0</div>
                 </div>
-            </div>
+            </form>
         </div>
     </div>
 
@@ -1027,12 +1037,218 @@ foreach ($violation_history as $history) {
 
 #violation-count {
     color: #1e3a8a;
-    font-size: 1.25rem;
+    font-size: 1rem;
+    font-weight: 600;
 }
 
-#clear-filters:hover {
+/* Compact Filter Bar Styling */
+#violation-types-filter-form .form-label {
+    font-size: 0.75rem;
+    margin-bottom: 0.25rem;
+    font-weight: 500;
+    color: #374151;
+}
+
+#violation-types-filter-form .form-control-sm,
+#violation-types-filter-form .form-select-sm {
+    padding: 0.375rem 0.5rem;
+    font-size: 0.8125rem;
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+    height: 38px;
+    transition: all 0.2s ease;
+}
+
+#violation-types-filter-form .form-select-sm:focus,
+#violation-types-filter-form .form-control-sm:focus {
+    border-color: #1e3a8a;
+    box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+    outline: none;
+}
+
+#violation-types-filter-form .btn-sm {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.8125rem;
+}
+
+.card-body-modern {
+    padding: 0.75rem 1rem !important;
+}
+
+#violation-types-filter-form {
+    display: flex;
+    flex-wrap: nowrap !important;
+    gap: 0.75rem;
+    align-items: flex-end;
+    width: 100%;
+}
+
+#violation-types-filter-form > div {
+    flex-shrink: 0;
+}
+
+#violation-types-filter-form > div:first-child {
+    flex: 1 1 0;
+    min-width: 0;
+}
+
+/* Search Input Wrapper Styles */
+.search-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: stretch;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    background: #ffffff;
+    transition: all 0.2s ease;
+    height: 38px;
+    overflow: hidden;
+}
+
+.search-input-wrapper:hover {
+    border-color: #9ca3af;
+}
+
+.search-input-wrapper:focus-within {
+    border-color: #1e3a8a;
+    box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+    outline: none;
+}
+
+.search-icon-container {
+    background: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 0.75rem;
+    min-width: 44px;
+    flex-shrink: 0;
+    border-right: 1px solid #d1d5db;
+}
+
+.search-icon {
+    width: 16px !important;
+    height: 16px !important;
+    display: inline-block !important;
+    background-size: contain !important;
+    background-repeat: no-repeat !important;
+    background-position: center !important;
+    opacity: 0.6 !important;
+    visibility: visible !important;
+    filter: brightness(0) saturate(100%) invert(40%) sepia(8%) saturate(750%) hue-rotate(177deg) brightness(94%) contrast(88%);
+    transition: opacity 0.2s ease;
+}
+
+.search-input-wrapper:focus-within .search-icon {
+    opacity: 0.8;
+    filter: brightness(0) saturate(100%) invert(15%) sepia(8%) saturate(750%) hue-rotate(177deg) brightness(94%) contrast(88%);
+}
+
+.search-icon.hr-icon-search {
+    background-image: url('../assets/icons/search-icon.svg') !important;
+}
+
+.search-input {
+    flex: 1;
+    border: none !important;
+    border-radius: 0 !important;
+    padding: 0.375rem 2.5rem 0.375rem 0.5rem !important;
+    font-size: 0.8125rem;
+    background: #ffffff;
+    box-shadow: none !important;
+    transition: all 0.2s ease;
+    height: 100%;
+    line-height: 1.5;
+}
+
+.search-input:focus {
+    border: none !important;
+    box-shadow: none !important;
+    outline: none;
+}
+
+.search-input::placeholder {
+    color: #9ca3af;
+}
+
+.search-clear-btn {
+    position: absolute;
+    right: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    color: #9ca3af;
+    font-size: 0.75rem;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    z-index: 2;
+}
+
+.search-clear-btn:hover {
+    background-color: #f3f4f6;
+    color: #64748b;
+}
+
+.search-clear-btn:active {
+    background-color: #e5e7eb;
+}
+
+/* Reset Button Icon Style */
+.btn-reset-icon {
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #ffffff;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 0;
+}
+
+.btn-reset-icon .hr-icon {
+    width: 16px !important;
+    height: 16px !important;
+    display: inline-block !important;
+    background-size: contain !important;
+    background-repeat: no-repeat !important;
+    background-position: center !important;
+    opacity: 0.6 !important;
+    visibility: visible !important;
+    filter: brightness(0) saturate(100%) invert(40%) sepia(8%) saturate(750%) hue-rotate(177deg) brightness(94%) contrast(88%);
+    transition: all 0.2s ease;
+}
+
+.btn-reset-icon .hr-icon-dismiss {
+    background-image: url('../assets/icons/dismiss-icon_remove-icon.svg') !important;
+}
+
+.btn-reset-icon:hover {
     background-color: #f3f4f6;
     border-color: #9ca3af;
+}
+
+.btn-reset-icon:hover .hr-icon {
+    opacity: 0.8;
+    filter: brightness(0) saturate(100%) invert(15%) sepia(8%) saturate(750%) hue-rotate(177deg) brightness(94%) contrast(88%);
+}
+
+.btn-reset-icon:active {
+    background-color: #e5e7eb;
+}
+
+.btn-reset-icon:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(100, 116, 139, 0.1);
 }
 
 /* Responsive Search/Filter */
@@ -1420,9 +1636,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 },
                 body: formData
             })
-            .then(response => response.json())
+            .then(response => {
+                // Check if response is JSON
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('application/json')) {
+                    return response.json();
+                } else {
+                    // If not JSON, might be HTML error page
+                    return response.text().then(text => {
+                        console.error('Non-JSON response:', text);
+                        throw new Error('Server returned non-JSON response');
+                    });
+                }
+            })
             .then(data => {
-                if (data.success) {
+                if (data && data.success) {
                     // Close modal
                     const modal = bootstrap.Modal.getInstance(document.getElementById('addViolationModal'));
                     if (modal) {
@@ -1434,17 +1662,22 @@ document.addEventListener('DOMContentLoaded', function() {
                     window.location.reload();
                 } else {
                     // Show errors
-                    if (data.errors && data.errors.length > 0) {
+                    if (data && data.errors && data.errors.length > 0) {
                         errorsList.innerHTML = data.errors.map(error => `<li>${error}</li>`).join('');
                         errorsDiv.style.display = 'block';
                     } else {
-                        alert('Error: ' + (data.message || 'Failed to add violation type'));
+                        alert('Error: ' + (data && data.message ? data.message : 'Failed to add violation type'));
                     }
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
                 alert('An error occurred while submitting the form. Please try again.');
+                // Show error in form
+                if (errorsDiv && errorsList) {
+                    errorsList.innerHTML = '<li>An error occurred. Please check your connection and try again.</li>';
+                    errorsDiv.style.display = 'block';
+                }
             });
         });
     }
@@ -1486,57 +1719,84 @@ document.addEventListener('DOMContentLoaded', function() {
             const targetContent = document.getElementById(targetTab + '-content');
             if (targetContent) {
                 targetContent.style.display = 'block';
-                // Update count after tab switch (filters remain applied)
+                // Re-apply filters and update count after tab switch
                 setTimeout(() => {
+                    filterViolations();
                     updateViolationCount();
-                }, 100);
+                }, 50);
             }
         });
     });
 
     // Search and Filter Functionality
-    const searchInput = document.getElementById('violation-search');
-    const categoryFilter = document.getElementById('violation-category-filter');
-    const clearFiltersBtn = document.getElementById('clear-filters');
+    const filterSearch = document.getElementById('filter-search');
+    const filterCategory = document.getElementById('filter-category');
+    const resetBtn = document.getElementById('filter-reset-btn');
+    const searchClearBtn = document.getElementById('search-clear-btn');
     const violationCount = document.getElementById('violation-count');
+    
+    let searchTimeout;
 
     function filterViolations() {
-        const searchTerm = searchInput.value.toLowerCase().trim();
-        const selectedCategory = categoryFilter.value;
+        const searchFilter = filterSearch ? filterSearch.value.toLowerCase().trim() : '';
+        const categoryFilter = filterCategory ? filterCategory.value : '';
+        
+        // Get all tabs (both visible and hidden)
         const allTabs = document.querySelectorAll('.violation-tab-content');
         let totalVisibleCount = 0;
         
         allTabs.forEach(tab => {
+            // Only process if tab is visible (display is not 'none')
+            const isTabVisible = tab.style.display !== 'none' && window.getComputedStyle(tab).display !== 'none';
+            
             const rows = tab.querySelectorAll('tbody tr');
             let tabVisibleCount = 0;
             
             rows.forEach(row => {
+                // Skip no-results rows initially
                 if (row.classList.contains('no-results-row')) {
                     row.style.display = 'none';
                     return;
                 }
                 
-                // Skip empty state rows
+                // Skip empty state rows (rows with colspan)
                 if (row.querySelector('td[colspan]')) {
+                    // Only hide empty state rows if there are active filters
+                    if (searchFilter || categoryFilter) {
+                        row.style.display = 'none';
+                    } else {
+                        row.style.display = '';
+                    }
                     return;
                 }
                 
-                const refNo = row.querySelector('td:first-child')?.textContent?.toLowerCase().trim() || '';
+                // Get ref number from first column
+                const refNoCell = row.querySelector('td:first-child');
+                const refNo = refNoCell ? refNoCell.textContent.toLowerCase().trim().replace(/\s+/g, ' ') : '';
+                
+                // Get category from second column
                 const categoryElement = row.querySelector('td:nth-child(2) .text-muted.small.mb-1');
-                const category = categoryElement?.textContent?.trim() || '';
-                const violationName = row.querySelector('td:nth-child(2) .fw-semibold')?.textContent?.toLowerCase().trim() || '';
+                const category = categoryElement ? categoryElement.textContent.trim() : '';
                 
-                const matchesSearch = !searchTerm || 
-                    refNo.includes(searchTerm) || 
-                    violationName.includes(searchTerm) || 
-                    category.toLowerCase().includes(searchTerm);
+                // Get violation name from second column
+                const violationNameElement = row.querySelector('td:nth-child(2) .fw-semibold');
+                const violationName = violationNameElement ? violationNameElement.textContent.toLowerCase().trim() : '';
                 
-                const matchesCategory = !selectedCategory || category === selectedCategory;
+                // Apply filters - search matches either name or ref #
+                const matchesSearch = !searchFilter || 
+                    violationName.includes(searchFilter) || 
+                    refNo.includes(searchFilter);
+                
+                // Category filter matches
+                const matchesCategory = !categoryFilter || category === categoryFilter;
                 
                 if (matchesSearch && matchesCategory) {
                     row.style.display = '';
                     tabVisibleCount++;
-                    totalVisibleCount++;
+                    // Only count if tab is visible
+                    if (isTabVisible) {
+                        totalVisibleCount++;
+                    }
                 } else {
                     row.style.display = 'none';
                 }
@@ -1544,7 +1804,8 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Show no results message if needed for this tab
             const tbody = tab.querySelector('tbody');
-            if (tabVisibleCount === 0 && (searchTerm || selectedCategory)) {
+            const hasActiveFilters = searchFilter || categoryFilter;
+            if (tabVisibleCount === 0 && hasActiveFilters) {
                 let noResultsRow = tbody.querySelector('.no-results-row');
                 if (!noResultsRow) {
                     noResultsRow = document.createElement('tr');
@@ -1565,57 +1826,92 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
-        violationCount.textContent = totalVisibleCount;
+        // Update results count - use the updateViolationCount function
+        updateViolationCount();
     }
-
-    function updateViolationCount() {
-        const allTabs = document.querySelectorAll('.violation-tab-content');
-        let totalCount = 0;
-        
-        allTabs.forEach(tab => {
-            const allRows = tab.querySelectorAll('tbody tr:not(.no-results-row)');
-            allRows.forEach(row => {
-                // Skip empty state rows
-                if (!row.querySelector('td[colspan]') && row.style.display !== 'none') {
-                    totalCount++;
-                }
-            });
+    
+    // Live search as you type
+    if (filterSearch) {
+        filterSearch.addEventListener('input', function() {
+            // Show/hide clear button
+            if (searchClearBtn) {
+                searchClearBtn.style.display = this.value.trim() ? 'flex' : 'none';
+            }
+            
+            // Clear previous timeout
+            clearTimeout(searchTimeout);
+            
+            // Debounce search for better performance
+            searchTimeout = setTimeout(() => {
+                filterViolations();
+            }, 300);
         });
         
-        violationCount.textContent = totalCount;
+        // Handle clear button
+        if (searchClearBtn) {
+            searchClearBtn.addEventListener('click', function() {
+                filterSearch.value = '';
+                searchClearBtn.style.display = 'none';
+                filterSearch.focus();
+                filterViolations();
+            });
+        }
+    }
+    
+    // Category filter - live update
+    if (filterCategory) {
+        filterCategory.addEventListener('change', filterViolations);
+    }
+    
+    // Reset button
+    if (resetBtn) {
+        resetBtn.addEventListener('click', function() {
+            if (filterSearch) filterSearch.value = '';
+            if (filterCategory) filterCategory.value = '';
+            if (searchClearBtn) searchClearBtn.style.display = 'none';
+            filterViolations();
+        });
     }
 
-    function clearFilters() {
-        searchInput.value = '';
-        categoryFilter.value = '';
+    // Update violation count function - counts only visible rows in active tab
+    function updateViolationCount() {
+        // Find the currently visible/active tab
+        let activeTab = null;
         const allTabs = document.querySelectorAll('.violation-tab-content');
         
-        allTabs.forEach(tab => {
-            const rows = tab.querySelectorAll('tbody tr:not(.no-results-row)');
-            rows.forEach(row => {
-                // Skip empty state rows
-                if (!row.querySelector('td[colspan]')) {
-                    row.style.display = '';
-                }
-            });
-            const noResultsRow = tab.querySelector('.no-results-row');
-            if (noResultsRow) {
-                noResultsRow.remove();
+        for (let tab of allTabs) {
+            const style = window.getComputedStyle(tab);
+            if (style.display !== 'none') {
+                activeTab = tab;
+                break;
+            }
+        }
+        
+        if (!activeTab) return;
+        
+        // Count visible rows in the active tab
+        const rows = activeTab.querySelectorAll('tbody tr');
+        let totalCount = 0;
+        
+        rows.forEach(row => {
+            // Skip no-results rows and empty state rows
+            if (!row.classList.contains('no-results-row') && 
+                !row.querySelector('td[colspan]') && 
+                row.style.display !== 'none') {
+                totalCount++;
             }
         });
         
-        updateViolationCount();
+        if (violationCount) {
+            violationCount.textContent = totalCount.toLocaleString();
+        }
     }
-
-    // Event listeners
-    searchInput.addEventListener('input', filterViolations);
-    searchInput.addEventListener('keyup', filterViolations);
-    categoryFilter.addEventListener('change', filterViolations);
-    clearFiltersBtn.addEventListener('click', clearFilters);
-
-    // Initialize count on page load
+    
+    // Initial count on page load (before any filters)
+    // Wait a bit for DOM to be fully ready
     setTimeout(() => {
         updateViolationCount();
+        filterViolations();
     }, 100);
     
     // Violation history functionality moved to separate page (violation_history.php)

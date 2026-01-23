@@ -381,11 +381,88 @@ $offset = ($page_num - 1) * $per_page;
 $paginated_employees = array_slice($filtered_employees, $offset, $per_page);
 
 // Get statistics from database (accurate counts)
-$employee_stats = get_employee_statistics();
-$total_all_employees = $employee_stats['total_employees'];
-$active_employees = $employee_stats['active_employees'];
-$inactive_employees = $employee_stats['inactive_employees'];
-$onboarding_employees = $employee_stats['onboarding_employees'];
+// Get database connection for direct queries (matching dashboard logic)
+$pdo = get_db_connection();
+
+// Calculate stats directly from database with proper thresholds
+// Total employees
+$total_all_employees = 0;
+try {
+    $stmt = $pdo->query("SELECT COUNT(*) as total FROM employees");
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    $total_all_employees = (int)($result['total'] ?? 0);
+} catch (Exception $e) {
+    $total_all_employees = 0;
+}
+
+// Active employees (matching dashboard: status = 'Active')
+$active_employees = 0;
+try {
+    $stmt = $pdo->query("SELECT COUNT(*) as active FROM employees WHERE status = 'Active'");
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    $active_employees = (int)($result['active'] ?? 0);
+} catch (Exception $e) {
+    $active_employees = 0;
+}
+
+// New Hires (employees hired in current month)
+$new_hires = 0;
+try {
+    $stmt = $pdo->query("SELECT COUNT(*) as total
+                         FROM employees
+                         WHERE date_hired IS NOT NULL
+                           AND date_hired != ''
+                           AND date_hired != '0000-00-00'
+                           AND LENGTH(TRIM(COALESCE(date_hired, ''))) > 0
+                           AND TRIM(date_hired) REGEXP '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'
+                           AND STR_TO_DATE(TRIM(date_hired), '%Y-%m-%d') IS NOT NULL
+                           AND MONTH(STR_TO_DATE(TRIM(date_hired), '%Y-%m-%d')) = MONTH(CURDATE())
+                           AND YEAR(STR_TO_DATE(TRIM(date_hired), '%Y-%m-%d')) = YEAR(CURDATE())");
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    $new_hires = (int)($result['total'] ?? 0);
+} catch (Exception $e) {
+    $new_hires = 0;
+}
+
+// Regular employees (hired more than 6 months ago) - matching dashboard threshold
+$regular_employees = 0;
+try {
+    $stmt = $pdo->query("SELECT COUNT(*) as total
+                         FROM employees
+                         WHERE status = 'Active'
+                           AND date_hired IS NOT NULL
+                           AND date_hired != ''
+                           AND date_hired != '0000-00-00'
+                           AND LENGTH(TRIM(COALESCE(date_hired, ''))) > 0
+                           AND TRIM(date_hired) REGEXP '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'
+                           AND STR_TO_DATE(TRIM(date_hired), '%Y-%m-%d') IS NOT NULL
+                           AND STR_TO_DATE(TRIM(date_hired), '%Y-%m-%d') < DATE_SUB(CURDATE(), INTERVAL 6 MONTH)");
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    $regular_employees = (int)($result['total'] ?? 0);
+} catch (Exception $e) {
+    $regular_employees = 0;
+}
+
+// Probationary employees - count employees with Probationary status (hired within last 6 months)
+$probationary_employees = 0;
+try {
+    // Use the same logic as getEmploymentStatus() - employees hired within last 6 months
+    $stmt = $pdo->query("SELECT COUNT(*) as total
+                          FROM employees
+                          WHERE status = 'Active'
+                            AND date_hired IS NOT NULL
+                            AND date_hired != ''
+                            AND date_hired != '0000-00-00'
+                            AND LENGTH(TRIM(COALESCE(date_hired, ''))) > 0
+                            AND TRIM(date_hired) REGEXP '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'
+                            AND STR_TO_DATE(TRIM(date_hired), '%Y-%m-%d') IS NOT NULL
+                            AND STR_TO_DATE(TRIM(date_hired), '%Y-%m-%d') >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
+                            AND STR_TO_DATE(TRIM(date_hired), '%Y-%m-%d') <= CURDATE()");
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    $probationary_employees = (int)($result['total'] ?? 0);
+} catch (Exception $e) {
+    $probationary_employees = 0;
+}
 ?>
 
 <div class="container-fluid hrdash">
@@ -471,7 +548,7 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
 
     <!-- Summary Cards -->
     <div class="row g-4 mb-4">
-        <div class="col-xl-4 col-md-6">
+        <div class="col-xl-3 col-md-6">
             <div class="card hrdash-stat hrdash-stat--primary">
                 <div class="hrdash-stat__header">
                     <div class="hrdash-stat__label">Total Employees</div>
@@ -479,41 +556,52 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
                 <div class="hrdash-stat__content">
                     <div class="hrdash-stat__value"><?php echo number_format($total_all_employees); ?></div>
                     <div class="hrdash-stat__trend hrdash-stat__trend--positive">
-                        <i class="fas fa-arrow-up"></i>
                         <span><?php echo ($total_all_employees ?? 0) > 0 ? round(($active_employees / max(1, $total_all_employees)) * 100) : 0; ?>%</span>
                     </div>
                 </div>
                 <div class="hrdash-stat__meta">The total number of employees in the system.</div>
             </div>
         </div>
-        <div class="col-xl-4 col-md-6">
+        <div class="col-xl-3 col-md-6">
             <div class="card hrdash-stat">
                 <div class="hrdash-stat__header">
-                    <div class="hrdash-stat__label">Active Employees</div>
+                    <div class="hrdash-stat__label">New Hires</div>
                 </div>
                 <div class="hrdash-stat__content">
-                    <div class="hrdash-stat__value"><?php echo number_format($active_employees); ?></div>
+                    <div class="hrdash-stat__value"><?php echo number_format($new_hires); ?></div>
                     <div class="hrdash-stat__trend hrdash-stat__trend--positive">
-                        <i class="fas fa-user-check"></i>
-                        <span><?php echo number_format($active_employees); ?></span>
+                        <span><?php echo ($total_all_employees ?? 0) > 0 ? round(($new_hires / max(1, $total_all_employees)) * 100) : 0; ?>%</span>
                     </div>
                 </div>
-                <div class="hrdash-stat__meta">Employees currently active and on roster.</div>
+                <div class="hrdash-stat__meta">Employees hired this month.</div>
             </div>
         </div>
-        <div class="col-xl-4 col-md-6">
+        <div class="col-xl-3 col-md-6">
             <div class="card hrdash-stat">
                 <div class="hrdash-stat__header">
-                    <div class="hrdash-stat__label">Inactive Employees</div>
+                    <div class="hrdash-stat__label">Regular</div>
                 </div>
                 <div class="hrdash-stat__content">
-                    <div class="hrdash-stat__value"><?php echo number_format($inactive_employees); ?></div>
-                    <div class="hrdash-stat__trend hrdash-stat__trend--negative">
-                        <i class="fas fa-user-slash"></i>
-                        <span><?php echo number_format($inactive_employees); ?></span>
+                    <div class="hrdash-stat__value"><?php echo number_format($regular_employees); ?></div>
+                    <div class="hrdash-stat__trend hrdash-stat__trend--positive">
+                        <span><?php echo ($active_employees ?? 0) > 0 ? round(($regular_employees / max(1, $active_employees)) * 100) : 0; ?>%</span>
                     </div>
                 </div>
-                <div class="hrdash-stat__meta">Employees currently inactive or off roster.</div>
+                <div class="hrdash-stat__meta">The number of employees who have completed their probation period.</div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card hrdash-stat">
+                <div class="hrdash-stat__header">
+                    <div class="hrdash-stat__label">Probation</div>
+                </div>
+                <div class="hrdash-stat__content">
+                    <div class="hrdash-stat__value"><?php echo number_format($probationary_employees); ?></div>
+                    <div class="hrdash-stat__trend hrdash-stat__trend--positive">
+                        <span><?php echo ($active_employees ?? 0) > 0 ? round(($probationary_employees / max(1, $active_employees)) * 100) : 0; ?>%</span>
+                    </div>
+                </div>
+                <div class="hrdash-stat__meta">The number of employees currently in their probation period.</div>
             </div>
         </div>
     </div>
@@ -521,34 +609,39 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
     <!-- Search and Filter Bar -->
     <div class="card card-modern mb-4">
         <div class="card-body-modern">
-            <form method="GET" action="" id="employeeFilterForm" class="row g-3 align-items-end">
+            <form method="GET" action="" id="employeeFilterForm" class="d-flex gap-2 align-items-end" style="flex-wrap: nowrap;">
                 <input type="hidden" name="page" value="employees">
-                <div class="col-md-3">
-                    <label class="form-label">Search Employees</label>
-                    <div class="input-group">
-                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                <div class="flex-grow-1" style="min-width: 0;">
+                    <label class="form-label" style="font-size: 0.75rem; margin-bottom: 0.25rem; font-weight: 500;">Search</label>
+                    <div class="search-input-wrapper">
+                        <div class="search-icon-container">
+                            <span class="hr-icon hr-icon-search search-icon"></span>
+                        </div>
                         <input type="text" 
                                name="search" 
                                id="employeeSearch"
-                               class="form-control" 
-                               placeholder="Search by name, employee number, post, or email..."
+                               class="form-control search-input" 
+                               placeholder="search by name, employee #, post, or email"
                                value="<?php echo htmlspecialchars($search); ?>"
                                autocomplete="off">
+                        <button type="button" class="search-clear-btn" id="search-clear-btn" style="display: <?php echo !empty($search) ? 'flex' : 'none'; ?>;">
+                            <i class="fas fa-times"></i>
+                        </button>
                     </div>
                 </div>
-                <div class="col-md-2">
-                    <label class="form-label">Status</label>
-                    <select name="status" id="statusFilter" class="form-select">
-                        <option value="">All Statuses</option>
+                <div style="flex: 0 0 auto; min-width: 140px;">
+                    <label class="form-label" style="font-size: 0.75rem; margin-bottom: 0.25rem; font-weight: 500;">Status</label>
+                    <select name="status" id="statusFilter" class="form-select form-select-sm" style="padding: 0.375rem 0.5rem; font-size: 0.8125rem;">
+                        <option value="">All</option>
                         <option value="Active" <?php echo $status_filter === 'Active' ? 'selected' : ''; ?>>Active</option>
                         <option value="Inactive" <?php echo $status_filter === 'Inactive' ? 'selected' : ''; ?>>Inactive</option>
                         <option value="Onboarding" <?php echo $status_filter === 'Onboarding' ? 'selected' : ''; ?>>Onboarding</option>
                     </select>
                 </div>
-                <div class="col-md-2">
-                    <label class="form-label">Employee Type</label>
-                    <select name="type" id="departmentFilter" class="form-select">
-                        <option value="">All Types</option>
+                <div style="flex: 0 0 auto; min-width: 140px;">
+                    <label class="form-label" style="font-size: 0.75rem; margin-bottom: 0.25rem; font-weight: 500;">Employee Type</label>
+                    <select name="type" id="departmentFilter" class="form-select form-select-sm" style="padding: 0.375rem 0.5rem; font-size: 0.8125rem;">
+                        <option value="">All</option>
                         <?php
                         // Get unique employee types
                         $unique_types = [];
@@ -566,38 +659,30 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
                         <?php endforeach; ?>
                     </select>
                 </div>
-                <div class="col-md-2">
-                    <label class="form-label">Sort By</label>
-                    <select name="sort_by" id="sortBy" class="form-select">
-                        <option value="name" <?php echo $sort_by === 'name' ? 'selected' : ''; ?>>Name</option>
-                        <option value="license_exp" <?php echo $sort_by === 'license_exp' ? 'selected' : ''; ?>>License Expiration</option>
-                        <option value="status" <?php echo $sort_by === 'status' ? 'selected' : ''; ?>>Status</option>
-                        <option value="date_hired" <?php echo $sort_by === 'date_hired' ? 'selected' : ''; ?>>Date Hired</option>
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label">Order</label>
-                    <select name="sort_order" id="sortOrder" class="form-select">
-                        <option value="asc" <?php echo $sort_order === 'asc' ? 'selected' : ''; ?>>Ascending</option>
-                        <option value="desc" <?php echo $sort_order === 'desc' ? 'selected' : ''; ?>>Descending</option>
-                    </select>
-                </div>
-                <div class="col-auto">
-                    <button type="button" class="btn btn-outline-modern" id="clearFilters" title="Clear Filters">
-                        <i class="fas fa-times"></i>
+                <div style="flex: 0 0 auto;">
+                    <label class="form-label" style="font-size: 0.75rem; margin-bottom: 0.25rem; font-weight: 500; visibility: hidden;">Reset</label>
+                    <button type="button" class="btn-reset-icon" id="clearFilters" title="Reset filters">
+                        <span class="hr-icon hr-icon-dismiss"></span>
                     </button>
                 </div>
+                <div style="flex: 0 0 30%; min-width: 120px; text-align: right; margin-left: auto;">
+                    <div style="font-size: 0.6875rem; color: #64748b; margin-bottom: 0.125rem;">Results</div>
+                    <div id="employee-count" style="font-size: 1rem; font-weight: 600; color: #1e3a8a;"><?php echo number_format(count($filtered_employees)); ?></div>
+                </div>
+                <!-- Hidden sort controls - will be handled via table headers or separate UI -->
+                <input type="hidden" name="sort_by" id="sortBy" value="<?php echo htmlspecialchars($sort_by); ?>">
+                <input type="hidden" name="sort_order" id="sortOrder" value="<?php echo htmlspecialchars($sort_order); ?>">
+                <input type="hidden" id="total-filtered-employees" value="<?php echo count($filtered_employees); ?>">
             </form>
         </div>
     </div>
 
     <!-- Employee Table -->
-    <div class="card card-modern mb-4">
+    <div class="card card-modern mb-4 employee-list-container">
         <div class="card-body-modern">
-            <div class="card-header-modern mb-4 d-flex justify-content-between align-items-center">
+            <div class="card-header-modern mb-2 d-flex justify-content-between align-items-center">
                 <div>
                     <h5 class="card-title-modern">Employee List</h5>
-                    <small class="card-subtitle">Viewing <?php echo count($paginated_employees); ?> of <?php echo number_format($total_all_employees); ?> total employees</small>
                 </div>
                 <div class="d-flex gap-2">
                     <button class="btn btn-outline-modern" id="exportBtn" title="Export employee list">
@@ -617,15 +702,15 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
                             </th>
                             <th class="sortable" data-sort="name">
                                 EMPLOYEE INFO
-                                <i class="fas fa-sort"></i>
+                                <i class="fas fa-sort sort-icon"></i>
                             </th>
                             <th class="sortable" data-sort="license_exp">
                                 LICENSE / RLM
-                                <i class="fas fa-sort"></i>
+                                <i class="fas fa-sort sort-icon"></i>
                             </th>
                             <th class="sortable" data-sort="status">
                                 STATUS
-                                <i class="fas fa-sort"></i>
+                                <i class="fas fa-sort sort-icon"></i>
                             </th>
                             <th>CREATED BY</th>
                             <th>ACTIONS</th>
@@ -685,7 +770,12 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
                                         </div>
                                         <div class="employee-status-badge" style="margin-top: 0.25rem;">
                                             <?php 
-                                            $status_class = ($employment_status === 'Probationary') ? 'bg-warning text-dark' : 'bg-info text-white';
+                                            // Match violation history color scheme
+                                            if ($employment_status === 'Probationary') {
+                                                $status_class = 'badge-employment-probationary';
+                                            } else {
+                                                $status_class = 'badge-employment-regular';
+                                            }
                                             $status_text = $employment_status;
                                             ?>
                                             <span class="badge <?php echo $status_class; ?> fs-11 px-2 py-1">
@@ -697,45 +787,56 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
                                 <!-- License and RLM (styled similar to Employee Info column) -->
                                 <td>
                                     <div class="employee-info-combined license-rlm-info">
-                                        <!-- Top line: License number or No License -->
-                                        <div class="employee-info-line fw-semibold">
-                                            <?php if (!empty($employee['license_no'])): ?>
-                                                <span class="fs-11 fw-semibold text-muted text-uppercase me-1">
-                                                    License No
-                                                </span>
-                                                <span class="fs-13 text-dark">
-                                                    <?php echo htmlspecialchars($employee['license_no']); ?>
-                                                </span>
-                                            <?php else: ?>
-                                                <span class="text-danger fs-13">
-                                                    No License
-                                                </span>
-                                            <?php endif; ?>
-                                        </div>
+                                        <!-- License Group: License number and expiration date together -->
+                                        <div class="license-group">
+                                            <!-- Top line: License number or No License -->
+                                            <div class="employee-info-line fw-semibold">
+                                                <?php if (!empty($employee['license_no'])): ?>
+                                                        <?php echo htmlspecialchars($employee['license_no']); ?>
+                                                <?php else: ?>
+                                                    <span class="text-danger">No License</span>
+                                                <?php endif; ?>
+                                            </div>
 
-                                        <!-- Second line: License expiration -->
-                                        <div class="employee-post text-muted fs-13 mt-1">
-                                            <span class="fs-11 fw-semibold text-uppercase text-muted me-1">
-                                                Expiration
-                                            </span>
+                                            <!-- Second line: License expiration date (no label, no margin) -->
                                             <?php if ($license_formatted): ?>
-                                                <span class="<?php echo ($license_formatted['days'] < 0 || $license_formatted['days'] <= 30) ? 'text-danger' : ''; ?>">
-                                                    <?php echo htmlspecialchars($license_formatted['text']); ?>
-                                                </span>
-                                            <?php else: ?>
-                                                <span class="text-muted">N/A</span>
+                                                <div class="employee-post text-muted fs-13" style="margin-top: 0; line-height: 1.2;">
+                                                    <?php
+                                                    // Match violation history color scheme
+                                                    if ($license_formatted['days'] < 0) {
+                                                        $exp_color_class = 'license-expired';
+                                                    } elseif ($license_formatted['days'] <= 30) {
+                                                        $exp_color_class = 'license-expiring';
+                                                    } else {
+                                                        $exp_color_class = 'license-valid';
+                                                    }
+                                                    ?>
+                                                    <span class="<?php echo $exp_color_class; ?>">
+                                                        <?php echo htmlspecialchars($license_formatted['text']); ?>
+                                                    </span>
+                                                </div>
                                             <?php endif; ?>
                                         </div>
 
-                                        <!-- Third line: RLM info, only if present -->
+                                        <!-- RLM info, only if present - separated from license group -->
                                         <?php if (!empty($employee['rlm_exp'])): ?>
-                                            <div class="employee-status-badge" style="margin-top: 0.125rem;">
+                                            <div class="employee-status-badge rlm-section">
                                                 <?php if ($rlm_formatted): ?>
-                                                    <span class="badge <?php echo ($rlm_formatted['days'] < 0 || $rlm_formatted['days'] <= 30) ? 'bg-danger' : 'bg-info'; ?> fs-11 px-2 py-1">
-                                                        RLM <?php echo htmlspecialchars($rlm_formatted['text']); ?>
+                                                    <?php
+                                                    // Match violation history color scheme for RLM
+                                                    if ($rlm_formatted['days'] < 0) {
+                                                        $rlm_class = 'badge-rlm-expired';
+                                                    } elseif ($rlm_formatted['days'] <= 30) {
+                                                        $rlm_class = 'badge-rlm-expiring';
+                                                    } else {
+                                                        $rlm_class = 'badge-rlm-valid';
+                                                    }
+                                                    ?>
+                                                    <span class="badge <?php echo $rlm_class; ?> fs-11 px-2 py-1">
+                                                        RLM<span style="margin-left: 0.5rem;"><?php echo htmlspecialchars($rlm_formatted['text']); ?></span>
                                                     </span>
                                                 <?php else: ?>
-                                                    <span class="badge bg-info fs-11 px-2 py-1">
+                                                    <span class="badge badge-rlm-valid fs-11 px-2 py-1">
                                                         RLM Present
                                                     </span>
                                                 <?php endif; ?>
@@ -745,9 +846,23 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
                                 </td>
                                 <!-- Status -->
                                 <td>
-                                    <span class="status-badge <?php echo strtolower($employee['status'] ?? ''); ?> fs-xs px-2 py-1">
-                                        <i class="fas"></i>
-                                        <?php echo htmlspecialchars($employee['status'] ?? 'N/A'); ?>
+                                    <?php
+                                    $status = $employee['status'] ?? 'N/A';
+                                    // Match violation history color scheme
+                                    if ($status === 'Active') {
+                                        $status_badge_class = 'badge-status-active';
+                                    } elseif ($status === 'Inactive') {
+                                        $status_badge_class = 'badge-status-inactive';
+                                    } elseif ($status === 'Terminated') {
+                                        $status_badge_class = 'badge-status-terminated';
+                                    } elseif ($status === 'Onboarding') {
+                                        $status_badge_class = 'badge-status-onboarding';
+                                    } else {
+                                        $status_badge_class = 'badge-status-default';
+                                    }
+                                    ?>
+                                    <span class="badge <?php echo $status_badge_class; ?> fs-11 px-2 py-1">
+                                        <?php echo htmlspecialchars($status); ?>
                                     </span>
                                 </td>
                                 <!-- Created By -->
@@ -965,58 +1080,724 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
     <!-- Pagination -->
     <div class="card card-modern">
         <div class="card-body-modern">
-            <div class="pagination-container">
-                <div class="pagination-info">
-                    <select class="form-select form-select-sm" id="perPageSelect">
-                        <option value="10" <?php echo $per_page == 10 ? 'selected' : ''; ?>>10 records</option>
-                        <option value="25" <?php echo $per_page == 25 ? 'selected' : ''; ?>>25 records</option>
-                        <option value="50" <?php echo $per_page == 50 ? 'selected' : ''; ?>>50 records</option>
-                        <option value="100" <?php echo $per_page == 100 ? 'selected' : ''; ?>>100 records</option>
-                    </select>
-                </div>
-                <div class="pagination-controls">
-                    <button class="btn btn-outline-secondary btn-sm" <?php echo $page_num <= 1 ? 'disabled' : ''; ?> onclick="changePage(<?php echo max(1, $page_num - 1); ?>)">
-                        <i class="fas fa-chevron-left"></i>
+            <div class="pagination-container-modern">
+                <div class="pagination-controls-modern">
+                    <!-- First Page Button -->
+                    <button class="pagination-btn" <?php echo $page_num <= 1 ? 'disabled' : ''; ?> onclick="changePage(1)" title="First page">
+                        &laquo;
+                    </button>
+                    <!-- Previous Page Button -->
+                    <button class="pagination-btn" <?php echo $page_num <= 1 ? 'disabled' : ''; ?> onclick="changePage(<?php echo max(1, $page_num - 1); ?>)" title="Previous page">
+                        &lt;
                     </button>
                     
                     <?php if ($total_pages > 0): 
+                        // Show up to 5 page numbers around current page
                         $start_page = max(1, $page_num - 2);
                         $end_page = min($total_pages, $page_num + 2);
-                    ?>
-                        <?php if ($start_page > 1): ?>
-                            <button class="btn btn-outline-secondary btn-sm" onclick="changePage(1)">1</button>
-                            <?php if ($start_page > 2): ?>
-                                <span class="pagination-ellipsis">...</span>
-                            <?php endif; ?>
-                        <?php endif; ?>
                         
+                        // Adjust if we're near the start
+                        if ($page_num <= 2) {
+                            $end_page = min($total_pages, 5);
+                        }
+                        // Adjust if we're near the end
+                        if ($page_num >= $total_pages - 1) {
+                            $start_page = max(1, $total_pages - 4);
+                        }
+                    ?>
                         <?php for ($i = $start_page; $i <= $end_page; $i++): ?>
-                            <button class="btn <?php echo $i == $page_num ? 'btn-primary' : 'btn-outline-secondary'; ?> btn-sm" onclick="changePage(<?php echo $i; ?>)">
+                            <button class="pagination-btn <?php echo $i == $page_num ? 'pagination-btn-active' : ''; ?>" onclick="changePage(<?php echo $i; ?>)">
                                 <?php echo $i; ?>
                             </button>
                         <?php endfor; ?>
-                        
-                        <?php if ($end_page < $total_pages): ?>
-                            <?php if ($end_page < $total_pages - 1): ?>
-                                <span class="pagination-ellipsis">...</span>
-                            <?php endif; ?>
-                            <button class="btn btn-outline-secondary btn-sm" onclick="changePage(<?php echo $total_pages; ?>)"><?php echo $total_pages; ?></button>
-                        <?php endif; ?>
                     <?php else: ?>
-                        <button class="btn btn-primary btn-sm" disabled>1</button>
+                        <button class="pagination-btn pagination-btn-active" disabled>1</button>
                     <?php endif; ?>
                     
-                    <button class="btn btn-outline-secondary btn-sm" <?php echo $page_num >= $total_pages ? 'disabled' : ''; ?> onclick="changePage(<?php echo min($total_pages, $page_num + 1); ?>)">
-                        <i class="fas fa-chevron-right"></i>
+                    <!-- Next Page Button -->
+                    <button class="pagination-btn" <?php echo $page_num >= $total_pages ? 'disabled' : ''; ?> onclick="changePage(<?php echo min($total_pages, $page_num + 1); ?>)" title="Next page">
+                        &gt;
                     </button>
+                    
+                    <!-- Page Number Input -->
+                    <input type="text" class="pagination-page-input" id="pageNumberInput" placeholder="Page #" value="<?php echo $page_num; ?>" onkeypress="handlePageInputKeyPress(event)">
                 </div>
-                <div class="pagination-info">
-                    <span><?php echo $total_employees > 0 ? ($offset + 1) : 0; ?> - <?php echo min($offset + $per_page, $total_employees); ?> of <?php echo $total_employees; ?></span>
+                
+                <!-- Items Per Page Dropdown -->
+                <div class="pagination-per-page">
+                    <select class="pagination-select" id="perPageSelect">
+                        <option value="10" <?php echo $per_page == 10 ? 'selected' : ''; ?>>10</option>
+                        <option value="25" <?php echo $per_page == 25 ? 'selected' : ''; ?>>25</option>
+                        <option value="50" <?php echo $per_page == 50 ? 'selected' : ''; ?>>50</option>
+                        <option value="100" <?php echo $per_page == 100 ? 'selected' : ''; ?>>100</option>
+                    </select>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+/* Employee Stats - Enhanced Badge Style */
+.hrdash-stat__content {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.hrdash-stat__trend {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.375rem 0.625rem;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    white-space: nowrap;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.hrdash-stat__trend--positive {
+    background: #dcfce7;
+    color: #16a34a;
+    border: 1px solid #86efac;
+}
+
+.hrdash-stat--primary .hrdash-stat__trend {
+    background: rgba(255, 255, 255, 0.3);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+/* Employee Filter Form Styles - Matching Violation Types Design */
+#employeeFilterForm {
+    display: flex;
+    flex-wrap: nowrap !important;
+    gap: 0.75rem;
+    align-items: flex-end;
+    width: 100%;
+}
+
+#employeeFilterForm > div {
+    flex-shrink: 0;
+}
+
+#employeeFilterForm > div:first-child {
+    flex: 1 1 0;
+    min-width: 0;
+}
+
+#employeeFilterForm .form-label {
+    font-size: 0.75rem;
+    margin-bottom: 0.25rem;
+    font-weight: 500;
+    color: #374151;
+}
+
+#employeeFilterForm .form-control-sm,
+#employeeFilterForm .form-select-sm {
+    padding: 0.375rem 0.5rem;
+    font-size: 0.8125rem;
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+    height: 38px;
+    transition: all 0.2s ease;
+}
+
+#employeeFilterForm .form-select-sm:focus,
+#employeeFilterForm .form-control-sm:focus {
+    border-color: #1e3a8a;
+    box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+    outline: none;
+}
+
+/* Search Input Wrapper Styles */
+.search-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: stretch;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    background: #ffffff;
+    transition: all 0.2s ease;
+    height: 38px;
+    overflow: hidden;
+}
+
+.search-input-wrapper:hover {
+    border-color: #9ca3af;
+}
+
+.search-input-wrapper:focus-within {
+    border-color: #1e3a8a;
+    box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+    outline: none;
+}
+
+.search-icon-container {
+    background: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 0.75rem;
+    min-width: 44px;
+    flex-shrink: 0;
+    border-right: 1px solid #d1d5db;
+}
+
+.search-icon {
+    width: 16px !important;
+    height: 16px !important;
+    display: inline-block !important;
+    background-size: contain !important;
+    background-repeat: no-repeat !important;
+    background-position: center !important;
+    opacity: 0.6 !important;
+    visibility: visible !important;
+    filter: brightness(0) saturate(100%) invert(40%) sepia(8%) saturate(750%) hue-rotate(177deg) brightness(94%) contrast(88%);
+    transition: opacity 0.2s ease;
+}
+
+.search-input-wrapper:focus-within .search-icon {
+    opacity: 0.8;
+    filter: brightness(0) saturate(100%) invert(15%) sepia(8%) saturate(750%) hue-rotate(177deg) brightness(94%) contrast(88%);
+}
+
+.search-icon.hr-icon-search {
+    background-image: url('../assets/icons/search-icon.svg') !important;
+}
+
+.search-input {
+    flex: 1;
+    border: none !important;
+    border-radius: 0 !important;
+    padding: 0.375rem 2.5rem 0.375rem 0.5rem !important;
+    font-size: 0.8125rem;
+    background: #ffffff;
+    box-shadow: none !important;
+    transition: all 0.2s ease;
+    height: 100%;
+    line-height: 1.5;
+}
+
+.search-input:focus {
+    border: none !important;
+    box-shadow: none !important;
+    outline: none;
+}
+
+.search-input::placeholder {
+    color: #9ca3af;
+}
+
+.search-clear-btn {
+    position: absolute;
+    right: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    color: #9ca3af;
+    font-size: 0.75rem;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    z-index: 2;
+}
+
+.search-clear-btn:hover {
+    background-color: #f3f4f6;
+    color: #64748b;
+}
+
+/* Reset Button Icon */
+.btn-reset-icon {
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #ffffff;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 0;
+}
+
+.btn-reset-icon .hr-icon {
+    width: 16px !important;
+    height: 16px !important;
+    display: inline-block !important;
+    background-size: contain !important;
+    background-repeat: no-repeat !important;
+    background-position: center !important;
+    opacity: 0.6 !important;
+    filter: brightness(0) saturate(100%) invert(40%) sepia(8%) saturate(750%) hue-rotate(177deg) brightness(94%) contrast(88%) !important;
+    transition: all 0.2s ease;
+    visibility: visible !important;
+}
+
+.btn-reset-icon .hr-icon-dismiss {
+    background-image: url('../assets/icons/dismiss-icon_remove-icon.svg') !important;
+}
+
+.btn-reset-icon:hover {
+    background-color: #f3f4f6;
+    border-color: #9ca3af;
+}
+
+.btn-reset-icon:hover .hr-icon {
+    opacity: 0.8;
+    filter: brightness(0) saturate(100%) invert(15%) sepia(8%) saturate(750%) hue-rotate(177deg) brightness(94%) contrast(88%) !important;
+}
+
+#employee-count {
+    color: #1e3a8a;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+/* Compact License / RLM Column Styling */
+.employees-table .license-rlm-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0 !important;
+}
+
+/* License Group: License number and expiration date together */
+.employees-table .license-rlm-info .license-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.employees-table .license-rlm-info .license-group .employee-info-line {
+    margin-bottom: 0;
+    line-height: 1.2;
+    padding-bottom: 0;
+}
+
+.employees-table .license-rlm-info .license-group .employee-post {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    padding-top: 0 !important;
+    line-height: 1.2;
+}
+
+/* RLM Section: Separated from license group with space */
+.employees-table .license-rlm-info .rlm-section {
+    margin-top: 0.5rem !important;
+    margin-bottom: 0 !important;
+}
+
+/* Status Badge Colors - Matching Violation History */
+.employees-table .badge-status-active {
+    background-color: #dcfce7;
+    color: #166534;
+    border: 1px solid #86efac;
+    font-weight: 600;
+}
+
+.employees-table .badge-status-inactive {
+    background-color: #fef3c7;
+    color: #92400e;
+    border: 1px solid #fde68a;
+    font-weight: 600;
+}
+
+.employees-table .badge-status-terminated {
+    background-color: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fca5a5;
+    font-weight: 600;
+}
+
+.employees-table .badge-status-onboarding {
+    background-color: #e0e7ff;
+    color: #6366f1;
+    border: 1px solid #c7d2fe;
+    font-weight: 600;
+}
+
+.employees-table .badge-status-default {
+    background-color: #f1f5f9;
+    color: #475569;
+    border: 1px solid #cbd5e1;
+    font-weight: 600;
+}
+
+/* Employment Status Badge Colors */
+.employees-table .badge-employment-probationary {
+    background-color: #fef3c7;
+    color: #92400e;
+    border: 1px solid #fde68a;
+    font-weight: 600;
+}
+
+.employees-table .badge-employment-regular {
+    background-color: #dcfce7;
+    color: #166534;
+    border: 1px solid #86efac;
+    font-weight: 600;
+}
+
+/* RLM Badge Colors */
+.employees-table .badge-rlm-expired {
+    background-color: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fca5a5;
+    font-weight: 600;
+}
+
+.employees-table .badge-rlm-expiring {
+    background-color: #fef3c7;
+    color: #92400e;
+    border: 1px solid #fde68a;
+    font-weight: 600;
+}
+
+.employees-table .badge-rlm-valid {
+    background-color: #dcfce7;
+    color: #166534;
+    border: 1px solid #86efac;
+    font-weight: 600;
+}
+
+/* License Expiration Text Colors - Matching Violation History */
+.employees-table .license-expired {
+    color: #991b1b !important;
+    font-weight: 600;
+}
+
+.employees-table .license-expiring {
+    color: #92400e !important;
+    font-weight: 600;
+}
+
+.employees-table .license-valid {
+    color: #166534 !important;
+}
+
+/* Table Header Styling - Matching Modern Design */
+.employees-table thead {
+    background: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.employees-table thead th {
+    background: #f9fafb;
+    padding: 0.75rem 1rem;
+    font-weight: 600;
+    font-size: 0.8125rem;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+    color: #374151;
+    border-bottom: 1px solid #e5e7eb;
+    vertical-align: middle;
+    white-space: nowrap;
+    position: relative;
+}
+
+.employees-table thead th:first-child {
+    padding: 0.75rem;
+    text-align: center;
+}
+
+.employees-table thead th.sortable {
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.2s ease;
+    padding-right: 2.25rem;
+    position: relative;
+}
+
+.employees-table thead th.sortable:hover {
+    background: #f3f4f6;
+    color: #1f2937;
+}
+
+.employees-table thead th.sortable .sort-icon {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.75rem;
+    color: #6b7280;
+    pointer-events: none;
+    transition: all 0.2s ease;
+    opacity: 0.85;
+    display: inline-block;
+}
+
+.employees-table thead th.sortable:hover .sort-icon {
+    color: #4b5563;
+    opacity: 1;
+}
+
+.employees-table thead th.sortable .sort-icon.fa-sort {
+    opacity: 0.85;
+}
+
+.employees-table thead th.sortable .sort-icon.fa-sort-up,
+.employees-table thead th.sortable .sort-icon.fa-sort-down {
+    color: #4b5563;
+    opacity: 1;
+    font-weight: 600;
+}
+
+.employees-table tbody tr {
+    border-bottom: 1px solid #f3f4f6;
+    transition: background-color 0.15s ease;
+}
+
+.employees-table tbody tr:hover {
+    background-color: #f9fafb;
+}
+
+.employees-table tbody tr:last-child {
+    border-bottom: none;
+}
+
+/* Compact Column Widths - Fit Content with Padding */
+.employees-table {
+    table-layout: auto;
+}
+
+.employees-table thead th:nth-child(1),
+.employees-table tbody td:nth-child(1) {
+    width: 50px;
+    min-width: 50px;
+    max-width: 50px;
+    padding: 0.5rem !important;
+}
+
+.employees-table thead th:nth-child(2),
+.employees-table tbody td:nth-child(2) {
+    width: auto;
+    min-width: 200px;
+    padding: 0.5rem 0.75rem !important;
+}
+
+.employees-table thead th:nth-child(3),
+.employees-table tbody td:nth-child(3) {
+    width: auto;
+    min-width: 140px;
+    padding: 0.5rem 0.75rem !important;
+}
+
+/* Status Column - Compact */
+.employees-table thead th:nth-child(4),
+.employees-table tbody td:nth-child(4) {
+    width: auto;
+    min-width: 90px;
+    max-width: 110px;
+    padding: 0.5rem 0.625rem !important;
+    white-space: nowrap;
+}
+
+/* Created By Column - Compact */
+.employees-table thead th:nth-child(5),
+.employees-table tbody td:nth-child(5) {
+    width: auto;
+    min-width: 110px;
+    max-width: 140px;
+    padding: 0.5rem 0.625rem !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.employees-table thead th:nth-child(5) {
+    overflow: visible;
+    text-overflow: clip;
+}
+
+/* Actions Column - Compact */
+.employees-table thead th:nth-child(6),
+.employees-table tbody td:nth-child(6) {
+    width: auto;
+    min-width: 90px;
+    max-width: 110px;
+    padding: 0.5rem 0.625rem !important;
+    white-space: nowrap;
+    text-align: center;
+}
+
+/* Compact Employee List Container */
+.employee-list-container .card-body-modern {
+    padding: 0.75rem !important;
+}
+
+.employee-list-container .card-header-modern {
+    padding: 0.5rem 0 !important;
+    margin-bottom: 0.75rem !important;
+}
+
+.employee-list-container .card-title-modern {
+    font-size: 1rem !important;
+    margin-bottom: 0 !important;
+}
+
+.employee-list-container .table-container {
+    margin: 0 !important;
+}
+
+.employee-list-container .employees-table thead th {
+    padding: 0.5rem 0.75rem !important;
+    font-size: 0.75rem !important;
+}
+
+.employee-list-container .employees-table thead th:first-child {
+    padding: 0.5rem !important;
+}
+
+.employee-list-container .employees-table tbody td {
+    padding: 0.5rem 0.75rem !important;
+    font-size: 0.8125rem !important;
+}
+
+.employee-list-container .employees-table tbody td:first-child {
+    padding: 0.5rem !important;
+}
+
+/* Modern Pagination Styling */
+.pagination-container-modern {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.pagination-controls-modern {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.pagination-btn {
+    min-width: 36px;
+    height: 36px;
+    padding: 0 0.75rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    background-color: #ffffff;
+    color: #6b7280;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pagination-btn:hover:not(:disabled) {
+    background-color: #f9fafb;
+    border-color: #d1d5db;
+    color: #374151;
+}
+
+.pagination-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: #f9fafb;
+    color: #9ca3af;
+}
+
+.pagination-btn-active {
+    background-color: #6366f1;
+    border-color: #6366f1;
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.pagination-btn-active:hover {
+    background-color: #4f46e5;
+    border-color: #4f46e5;
+    color: #ffffff;
+}
+
+.pagination-page-input {
+    width: 80px;
+    height: 36px;
+    padding: 0 0.75rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    background-color: #ffffff;
+    color: #374151;
+    font-size: 0.875rem;
+    text-align: center;
+    transition: all 0.2s ease;
+}
+
+.pagination-page-input:focus {
+    outline: none;
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.pagination-page-input::placeholder {
+    color: #9ca3af;
+}
+
+.pagination-per-page {
+    display: flex;
+    align-items: center;
+}
+
+.pagination-select {
+    width: 80px;
+    height: 36px;
+    padding: 0 2rem 0 0.75rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    background-color: #ffffff;
+    color: #374151;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.5rem center;
+    background-size: 12px;
+}
+
+.pagination-select:focus {
+    outline: none;
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.pagination-select:hover {
+    border-color: #d1d5db;
+}
+
+@media (max-width: 768px) {
+    .pagination-container-modern {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .pagination-controls-modern {
+        justify-content: center;
+    }
+    
+    .pagination-per-page {
+        justify-content: center;
+    }
+}
+</style>
 
 <script>
 // Update time display every minute for employees page
@@ -1109,15 +1890,45 @@ class EmployeeTableManager {
     }
     
     bindEvents() {
-        // Search input with debounce
+        // Search input with debounce and clear button
         const searchInput = document.getElementById('employeeSearch');
+        const searchClearBtn = document.getElementById('search-clear-btn');
+        
         if (searchInput) {
+            // Show/hide clear button
+            const updateClearButton = () => {
+                if (searchClearBtn) {
+                    const hasValue = searchInput.value && searchInput.value.trim().length > 0;
+                    searchClearBtn.style.display = hasValue ? 'flex' : 'none';
+                }
+            };
+            
+            // Initial state - check if there's a value on page load
+            if (searchInput.value && searchInput.value.trim().length > 0) {
+                updateClearButton();
+            }
+            
+            // Live search with debounce
             searchInput.addEventListener('input', (e) => {
+                updateClearButton();
                 clearTimeout(this.searchTimeout);
                 this.searchTimeout = setTimeout(() => {
                     this.updateURL({ search: e.target.value.trim() });
-                }, 500); // Wait 500ms after user stops typing
+                }, 300); // Wait 300ms after user stops typing
             });
+            
+            // Clear button functionality
+            if (searchClearBtn) {
+                searchClearBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    searchInput.value = '';
+                    searchClearBtn.style.display = 'none';
+                    searchInput.focus();
+                    clearTimeout(this.searchTimeout);
+                    this.updateURL({ search: '' });
+                });
+            }
         }
         
         // Status filter
@@ -1136,32 +1947,54 @@ class EmployeeTableManager {
             });
         }
         
-        // Sort controls
-        const sortBy = document.getElementById('sortBy');
-        if (sortBy) {
-            sortBy.addEventListener('change', (e) => {
-                const url = new URL(window.location);
-                const currentOrder = url.searchParams.get('sort_order') || 'asc';
-                this.updateURL({ sort_by: e.target.value, sort_order: currentOrder });
-            });
-        }
+        // Sort controls - now hidden, handled via table headers or default sorting
         
-        const sortOrder = document.getElementById('sortOrder');
-        if (sortOrder) {
-            sortOrder.addEventListener('change', (e) => {
-                const url = new URL(window.location);
-                const currentSort = url.searchParams.get('sort_by') || 'name';
-                this.updateURL({ sort_by: currentSort, sort_order: e.target.value });
-            });
-        }
-        
-        // Clear filters
+        // Clear filters (reset button)
         const clearBtn = document.getElementById('clearFilters');
         if (clearBtn) {
             clearBtn.addEventListener('click', () => {
-                this.updateURL({ search: '', status: '', type: '', sort_by: 'name', sort_order: 'asc', page_num: '1' });
+                if (searchInput) {
+                    searchInput.value = '';
+                    if (searchClearBtn) searchClearBtn.style.display = 'none';
+                }
+                if (statusFilter) statusFilter.value = '';
+                if (deptFilter) deptFilter.value = '';
+                const sortBy = document.getElementById('sortBy');
+                const sortOrder = document.getElementById('sortOrder');
+                if (sortBy) sortBy.value = 'name';
+                if (sortOrder) sortOrder.value = 'asc';
+                this.updateURL({ 
+                    search: '', 
+                    status: '', 
+                    type: '', 
+                    sort_by: 'name', 
+                    sort_order: 'asc', 
+                    page_num: '1' 
+                });
             });
         }
+        
+        // Ensure employee count is always visible and correct
+        const updateEmployeeCount = () => {
+            const employeeCount = document.getElementById('employee-count');
+            const totalHidden = document.getElementById('total-filtered-employees');
+            if (employeeCount) {
+                if (totalHidden) {
+                    const total = parseInt(totalHidden.value) || 0;
+                    employeeCount.textContent = total.toLocaleString();
+                } else {
+                    // Fallback: count visible table rows
+                    const table = document.querySelector('.employees-table');
+                    if (table) {
+                        const rows = table.querySelectorAll('tbody tr:not(.no-results)');
+                        employeeCount.textContent = rows.length.toLocaleString();
+                    }
+                }
+            }
+        };
+        
+        // Initialize count on page load
+        updateEmployeeCount();
         
         // Select all functionality
         const selectAll = document.getElementById('selectAll');
@@ -1233,17 +2066,17 @@ class EmployeeTableManager {
         const sortBy = url.searchParams.get('sort_by') || 'name';
         const sortOrder = url.searchParams.get('sort_order') || 'asc';
         
-        // Remove all sort icons
-        document.querySelectorAll('.sortable i').forEach(icon => {
-            icon.className = 'fas fa-sort ms-1';
+        // Reset all sort icons to default
+        document.querySelectorAll('.employees-table thead th.sortable .sort-icon').forEach(icon => {
+            icon.className = 'fas fa-sort sort-icon';
         });
         
         // Add active sort icon
         const activeHeader = document.querySelector(`[data-sort="${sortBy}"]`);
         if (activeHeader) {
-            const icon = activeHeader.querySelector('i');
+            const icon = activeHeader.querySelector('.sort-icon');
             if (icon) {
-                icon.className = sortOrder === 'asc' ? 'fas fa-sort-up ms-1' : 'fas fa-sort-down ms-1';
+                icon.className = sortOrder === 'asc' ? 'fas fa-sort-up sort-icon' : 'fas fa-sort-down sort-icon';
             }
         }
     }
@@ -1795,6 +2628,38 @@ function changePage(page) {
     }
     window.location.href = url.toString();
 }
+
+function handlePageInputKeyPress(event) {
+    if (event.key === 'Enter') {
+        const input = event.target;
+        const pageNum = parseInt(input.value);
+        const totalPages = <?php echo isset($total_pages) ? $total_pages : 1; ?>;
+        
+        if (pageNum > 0 && pageNum <= totalPages) {
+            changePage(pageNum);
+        } else {
+            // Reset to current page if invalid
+            input.value = <?php echo isset($page_num) ? $page_num : 1; ?>;
+            alert('Please enter a valid page number between 1 and ' + totalPages);
+        }
+    }
+}
+
+// Update page input when page changes
+document.addEventListener('DOMContentLoaded', function() {
+    const pageInput = document.getElementById('pageNumberInput');
+    if (pageInput) {
+        pageInput.addEventListener('blur', function() {
+            const pageNum = parseInt(this.value);
+            const totalPages = <?php echo isset($total_pages) ? $total_pages : 1; ?>;
+            const currentPage = <?php echo isset($page_num) ? $page_num : 1; ?>;
+            
+            if (isNaN(pageNum) || pageNum < 1 || pageNum > totalPages) {
+                this.value = currentPage;
+            }
+        });
+    }
+});
 
 function deleteEmployee(id) {
     if (confirm('Are you sure you want to delete this employee?')) {
