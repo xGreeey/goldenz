@@ -174,8 +174,131 @@ function getEmployeeTypeLabel($type) {
     return $types[$type] ?? $type;
 }
 
+// Helper functions for employee export
+function get_employee_export_columns() {
+    try {
+        $pdo = get_db_connection();
+        $stmt = $pdo->query("SHOW COLUMNS FROM employees");
+        $columns = [];
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            if (!empty($row['Field'])) {
+                $columns[] = $row['Field'];
+            }
+        }
+        return $columns;
+    } catch (Exception $e) {
+        return [];
+    }
+}
+
+function get_employee_export_label_overrides() {
+    return [
+        'id' => 'ID',
+        'employee_no' => 'Employee No',
+        'employee_type' => 'Employee Type',
+        'first_name' => 'First Name',
+        'middle_name' => 'Middle Name',
+        'surname' => 'Surname',
+        'post' => 'Post / Assignment',
+        'license_no' => 'License No',
+        'license_exp_date' => 'License Expiration Date',
+        'rlm_exp' => 'RLM Expiration',
+        'date_hired' => 'Date Hired',
+        'cp_number' => 'Contact Number',
+        'sss_no' => 'SSS No',
+        'pagibig_no' => 'Pag-IBIG No',
+        'tin_number' => 'TIN Number',
+        'philhealth_no' => 'PhilHealth No',
+        'birth_date' => 'Birth Date',
+        'contact_person' => 'Emergency Contact Person',
+        'relationship' => 'Emergency Relationship',
+        'contact_person_address' => 'Emergency Contact Address',
+        'contact_person_number' => 'Emergency Contact Number',
+        'drivers_license_no' => 'Driver License No',
+        'drivers_license_exp' => 'Driver License Expiration',
+        'req_2x2' => '2x2 Photo',
+        'req_birth_cert' => 'Birth Certificate',
+        'req_barangay' => 'Barangay Clearance',
+        'req_police' => 'Police Clearance',
+        'req_nbi' => 'NBI Clearance',
+        'req_di' => 'Drug Test',
+        'req_diploma' => 'Diploma',
+        'req_neuro_drug' => 'Neuro/Psych Drug Test',
+        'req_sec_license' => 'Security License',
+        'sec_lic_no' => 'Security License No',
+        'req_sec_lic_no' => 'Security License No (Req)',
+        'req_sss' => 'SSS Requirement',
+        'req_pagibig' => 'Pag-IBIG Requirement',
+        'req_philhealth' => 'PhilHealth Requirement',
+        'req_tin' => 'TIN Requirement'
+    ];
+}
+
+function humanize_employee_column_label($column) {
+    $overrides = get_employee_export_label_overrides();
+    if (isset($overrides[$column])) {
+        return $overrides[$column];
+    }
+    $label = str_replace('_', ' ', $column);
+    $label = ucwords($label);
+    $label = preg_replace('/\bId\b/', 'ID', $label);
+    $label = preg_replace('/\bRlm\b/', 'RLM', $label);
+    $label = preg_replace('/\bSss\b/', 'SSS', $label);
+    $label = preg_replace('/\bTin\b/', 'TIN', $label);
+    $label = preg_replace('/\bNbi\b/', 'NBI', $label);
+    return $label;
+}
+
+function format_employee_export_value($value) {
+    if ($value === null) {
+        return '';
+    }
+    if (is_bool($value)) {
+        return $value ? 'Yes' : 'No';
+    }
+    if (is_string($value)) {
+        $trimmed = trim($value);
+        if ($trimmed === '0000-00-00' || $trimmed === '0000-00-00 00:00:00') {
+            return '';
+        }
+        return $value;
+    }
+    return (string)$value;
+}
+
+function get_employee_export_default_columns($available_columns) {
+    $defaults = [
+        'employee_no',
+        'first_name',
+        'middle_name',
+        'surname',
+        'employee_type',
+        'post',
+        'status',
+        'date_hired',
+        'license_no',
+        'license_exp_date',
+        'rlm_exp',
+        'cp_number'
+    ];
+    return array_values(array_filter($defaults, function ($column) use ($available_columns) {
+        return in_array($column, $available_columns, true);
+    }));
+}
+
 // Get all employees directly from database - no filtering, all records included
 $all_employees = get_employees();
+
+// Prepare exportable columns and defaults
+$employee_export_columns = get_employee_export_columns();
+if (empty($employee_export_columns) && !empty($all_employees)) {
+    $employee_export_columns = array_keys($all_employees[0]);
+}
+$employee_export_columns = array_values(array_filter($employee_export_columns, function ($column) {
+    return $column !== 'creator_name' && $column !== 'id';
+}));
+$default_export_columns = get_employee_export_default_columns($employee_export_columns);
+$default_export_lookup = array_flip($default_export_columns);
 
 // Apply filters
 $filtered_employees = $all_employees;
@@ -706,6 +829,136 @@ $onboarding_employees = $employee_stats['onboarding_employees'];
                     </div>
                 </div>
             </div>
+
+            <!-- Employee Export Modal -->
+            <div class="modal fade" id="employeeExportModal" tabindex="-1" aria-labelledby="employeeExportModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-xl modal-dialog-scrollable">
+                    <div class="modal-content">
+                        <form method="POST" action="?page=employees" id="employeeExportForm">
+                            <input type="hidden" name="action" value="export_employees">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="employeeExportModalLabel">
+                                    <i class="fas fa-file-export me-2"></i>Export Employees
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="row g-4">
+                                    <div class="col-lg-5">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <label class="form-label mb-0">Employees</label>
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" id="exportAllEmployeesToggle" name="export_all_employees" value="1" checked>
+                                                <label class="form-check-label" for="exportAllEmployeesToggle">Export all</label>
+                                            </div>
+                                        </div>
+                                        <input type="text" id="exportEmployeeSearch" class="form-control form-control-sm mb-2" placeholder="Search by name or employee no...">
+                                        <select id="exportEmployeeSelect" class="form-select" name="employee_ids[]" multiple size="10" aria-label="Select employees">
+                                            <?php foreach ($all_employees as $emp): 
+                                                $employee_name_parts = [];
+                                                if (!empty($emp['surname'])) {
+                                                    $employee_name_parts[] = $emp['surname'];
+                                                }
+                                                if (!empty($emp['first_name'])) {
+                                                    $employee_name_parts[] = $emp['first_name'];
+                                                }
+                                                $employee_name = implode(', ', $employee_name_parts);
+                                                if (!empty($emp['middle_name'])) {
+                                                    $employee_name .= ' ' . $emp['middle_name'];
+                                                }
+                                                $employee_name = trim($employee_name);
+                                                if ($employee_name === '') {
+                                                    $employee_name = 'Employee #' . ($emp['id'] ?? '');
+                                                }
+                                            ?>
+                                                <option value="<?php echo htmlspecialchars($emp['id'] ?? ''); ?>">
+                                                    <?php echo htmlspecialchars($employee_name); ?>
+                                                </option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                        <small class="text-muted d-block mt-2">
+                                            Tip: Use table checkboxes to preselect employees before exporting.
+                                        </small>
+                                    </div>
+                                    <div class="col-lg-7">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <label class="form-label mb-0">Columns</label>
+                                            <div class="d-flex align-items-center gap-2">
+                                                <button type="button" class="btn btn-sm btn-outline-modern" id="selectCommonColumnsBtn">Common</button>
+                                                <div class="form-check form-switch mb-0">
+                                                    <input class="form-check-input" type="checkbox" id="exportAllColumnsToggle" name="export_all_columns" value="1">
+                                                    <label class="form-check-label" for="exportAllColumnsToggle">All columns</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <input type="text" id="exportColumnSearch" class="form-control form-control-sm mb-2" placeholder="Search columns...">
+                                        <div class="border rounded p-3" style="max-height: 320px; overflow-y: auto;">
+                                            <?php if (empty($employee_export_columns)): ?>
+                                                <div class="text-muted">No exportable columns found.</div>
+                                            <?php else: ?>
+                                                <div class="row g-2">
+                                                    <?php foreach ($employee_export_columns as $column): 
+                                                        $column_id = 'export-col-' . preg_replace('/[^a-zA-Z0-9_-]/', '-', $column);
+                                                        $column_label = humanize_employee_column_label($column);
+                                                        $is_common = isset($default_export_lookup[$column]);
+                                                    ?>
+                                                        <div class="col-md-6 export-column-item">
+                                                            <div class="form-check">
+                                                                <input
+                                                                    class="form-check-input export-column-checkbox"
+                                                                    type="checkbox"
+                                                                    name="columns[]"
+                                                                    value="<?php echo htmlspecialchars($column); ?>"
+                                                                    id="<?php echo htmlspecialchars($column_id); ?>"
+                                                                    data-common="<?php echo $is_common ? '1' : '0'; ?>"
+                                                                    <?php echo $is_common ? 'checked' : ''; ?>
+                                                                >
+                                                                <label class="form-check-label" for="<?php echo htmlspecialchars($column_id); ?>">
+                                                                    <?php echo htmlspecialchars($column_label); ?>
+                                                                </label>
+                                                            </div>
+                                                        </div>
+                                                    <?php endforeach; ?>
+                                                </div>
+                                            <?php endif; ?>
+                                        </div>
+                                        <small class="text-muted d-block mt-2">Select the fields to include in the export.</small>
+                                    </div>
+                                </div>
+                                <div class="row mt-4">
+                                    <div class="col-12">
+                                        <label class="form-label">File Format</label>
+                                        <div class="d-flex gap-3">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="file_format" id="formatCSV" value="csv" checked>
+                                                <label class="form-check-label" for="formatCSV">
+                                                    <i class="fas fa-file-csv me-1"></i>CSV (.csv)
+                                                </label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="file_format" id="formatXLSX" value="xlsx">
+                                                <label class="form-check-label" for="formatXLSX">
+                                                    <i class="fas fa-file-excel me-1"></i>Excel (.xlsx)
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <small class="text-muted">Choose the export file format</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <button type="button" class="btn btn-outline-modern" id="exportAllQuickBtn">
+                                    <i class="fas fa-download me-2"></i>Export All
+                                </button>
+                                <button type="submit" class="btn btn-primary-modern">
+                                    <i class="fas fa-file-export me-2"></i>Export Selected
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -963,13 +1216,8 @@ class EmployeeTableManager {
             });
         });
         
-        // Export functionality - export current page data
-        const exportBtn = document.getElementById('exportBtn');
-        if (exportBtn) {
-            exportBtn.addEventListener('click', () => {
-                this.exportToCSV();
-            });
-        }
+        // Export modal controls
+        this.bindExportModal();
         
         // Records per page
         const perPageSelect = document.getElementById('perPageSelect');
@@ -997,6 +1245,184 @@ class EmployeeTableManager {
             if (icon) {
                 icon.className = sortOrder === 'asc' ? 'fas fa-sort-up ms-1' : 'fas fa-sort-down ms-1';
             }
+        }
+    }
+
+    bindExportModal() {
+        const exportBtn = document.getElementById('exportBtn');
+        const exportModal = document.getElementById('employeeExportModal');
+        if (exportBtn && exportModal && !exportBtn.dataset.bound) {
+            exportBtn.dataset.bound = 'true';
+            exportBtn.addEventListener('click', () => {
+                this.openExportModal(exportModal);
+            });
+        }
+
+        const exportAllEmployeesToggle = document.getElementById('exportAllEmployeesToggle');
+        const employeeSelect = document.getElementById('exportEmployeeSelect');
+        if (exportAllEmployeesToggle && employeeSelect && !exportAllEmployeesToggle.dataset.bound) {
+            exportAllEmployeesToggle.dataset.bound = 'true';
+            const handleEmployeeToggle = () => {
+                this.toggleExportEmployeeSelect(exportAllEmployeesToggle, employeeSelect);
+            };
+            exportAllEmployeesToggle.addEventListener('change', handleEmployeeToggle);
+            handleEmployeeToggle();
+        }
+
+        const employeeSearch = document.getElementById('exportEmployeeSearch');
+        if (employeeSearch && employeeSelect && !employeeSearch.dataset.bound) {
+            employeeSearch.dataset.bound = 'true';
+            employeeSearch.addEventListener('input', () => {
+                const term = employeeSearch.value.trim().toLowerCase();
+                Array.from(employeeSelect.options).forEach(option => {
+                    const label = option.textContent.toLowerCase();
+                    option.hidden = term.length > 0 && !label.includes(term);
+                });
+            });
+        }
+
+        const exportAllColumnsToggle = document.getElementById('exportAllColumnsToggle');
+        const columnCheckboxes = Array.from(document.querySelectorAll('.export-column-checkbox'));
+        const columnSearch = document.getElementById('exportColumnSearch');
+        if (exportAllColumnsToggle && columnCheckboxes.length && !exportAllColumnsToggle.dataset.bound) {
+            exportAllColumnsToggle.dataset.bound = 'true';
+            const handleColumnToggle = () => {
+                this.toggleExportColumnSelect(exportAllColumnsToggle, columnCheckboxes, columnSearch);
+            };
+            exportAllColumnsToggle.addEventListener('change', handleColumnToggle);
+            handleColumnToggle();
+        }
+
+        if (columnSearch && !columnSearch.dataset.bound) {
+            columnSearch.dataset.bound = 'true';
+            columnSearch.addEventListener('input', () => {
+                const term = columnSearch.value.trim().toLowerCase();
+                document.querySelectorAll('.export-column-item').forEach(item => {
+                    const label = item.textContent.toLowerCase();
+                    item.style.display = term.length === 0 || label.includes(term) ? '' : 'none';
+                });
+            });
+        }
+
+        const selectCommonBtn = document.getElementById('selectCommonColumnsBtn');
+        if (selectCommonBtn && !selectCommonBtn.dataset.bound) {
+            selectCommonBtn.dataset.bound = 'true';
+            selectCommonBtn.addEventListener('click', () => {
+                if (exportAllColumnsToggle) {
+                    exportAllColumnsToggle.checked = false;
+                }
+                columnCheckboxes.forEach(checkbox => {
+                    checkbox.checked = checkbox.dataset.common === '1';
+                    checkbox.disabled = false;
+                });
+                if (columnSearch) {
+                    columnSearch.disabled = false;
+                }
+            });
+        }
+
+        const exportAllQuickBtn = document.getElementById('exportAllQuickBtn');
+        const exportForm = document.getElementById('employeeExportForm');
+        
+        // Add form validation on submit
+        if (exportForm && !exportForm.dataset.submitBound) {
+            exportForm.dataset.submitBound = 'true';
+            exportForm.addEventListener('submit', function(e) {
+                const formData = new FormData(exportForm);
+                const exportAllEmployees = formData.get('export_all_employees');
+                const exportAllColumns = formData.get('export_all_columns');
+                const employeeIds = formData.getAll('employee_ids[]');
+                const columns = formData.getAll('columns[]');
+                
+                // Validate employees
+                if (!exportAllEmployees && employeeIds.length === 0) {
+                    e.preventDefault();
+                    alert('Please select at least one employee or enable "Export all employees"');
+                    return false;
+                }
+                
+                // Validate columns
+                if (!exportAllColumns && columns.length === 0) {
+                    e.preventDefault();
+                    alert('Please select at least one column or enable "All columns"');
+                    return false;
+                }
+                
+                return true;
+            });
+        }
+        
+        if (exportAllQuickBtn && exportForm && !exportAllQuickBtn.dataset.bound) {
+            exportAllQuickBtn.dataset.bound = 'true';
+            exportAllQuickBtn.addEventListener('click', () => {
+                if (exportAllEmployeesToggle) {
+                    exportAllEmployeesToggle.checked = true;
+                }
+                if (exportAllColumnsToggle) {
+                    exportAllColumnsToggle.checked = true;
+                }
+                if (employeeSelect) {
+                    this.toggleExportEmployeeSelect(exportAllEmployeesToggle, employeeSelect);
+                }
+                if (columnCheckboxes.length) {
+                    this.toggleExportColumnSelect(exportAllColumnsToggle, columnCheckboxes, columnSearch);
+                }
+                exportForm.submit();
+            });
+        }
+    }
+
+    openExportModal(modalElement) {
+        const exportAllEmployeesToggle = document.getElementById('exportAllEmployeesToggle');
+        const employeeSelect = document.getElementById('exportEmployeeSelect');
+        if (exportAllEmployeesToggle && employeeSelect) {
+            const selectedIds = Array.from(document.querySelectorAll('.employee-checkbox:checked'))
+                .map(checkbox => checkbox.value)
+                .filter(Boolean);
+
+            if (selectedIds.length > 0) {
+                exportAllEmployeesToggle.checked = false;
+                Array.from(employeeSelect.options).forEach(option => {
+                    option.selected = selectedIds.includes(option.value);
+                });
+            }
+
+            this.toggleExportEmployeeSelect(exportAllEmployeesToggle, employeeSelect);
+        }
+
+        const exportAllColumnsToggle = document.getElementById('exportAllColumnsToggle');
+        const columnCheckboxes = Array.from(document.querySelectorAll('.export-column-checkbox'));
+        const columnSearch = document.getElementById('exportColumnSearch');
+        if (exportAllColumnsToggle && columnCheckboxes.length) {
+            this.toggleExportColumnSelect(exportAllColumnsToggle, columnCheckboxes, columnSearch);
+        }
+
+        const modal = bootstrap.Modal.getOrCreateInstance(modalElement);
+        modal.show();
+    }
+
+    toggleExportEmployeeSelect(toggle, selectElement) {
+        if (!toggle || !selectElement) return;
+        const shouldDisable = toggle.checked;
+        selectElement.disabled = shouldDisable;
+        if (shouldDisable) {
+            Array.from(selectElement.options).forEach(option => {
+                option.selected = false;
+            });
+        }
+    }
+
+    toggleExportColumnSelect(toggle, checkboxes, searchInput) {
+        if (!toggle) return;
+        const shouldDisable = toggle.checked;
+        checkboxes.forEach(checkbox => {
+            checkbox.disabled = shouldDisable;
+            if (shouldDisable) {
+                checkbox.checked = true;
+            }
+        });
+        if (searchInput) {
+            searchInput.disabled = shouldDisable;
         }
     }
     

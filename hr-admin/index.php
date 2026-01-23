@@ -33,10 +33,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     $isAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
     $page = $_GET['page'] ?? 'dashboard';
     
-    // For non-AJAX profile updates, let the profile page handle it (skip JSON response)
-    if (!$isAjax && $page === 'profile' && $action === 'update_profile') {
-        // Don't set JSON header or exit - let the profile page process the form
-    } else {
+    // For non-AJAX profile updates and employee exports, let the page handle it (skip JSON response)
+    $pageHandledActions = [
+        'profile' => ['update_profile'],
+        'employees' => ['export_employees']
+    ];
+    
+    $shouldSkipJson = !$isAjax && 
+                      isset($pageHandledActions[$page]) && 
+                      in_array($action, $pageHandledActions[$page]);
+    
+    if (!$shouldSkipJson) {
         // Set JSON header for AJAX requests
         header('Content-Type: application/json');
     }
@@ -491,13 +498,217 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         exit;
     }
     
+    // Handle employee export (must be before any output)
+    if ($action === 'export_employees' && $page === 'employees') {
+        require_once __DIR__ . '/../includes/database.php';
+        
+        // Helper functions for export
+        if (!function_exists('get_employee_export_columns')) {
+            function get_employee_export_columns() {
+                try {
+                    $pdo = get_db_connection();
+                    $stmt = $pdo->query("SHOW COLUMNS FROM employees");
+                    $columns = [];
+                    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                        if (!empty($row['Field'])) {
+                            $columns[] = $row['Field'];
+                        }
+                    }
+                    return $columns;
+                } catch (Exception $e) {
+                    return [];
+                }
+            }
+        }
+        
+        if (!function_exists('humanize_employee_column_label')) {
+            function humanize_employee_column_label($column) {
+                $overrides = [
+                    'id' => 'ID',
+                    'employee_no' => 'Employee No',
+                    'employee_type' => 'Employee Type',
+                    'first_name' => 'First Name',
+                    'middle_name' => 'Middle Name',
+                    'surname' => 'Surname',
+                    'post' => 'Post / Assignment',
+                    'license_no' => 'License No',
+                    'license_exp_date' => 'License Expiration Date',
+                    'rlm_exp' => 'RLM Expiration',
+                    'date_hired' => 'Date Hired',
+                    'cp_number' => 'Contact Number',
+                    'sss_no' => 'SSS No',
+                    'pagibig_no' => 'Pag-IBIG No',
+                    'tin_number' => 'TIN Number',
+                    'philhealth_no' => 'PhilHealth No',
+                    'birth_date' => 'Birth Date',
+                    'contact_person' => 'Emergency Contact Person',
+                    'relationship' => 'Emergency Relationship',
+                    'contact_person_address' => 'Emergency Contact Address',
+                    'contact_person_number' => 'Emergency Contact Number'
+                ];
+                if (isset($overrides[$column])) {
+                    return $overrides[$column];
+                }
+                $label = str_replace('_', ' ', $column);
+                $label = ucwords($label);
+                return $label;
+            }
+        }
+        
+        if (!function_exists('format_employee_export_value')) {
+            function format_employee_export_value($value) {
+                if ($value === null) {
+                    return '';
+                }
+                if (is_bool($value)) {
+                    return $value ? 'Yes' : 'No';
+                }
+                if (is_string($value)) {
+                    $trimmed = trim($value);
+                    if ($trimmed === '0000-00-00' || $trimmed === '0000-00-00 00:00:00') {
+                        return '';
+                    }
+                    return $value;
+                }
+                return (string)$value;
+            }
+        }
+        
+        $export_all_employees = !empty($_POST['export_all_employees']);
+        $export_all_columns = !empty($_POST['export_all_columns']);
+        $file_format = isset($_POST['file_format']) && in_array($_POST['file_format'], ['csv', 'xlsx']) ? $_POST['file_format'] : 'csv';
+        
+        $selected_employee_ids = isset($_POST['employee_ids']) && is_array($_POST['employee_ids'])
+            ? array_values(array_unique(array_filter(array_map('intval', $_POST['employee_ids']))))
+            : [];
+        $selected_columns = isset($_POST['columns']) && is_array($_POST['columns'])
+            ? array_values(array_unique(array_filter(array_map('trim', $_POST['columns']))))
+            : [];
+
+        $available_columns = get_employee_export_columns();
+        $available_column_lookup = array_flip($available_columns);
+
+        if ($export_all_columns) {
+            $selected_columns = $available_columns;
+        } else {
+            $selected_columns = array_values(array_filter($selected_columns, function ($column) use ($available_column_lookup) {
+                return isset($available_column_lookup[$column]);
+            }));
+        }
+
+        if (empty($selected_columns)) {
+            $_SESSION['message'] = 'Please select at least one column to export.';
+            $_SESSION['message_type'] = 'error';
+            header('Location: ?page=employees');
+            exit;
+        }
+
+        if (!$export_all_employees && empty($selected_employee_ids)) {
+            $_SESSION['message'] = 'Please select at least one employee to export.';
+            $_SESSION['message_type'] = 'error';
+            header('Location: ?page=employees');
+            exit;
+        }
+
+        try {
+            $pdo = get_db_connection();
+        } catch (Exception $e) {
+            $_SESSION['message'] = 'Unable to export employees right now. Please try again.';
+            $_SESSION['message_type'] = 'error';
+            header('Location: ?page=employees');
+            exit;
+        }
+
+        $quoted_columns = array_map(function ($column) {
+            return "`" . str_replace('`', '', $column) . "`";
+        }, $selected_columns);
+
+        $sql = "SELECT " . implode(', ', $quoted_columns) . " FROM employees";
+        $params = [];
+
+        if (!$export_all_employees) {
+            $placeholders = implode(',', array_fill(0, count($selected_employee_ids), '?'));
+            $sql .= " WHERE id IN ($placeholders)";
+            $params = $selected_employee_ids;
+        }
+
+        $sql .= " ORDER BY created_at DESC";
+
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
+        $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        $header_labels = array_map('humanize_employee_column_label', $selected_columns);
+        
+        if ($file_format === 'xlsx' && class_exists('PhpOffice\PhpSpreadsheet\Spreadsheet')) {
+            // Generate XLSX file
+            $filename = 'employees_export_' . date('Y-m-d') . '.xlsx';
+            
+            header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            header('Content-Disposition: attachment; filename="' . $filename . '"');
+            header('Cache-Control: no-store, no-cache, must-revalidate');
+            header('Pragma: no-cache');
+            
+            $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+            $sheet = $spreadsheet->getActiveSheet();
+            
+            // Set headers
+            $col = 'A';
+            foreach ($header_labels as $header) {
+                $sheet->setCellValue($col . '1', $header);
+                $sheet->getStyle($col . '1')->getFont()->setBold(true);
+                $col++;
+            }
+            
+            // Add data
+            $row = 2;
+            foreach ($data as $dataRow) {
+                $col = 'A';
+                foreach ($selected_columns as $column) {
+                    $value = format_employee_export_value($dataRow[$column] ?? null);
+                    $sheet->setCellValue($col . $row, $value);
+                    $col++;
+                }
+                $row++;
+            }
+            
+            $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+            $writer->save('php://output');
+        } else {
+            // Generate CSV file
+            $filename = 'employees_export_' . date('Y-m-d') . '.csv';
+            header('Content-Type: text/csv; charset=utf-8');
+            header('Content-Disposition: attachment; filename="' . $filename . '"');
+            header('Cache-Control: no-store, no-cache, must-revalidate');
+            header('Pragma: no-cache');
+
+            $output = fopen('php://output', 'w');
+            fputcsv($output, $header_labels);
+
+            foreach ($data as $dataRow) {
+                $formatted_row = [];
+                foreach ($selected_columns as $column) {
+                    $formatted_row[] = format_employee_export_value($dataRow[$column] ?? null);
+                }
+                fputcsv($output, $formatted_row);
+            }
+
+            fclose($output);
+        }
+        exit;
+    }
+    
     // Other POST handlers can be added here
-    // Skip JSON response for non-AJAX profile updates
-    if (!(!$isAjax && $page === 'profile' && $action === 'update_profile')) {
+    // Skip JSON response and "Invalid action" for page-handled actions
+    $allowPageToHandle = !$isAjax && 
+                         isset($pageHandledActions[$page]) && 
+                         in_array($action, $pageHandledActions[$page]);
+    
+    if (!$allowPageToHandle) {
         echo json_encode(['success' => false, 'message' => 'Invalid action']);
         exit;
     }
-    // For profile page non-AJAX, continue to include the page normally
+    // For page-handled actions, continue to include the page normally
 }
 
 // Redirect to dashboard if no page parameter is set
