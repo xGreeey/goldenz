@@ -447,10 +447,12 @@ try {
 // Probationary employees - count from employment_status field
 $probationary_employees = 0;
 try {
+    // Count common variants to handle legacy/misspelled values in DB
+    // (e.g. 'Probation', 'Probitionary', different casing/spacing)
     $stmt = $pdo->query("SELECT COUNT(*) as total
-                          FROM employees
-                          WHERE status = 'Active'
-                            AND employment_status = 'Probationary'");
+                            FROM employees
+                            WHERE status = 'Active'
+                              AND LOWER(TRIM(employment_status)) IN ('probationary', 'probitionary', 'probation')");
     $result = $stmt->fetch(PDO::FETCH_ASSOC);
     $probationary_employees = (int)($result['total'] ?? 0);
 } catch (Exception $e) {
