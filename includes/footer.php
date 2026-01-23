@@ -710,6 +710,19 @@
     }
     ?>
     
+    <!-- Chat Widget - Floating chat accessible from all pages -->
+    <?php 
+    // Only include if user is logged in
+    if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true) {
+        include __DIR__ . '/chat-widget.php';
+    }
+    ?>
+    
+    <!-- Chat Widget JavaScript -->
+    <?php if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true): ?>
+    <script src="<?php echo asset_url('js/chat-widget.js'); ?>"></script>
+    <?php endif; ?>
+    
     <!-- Scroll to Top Button -->
     <button id="scrollToTopBtn" class="scroll-to-top-btn" title="Scroll to top" aria-label="Scroll to top">
         <i class="fas fa-arrow-up"></i>
