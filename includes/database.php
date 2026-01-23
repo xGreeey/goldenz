@@ -335,6 +335,8 @@ if (!function_exists('update_employee')) {
             'gov_exam_json' => 'TEXT NULL',
             // Employment History (stored as JSON)
             'employment_history_json' => 'TEXT NULL',
+            // Employment Status
+            'employment_status' => "ENUM('Probationary', 'Regular', 'Suspended', 'Terminated') NULL",
             // Page 2 Fields - General Information
             'vacancy_source' => 'TEXT NULL',
             'referral_name' => 'VARCHAR(150) NULL',
@@ -417,7 +419,7 @@ if (!function_exists('update_employee')) {
                 trainings_json = ?, gov_exam_taken = ?, gov_exam_json = ?, employment_history_json = ?,
                 height = ?, weight = ?, address = ?, contact_person = ?, 
                 relationship = ?, contact_person_address = ?, contact_person_number = ?, 
-                blood_type = ?, religion = ?, status = ?, updated_at = NOW()
+                blood_type = ?, religion = ?, employment_status = ?, status = ?, updated_at = NOW()
                 WHERE id = ?";
         
         $params = [
@@ -481,6 +483,7 @@ if (!function_exists('update_employee')) {
             $data['contact_person_number'] ?? null,
             $data['blood_type'] ?? null,
             $data['religion'] ?? null,
+            $data['employment_status'] ?? null,
             $data['status'] ?? 'Active',
             $id
         ];
@@ -603,7 +606,7 @@ if (!function_exists('add_employee')) {
             'elementary_school_name', 'elementary_school_address', 'elementary_years',
             'trainings_json', 'gov_exam_taken', 'gov_exam_json', 'employment_history_json',
             'height', 'weight', 'address', 'contact_person', 'relationship', 'contact_person_address', 'contact_person_number',
-            'blood_type', 'religion', 'status',
+            'blood_type', 'religion', 'employment_status', 'status',
             'created_by', 'created_by_name'
         ];
         $placeholders = implode(', ', array_fill(0, count($columns), '?'));
@@ -670,6 +673,7 @@ if (!function_exists('add_employee')) {
             $data['contact_person_number'] ?? null,
             $data['blood_type'] ?? null,
             $data['religion'] ?? null,
+            $data['employment_status'] ?? null,
             $data['status'] ?? 'Active',
             $data['created_by'] ?? null,
             $data['created_by_name'] ?? null

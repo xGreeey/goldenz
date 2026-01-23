@@ -1,1413 +1,792 @@
 <?php
-// Get post statistics
-$post_stats = get_post_statistics();
+/**
+ * Social Media Feed Page
+ * Facebook-style feed for announcements and status updates
+ */
 
-// Get filter parameters
-$filters = [
-    'department' => $_GET['department'] ?? '',
-    'employee_type' => $_GET['employee_type'] ?? '',
-    'status' => $_GET['status'] ?? '',
-    'priority' => $_GET['priority'] ?? '',
-    'search' => $_GET['search'] ?? ''
+// Get current user info
+$current_user_id = $_SESSION['user_id'] ?? null;
+$current_user_name = $_SESSION['name'] ?? 'User';
+$current_user = get_user_by_id($current_user_id);
+$current_user_avatar = !empty($current_user['avatar']) ? get_avatar_url($current_user['avatar']) : null;
+
+// Get user initials for avatar placeholder
+$initials = 'U';
+if ($current_user_name) {
+    $parts = preg_split('/\s+/', trim($current_user_name));
+    $first = $parts[0][0] ?? 'U';
+    $last = (count($parts) > 1) ? ($parts[count($parts) - 1][0] ?? 'A') : ($parts[0][1] ?? 'S');
+    $initials = strtoupper($first . $last);
+}
+
+// Get feed posts (for now, we'll use mock data until table is created)
+// TODO: Replace with actual database query once feed_posts table exists
+$feed_posts = [
+    [
+        'id' => 1,
+        'user_id' => 1,
+        'user_name' => 'Ray Hammond',
+        'user_avatar' => null,
+        'content' => "I'm so glad to share with you guys some photos from my recent trip to the New-York. This city looks amazing, the buildings, nature, people all are beautiful, i highly recommend to visit this cool place! Also i would like to know what is your favorite place here or what you would like to visit? 👋",
+        'location' => 'New York, United States',
+        'time_ago' => '2d',
+        'images' => [
+            'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=800',
+            'https://images.unsplash.com/photo-1500916434205-0c77489c6cf7?w=800'
+        ],
+        'likes' => 925,
+        'comments' => 23,
+        'shares' => 4,
+        'is_liked' => false
+    ],
+    [
+        'id' => 2,
+        'user_id' => 2,
+        'user_name' => 'Todd Torres',
+        'user_avatar' => null,
+        'content' => 'Magical city, always glad to come back 👋',
+        'location' => 'San Francisco, United States',
+        'time_ago' => '5d',
+        'images' => [
+            'https://images.unsplash.com/photo-1501594907352-04cda38ebc29?w=800',
+            'https://images.unsplash.com/photo-1547036967-23d11aacaee0?w=800',
+            'https://images.unsplash.com/photo-1501594907352-04cda38ebc29?w=800'
+        ],
+        'image_count' => 8, // Total images, showing "+5" overlay
+        'likes' => 342,
+        'comments' => 12,
+        'shares' => 2,
+        'is_liked' => true
+    ]
 ];
 
-// Get posts with filters
-$posts = get_posts($filters);
+// Get upcoming events (from events table)
+$upcoming_events = [];
+try {
+    $pdo = get_db_connection();
+    $stmt = $pdo->query("SELECT title, start_date, start_time, event_type 
+                         FROM events 
+                         WHERE start_date >= CURDATE() 
+                         ORDER BY start_date ASC, start_time ASC 
+                         LIMIT 5");
+    $upcoming_events = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (Exception $e) {
+    error_log('Error fetching events: ' . $e->getMessage());
+}
+
+// Get birthdays (from employees table)
+$birthdays = [];
+try {
+    $pdo = get_db_connection();
+    $current_month = date('m');
+    $stmt = $pdo->prepare("SELECT first_name, surname, birth_date 
+                           FROM employees 
+                           WHERE MONTH(birth_date) = ? 
+                           AND DAY(birth_date) >= DAY(CURDATE())
+                           ORDER BY DAY(birth_date) ASC 
+                           LIMIT 5");
+    $stmt->execute([$current_month]);
+    $birthdays = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (Exception $e) {
+    error_log('Error fetching birthdays: ' . $e->getMessage());
+}
+
+// Format event dates
+function formatEventDate($date, $time) {
+    $timestamp = strtotime($date . ' ' . $time);
+    $day = date('D', $timestamp);
+    $month = date('M', $timestamp);
+    $dayNum = date('j', $timestamp);
+    $timeStr = date('g:i A', $timestamp);
+    return "$day, $month $dayNum at $timeStr";
+}
+
+// Format birthday date
+function formatBirthdayDate($date) {
+    $timestamp = strtotime($date);
+    return date('F j', $timestamp);
+}
 ?>
 
-<div class="container-fluid hrdash">
-
-    <!-- Statistics Cards -->
-    <div class="row g-4 mb-4">
-        <div class="col-xl-3 col-md-6">
-            <div class="card hrdash-stat hrdash-stat--primary">
-                <div class="hrdash-stat__header">
-                    <div class="hrdash-stat__label">Total Posts</div>
-                </div>
-                <div class="hrdash-stat__content">
-                    <div class="hrdash-stat__value"><?php echo number_format($post_stats['total_posts']); ?></div>
-                    <div class="hrdash-stat__trend hrdash-stat__trend--positive">
-                        <i class="fas fa-arrow-up"></i>
-                        <span>5%</span>
-                    </div>
-                </div>
-                <div class="hrdash-stat__meta">All posts tracked in the system.</div>
-            </div>
-        </div>
-
-        <div class="col-xl-3 col-md-6">
-            <div class="card hrdash-stat">
-                <div class="hrdash-stat__header">
-                    <div class="hrdash-stat__label">Required Positions</div>
-                </div>
-                <div class="hrdash-stat__content">
-                    <div class="hrdash-stat__value"><?php echo number_format($post_stats['total_required']); ?></div>
-                    <div class="hrdash-stat__trend hrdash-stat__trend--positive">
-                        <i class="fas fa-arrow-up"></i>
-                        <span><?php echo $post_stats['total_filled']; ?> filled</span>
-                    </div>
-                </div>
-                <div class="hrdash-stat__meta">Total staffing requirements across all posts.</div>
-            </div>
-        </div>
-
-        <div class="col-xl-3 col-md-6">
-            <div class="card hrdash-stat">
-                <div class="hrdash-stat__header">
-                    <div class="hrdash-stat__label">Vacant Positions</div>
-                </div>
-                <div class="hrdash-stat__content">
-                    <div class="hrdash-stat__value"><?php echo number_format($post_stats['total_vacant']); ?></div>
-                    <div class="hrdash-stat__trend hrdash-stat__trend--negative">
-                        <i class="fas fa-arrow-down"></i>
-                        <span>2%</span>
-                    </div>
-                </div>
-                <div class="hrdash-stat__meta">Open positions that need to be filled.</div>
-            </div>
-        </div>
-
-        <div class="col-xl-3 col-md-6">
-            <div class="card hrdash-stat">
-                <div class="hrdash-stat__header">
-                    <div class="hrdash-stat__label">Urgent Posts</div>
-                </div>
-                <div class="hrdash-stat__content">
-                    <div class="hrdash-stat__value"><?php echo number_format($post_stats['urgent_posts']); ?></div>
-                    <div class="hrdash-stat__trend hrdash-stat__trend--negative">
-                        <i class="fas fa-arrow-down"></i>
-                        <span>3%</span>
-                    </div>
-                </div>
-                <div class="hrdash-stat__meta">High priority posts requiring immediate attention.</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Filters and Search -->
-    <div class="card card-modern mb-4">
-        <div class="card-body-modern">
-            <div class="row g-3 align-items-end">
-                <div class="col-md-3">
-                    <label class="form-label">Search Posts</label>
-                    <div class="input-group">
-                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+<div class="container-fluid hrdash feed-page">
+    <div class="row g-4">
+        <!-- Main Feed Column -->
+        <div class="col-lg-8">
+            <!-- Top Bar: Create Post -->
+            <div class="card feed-create-post mb-4">
+                <div class="card-body">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="feed-avatar">
+                            <?php if ($current_user_avatar): ?>
+                                <img src="<?php echo htmlspecialchars($current_user_avatar); ?>" 
+                                     alt="<?php echo htmlspecialchars($current_user_name); ?>"
+                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                <div class="feed-avatar-placeholder" style="display: none;">
+                                    <?php echo htmlspecialchars($initials); ?>
+                                </div>
+                            <?php else: ?>
+                                <div class="feed-avatar-placeholder">
+                                    <?php echo htmlspecialchars($initials); ?>
+                                </div>
+                            <?php endif; ?>
+                        </div>
                         <input type="text" 
-                               id="searchInput" 
-                               class="form-control"
-                               placeholder="Search posts, locations, or descriptions..." 
-                               value="<?php echo htmlspecialchars($filters['search']); ?>">
+                               class="form-control feed-whats-new" 
+                               placeholder="What's New?"
+                               id="feedPostInput">
+                        <div class="feed-create-actions">
+                            <button class="btn btn-link feed-action-btn" type="button" title="Emoji">
+                                <i class="far fa-smile"></i>
+                            </button>
+                            <button class="btn btn-link feed-action-btn" type="button" title="Photo">
+                                <i class="far fa-image"></i>
+                            </button>
+                            <button class="btn btn-link feed-action-btn" type="button" title="More">
+                                <i class="fas fa-ellipsis-h"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
-                <div class="col-md-2">
-                    <label class="form-label">Department</label>
-                    <select class="form-select" id="departmentFilter">
-                        <option value="">All Departments</option>
-                        <option value="Security" <?php echo $filters['department'] === 'Security' ? 'selected' : ''; ?>>Security</option>
-                        <option value="Administration" <?php echo $filters['department'] === 'Administration' ? 'selected' : ''; ?>>Administration</option>
-                        <option value="Operations" <?php echo $filters['department'] === 'Operations' ? 'selected' : ''; ?>>Operations</option>
-                        <option value="Management" <?php echo $filters['department'] === 'Management' ? 'selected' : ''; ?>>Management</option>
-                        <option value="Support" <?php echo $filters['department'] === 'Support' ? 'selected' : ''; ?>>Support</option>
-                    </select>
+            </div>
+
+            <!-- Feed Posts -->
+            <div id="feedPostsContainer">
+                <?php foreach ($feed_posts as $post): ?>
+                    <div class="card feed-post mb-4" data-post-id="<?php echo $post['id']; ?>">
+                        <!-- Post Header -->
+                        <div class="card-header feed-post-header">
+                            <div class="d-flex align-items-center">
+                                <div class="feed-post-avatar">
+                                    <?php 
+                                    $post_user_initials = strtoupper(substr($post['user_name'], 0, 2));
+                                    ?>
+                                    <?php if (!empty($post['user_avatar'])): ?>
+                                        <img src="<?php echo htmlspecialchars($post['user_avatar']); ?>" 
+                                             alt="<?php echo htmlspecialchars($post['user_name']); ?>"
+                                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                        <div class="feed-post-avatar-placeholder" style="display: none;">
+                                            <?php echo htmlspecialchars($post_user_initials); ?>
+                                        </div>
+                                    <?php else: ?>
+                                        <div class="feed-post-avatar-placeholder">
+                                            <?php echo htmlspecialchars($post_user_initials); ?>
+                                        </div>
+                                    <?php endif; ?>
+                                </div>
+                                <div class="feed-post-user-info">
+                                    <div class="feed-post-user-name"><?php echo htmlspecialchars($post['user_name']); ?></div>
+                                    <div class="feed-post-meta">
+                                        <span class="feed-post-time"><?php echo htmlspecialchars($post['time_ago']); ?></span>
+                                        <?php if (!empty($post['location'])): ?>
+                                            <span class="feed-post-location">• <?php echo htmlspecialchars($post['location']); ?></span>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                                <div class="ms-auto">
+                                    <button class="btn btn-link feed-post-menu-btn" type="button" title="More options">
+                                        <i class="fas fa-ellipsis-h"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Post Content -->
+                        <div class="card-body">
+                            <div class="feed-post-content">
+                                <?php echo nl2br(htmlspecialchars($post['content'])); ?>
+                            </div>
+
+                            <!-- Post Images -->
+                            <?php if (!empty($post['images'])): ?>
+                                <div class="feed-post-images mt-3">
+                                    <?php 
+                                    $image_count = count($post['images']);
+                                    $display_images = array_slice($post['images'], 0, 3);
+                                    ?>
+                                    <?php if ($image_count <= 2): ?>
+                                        <!-- 2 images side by side -->
+                                        <div class="row g-2">
+                                            <?php foreach ($display_images as $img): ?>
+                                                <div class="col-6">
+                                                    <img src="<?php echo htmlspecialchars($img); ?>" 
+                                                         alt="Post image" 
+                                                         class="feed-post-image">
+                                                </div>
+                                            <?php endforeach; ?>
+                                        </div>
+                                    <?php else: ?>
+                                        <!-- 3+ images grid -->
+                                        <div class="row g-2">
+                                            <?php foreach ($display_images as $index => $img): ?>
+                                                <div class="<?php echo $index === 0 && $image_count > 3 ? 'col-6' : 'col-6'; ?>">
+                                                    <div class="feed-post-image-wrapper position-relative">
+                                                        <img src="<?php echo htmlspecialchars($img); ?>" 
+                                                             alt="Post image" 
+                                                             class="feed-post-image">
+                                                        <?php if ($index === 2 && $image_count > 3): ?>
+                                                            <div class="feed-post-image-overlay">
+                                                                +<?php echo $image_count - 3; ?>
+                                                            </div>
+                                                        <?php endif; ?>
+                                                    </div>
+                                                </div>
+                                            <?php endforeach; ?>
+                                        </div>
+                                    <?php endif; ?>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+
+                        <!-- Post Footer -->
+                        <div class="card-footer feed-post-footer">
+                            <!-- Action Buttons -->
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div class="feed-post-actions-left">
+                                    <button class="btn btn-link feed-action-btn <?php echo $post['is_liked'] ? 'text-danger' : ''; ?>" 
+                                            type="button" 
+                                            data-action="like"
+                                            data-post-id="<?php echo $post['id']; ?>">
+                                        <i class="<?php echo $post['is_liked'] ? 'fas' : 'far'; ?> fa-heart"></i>
+                                    </button>
+                                    <button class="btn btn-link feed-action-btn" type="button" data-action="comment">
+                                        <i class="far fa-comment"></i>
+                                    </button>
+                                    <button class="btn btn-link feed-action-btn" type="button" data-action="share">
+                                        <i class="far fa-paper-plane"></i>
+                                    </button>
+                                </div>
+                                <div class="feed-post-actions-right">
+                                    <button class="btn btn-link feed-action-btn" type="button" data-action="repost">
+                                        <i class="fas fa-retweet"></i>
+                                    </button>
+                                    <button class="btn btn-link feed-action-btn" type="button" data-action="save">
+                                        <i class="far fa-bookmark"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Engagement Stats -->
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div class="feed-post-likes">
+                                    <?php echo number_format($post['likes']); ?> likes
+                                </div>
+                                <div class="feed-post-engagement">
+                                    <?php echo $post['comments']; ?> Comments • <?php echo $post['shares']; ?> Reposts
+                                </div>
+                            </div>
+
+                            <!-- Comment Input -->
+                            <div class="feed-post-comment-input">
+                                <div class="input-group">
+                                    <input type="text" 
+                                           class="form-control" 
+                                           placeholder="Add a comment..."
+                                           data-post-id="<?php echo $post['id']; ?>">
+                                    <button class="btn btn-link feed-comment-emoji" type="button">
+                                        <i class="far fa-smile"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
+
+        <!-- Right Sidebar -->
+        <div class="col-lg-4">
+            <!-- Upcoming Events -->
+            <div class="card feed-sidebar-card mb-4">
+                <div class="card-header feed-sidebar-header">
+                    <h6 class="mb-0">Upcoming Events</h6>
+                    <button class="btn btn-link feed-sidebar-action" type="button" title="Add event">
+                        <i class="fas fa-plus"></i>
+                    </button>
                 </div>
-                <div class="col-md-2">
-                    <label class="form-label">Employee Type</label>
-                    <select class="form-select" id="employeeTypeFilter">
-                        <option value="">All Types</option>
-                        <option value="SG" <?php echo $filters['employee_type'] === 'SG' ? 'selected' : ''; ?>>Security Guard (SG)</option>
-                        <option value="LG" <?php echo $filters['employee_type'] === 'LG' ? 'selected' : ''; ?>>Lady Guard (LG)</option>
-                        <option value="SO" <?php echo $filters['employee_type'] === 'SO' ? 'selected' : ''; ?>>Security Officer (SO)</option>
-                    </select>
+                <div class="card-body">
+                    <?php if (empty($upcoming_events)): ?>
+                        <div class="text-muted text-center py-3">
+                            <small>No upcoming events</small>
+                        </div>
+                    <?php else: ?>
+                        <div class="feed-events-list">
+                            <?php foreach ($upcoming_events as $event): ?>
+                                <div class="feed-event-item">
+                                    <div class="feed-event-icon">
+                                        <?php 
+                                        $icon = 'fa-calendar';
+                                        if ($event['event_type'] === 'Examination') $icon = 'fa-film';
+                                        elseif ($event['event_type'] === 'Academic') $icon = 'fa-graduation-cap';
+                                        elseif ($event['event_type'] === 'Special Event') $icon = 'fa-music';
+                                        ?>
+                                        <i class="fas <?php echo $icon; ?>"></i>
+                                    </div>
+                                    <div class="feed-event-info">
+                                        <div class="feed-event-title"><?php echo htmlspecialchars($event['title']); ?></div>
+                                        <div class="feed-event-date">
+                                            <?php echo formatEventDate($event['start_date'], $event['start_time'] ?? '00:00:00'); ?>
+                                        </div>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
                 </div>
-                <div class="col-md-2">
-                    <label class="form-label">Status</label>
-                    <select class="form-select" id="statusFilter">
-                        <option value="">All Status</option>
-                        <option value="Active" <?php echo $filters['status'] === 'Active' ? 'selected' : ''; ?>>Active</option>
-                        <option value="Inactive" <?php echo $filters['status'] === 'Inactive' ? 'selected' : ''; ?>>Inactive</option>
-                        <option value="Filled" <?php echo $filters['status'] === 'Filled' ? 'selected' : ''; ?>>Filled</option>
-                        <option value="Suspended" <?php echo $filters['status'] === 'Suspended' ? 'selected' : ''; ?>>Suspended</option>
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label">Priority</label>
-                    <select class="form-select" id="priorityFilter">
-                        <option value="">All Priorities</option>
-                        <option value="Urgent" <?php echo $filters['priority'] === 'Urgent' ? 'selected' : ''; ?>>Urgent</option>
-                        <option value="High" <?php echo $filters['priority'] === 'High' ? 'selected' : ''; ?>>High</option>
-                        <option value="Medium" <?php echo $filters['priority'] === 'Medium' ? 'selected' : ''; ?>>Medium</option>
-                        <option value="Low" <?php echo $filters['priority'] === 'Low' ? 'selected' : ''; ?>>Low</option>
-                    </select>
-                </div>
-                <div class="col-auto">
-                    <button class="btn btn-outline-modern" onclick="resetFilters()" title="Clear Filters">
+            </div>
+
+            <!-- Advertising -->
+            <div class="card feed-sidebar-card mb-4">
+                <div class="card-header feed-sidebar-header">
+                    <h6 class="mb-0">Advertising</h6>
+                    <button class="btn btn-link feed-sidebar-action" type="button" title="Close">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Post List -->
-    <div class="card card-modern mb-4">
-        <div class="card-body-modern">
-            <div class="card-header-modern mb-4 d-flex justify-content-between align-items-center">
-                <div>
-                    <h5 class="card-title-modern">Post List</h5>
-                    <small class="card-subtitle">Viewing <?php echo count($posts); ?> posts</small>
-                </div>
-                <div class="d-flex gap-2">
-                    <button class="btn btn-outline-modern" onclick="exportToCSV()" title="Export post list">
-                        <i class="fas fa-download me-2"></i>Export
-                    </button>
-                    <a href="?page=post_assignments" class="btn btn-outline-modern" title="View post assignments">
-                        <i class="fas fa-users-cog me-2"></i>Assignments
-                    </a>
-                    <a href="?page=add_post" class="btn btn-primary-modern">
-                        <span class="hr-icon hr-icon-plus me-2"></span>Add Post
-                    </a>
-                </div>
-            </div>
-            <div class="table-container">
-                <table class="table posts-table" id="postsTable">
-            <thead>
-                <tr>
-                    <th>
-                        <input type="checkbox" id="selectAll" class="form-check-input">
-                    </th>
-                    <th class="sortable" data-sort="post_details">
-                        Post Details
-                        <i class="fas fa-sort"></i>
-                    </th>
-                    <th class="sortable" data-sort="department">
-                        Department
-                        <i class="fas fa-sort"></i>
-                    </th>
-                    <th class="sortable" data-sort="employee_type">
-                        Employee Type
-                        <i class="fas fa-sort"></i>
-                    </th>
-                    <th class="sortable" data-sort="location">
-                        Location
-                        <i class="fas fa-sort"></i>
-                    </th>
-                    <th class="sortable" data-sort="positions">
-                        Positions
-                        <i class="fas fa-sort"></i>
-                    </th>
-                    <th class="sortable" data-sort="priority">
-                        Priority
-                        <i class="fas fa-sort"></i>
-                    </th>
-                    <th class="sortable" data-sort="status">
-                        Status
-                        <i class="fas fa-sort"></i>
-                    </th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php if (empty($posts)): ?>
-                    <tr>
-                        <td colspan="9" class="text-center py-4">
-                            <div class="text-muted">
-                                <i class="fas fa-inbox fa-2x mb-3"></i>
-                                <p>No posts found. <a href="?page=add_post">Create your first post</a></p>
+                <div class="card-body">
+                    <div class="feed-ad-content">
+                        <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400" 
+                             alt="Nike Sneaker" 
+                             class="feed-ad-image mb-3">
+                        <div class="feed-ad-text">
+                            <strong>Special offer: 20% off today</strong>
+                            <div class="mt-2">
+                                <a href="http://nike.com" target="_blank" class="text-primary">http://nike.com</a>
                             </div>
-                        </td>
-                    </tr>
-                <?php else: ?>
-                    <?php foreach ($posts as $post): ?>
-                        <tr data-post-id="<?php echo $post['id']; ?>">
-                            <td>
-                                <input type="checkbox" class="form-check-input post-checkbox" value="<?php echo $post['id']; ?>">
-                            </td>
-                            <td>
-                                <div class="post-info">
-                                    <div class="post-title">
-                                        <strong><?php echo htmlspecialchars($post['post_title']); ?></strong>
-                                        <small class="text-muted d-block"><?php echo htmlspecialchars($post['post_code']); ?></small>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>
-                                <span class="badge badge-department"><?php echo htmlspecialchars($post['department']); ?></span>
-                            </td>
-                            <td>
-                                <span class="badge badge-employee-type">
-                                    <?php 
-                                    $type_labels = ['SG' => 'Security Guard', 'LG' => 'Lady Guard', 'SO' => 'Security Officer'];
-                                    echo $type_labels[$post['employee_type']] ?? $post['employee_type'];
-                                    ?>
-                                </span>
-                            </td>
-                            <td>
-                                <div class="location-info">
-                                    <i class="fas fa-map-marker-alt me-1"></i>
-                                    <?php echo htmlspecialchars($post['location']); ?>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="position-info">
-                                    <div class="d-flex align-items-center">
-                                        <?php
-                                        $requiredCount = (int)($post['required_count'] ?? 0);
-                                        $currentEmployees = (int)($post['current_employees'] ?? 0);
-                                        $remainingVacancies = (int)($post['remaining_vacancies'] ?? max(0, $requiredCount - $currentEmployees));
-                                        $fillPercent = $requiredCount > 0 ? min(100, ($currentEmployees / $requiredCount) * 100) : 0;
+                            <div class="mt-2 text-muted small">
+                                Comfort is king, but that doesn't mean you have to sacrifice style.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Birthdays -->
+            <div class="card feed-sidebar-card">
+                <div class="card-header feed-sidebar-header">
+                    <h6 class="mb-0">Birthdays</h6>
+                    <button class="btn btn-link feed-sidebar-action" type="button" title="More">
+                        <i class="fas fa-ellipsis-h"></i>
+                    </button>
+                </div>
+                <div class="card-body">
+                    <?php if (empty($birthdays)): ?>
+                        <div class="text-muted text-center py-3">
+                            <small>No birthdays this month</small>
+                        </div>
+                    <?php else: ?>
+                        <div class="feed-birthdays-list">
+                            <?php 
+                            $current_birthday_date = null;
+                            foreach ($birthdays as $birthday): 
+                                $birthday_date = formatBirthdayDate($birthday['birth_date']);
+                                if ($birthday_date !== $current_birthday_date):
+                                    $current_birthday_date = $birthday_date;
+                            ?>
+                                <div class="feed-birthday-date"><?php echo htmlspecialchars($birthday_date); ?></div>
+                            <?php endif; ?>
+                                <div class="feed-birthday-item">
+                                    <div class="feed-birthday-avatar">
+                                        <?php 
+                                        $birthday_initials = strtoupper(substr($birthday['first_name'], 0, 1) . substr($birthday['surname'], 0, 1));
                                         ?>
-                                        <span class="me-2"><?php echo $currentEmployees; ?>/<?php echo $requiredCount; ?></span>
-                                        <div class="progress" style="width: 60px; height: 6px;">
-                                            <div class="progress-bar <?php echo ($requiredCount > 0 && $currentEmployees >= $requiredCount) ? 'bg-success' : 'bg-warning'; ?>" 
-                                                 style="width: <?php echo $fillPercent; ?>%">
-                                            </div>
+                                        <div class="feed-birthday-avatar-placeholder">
+                                            <?php echo htmlspecialchars($birthday_initials); ?>
                                         </div>
                                     </div>
-                                    <small class="text-muted">
-                                        <?php echo $remainingVacancies; ?> remaining
-                                    </small>
+                                    <div class="feed-birthday-name">
+                                        <?php echo htmlspecialchars($birthday['first_name'] . ' ' . $birthday['surname']); ?>
+                                    </div>
                                 </div>
-                            </td>
-                            <td>
-                                <span class="priority-badge priority-<?php echo strtolower($post['priority']); ?>">
-                                    <?php echo htmlspecialchars($post['priority']); ?>
-                                </span>
-                            </td>
-                            <td>
-                                <span class="status-badge status-<?php echo strtolower($post['status']); ?>">
-                                    <?php echo htmlspecialchars($post['status']); ?>
-                                </span>
-                            </td>
-                            <td>
-                                <div class="post-actions">
-                                    <a href="?page=edit_post&id=<?php echo $post['id']; ?>" class="btn btn-sm btn-outline-primary" title="Edit Post">
-                                        <span class="hr-icon hr-icon-edit"></span>
-                                    </a>
-                                    <a href="?page=post_assignments&post_id=<?php echo $post['id']; ?>" class="btn btn-sm btn-outline-info" title="View Assignments">
-                                        <span class="hr-icon hr-icon-view"></span>
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
-                <?php endif; ?>
-            </tbody>
-        </table>
-            </div>
-
-            <!-- Pagination -->
-            <div class="pagination-container mt-4">
-                <div class="pagination-info">
-                    <span>Showing <strong><?php echo count($posts); ?></strong> of <strong><?php echo count($posts); ?></strong> posts</span>
-                </div>
-                <div class="pagination-controls">
-                    <!-- Pagination controls would go here -->
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<script>
-// Update time display every minute for posts page (HR Admin only)
-<?php if (($_SESSION['user_role'] ?? '') === 'hr_admin'): ?>
-(function() {
-    function updateTime() {
-        const timeElement = document.getElementById('current-time-posts');
-        if (timeElement) {
-            const now = new Date();
-            const hours = now.getHours();
-            const minutes = now.getMinutes();
-            const ampm = hours >= 12 ? 'PM' : 'AM';
-            const displayHours = hours % 12 || 12;
-            const displayMinutes = minutes < 10 ? '0' + minutes : minutes;
-            timeElement.textContent = displayHours + ':' + displayMinutes + ' ' + ampm.toUpperCase();
-        }
-    }
-    
-    // Update immediately
-    updateTime();
-    
-    // Update every minute
-    setInterval(updateTime, 60000);
-})();
-<?php endif; ?>
-</script>
-
 <style>
-/* ============================================
-   MODERN POSTS PAGE STYLES
-   ============================================ */
-
-/* Hide the main header with black background */
-.main-content .header {
-    display: none !important;
+/* Feed Page Styles */
+.feed-page {
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
-/* Container */
-.posts-modern {
-    /* Use portal-wide spacing system (font-override.css) instead of page-local padding */
-    padding: 0;
-    max-width: 100%;
-    overflow-x: hidden;
-    min-height: 100vh;
-    background: #ffffff; /* default for non HR-Admin portals */
+/* Create Post Bar */
+.feed-create-post {
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-/* HR-Admin: use light separated background */
-body.portal-hr-admin .posts-modern {
-    background: #f8fafc;
+.feed-avatar {
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
 }
 
-/* Page Header */
-.page-header-modern {
+.feed-avatar img,
+.feed-avatar-placeholder {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+}
+
+.feed-avatar-placeholder {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
     display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 2rem;
-}
-
-.page-title-modern {
-    flex: 1;
-}
-
-.page-title-main {
-    font-size: 2rem;
-    font-weight: 700;
-    color: #1e293b;
-    margin: 0 0 0.5rem 0;
-    letter-spacing: -0.02em;
-}
-
-.page-subtitle {
-    font-size: 0.9375rem;
-    color: #64748b;
-    margin: 0;
-    font-weight: 400;
-}
-
-.page-actions-modern {
-    display: flex;
-    gap: 0.75rem;
     align-items: center;
-}
-
-/* Buttons */
-.btn-primary-modern {
-    background: linear-gradient(135deg, #1fb2d5 0%, #0ea5e9 100%);
-    color: #ffffff;
-    border: none;
-    padding: 0.5rem 1rem;
-    border-radius: 8px;
+    justify-content: center;
     font-weight: 600;
-    font-size: 0.875rem;
-    transition: all 0.2s ease;
-    box-shadow: 0 2px 8px rgba(31, 178, 213, 0.25);
-}
-
-.btn-primary-modern:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(31, 178, 213, 0.35);
-    background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
-}
-
-.btn-outline-modern {
-    border: 1.5px solid #e2e8f0;
-    color: #475569;
-    background: #ffffff;
-    padding: 0.5rem 1rem;
-    border-radius: 8px;
-    font-weight: 500;
-    font-size: 0.875rem;
-    transition: all 0.2s ease;
-}
-
-.btn-outline-modern:hover {
-    background: #f1f5f9;
-    border-color: #cbd5e1;
-    color: #334155;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-}
-
-.btn-outline-secondary-modern {
-    border: 1.5px solid #e2e8f0;
-    color: #64748b;
-    background: #ffffff;
-    padding: 0.5rem 1rem;
-    border-radius: 8px;
-    font-weight: 500;
-    font-size: 0.875rem;
-    transition: all 0.2s ease;
-}
-
-.btn-outline-secondary-modern:hover {
-    background: #f1f5f9;
-    border-color: #cbd5e1;
-    color: #475569;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-}
-
-/* Summary Cards */
-.summary-cards-modern {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1.5rem;
-}
-
-.stat-card-modern {
-    border: none;
-    border-radius: 16px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.04);
-    background: #ffffff;
-    transition: all 0.3s ease;
-    overflow: hidden;
-}
-
-.stat-card-modern:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08), 0 8px 24px rgba(0, 0, 0, 0.06);
-}
-
-.card-body-modern {
-    padding: 1.5rem;
-}
-
-.stat-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
-}
-
-.stat-label {
-    font-size: 0.8125rem;
-    color: #64748b;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-
-.stat-icon {
     font-size: 1.125rem;
-    color: #cbd5e1;
-    opacity: 0.6;
 }
 
-.stat-content {
+.feed-whats-new {
+    flex: 1;
+    border-radius: 24px;
+    border: 1px solid #e2e8f0;
+    padding: 0.75rem 1.25rem;
+    font-size: 0.9375rem;
+}
+
+.feed-whats-new:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.feed-create-actions {
     display: flex;
-    align-items: baseline;
-    gap: 0.75rem;
-    margin-bottom: 0.5rem;
+    gap: 0.5rem;
 }
 
-.stat-number {
-    font-size: 2.25rem;
-    font-weight: 700;
-    color: #1e293b;
-    margin: 0;
-    line-height: 1;
-    letter-spacing: -0.02em;
-    /* Number rendering fix - ensures digits display correctly on Windows 10/11 */
-    font-family: 'Segoe UI', Arial, Helvetica, sans-serif !important;
-    font-variant-numeric: tabular-nums !important;
-    font-feature-settings: 'tnum' !important;
-    -webkit-font-feature-settings: 'tnum' !important;
-    -moz-font-feature-settings: 'tnum' !important;
-    text-rendering: optimizeLegibility !important;
-    -webkit-font-smoothing: antialiased !important;
-    -moz-osx-font-smoothing: grayscale !important;
+.feed-action-btn {
+    color: #64748b;
+    padding: 0.5rem;
+    border: none;
+    background: none;
+    font-size: 1.125rem;
 }
 
-.stat-footer {
-    font-size: 0.8125rem;
-    color: #94a3b8;
-    display: block;
-    margin-top: 0.5rem;
+.feed-action-btn:hover {
+    color: #3b82f6;
 }
 
-/* Badges */
-.badge-success-modern,
-.badge-primary-modern,
-.badge-warning-modern,
-.badge-danger-modern {
-    font-size: 0.75rem;
+/* Feed Post Card */
+.feed-post {
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: none;
+}
+
+.feed-post-header {
+    background: white;
+    border-bottom: 1px solid #f1f5f9;
+    padding: 1rem 1.25rem;
+}
+
+.feed-post-avatar {
+    width: 48px;
+    height: 48px;
+    margin-right: 0.75rem;
+    flex-shrink: 0;
+}
+
+.feed-post-avatar img,
+.feed-post-avatar-placeholder {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+}
+
+.feed-post-avatar-placeholder {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     font-weight: 600;
-    padding: 0.375rem 0.75rem;
-    border-radius: 6px;
-    letter-spacing: 0.01em;
+    font-size: 0.875rem;
 }
 
-.badge-success-modern {
-    background: #dcfce7;
-    color: #16a34a;
+.feed-post-user-name {
+    font-weight: 600;
+    color: #0f172a;
+    font-size: 0.9375rem;
+    margin-bottom: 0.125rem;
 }
 
-.badge-primary-modern {
-    background: #dbeafe;
-    color: #2563eb;
+.feed-post-meta {
+    font-size: 0.8125rem;
+    color: #64748b;
 }
 
-.badge-warning-modern {
-    background: #fef3c7;
-    color: #d97706;
+.feed-post-time {
+    font-weight: 500;
 }
 
-.badge-danger-modern {
-    background: #fee2e2;
-    color: #dc2626;
+.feed-post-location {
+    color: #94a3b8;
 }
 
-/* Filters Section */
-.filters-modern {
-    background: #ffffff;
-    border-radius: 16px;
-    padding: 1.5rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.04);
+.feed-post-menu-btn {
+    color: #64748b;
+    padding: 0.25rem 0.5rem;
+}
+
+.feed-post-content {
+    color: #0f172a;
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    padding: 0;
+}
+
+.feed-post-images {
+    margin-top: 1rem;
+}
+
+.feed-post-image {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+    object-fit: cover;
+}
+
+.feed-post-image-wrapper {
+    position: relative;
+}
+
+.feed-post-image-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 1.25rem;
+    border-radius: 8px;
+}
+
+.feed-post-footer {
+    background: white;
+    border-top: 1px solid #f1f5f9;
+    padding: 1rem 1.25rem;
+}
+
+.feed-post-actions-left,
+.feed-post-actions-right {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.feed-post-likes {
+    font-weight: 600;
+    color: #0f172a;
+    font-size: 0.9375rem;
+}
+
+.feed-post-engagement {
+    color: #64748b;
+    font-size: 0.875rem;
+}
+
+.feed-post-comment-input .form-control {
+    border-radius: 24px;
+    border: 1px solid #e2e8f0;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+}
+
+.feed-comment-emoji {
+    color: #64748b;
+    padding: 0.5rem;
+}
+
+/* Sidebar Cards */
+.feed-sidebar-card {
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: none;
+}
+
+.feed-sidebar-header {
+    background: white;
+    border-bottom: 1px solid #f1f5f9;
+    padding: 1rem 1.25rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.feed-sidebar-header h6 {
+    font-weight: 600;
+    color: #0f172a;
+    margin: 0;
+}
+
+.feed-sidebar-action {
+    color: #64748b;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+/* Events List */
+.feed-events-list {
     display: flex;
     flex-direction: column;
     gap: 1rem;
 }
 
-.search-control-modern {
-    width: 100%;
-}
-
-.search-input-modern {
-    position: relative;
-    display: flex;
-    align-items: center;
-}
-
-.search-icon {
-    position: absolute;
-    left: 1rem;
-    color: #94a3b8;
-    font-size: 0.875rem;
-    z-index: 2;
-}
-
-.search-field {
-    width: 100%;
-    padding: 0.75rem 1rem 0.75rem 2.75rem;
-    border: 1.5px solid #e2e8f0;
-    border-radius: 8px;
-    font-size: 0.875rem;
-    color: #475569;
-    background: #ffffff;
-    transition: all 0.2s ease;
-}
-
-.search-field:focus {
-    outline: none;
-    border-color: #1fb2d5;
-    box-shadow: 0 0 0 3px rgba(31, 178, 213, 0.1);
-}
-
-.filter-controls-modern {
+.feed-event-item {
     display: flex;
     gap: 0.75rem;
-    flex-wrap: wrap;
+    align-items: flex-start;
 }
 
-.form-select-modern {
-    flex: 1;
-    min-width: 150px;
-    padding: 0.625rem 0.875rem;
-    border: 1.5px solid #e2e8f0;
+.feed-event-icon {
+    width: 40px;
+    height: 40px;
     border-radius: 8px;
-    font-size: 0.875rem;
-    color: #475569;
-    background: #ffffff;
-    transition: all 0.2s ease;
-    cursor: pointer;
-}
-
-.form-select-modern:focus {
-    outline: none;
-    border-color: #1fb2d5;
-    box-shadow: 0 0 0 3px rgba(31, 178, 213, 0.1);
-}
-
-.control-buttons-modern {
+    background: #f1f5f9;
     display: flex;
-    gap: 0.75rem;
     align-items: center;
+    justify-content: center;
+    color: #3b82f6;
+    flex-shrink: 0;
 }
 
-/* Table Container */
-.table-container {
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 16px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.04);
-    overflow-x: hidden;
-    overflow-y: visible;
-    margin-bottom: 2rem;
-    width: 100%;
-    max-width: 100%;
-}
-
-/* Posts Table Styling */
-.posts-table {
-    width: 100%;
-    max-width: 100%;
-    margin: 0;
-    border-collapse: separate;
-    border-spacing: 0;
-    background: #ffffff;
-    font-size: 0.9375rem;
-    table-layout: auto;
-    min-width: 900px; /* Minimum width for readability */
-}
-
-.posts-table thead {
-    background: #f8fafc;
-}
-
-.posts-table th {
-    background: #f8fafc;
-    border-bottom: 2px solid #e2e8f0;
-    padding: 0.625rem 0.75rem;
+.feed-event-title {
     font-weight: 600;
-    color: #64748b;
-    text-align: left;
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    white-space: normal;
-    word-wrap: break-word;
-}
-
-.posts-table th:first-child {
-    width: 50px;
-    text-align: center;
-    padding: 0.625rem 0.75rem;
-}
-
-.posts-table th:last-child {
-    width: 120px;
-    text-align: center;
-    padding: 0.625rem 0.75rem;
-}
-
-.posts-table tbody tr {
-    border-bottom: 1px solid #f1f5f9;
-    transition: all 0.2s ease;
-    background-color: #ffffff;
-}
-
-.posts-table tbody tr:hover {
-    background-color: #f8fafc;
-    transform: translateX(2px);
-}
-
-.posts-table tbody tr:last-child {
-    border-bottom: none;
-}
-
-.posts-table td {
-    padding: 0.625rem 0.75rem;
-    border-bottom: 1px solid #f1f5f9;
-    vertical-align: middle;
-    color: #475569;
+    color: #0f172a;
     font-size: 0.875rem;
-    white-space: normal;
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-}
-
-.posts-table td:first-child {
-    padding: 0.625rem 0.75rem;
-    text-align: center;
-}
-
-.posts-table td:last-child {
-    padding: 0.625rem 0.75rem;
-    text-align: center;
-}
-
-.post-info .post-title {
-    font-weight: 600;
-    color: #1e293b;
-}
-
-.post-info .post-title strong {
-    color: #1e293b;
-    font-size: 0.9375rem;
-    display: block;
     margin-bottom: 0.25rem;
-    font-weight: 600;
 }
 
-.post-info .post-title small {
+.feed-event-date {
     color: #64748b;
     font-size: 0.8125rem;
 }
 
-.location-info {
-    display: flex;
-    align-items: center;
+/* Advertising */
+.feed-ad-image {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+}
+
+.feed-ad-text {
     font-size: 0.875rem;
-    color: #475569;
+    color: #0f172a;
 }
 
-.location-info i {
-    color: #94a3b8;
-    margin-right: 0.5rem;
-}
-
-.position-info {
-    color: #475569;
-}
-
-.position-info .progress {
-    background-color: #e2e8f0;
-    height: 8px;
-    border-radius: 6px;
-    overflow: hidden;
-}
-
-.position-info .progress-bar {
-    border-radius: 6px;
-    transition: width 0.3s ease;
-}
-
-.position-info small {
-    color: #64748b;
-    font-size: 0.8125rem;
-    display: block;
-    margin-top: 0.375rem;
-}
-
-/* Badge Styles */
-.badge-department {
-    padding: 0.375rem 0.75rem;
-    border-radius: 6px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    background: #dbeafe;
-    color: #2563eb;
-    border: none;
-    display: inline-block;
-}
-
-.badge-employee-type {
-    padding: 0.375rem 0.75rem;
-    border-radius: 6px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    background: #e0f2fe;
-    color: #0284c7;
-    border: none;
-    display: inline-block;
-}
-
-.priority-badge {
-    padding: 0.375rem 0.75rem;
-    border-radius: 6px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    border: none;
-    display: inline-block;
-}
-
-.priority-badge.priority-urgent {
-    background: #fee2e2;
-    color: #dc2626;
-}
-
-.priority-badge.priority-high {
-    background: #fef3c7;
-    color: #d97706;
-}
-
-.priority-badge.priority-medium {
-    background: #dbeafe;
-    color: #2563eb;
-}
-
-.priority-badge.priority-low {
-    background: #f1f5f9;
-    color: #64748b;
-}
-
-.status-badge {
-    padding: 0.375rem 0.75rem;
-    border-radius: 6px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    display: inline-block;
-}
-
-.status-badge.status-active {
-    background: #dcfce7;
-    color: #16a34a;
-}
-
-.status-badge.status-inactive {
-    background: #f1f5f9;
-    color: #64748b;
-}
-
-.status-badge.status-filled {
-    background: #dbeafe;
-    color: #2563eb;
-}
-
-.status-badge.status-suspended {
-    background: #fef3c7;
-    color: #d97706;
-}
-
-/* Post Actions - Table Actions */
-.posts-table .post-actions {
+/* Birthdays */
+.feed-birthdays-list {
     display: flex;
-    gap: 0.5rem;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.feed-birthday-date {
+    font-weight: 600;
+    color: #0f172a;
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+}
+
+.feed-birthday-date:first-child {
+    margin-top: 0;
+}
+
+.feed-birthday-item {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+.feed-birthday-avatar-placeholder {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0;
-}
-
-.posts-table .post-actions .btn {
-    min-width: 36px;
-    padding: 0.5rem;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s ease;
-    border: 1.5px solid #e2e8f0;
-    border-radius: 6px;
-    background: #ffffff;
-}
-
-.posts-table .post-actions .btn i {
-    font-size: 0.875rem;
-}
-
-.posts-table .post-actions .btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.posts-table .post-actions .btn:active {
-    transform: translateY(0);
-}
-
-.posts-table .post-actions .btn-outline-primary {
-    color: #1fb2d5;
-    border-color: #1fb2d5;
-}
-
-.posts-table .post-actions .btn-outline-primary:hover {
-    background: #1fb2d5;
-    color: #ffffff;
-    border-color: #1fb2d5;
-}
-
-.posts-table .post-actions .btn-outline-info {
-    color: #06b6d4;
-    border-color: #06b6d4;
-}
-
-.posts-table .post-actions .btn-outline-info:hover {
-    background: #06b6d4;
-    color: #ffffff;
-    border-color: #06b6d4;
-}
-
-/* Pagination */
-.pagination-container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1.5rem;
-    background: #ffffff;
-    border-radius: 12px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.04);
-    margin-top: 2rem;
-}
-
-.pagination-info {
-    color: #64748b;
-    font-size: 0.875rem;
-}
-
-.pagination-info strong {
-    color: #1e293b;
     font-weight: 600;
+    font-size: 0.875rem;
+    flex-shrink: 0;
 }
 
-/* Form Controls */
-.form-check-input {
-    width: 1.125rem;
-    height: 1.125rem;
-    border: 1.5px solid #cbd5e1;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.form-check-input:checked {
-    background-color: #1fb2d5;
-    border-color: #1fb2d5;
-}
-
-.form-check-input:focus {
-    box-shadow: 0 0 0 3px rgba(31, 178, 213, 0.1);
+.feed-birthday-name {
+    font-weight: 500;
+    color: #0f172a;
+    font-size: 0.875rem;
 }
 
 /* Responsive */
-@media (max-width: 768px) {
-    .posts-modern {
-        padding: 1.5rem 1rem;
-    }
-    
-    .page-header-modern {
-        flex-direction: column;
-        gap: 1rem;
-    }
-    
-    .page-actions-modern {
-        width: 100%;
-        justify-content: flex-start;
-    }
-    
-    .summary-cards-modern {
-        grid-template-columns: 1fr;
-    }
-    
-    .stat-number {
-        font-size: 1.75rem;
-    }
-    
-    .filters-modern {
-        padding: 1rem;
-    }
-    
-    .filter-controls-modern {
-        flex-direction: column;
-    }
-    
-    .form-select-modern {
-        width: 100%;
-    }
-    
-    .control-buttons-modern {
-        flex-direction: column;
-        width: 100%;
-    }
-    
-    .control-buttons-modern .btn {
-        width: 100%;
-    }
-    
-    .posts-table {
-        font-size: 0.8125rem;
-    }
-    
-    .posts-table th,
-    .posts-table td {
-        padding: 0.75rem 0.5rem;
+@media (max-width: 991px) {
+    .feed-page .col-lg-4 {
+        margin-top: 2rem;
     }
 }
-
-/* Dark theme support for Posts page */
-html[data-theme="dark"] .hrdash {
-    background: var(--interface-bg) !important;
-    color: var(--interface-text) !important;
-}
-
-html[data-theme="dark"] .page-title-main {
-    color: var(--interface-text) !important;
-}
-
-html[data-theme="dark"] .page-subtitle-modern {
-    color: var(--interface-text-muted) !important;
-}
-
-html[data-theme="dark"] .hrdash-stat {
-    background: #1a1d23 !important;
-    border-color: var(--interface-border) !important;
-    color: var(--interface-text) !important;
-}
-
-html[data-theme="dark"] .hrdash-stat__label {
-    color: var(--interface-text-muted) !important;
-}
-
-html[data-theme="dark"] .hrdash-stat__value {
-    color: var(--interface-text) !important;
-}
-
-html[data-theme="dark"] .hrdash-stat__meta {
-    color: var(--interface-text-muted) !important;
-}
-
-html[data-theme="dark"] .filters-modern {
-    background: #1a1d23 !important;
-    border-color: var(--interface-border) !important;
-    color: var(--interface-text) !important;
-}
-
-html[data-theme="dark"] .search-input-modern {
-    background: transparent !important;
-}
-
-html[data-theme="dark"] .search-field {
-    background-color: #0f1114 !important;
-    border-color: var(--interface-border) !important;
-    color: var(--interface-text) !important;
-}
-
-html[data-theme="dark"] .search-field::placeholder {
-    color: var(--interface-text-muted) !important;
-}
-
-html[data-theme="dark"] .search-icon {
-    color: var(--interface-text-muted) !important;
-}
-
-html[data-theme="dark"] .form-select-modern {
-    background-color: #0f1114 !important;
-    border-color: var(--interface-border) !important;
-    color: var(--interface-text) !important;
-}
-
-html[data-theme="dark"] .btn-outline-modern,
-html[data-theme="dark"] .btn-outline-secondary-modern {
-    background-color: #1a1d23 !important;
-    border-color: var(--interface-border) !important;
-    color: var(--interface-text) !important;
-}
-
-html[data-theme="dark"] .btn-outline-modern:hover,
-html[data-theme="dark"] .btn-outline-secondary-modern:hover {
-    background-color: var(--interface-hover) !important;
-    border-color: var(--interface-border) !important;
-    color: var(--interface-text) !important;
-}
-
-html[data-theme="dark"] .table-container {
-    background: #1a1d23 !important;
-    border: 1px solid var(--interface-border) !important;
-    border-color: var(--interface-border) !important;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2), 0 4px 12px rgba(0, 0, 0, 0.15) !important;
-}
-
-html[data-theme="dark"] .posts-table {
-    background: #1a1d23 !important;
-    color: var(--interface-text) !important;
-    border: none !important;
-    border-collapse: collapse !important;
-}
-
-html[data-theme="dark"] .posts-table * {
-    border-color: var(--interface-border) !important;
-}
-
-html[data-theme="dark"] .posts-table thead {
-    background: #1a1d23 !important;
-    border: none !important;
-}
-
-html[data-theme="dark"] .posts-table th {
-    background: #1a1d23 !important;
-    color: var(--interface-text) !important;
-    border-bottom: 2px solid var(--interface-border) !important;
-    border-right: none !important;
-    border-left: none !important;
-    border-top: none !important;
-}
-
-html[data-theme="dark"] .posts-table th:first-child {
-    border-left: none !important;
-}
-
-html[data-theme="dark"] .posts-table th:last-child {
-    border-right: none !important;
-}
-
-html[data-theme="dark"] .posts-table tbody tr {
-    background-color: #1a1d23 !important;
-    border-bottom: 1px solid var(--interface-border) !important;
-    border-left: none !important;
-    border-right: none !important;
-    border-top: none !important;
-}
-
-html[data-theme="dark"] .posts-table tbody tr:hover {
-    background-color: var(--interface-hover) !important;
-}
-
-html[data-theme="dark"] .posts-table tbody tr:last-child {
-    border-bottom: none !important;
-}
-
-html[data-theme="dark"] .posts-table td {
-    background-color: transparent !important;
-    color: var(--interface-text) !important;
-    border-bottom: 1px solid var(--interface-border) !important;
-    border-left: none !important;
-    border-right: none !important;
-    border-top: none !important;
-}
-
-html[data-theme="dark"] .posts-table td:first-child {
-    border-left: none !important;
-}
-
-html[data-theme="dark"] .posts-table td:last-child {
-    border-right: none !important;
-}
-
-html[data-theme="dark"] .post-title strong {
-    color: var(--interface-text) !important;
-}
-
-html[data-theme="dark"] .post-title small {
-    color: var(--interface-text-muted) !important;
-}
-
-html[data-theme="dark"] .location-info {
-    color: var(--interface-text) !important;
-}
-
-html[data-theme="dark"] .location-info i {
-    color: var(--interface-text-muted) !important;
-}
-
-html[data-theme="dark"] .position-info {
-    color: var(--interface-text) !important;
-}
-
-html[data-theme="dark"] .position-info small {
-    color: var(--interface-text-muted) !important;
-}
-
-html[data-theme="dark"] .position-info .progress {
-    background-color: rgba(255, 255, 255, 0.1) !important;
-}
-
-html[data-theme="dark"] .posts-table .post-actions .btn {
-    background: #1a1d23 !important;
-    border-color: var(--interface-border) !important;
-    color: var(--interface-text) !important;
-}
-
-html[data-theme="dark"] .posts-table .post-actions .btn-outline-primary {
-    color: var(--primary-color) !important;
-    border-color: var(--primary-color) !important;
-}
-
-html[data-theme="dark"] .posts-table .post-actions .btn-outline-primary:hover {
-    background: var(--primary-color) !important;
-    color: white !important;
-}
-
-html[data-theme="dark"] .posts-table .post-actions .btn-outline-info {
-    color: #06b6d4 !important;
-    border-color: #06b6d4 !important;
-}
-
-html[data-theme="dark"] .posts-table .post-actions .btn-outline-info:hover {
-    background: #06b6d4 !important;
-    color: white !important;
-}
-
-html[data-theme="dark"] .pagination-container {
-    background: #1a1d23 !important;
-    border-color: var(--interface-border) !important;
-    color: var(--interface-text) !important;
-}
-
-html[data-theme="dark"] .pagination-info {
-    color: var(--interface-text-muted) !important;
-}
-
-html[data-theme="dark"] .pagination-info strong {
-    color: var(--interface-text) !important;
-}
-
-html[data-theme="dark"] .form-check-input {
-    background-color: #0f1114 !important;
-    border-color: var(--interface-border) !important;
-}
-
-html[data-theme="dark"] .form-check-input:checked {
-    background-color: var(--primary-color) !important;
-    border-color: var(--primary-color) !important;
-}
-
 </style>
 
 <script>
-// Posts Management JavaScript
-class PostsManager {
-    constructor() {
-        this.initializeTable();
-        this.bindEvents();
-    }
-
-    initializeTable() {
-        // Initialize any table-specific functionality
-        console.log('Posts table initialized');
-    }
-
-    bindEvents() {
-        // Search functionality
-        const searchInput = document.getElementById('searchInput');
-        if (searchInput) {
-            let searchTimeout;
-            searchInput.addEventListener('input', (e) => {
-                clearTimeout(searchTimeout);
-                searchTimeout = setTimeout(() => {
-                    this.performSearch(e.target.value);
-                }, 300);
-            });
-        }
-
-        // Filter functionality
-        const filters = ['departmentFilter', 'employeeTypeFilter', 'statusFilter', 'priorityFilter'];
-        filters.forEach(filterId => {
-            const filter = document.getElementById(filterId);
-            if (filter) {
-                filter.addEventListener('change', () => {
-                    this.applyFilters();
-                });
-            }
-        });
-
-        // Select all functionality
-        const selectAll = document.getElementById('selectAll');
-        if (selectAll) {
-            selectAll.addEventListener('change', (e) => {
-                const checkboxes = document.querySelectorAll('.post-checkbox');
-                checkboxes.forEach(checkbox => {
-                    checkbox.checked = e.target.checked;
-                });
-            });
-        }
-    }
-
-    performSearch(query) {
-        const url = new URL(window.location);
-        if (query.trim()) {
-            url.searchParams.set('search', query);
-        } else {
-            url.searchParams.delete('search');
-        }
-        window.location.href = url.toString();
-    }
-
-    applyFilters() {
-        const url = new URL(window.location);
-        
-        const filters = {
-            department: document.getElementById('departmentFilter')?.value || '',
-            employee_type: document.getElementById('employeeTypeFilter')?.value || '',
-            status: document.getElementById('statusFilter')?.value || '',
-            priority: document.getElementById('priorityFilter')?.value || ''
-        };
-
-        // Clear existing filter params
-        ['department', 'employee_type', 'status', 'priority'].forEach(param => {
-            url.searchParams.delete(param);
-        });
-
-        // Add new filter params
-        Object.entries(filters).forEach(([key, value]) => {
-            if (value) {
-                url.searchParams.set(key, value);
-            }
-        });
-
-        window.location.href = url.toString();
-    }
-}
-
-// Global functions
-function exportToCSV() {
-    const table = document.getElementById('postsTable');
-    const rows = Array.from(table.querySelectorAll('tbody tr'));
-    
-    let csv = 'Post Title,Post Code,Department,Employee Type,Location,Required,Filled,Priority,Status\n';
-    
-    rows.forEach(row => {
-        if (row.querySelector('.post-checkbox')) {
-            const cells = row.querySelectorAll('td');
-            const postTitle = cells[1].querySelector('.post-title strong').textContent;
-            const postCode = cells[1].querySelector('.post-title small').textContent;
-            const department = cells[2].textContent.trim();
-            const employeeType = cells[3].textContent.trim();
-            const location = cells[4].textContent.trim();
-            const positions = cells[5].textContent.trim();
-            const priority = cells[6].textContent.trim();
-            const status = cells[7].textContent.trim();
+// Feed interactions (like, comment, share, etc.)
+document.addEventListener('DOMContentLoaded', function() {
+    // Like button
+    document.querySelectorAll('[data-action="like"]').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const postId = this.dataset.postId;
+            const icon = this.querySelector('i');
+            const isLiked = icon.classList.contains('fas');
             
-            csv += `"${postTitle}","${postCode}","${department}","${employeeType}","${location}","${positions}","${priority}","${status}"\n`;
-        }
+            // Toggle like state
+            if (isLiked) {
+                icon.classList.remove('fas');
+                icon.classList.add('far');
+                this.classList.remove('text-danger');
+            } else {
+                icon.classList.remove('far');
+                icon.classList.add('fas');
+                this.classList.add('text-danger');
+            }
+            
+            // TODO: Send AJAX request to update like in database
+        });
     });
     
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'posts_export.csv';
-    a.click();
-    window.URL.revokeObjectURL(url);
-}
-
-function resetFilters() {
-    window.location.href = '?page=posts';
-}
-
-function deletePost(postId) {
-    if (confirm('Are you sure you want to delete this post? This action cannot be undone.')) {
-        // Create form and submit
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = '?page=posts';
-        
-        const actionInput = document.createElement('input');
-        actionInput.type = 'hidden';
-        actionInput.name = 'action';
-        actionInput.value = 'delete';
-        
-        const idInput = document.createElement('input');
-        idInput.type = 'hidden';
-        idInput.name = 'post_id';
-        idInput.value = postId;
-        
-        form.appendChild(actionInput);
-        form.appendChild(idInput);
-        document.body.appendChild(form);
-        form.submit();
+    // Comment input
+    document.querySelectorAll('.feed-post-comment-input input').forEach(input => {
+        input.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                const comment = this.value.trim();
+                if (comment) {
+                    const postId = this.dataset.postId;
+                    // TODO: Send AJAX request to add comment
+                    this.value = '';
+                }
+            }
+        });
+    });
+    
+    // Create post input
+    const feedPostInput = document.getElementById('feedPostInput');
+    if (feedPostInput) {
+        feedPostInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                const content = this.value.trim();
+                if (content) {
+                    // TODO: Send AJAX request to create post
+                    this.value = '';
+                }
+            }
+        });
     }
-}
-
-
-// Initialize when page loads
-document.addEventListener('DOMContentLoaded', () => {
-    new PostsManager();
 });
 </script>
-
-<?php
-// Handle form submissions
-if ($_POST['action'] ?? '' === 'delete') {
-    $post_id = $_POST['post_id'] ?? 0;
-    if ($post_id && delete_post($post_id)) {
-        echo '<script>alert("Post deleted successfully"); window.location.href = "?page=posts";</script>';
-    } else {
-        echo '<script>alert("Error deleting post");</script>';
-    }
-}
-?>
-
-</div> <!-- /.container-fluid -->

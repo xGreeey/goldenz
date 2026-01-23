@@ -45,6 +45,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'get_employee' && isset($_GET[
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 $status_filter = isset($_GET['status']) ? trim($_GET['status']) : '';
 $type_filter = isset($_GET['type']) ? trim($_GET['type']) : '';
+$employment_status_filter = isset($_GET['employment_status']) ? trim($_GET['employment_status']) : '';
 $sort_by = isset($_GET['sort_by']) ? trim($_GET['sort_by']) : 'name';
 $sort_order = isset($_GET['sort_order']) ? trim($_GET['sort_order']) : 'asc';
 
@@ -321,10 +322,19 @@ if (!empty($status_filter)) {
     });
 }
 
-// Employee type filter
+// Employee type filter (Designation)
 if (!empty($type_filter)) {
     $filtered_employees = array_filter($filtered_employees, function($emp) use ($type_filter) {
         return $emp['employee_type'] === $type_filter;
+    });
+}
+
+// Employment status filter
+if (!empty($employment_status_filter)) {
+    $filtered_employees = array_filter($filtered_employees, function($emp) use ($employment_status_filter) {
+        // Use employment_status from database, or calculate if not set
+        $emp_status = !empty($emp['employment_status']) ? $emp['employment_status'] : getEmploymentStatus($emp['date_hired'] ?? '');
+        return strtolower($emp_status) === strtolower($employment_status_filter);
     });
 }
 
@@ -405,63 +415,63 @@ try {
     $active_employees = 0;
 }
 
-// New Hires (employees hired in current month)
-$new_hires = 0;
-try {
-    $stmt = $pdo->query("SELECT COUNT(*) as total
-                         FROM employees
-                         WHERE date_hired IS NOT NULL
-                           AND date_hired != ''
-                           AND date_hired != '0000-00-00'
-                           AND LENGTH(TRIM(COALESCE(date_hired, ''))) > 0
-                           AND TRIM(date_hired) REGEXP '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'
-                           AND STR_TO_DATE(TRIM(date_hired), '%Y-%m-%d') IS NOT NULL
-                           AND MONTH(STR_TO_DATE(TRIM(date_hired), '%Y-%m-%d')) = MONTH(CURDATE())
-                           AND YEAR(STR_TO_DATE(TRIM(date_hired), '%Y-%m-%d')) = YEAR(CURDATE())");
-    $result = $stmt->fetch(PDO::FETCH_ASSOC);
-    $new_hires = (int)($result['total'] ?? 0);
-} catch (Exception $e) {
-    $new_hires = 0;
-}
-
-// Regular employees (hired more than 6 months ago) - matching dashboard threshold
+// Regular employees - count from employment_status field
 $regular_employees = 0;
 try {
     $stmt = $pdo->query("SELECT COUNT(*) as total
                          FROM employees
                          WHERE status = 'Active'
-                           AND date_hired IS NOT NULL
-                           AND date_hired != ''
-                           AND date_hired != '0000-00-00'
-                           AND LENGTH(TRIM(COALESCE(date_hired, ''))) > 0
-                           AND TRIM(date_hired) REGEXP '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'
-                           AND STR_TO_DATE(TRIM(date_hired), '%Y-%m-%d') IS NOT NULL
-                           AND STR_TO_DATE(TRIM(date_hired), '%Y-%m-%d') < DATE_SUB(CURDATE(), INTERVAL 6 MONTH)");
+                           AND employment_status = 'Regular'");
     $result = $stmt->fetch(PDO::FETCH_ASSOC);
     $regular_employees = (int)($result['total'] ?? 0);
 } catch (Exception $e) {
-    $regular_employees = 0;
+    // Fallback: if employment_status column doesn't exist, use date_hired calculation
+    try {
+        $stmt = $pdo->query("SELECT COUNT(*) as total
+                             FROM employees
+                             WHERE status = 'Active'
+                               AND date_hired IS NOT NULL
+                               AND date_hired != ''
+                               AND date_hired != '0000-00-00'
+                               AND LENGTH(TRIM(COALESCE(date_hired, ''))) > 0
+                               AND TRIM(date_hired) REGEXP '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'
+                               AND STR_TO_DATE(TRIM(date_hired), '%Y-%m-%d') IS NOT NULL
+                               AND STR_TO_DATE(TRIM(date_hired), '%Y-%m-%d') < DATE_SUB(CURDATE(), INTERVAL 6 MONTH)");
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        $regular_employees = (int)($result['total'] ?? 0);
+    } catch (Exception $e2) {
+        $regular_employees = 0;
+    }
 }
 
-// Probationary employees - count employees with Probationary status (hired within last 6 months)
+// Probationary employees - count from employment_status field
 $probationary_employees = 0;
 try {
-    // Use the same logic as getEmploymentStatus() - employees hired within last 6 months
     $stmt = $pdo->query("SELECT COUNT(*) as total
                           FROM employees
                           WHERE status = 'Active'
-                            AND date_hired IS NOT NULL
-                            AND date_hired != ''
-                            AND date_hired != '0000-00-00'
-                            AND LENGTH(TRIM(COALESCE(date_hired, ''))) > 0
-                            AND TRIM(date_hired) REGEXP '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'
-                            AND STR_TO_DATE(TRIM(date_hired), '%Y-%m-%d') IS NOT NULL
-                            AND STR_TO_DATE(TRIM(date_hired), '%Y-%m-%d') >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
-                            AND STR_TO_DATE(TRIM(date_hired), '%Y-%m-%d') <= CURDATE()");
+                            AND employment_status = 'Probationary'");
     $result = $stmt->fetch(PDO::FETCH_ASSOC);
     $probationary_employees = (int)($result['total'] ?? 0);
 } catch (Exception $e) {
-    $probationary_employees = 0;
+    // Fallback: if employment_status column doesn't exist, use date_hired calculation
+    try {
+        $stmt = $pdo->query("SELECT COUNT(*) as total
+                              FROM employees
+                              WHERE status = 'Active'
+                                AND date_hired IS NOT NULL
+                                AND date_hired != ''
+                                AND date_hired != '0000-00-00'
+                                AND LENGTH(TRIM(COALESCE(date_hired, ''))) > 0
+                                AND TRIM(date_hired) REGEXP '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'
+                                AND STR_TO_DATE(TRIM(date_hired), '%Y-%m-%d') IS NOT NULL
+                                AND STR_TO_DATE(TRIM(date_hired), '%Y-%m-%d') >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
+                                AND STR_TO_DATE(TRIM(date_hired), '%Y-%m-%d') <= CURDATE()");
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        $probationary_employees = (int)($result['total'] ?? 0);
+    } catch (Exception $e2) {
+        $probationary_employees = 0;
+    }
 }
 ?>
 
@@ -546,60 +556,37 @@ try {
         <?php unset($_SESSION['page2_message'], $_SESSION['page2_success']); ?>
     <?php endif; ?>
 
-    <!-- Summary Cards -->
+    <!-- Summary Cards - Standard 3-Card Layout -->
     <div class="row g-4 mb-4">
-        <div class="col-xl-3 col-md-6">
+        <div class="col-lg-4 col-md-6">
             <div class="card hrdash-stat hrdash-stat--primary">
                 <div class="hrdash-stat__header">
                     <div class="hrdash-stat__label">Total Employees</div>
                 </div>
                 <div class="hrdash-stat__content">
                     <div class="hrdash-stat__value"><?php echo number_format($total_all_employees); ?></div>
-                    <div class="hrdash-stat__trend hrdash-stat__trend--positive">
-                        <span><?php echo ($total_all_employees ?? 0) > 0 ? round(($active_employees / max(1, $total_all_employees)) * 100) : 0; ?>%</span>
-                    </div>
                 </div>
                 <div class="hrdash-stat__meta">The total number of employees in the system.</div>
             </div>
         </div>
-        <div class="col-xl-3 col-md-6">
-            <div class="card hrdash-stat">
-                <div class="hrdash-stat__header">
-                    <div class="hrdash-stat__label">New Hires</div>
-                </div>
-                <div class="hrdash-stat__content">
-                    <div class="hrdash-stat__value"><?php echo number_format($new_hires); ?></div>
-                    <div class="hrdash-stat__trend hrdash-stat__trend--positive">
-                        <span><?php echo ($total_all_employees ?? 0) > 0 ? round(($new_hires / max(1, $total_all_employees)) * 100) : 0; ?>%</span>
-                    </div>
-                </div>
-                <div class="hrdash-stat__meta">Employees hired this month.</div>
-            </div>
-        </div>
-        <div class="col-xl-3 col-md-6">
+        <div class="col-lg-4 col-md-6">
             <div class="card hrdash-stat">
                 <div class="hrdash-stat__header">
                     <div class="hrdash-stat__label">Regular</div>
                 </div>
                 <div class="hrdash-stat__content">
-                    <div class="hrdash-stat__value"><?php echo number_format($regular_employees); ?></div>
-                    <div class="hrdash-stat__trend hrdash-stat__trend--positive">
-                        <span><?php echo ($active_employees ?? 0) > 0 ? round(($regular_employees / max(1, $active_employees)) * 100) : 0; ?>%</span>
-                    </div>
+                    <div class="hrdash-stat__value" style="color: #1fb2d5;"><?php echo number_format($regular_employees); ?></div>
                 </div>
                 <div class="hrdash-stat__meta">The number of employees who have completed their probation period.</div>
             </div>
         </div>
-        <div class="col-xl-3 col-md-6">
+        <div class="col-lg-4 col-md-6">
             <div class="card hrdash-stat">
                 <div class="hrdash-stat__header">
                     <div class="hrdash-stat__label">Probation</div>
                 </div>
                 <div class="hrdash-stat__content">
-                    <div class="hrdash-stat__value"><?php echo number_format($probationary_employees); ?></div>
-                    <div class="hrdash-stat__trend hrdash-stat__trend--positive">
-                        <span><?php echo ($active_employees ?? 0) > 0 ? round(($probationary_employees / max(1, $active_employees)) * 100) : 0; ?>%</span>
-                    </div>
+                    <div class="hrdash-stat__value" style="color: #f59e0b;"><?php echo number_format($probationary_employees); ?></div>
                 </div>
                 <div class="hrdash-stat__meta">The number of employees currently in their probation period.</div>
             </div>
@@ -630,33 +617,30 @@ try {
                     </div>
                 </div>
                 <div style="flex: 0 0 auto; min-width: 140px;">
+                    <label class="form-label" style="font-size: 0.75rem; margin-bottom: 0.25rem; font-weight: 500;">Designation</label>
+                    <select name="type" id="departmentFilter" class="form-select form-select-sm" style="padding: 0.375rem 0.5rem; font-size: 0.8125rem;">
+                        <option value="">All</option>
+                        <option value="SG" <?php echo $type_filter === 'SG' ? 'selected' : ''; ?>>Security Guard (SG)</option>
+                        <option value="LG" <?php echo $type_filter === 'LG' ? 'selected' : ''; ?>>Lady Guard (LG)</option>
+                        <option value="SO" <?php echo $type_filter === 'SO' ? 'selected' : ''; ?>>Security Officer (SO)</option>
+                    </select>
+                </div>
+                <div style="flex: 0 0 auto; min-width: 140px;">
+                    <label class="form-label" style="font-size: 0.75rem; margin-bottom: 0.25rem; font-weight: 500;">Employment Status</label>
+                    <select name="employment_status" id="employmentStatusFilter" class="form-select form-select-sm" style="padding: 0.375rem 0.5rem; font-size: 0.8125rem;">
+                        <option value="">All</option>
+                        <option value="Probationary" <?php echo (isset($_GET['employment_status']) && $_GET['employment_status'] === 'Probationary') ? 'selected' : ''; ?>>Probationary</option>
+                        <option value="Regular" <?php echo (isset($_GET['employment_status']) && $_GET['employment_status'] === 'Regular') ? 'selected' : ''; ?>>Regular</option>
+                        <option value="Suspended" <?php echo (isset($_GET['employment_status']) && $_GET['employment_status'] === 'Suspended') ? 'selected' : ''; ?>>Suspended</option>
+                        <option value="Terminated" <?php echo (isset($_GET['employment_status']) && $_GET['employment_status'] === 'Terminated') ? 'selected' : ''; ?>>Terminated</option>
+                    </select>
+                </div>
+                <div style="flex: 0 0 auto; min-width: 140px;">
                     <label class="form-label" style="font-size: 0.75rem; margin-bottom: 0.25rem; font-weight: 500;">Status</label>
                     <select name="status" id="statusFilter" class="form-select form-select-sm" style="padding: 0.375rem 0.5rem; font-size: 0.8125rem;">
                         <option value="">All</option>
                         <option value="Active" <?php echo $status_filter === 'Active' ? 'selected' : ''; ?>>Active</option>
                         <option value="Inactive" <?php echo $status_filter === 'Inactive' ? 'selected' : ''; ?>>Inactive</option>
-                        <option value="Onboarding" <?php echo $status_filter === 'Onboarding' ? 'selected' : ''; ?>>Onboarding</option>
-                    </select>
-                </div>
-                <div style="flex: 0 0 auto; min-width: 140px;">
-                    <label class="form-label" style="font-size: 0.75rem; margin-bottom: 0.25rem; font-weight: 500;">Employee Type</label>
-                    <select name="type" id="departmentFilter" class="form-select form-select-sm" style="padding: 0.375rem 0.5rem; font-size: 0.8125rem;">
-                        <option value="">All</option>
-                        <?php
-                        // Get unique employee types
-                        $unique_types = [];
-                        foreach ($all_employees as $emp) {
-                            if (!empty($emp['employee_type'])) {
-                                $unique_types[$emp['employee_type']] = true;
-                            }
-                        }
-                        ksort($unique_types);
-                        foreach ($unique_types as $type => $val):
-                        ?>
-                            <option value="<?php echo htmlspecialchars($type); ?>" <?php echo $type_filter === $type ? 'selected' : ''; ?>>
-                                <?php echo htmlspecialchars($type); ?>
-                            </option>
-                        <?php endforeach; ?>
                     </select>
                 </div>
                 <div style="flex: 0 0 auto;">
@@ -724,7 +708,7 @@ try {
                                         <i class="fas fa-users fa-3x text-muted mb-3"></i>
                                         <h5 class="text-muted">No employees found</h5>
                                         <p class="text-muted mb-0">
-                                            <?php if (!empty($search) || !empty($status_filter) || !empty($type_filter)): ?>
+                                            <?php if (!empty($search) || !empty($status_filter) || !empty($type_filter) || !empty($employment_status_filter)): ?>
                                                 Try adjusting your filters or search criteria.
                                             <?php else: ?>
                                                 No employees are currently in the system.
@@ -736,34 +720,61 @@ try {
                         <?php else: ?>
                             <?php foreach ($paginated_employees as $employee): 
                                 $full_name = trim(($employee['first_name'] ?? '') . ' ' . ($employee['middle_name'] ?? '') . ' ' . ($employee['surname'] ?? ''));
-                                $employment_status = getEmploymentStatus($employee['date_hired'] ?? '');
+                                // Use employment_status from database, fallback to calculated if not set
+                                $employment_status = !empty($employee['employment_status']) ? $employee['employment_status'] : getEmploymentStatus($employee['date_hired'] ?? '');
                                 $license_indicator = getLicenseExpirationIndicator($employee['license_exp_date'] ?? '');
                                 $license_formatted = !empty($employee['license_exp_date']) ? formatLicenseExpiration($employee['license_exp_date']) : null;
                                 $rlm_indicator = !empty($employee['rlm_exp']) ? getLicenseExpirationIndicator($employee['rlm_exp']) : null;
                                 $rlm_formatted = !empty($employee['rlm_exp']) ? formatRLMExpiration($employee['rlm_exp']) : null;
+                                
+                                // Get designation label
+                                $designation_map = [
+                                    'SG' => 'Security Guard (SG)',
+                                    'LG' => 'Lady Guard (LG)',
+                                    'SO' => 'Security Officer (SO)'
+                                ];
+                                $designation = $designation_map[$employee['employee_type'] ?? ''] ?? ($employee['employee_type'] ?? 'N/A');
                             ?>
                             <tr class="employee-row" data-employee-id="<?php echo $employee['id']; ?>">
                                 <td onclick="event.stopPropagation();">
                                     <input type="checkbox" class="form-check-input employee-checkbox" value="<?php echo $employee['id']; ?>">
                                 </td>
-                                <!-- Employee Info (with Post and Employment Status) -->
+                                <!-- Employee Info (with Designation, Post and Employment Status) -->
                                 <td>
                                     <div class="employee-info-combined">
-                                        <div class="employee-info-line fw-semibold">
+                                        <!-- Designation badge above name -->
+                                        <div class="employee-designation-badge" style="margin-bottom: 0.25rem;">
                                             <?php 
                                             $employee_type = strtoupper(trim($employee['employee_type'] ?? ''));
-                                            $employee_no = htmlspecialchars($employee['employee_no'] ?? $employee['id']);
-                                            $full_name = htmlspecialchars($full_name);
-                                            
-                                            // Format: TYPE | #NUM | NAME
-                                            $info_parts = [];
-                                            if (!empty($employee_type)) {
-                                                $info_parts[] = $employee_type;
+                                            // Color code designation similar to violation history
+                                            if ($employee_type === 'SG') {
+                                                $designation_class = 'badge-designation badge-designation-sg';
+                                            } elseif ($employee_type === 'LG') {
+                                                $designation_class = 'badge-designation badge-designation-lg';
+                                            } elseif ($employee_type === 'SO') {
+                                                $designation_class = 'badge-designation badge-designation-so';
+                                            } else {
+                                                $designation_class = 'badge-designation badge-designation-default';
                                             }
-                                            $info_parts[] = '#' . $employee_no;
-                                            $info_parts[] = $full_name;
-                                            echo implode(' | ', $info_parts);
                                             ?>
+                                            <span class="badge <?php echo $designation_class; ?>">
+                                                <?php echo htmlspecialchars($employee_type ?: 'N/A'); ?>
+                                            </span>
+                                        </div>
+                                        <!-- Employee Number Container -->
+                                        <div class="employee-number-container" style="margin-bottom: 0.25rem;">
+                                            <span class="employee-info-line fw-semibold">
+                                                <?php 
+                                                $employee_no = htmlspecialchars($employee['employee_no'] ?? $employee['id']);
+                                                echo '#' . $employee_no;
+                                                ?>
+                                            </span>
+                                        </div>
+                                        <!-- Employee Name -->
+                                        <div class="employee-name-container">
+                                            <span class="employee-info-line fw-semibold">
+                                                <?php echo htmlspecialchars($full_name); ?>
+                                            </span>
                                         </div>
                                         <div class="employee-post text-muted fs-13 mt-1">
                                             <?php echo htmlspecialchars($employee['post'] ?? 'Unassigned'); ?>
@@ -773,13 +784,18 @@ try {
                                             // Match violation history color scheme
                                             if ($employment_status === 'Probationary') {
                                                 $status_class = 'badge-employment-probationary';
-                                            } else {
+                                            } elseif ($employment_status === 'Regular') {
                                                 $status_class = 'badge-employment-regular';
+                                            } elseif ($employment_status === 'Suspended') {
+                                                $status_class = 'badge-status-inactive';
+                                            } elseif ($employment_status === 'Terminated') {
+                                                $status_class = 'badge-status-terminated';
+                                            } else {
+                                                $status_class = 'badge-status-default';
                                             }
-                                            $status_text = $employment_status;
                                             ?>
                                             <span class="badge <?php echo $status_class; ?> fs-11 px-2 py-1">
-                                                <?php echo htmlspecialchars($status_text); ?>
+                                                <?php echo htmlspecialchars($employment_status); ?>
                                             </span>
                                         </div>
                                     </div>
@@ -847,22 +863,18 @@ try {
                                 <!-- Status -->
                                 <td>
                                     <?php
-                                    $status = $employee['status'] ?? 'N/A';
+                                    $account_status = $employee['status'] ?? 'N/A';
                                     // Match violation history color scheme
-                                    if ($status === 'Active') {
+                                    if ($account_status === 'Active') {
                                         $status_badge_class = 'badge-status-active';
-                                    } elseif ($status === 'Inactive') {
+                                    } elseif ($account_status === 'Inactive') {
                                         $status_badge_class = 'badge-status-inactive';
-                                    } elseif ($status === 'Terminated') {
-                                        $status_badge_class = 'badge-status-terminated';
-                                    } elseif ($status === 'Onboarding') {
-                                        $status_badge_class = 'badge-status-onboarding';
                                     } else {
                                         $status_badge_class = 'badge-status-default';
                                     }
                                     ?>
                                     <span class="badge <?php echo $status_badge_class; ?> fs-11 px-2 py-1">
-                                        <?php echo htmlspecialchars($status); ?>
+                                        <?php echo htmlspecialchars($account_status); ?>
                                     </span>
                                 </td>
                                 <!-- Created By -->
@@ -1449,6 +1461,41 @@ try {
     font-weight: 600;
 }
 
+/* Designation Badges - matching violation history color scheme */
+.employees-table .badge-designation {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    text-transform: uppercase;
+    display: inline-block;
+    letter-spacing: 0.025em;
+}
+
+.employees-table .badge-designation-sg {
+    background-color: #e0e7ff;
+    color: #6366f1;
+    border: 1px solid #c7d2fe;
+}
+
+.employees-table .badge-designation-lg {
+    background-color: #fef3c7;
+    color: #d97706;
+    border: 1px solid #fde68a;
+}
+
+.employees-table .badge-designation-so {
+    background-color: #fee2e2;
+    color: #dc2626;
+    border: 1px solid #fca5a5;
+}
+
+.employees-table .badge-designation-default {
+    background-color: #f1f5f9;
+    color: #475569;
+    border: 1px solid #cbd5e1;
+}
+
 /* RLM Badge Colors */
 .employees-table .badge-rlm-expired {
     background-color: #fee2e2;
@@ -1842,6 +1889,7 @@ class EmployeeTableManager {
             search: url.searchParams.get('search') || '',
             status: url.searchParams.get('status') || '',
             type: url.searchParams.get('type') || '',
+            employment_status: url.searchParams.get('employment_status') || '',
             sort_by: url.searchParams.get('sort_by') || 'name',
             sort_order: url.searchParams.get('sort_order') || 'asc',
             page_num: url.searchParams.get('page_num') || '1',
@@ -1853,7 +1901,7 @@ class EmployeeTableManager {
         
         // Reset to page 1 when filters change (unless explicitly setting page_num)
         if (params.search !== undefined || params.status !== undefined || params.type !== undefined || 
-            params.sort_by !== undefined || params.sort_order !== undefined) {
+            params.employment_status !== undefined || params.sort_by !== undefined || params.sort_order !== undefined) {
             if (params.page_num === undefined) {
                 currentParams.page_num = '1';
             }
@@ -1872,6 +1920,9 @@ class EmployeeTableManager {
         
         if (currentParams.type) newUrl.searchParams.set('type', currentParams.type);
         else newUrl.searchParams.delete('type');
+        
+        if (currentParams.employment_status) newUrl.searchParams.set('employment_status', currentParams.employment_status);
+        else newUrl.searchParams.delete('employment_status');
         
         if (currentParams.sort_by !== 'name') newUrl.searchParams.set('sort_by', currentParams.sort_by);
         else newUrl.searchParams.delete('sort_by');
@@ -1959,6 +2010,7 @@ class EmployeeTableManager {
                 }
                 if (statusFilter) statusFilter.value = '';
                 if (deptFilter) deptFilter.value = '';
+                if (employmentStatusFilter) employmentStatusFilter.value = '';
                 const sortBy = document.getElementById('sortBy');
                 const sortOrder = document.getElementById('sortOrder');
                 if (sortBy) sortBy.value = 'name';
@@ -1967,6 +2019,7 @@ class EmployeeTableManager {
                     search: '', 
                     status: '', 
                     type: '', 
+                    employment_status: '',
                     sort_by: 'name', 
                     sort_order: 'asc', 
                     page_num: '1' 
