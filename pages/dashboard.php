@@ -704,6 +704,32 @@ try {
     width: 100%;
     max-width: 100%;
     overflow-x: hidden;
+    position: relative;
+}
+
+/* Logo Watermark - Subtle Brand Presence */
+.hrdash::before {
+    content: '';
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: min(60vw, 800px);
+    height: min(60vh, 800px);
+    background-image: url('https://goldenz.local/public/logo.svg');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    opacity: 0.03;
+    pointer-events: none;
+    z-index: 0;
+    filter: grayscale(0.2);
+}
+
+/* Ensure all dashboard content stays above watermark */
+.hrdash > *:not(::before) {
+    position: relative;
+    z-index: 1;
 }
 .hrdash-welcome {
     display: flex;
