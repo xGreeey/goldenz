@@ -27,7 +27,18 @@ function getPageTitle($page) {
         'settings' => 'System Settings',
         'profile' => 'My Profile',
         'tasks' => 'Tasks',
-        'help' => 'Help & Support'
+        'help' => 'Help & Support',
+        'attendance' => 'Attendance Management',
+        'dtr' => 'Daily Time Record (DTR)',
+        'leaves' => 'Leave Requests',
+        'leave_balance' => 'Leave Balance',
+        'leave_reports' => 'Leave Reports',
+        'documents' => '201 Files - Document Management',
+        'violations' => 'Employee Violations',
+        'violation_types' => 'Violation Types & Sanctions',
+        'add_violation' => 'Add New Employee Violation',
+        'edit_violation' => 'Edit Employee Violation',
+        'violation_history' => 'Violation History'
     ];
 
     return $titles[$page] ?? 'Dashboard';
@@ -37,7 +48,6 @@ function getPageTitle($page) {
 function getActiveSection($page) {
     $sections = [
         'employees' => 'teams',
-        'dtr' => 'teams',
         'timeoff' => 'teams',
         'checklist' => 'teams',
         'hiring' => 'hire',
@@ -46,7 +56,18 @@ function getActiveSection($page) {
         'posts' => 'posts',
         'add_post' => 'posts',
         'edit_post' => 'posts',
-        'post_assignments' => 'posts'
+        'post_assignments' => 'posts',
+        'attendance' => 'attendance',
+        'dtr' => 'attendance',
+        'leaves' => 'leaves',
+        'leave_balance' => 'leaves',
+        'leave_reports' => 'leaves',
+        'documents' => 'documents',
+        'violations' => 'violations',
+        'violation_types' => 'violations',
+        'add_violation' => 'violations',
+        'edit_violation' => 'violations',
+        'violation_history' => 'violations'
     ];
 
     return $sections[$page] ?? null;
@@ -225,14 +246,6 @@ $activeSection = getActiveSection($page);
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="?page=dtr"
-                           class="nav-link <?php echo ($page === 'dtr') ? 'active' : ''; ?>"
-                           data-page="dtr">
-                            <i class="fas fa-clock" aria-hidden="true"></i>
-                            <span>Attendance</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
                         <a href="?page=checklist"
                            class="nav-link <?php echo ($page === 'checklist') ? 'active' : ''; ?>"
                            data-page="checklist">
@@ -320,6 +333,39 @@ $activeSection = getActiveSection($page);
                            data-page="add_post">
                             <i class="fas fa-plus" aria-hidden="true"></i>
                             <span>Add New Post</span>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+
+            <!-- Attendance Section -->
+            <li class="nav-item nav-section <?php echo ($activeSection === 'attendance') ? 'active' : ''; ?>" data-section="attendance">
+                <button class="nav-toggle <?php echo ($activeSection === 'attendance') ? 'active' : ''; ?>"
+                        type="button"
+                        role="button"
+                        aria-expanded="<?php echo ($activeSection === 'attendance') ? 'true' : 'false'; ?>"
+                        aria-controls="attendance-submenu"
+                        tabindex="0"
+                        data-target="attendance-submenu">
+                    <i class="fas fa-clock" aria-hidden="true"></i>
+                    <span>Attendance</span>
+                    <i class="fas fa-chevron-down nav-arrow <?php echo ($activeSection === 'attendance') ? 'rotated' : ''; ?>" aria-hidden="true"></i>
+                </button>
+                <ul class="nav-submenu <?php echo ($activeSection === 'attendance') ? 'expanded' : ''; ?>" id="attendance-submenu" role="menu">
+                    <li class="nav-item">
+                        <a href="?page=attendance"
+                           class="nav-link <?php echo ($page === 'attendance') ? 'active' : ''; ?>"
+                           data-page="attendance">
+                            <i class="fas fa-calendar-check" aria-hidden="true"></i>
+                            <span>Daily Attendance</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="?page=dtr"
+                           class="nav-link <?php echo ($page === 'dtr') ? 'active' : ''; ?>"
+                           data-page="dtr">
+                            <i class="fas fa-file-alt" aria-hidden="true"></i>
+                            <span>Daily Time Record (DTR)</span>
                         </a>
                     </li>
                 </ul>
@@ -423,18 +469,6 @@ $activeSection = getActiveSection($page);
                 case 'add_alert':
                     include $pages_path . 'add_alert.php';
                     break;
-                case 'dtr':
-                    if (isset($_POST['action']) && $_POST['action'] === 'save') {
-                        $input = json_decode(file_get_contents('php://input'), true);
-                        if ($input && save_dtr_entry($input)) {
-                            echo json_encode(['success' => true, 'message' => 'DTR entry saved successfully']);
-                        } else {
-                            echo json_encode(['success' => false, 'message' => 'Failed to save DTR entry']);
-                        }
-                        exit;
-                    }
-                    include $pages_path . 'dtr.php';
-                    break;
                 case 'timeoff':
                     include $pages_path . 'timeoff.php';
                     break;
@@ -476,6 +510,39 @@ $activeSection = getActiveSection($page);
                     break;
                 case 'post_assignments':
                     include $pages_path . 'post_assignments.php';
+                    break;
+                case 'attendance':
+                    include $pages_path . 'attendance.php';
+                    break;
+                case 'dtr':
+                    include $pages_path . 'dtr.php';
+                    break;
+                case 'leaves':
+                    include $pages_path . 'leaves.php';
+                    break;
+                case 'leave_balance':
+                    include $pages_path . 'leave_balance.php';
+                    break;
+                case 'leave_reports':
+                    include $pages_path . 'leave_reports.php';
+                    break;
+                case 'documents':
+                    include $pages_path . 'documents.php';
+                    break;
+                case 'violations':
+                    include $pages_path . 'violations.php';
+                    break;
+                case 'violation_types':
+                    include $pages_path . 'violation_types.php';
+                    break;
+                case 'add_violation':
+                    include $pages_path . 'add_violation.php';
+                    break;
+                case 'edit_violation':
+                    include $pages_path . 'edit_violation.php';
+                    break;
+                case 'violation_history':
+                    include $pages_path . 'violation_history.php';
                     break;
                 default:
                     include $pages_path . 'dashboard.php';

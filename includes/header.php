@@ -16,7 +16,6 @@ function getPageTitle($page) {
         'add_employee_page2' => 'Add New Employee - Page 2',
         'edit_employee' => 'Edit Employee',
         'view_employee' => 'View Employee',
-        'dtr' => 'Daily Time Record',
         'timeoff' => 'Time Off Management',
         'checklist' => 'Employee Checklist',
         'hiring' => 'Hiring Process',
@@ -39,6 +38,7 @@ function getPageTitle($page) {
         'leave_balance' => 'Leave Balance',
         'leave_reports' => 'Leave Reports',
         'attendance' => 'Attendance Management',
+        'dtr' => 'Daily Time Record (DTR)',
         'violations' => 'Employee Violations',
         'add_violation' => 'Add New Employee Violation',
         'edit_violation' => 'Edit Employee Violation',
@@ -53,7 +53,6 @@ function getPageTitle($page) {
 function getActiveSection($page) {
     $sections = [
         'employees' => 'teams',
-        'dtr' => 'teams',
         'timeoff' => 'teams',
         'checklist' => 'teams',
         'hiring' => 'hire',
@@ -63,13 +62,15 @@ function getActiveSection($page) {
         'add_post' => 'posts',
         'edit_post' => 'posts',
         'post_assignments' => 'posts',
+        'attendance' => 'attendance',
+        'dtr' => 'attendance',
         'leaves' => 'leaves',
         'leave_balance' => 'leaves',
         'leave_reports' => 'leaves',
         'violations' => 'violations',
         'violation_types' => 'violations'
     ];
-    
+
     return $sections[$page] ?? null;
 }
 
@@ -204,6 +205,9 @@ if ($userRole === 'hr_admin') {
                     break;
                 case 'attendance':
                     include $pagesPath . 'attendance.php';
+                    break;
+                case 'dtr':
+                    include $pagesPath . 'dtr.php';
                     break;
                 case 'violations':
                     include $pagesPath . 'violations.php';
