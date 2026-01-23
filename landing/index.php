@@ -239,6 +239,14 @@ unset($_SESSION['login_status_message']);
 $show_password_change_modal = isset($_SESSION['require_password_change']) && $_SESSION['require_password_change'];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
+    $isAjaxRequest = isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
+    $wantsJson = $isAjaxRequest || (isset($_SERVER['HTTP_ACCEPT']) && stripos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false);
+    $respondJson = function (array $payload) {
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode($payload);
+        exit;
+    };
+
     $debug_info[] = "POST request received";
     $debug_info[] = "POST data: " . print_r($_POST, true);
     
@@ -251,6 +259,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
     if (empty($username) || empty($password)) {
         $error = 'Please enter both username and password';
         $debug_info[] = "Validation failed: empty fields";
+        if ($wantsJson) {
+            $respondJson([
+                'success' => false,
+                'error' => 'validation',
+                'message' => 'Please enter both username and password.'
+            ]);
+        }
     } else {
         try {
             $pdo = get_db_connection();
@@ -279,7 +294,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
                     $_SESSION['login_status_message'] = 'Your account is currently inactive. Please contact your administrator to activate your account.';
                     $error = 'inactive';
                     $debug_info[] = "User account is inactive - blocking login";
-                    // Redirect back to login page to show the modal
+                    if ($wantsJson) {
+                        $respondJson([
+                            'success' => false,
+                            'error' => 'status',
+                            'status' => 'inactive',
+                            'message' => $_SESSION['login_status_message']
+                        ]);
+                    }
+                    // Redirect back to login page to show the modal (non-AJAX fallback)
                     header('Location: /landing/');
                     exit;
                 } elseif ($user['status'] === 'suspended') {
@@ -287,12 +310,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
                     $_SESSION['login_status_message'] = 'Your account has been suspended. Please contact your administrator for assistance.';
                     $error = 'suspended';
                     $debug_info[] = "User account is suspended - blocking login";
-                    // Redirect back to login page to show the modal
+                    if ($wantsJson) {
+                        $respondJson([
+                            'success' => false,
+                            'error' => 'status',
+                            'status' => 'suspended',
+                            'message' => $_SESSION['login_status_message']
+                        ]);
+                    }
+                    // Redirect back to login page to show the modal (non-AJAX fallback)
                     header('Location: /landing/');
                     exit;
                 } elseif (!empty($user['locked_until']) && strtotime($user['locked_until']) > time()) {
                     $error = 'Account is temporarily locked. Please try again later.';
                     $debug_info[] = "Account locked";
+                    if ($wantsJson) {
+                        $respondJson([
+                            'success' => false,
+                            'error' => 'locked',
+                            'message' => $error
+                        ]);
+                    }
                 } elseif (password_verify($password, $user['password_hash'])) {
                     $debug_info[] = "Password verified successfully";
                     
@@ -321,11 +359,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
                         $_SESSION['require_password_change'] = true;
                         $debug_info[] = "Temporary password detected - requiring password change";
                         // Don't redirect, show password change modal instead
+                        if ($wantsJson) {
+                            $respondJson([
+                                'success' => true,
+                                'redirect' => '/landing/' // shows password-change UI when enabled
+                            ]);
+                        }
                     } else {
                         // Check role
                         if (!in_array($user['role'], ['super_admin', 'hr_admin', 'hr', 'admin', 'accounting', 'operation', 'logistics', 'developer'], true)) {
                             $error = 'This account role is not permitted to sign in.';
                             $debug_info[] = "Role not allowed: " . $user['role'];
+                            if ($wantsJson) {
+                                $respondJson([
+                                    'success' => false,
+                                    'error' => 'role_not_permitted',
+                                    'message' => $error
+                                ]);
+                            }
                         } else {
                             // Determine if this user must pass 2FA before accessing the dashboard
                             $requires_2fa = in_array($user['role'], ['super_admin', 'admin'], true)
@@ -342,6 +393,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
                                 $_SESSION['pending_2fa_department'] = $user['department'] ?? null;
 
                                 $debug_info[] = "2FA required - redirecting to 2FA verification page";
+                                if ($wantsJson) {
+                                    $respondJson([
+                                        'success' => true,
+                                        'redirect' => '2fa.php'
+                                    ]);
+                                }
                                 header('Location: 2fa.php');
                                 exit;
                             }
@@ -382,15 +439,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
                             // Redirect based on role (Role-Based Dashboard Access)
                             if ($user['role'] === 'super_admin') {
                                 $debug_info[] = "Redirecting to: /super-admin/dashboard";
+                                if ($wantsJson) {
+                                    $respondJson([
+                                        'success' => true,
+                                        'redirect' => '/super-admin/dashboard'
+                                    ]);
+                                }
                                 header('Location: /super-admin/dashboard');
                                 exit;
                             } elseif ($user['role'] === 'developer') {
                                 $debug_info[] = "Redirecting to: ../developer/dashboard";
+                                if ($wantsJson) {
+                                    $respondJson([
+                                        'success' => true,
+                                        'redirect' => '/developer/dashboard'
+                                    ]);
+                                }
                                 header('Location: /developer/dashboard');
                                 exit;
                             } else {
                                 // All other roles (hr_admin, hr, admin, accounting, operation, logistics) go to hr-admin portal
                                 $debug_info[] = "Redirecting to: ../hr-admin/dashboard";
+                                if ($wantsJson) {
+                                    $respondJson([
+                                        'success' => true,
+                                        'redirect' => '/hr-admin/dashboard'
+                                    ]);
+                                }
                                 header('Location: /hr-admin/dashboard');
                                 exit;
                             }
@@ -399,6 +474,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
                 } else {
                     $error = 'Invalid username or password';
                     $debug_info[] = "Password verification failed";
+                    if ($wantsJson) {
+                        $respondJson([
+                            'success' => false,
+                            'error' => 'invalid_credentials',
+                            'message' => 'Invalid credentials. Verify your username and password and try again.'
+                        ]);
+                    }
                     
                     // Log failed login attempt
                     // Log to system logs
@@ -440,11 +522,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
             } else {
                 $error = 'Invalid username or password';
                 $debug_info[] = "User not found or inactive";
+                if ($wantsJson) {
+                    $respondJson([
+                        'success' => false,
+                        'error' => 'invalid_credentials',
+                        'message' => 'Invalid credentials. Verify your username and password and try again.'
+                    ]);
+                }
             }
         } catch (Exception $e) {
             $error = 'Login failed. Please try again.';
             $debug_info[] = "Exception: " . $e->getMessage();
             error_log('Login error: ' . $e->getMessage());
+            if ($wantsJson) {
+                $respondJson([
+                    'success' => false,
+                    'error' => 'server',
+                    'message' => $error
+                ]);
+            }
         }
     }
 }
@@ -628,6 +724,239 @@ ob_end_flush();
             height: 100vh !important;
             overflow: hidden !important;
         }
+
+        /* Shake animation for invalid login */
+        @keyframes loginShake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
+            20%, 40%, 60%, 80% { transform: translateX(10px); }
+        }
+        .auth-form-card.shake {
+            animation: loginShake 0.55s ease-in-out;
+        }
+
+        /* AI Help widget */
+        .ai-help-toggle-btn {
+            position: fixed;
+            right: 1.5rem;
+            bottom: 1.5rem;
+            z-index: 1200;
+            width: 52px;
+            height: 52px;
+            border-radius: 999px;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--gold-primary, #ffd700) 0%, var(--gold-dark, #ffb300) 100%);
+            color: #111827;
+            box-shadow:
+                0 8px 20px rgba(0, 0, 0, 0.25),
+                0 0 20px rgba(255, 215, 0, 0.55);
+            cursor: pointer;
+            transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.2s ease;
+        }
+        .ai-help-toggle-btn:hover {
+            transform: translateY(-2px);
+            box-shadow:
+                0 10px 26px rgba(0, 0, 0, 0.3),
+                0 0 26px rgba(255, 215, 0, 0.7);
+        }
+        .ai-help-toggle-btn:focus-visible {
+            outline: 2px solid #2563eb;
+            outline-offset: 2px;
+        }
+        .ai-help-toggle-btn i {
+            font-size: 1.3rem;
+        }
+
+        .ai-help-panel {
+            position: fixed;
+            right: 1.5rem;
+            bottom: 5rem;
+            width: min(360px, 90vw);
+            max-height: 70vh;
+            background: #ffffff;
+            border-radius: 1rem;
+            box-shadow:
+                0 18px 50px rgba(15, 23, 42, 0.45),
+                0 0 0 1px rgba(148, 163, 184, 0.45);
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 1201;
+        }
+        .ai-help-panel.open {
+            display: flex;
+        }
+        .ai-help-header {
+            padding: 0.8rem 1rem;
+            background: linear-gradient(135deg, #0f172a, #1e293b);
+            color: #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+        }
+        .ai-help-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        .ai-help-title i {
+            color: var(--gold-primary, #ffd700);
+        }
+        .ai-help-header-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        .ai-help-icon-btn {
+            border: none;
+            background: transparent;
+            color: #9ca3af;
+            width: 28px;
+            height: 28px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 999px;
+            cursor: pointer;
+            transition: background 0.15s ease, color 0.15s ease, transform 0.12s ease;
+        }
+        .ai-help-icon-btn:hover {
+            background: rgba(15, 23, 42, 0.4);
+            color: #e5e7eb;
+        }
+        .ai-help-icon-btn:focus-visible {
+            outline: 2px solid #2563eb;
+            outline-offset: 1px;
+        }
+        .ai-help-body {
+            padding: 0.6rem 0.75rem 0.75rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            background: #f9fafb;
+            flex: 1;
+        }
+        .ai-help-messages {
+            flex: 1;
+            min-height: 120px;
+            max-height: 46vh;
+            overflow-y: auto;
+            padding-right: 0.35rem;
+        }
+        .ai-help-message {
+            margin-bottom: 0.45rem;
+            display: flex;
+        }
+        .ai-help-message.ai-user {
+            justify-content: flex-end;
+        }
+        .ai-help-message.ai-assistant {
+            justify-content: flex-start;
+        }
+        .ai-help-bubble {
+            border-radius: 0.75rem;
+            padding: 0.45rem 0.7rem;
+            font-size: 0.78rem;
+            line-height: 1.4;
+            max-width: 88%;
+            word-wrap: break-word;
+            white-space: pre-wrap;
+        }
+        .ai-help-bubble.ai-user {
+            background: linear-gradient(135deg, var(--gold-primary, #ffd700), var(--gold-dark, #ffb300));
+            color: #111827;
+        }
+        .ai-help-bubble.ai-assistant {
+            background: #111827;
+            color: #e5e7eb;
+        }
+        .ai-help-meta {
+            font-size: 0.68rem;
+            color: #9ca3af;
+            margin-top: 0.1rem;
+        }
+        .ai-help-input-row {
+            border-top: 1px solid #e5e7eb;
+            padding-top: 0.55rem;
+            margin-top: 0.25rem;
+        }
+        .ai-help-form {
+            display: flex;
+            align-items: flex-end;
+            gap: 0.35rem;
+        }
+        .ai-help-input-wrapper {
+            flex: 1;
+            position: relative;
+        }
+        .ai-help-input {
+            width: 100%;
+            border-radius: 0.55rem;
+            border: 1px solid #e5e7eb;
+            padding: 0.4rem 0.55rem 0.4rem 0.55rem;
+            font-size: 0.8rem;
+            resize: none;
+            min-height: 2.4rem;
+            max-height: 4.5rem;
+            line-height: 1.4;
+            outline: none;
+        }
+        .ai-help-input:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.25);
+        }
+        .ai-help-send-btn {
+            border-radius: 999px;
+            border: none;
+            width: 34px;
+            height: 34px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #111827;
+            color: #f9fafb;
+            cursor: pointer;
+            transition: background 0.18s ease, transform 0.12s ease, box-shadow 0.18s ease;
+        }
+        .ai-help-send-btn:hover:not(:disabled) {
+            background: #020617;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(15, 23, 42, 0.4);
+        }
+        .ai-help-send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+        .ai-help-footer-hint {
+            margin-top: 0.25rem;
+            font-size: 0.68rem;
+            color: #9ca3af;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        .ai-help-footer-hint i {
+            font-size: 0.65rem;
+        }
+
+        @media (max-width: 576px) {
+            .ai-help-panel {
+                right: 0.75rem;
+                bottom: 4.75rem;
+                width: min(94vw, 360px);
+            }
+            .ai-help-toggle-btn {
+                right: 0.9rem;
+                bottom: 1rem;
+            }
+        }
     </style>
     
     <!-- Security Headers -->
@@ -740,6 +1069,17 @@ ob_end_flush();
                         </div>
                     </div>
                 <?php endif; ?>
+
+                <!-- AJAX login error (hidden by default; used when page does not reload) -->
+                <div class="alert alert-danger d-none" id="loginErrorAlert" role="alert" aria-live="polite">
+                    <div class="alert-icon">
+                        <i class="fas fa-exclamation-circle"></i>
+                    </div>
+                    <div class="alert-content">
+                        <strong>Access Denied</strong>
+                        <p id="loginErrorMessage">Invalid credentials. Verify your username and password and try again.</p>
+                    </div>
+                </div>
                 
                 <?php if ($show_password_change_modal): ?>
                     <div class="alert alert-info alert-dismissible fade show" role="alert">
@@ -864,6 +1204,77 @@ ob_end_flush();
     <a href="alerts-display.php" class="notification-icon" title="View License Alerts">
         <i class="fas fa-bell"></i>
     </a>
+
+    <!-- AI Help floating button & panel -->
+    <button type="button"
+            class="ai-help-toggle-btn"
+            id="aiHelpToggleBtn"
+            aria-label="Open AI Help chat"
+            aria-haspopup="dialog"
+            aria-expanded="false">
+        <i class="fas fa-comments"></i>
+    </button>
+
+    <section class="ai-help-panel"
+             id="aiHelpPanel"
+             role="dialog"
+             aria-modal="true"
+             aria-labelledby="aiHelpTitle"
+             aria-describedby="aiHelpDescription">
+        <header class="ai-help-header">
+            <div class="ai-help-title" id="aiHelpTitle">
+                <i class="fas fa-robot" aria-hidden="true"></i>
+                <span>AI Help</span>
+            </div>
+            <div class="ai-help-header-actions">
+                <button type="button"
+                        class="ai-help-icon-btn"
+                        id="aiHelpClearBtn"
+                        aria-label="Clear AI Help conversation">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+                <button type="button"
+                        class="ai-help-icon-btn"
+                        id="aiHelpCloseBtn"
+                        aria-label="Close AI Help panel">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </header>
+        <div class="ai-help-body">
+            <div class="ai-help-messages" id="aiHelpMessages" aria-live="polite">
+                <div class="ai-help-message ai-assistant">
+                    <div class="ai-help-bubble ai-assistant">
+                        <strong id="aiHelpDescription">Welcome.</strong>
+                        <br>You can ask how to log in, reset your password, or who to contact for help.
+                    </div>
+                </div>
+            </div>
+            <div class="ai-help-input-row">
+                <form class="ai-help-form" id="aiHelpForm" autocomplete="off">
+                    <div class="ai-help-input-wrapper">
+                        <textarea
+                            class="ai-help-input"
+                            id="aiHelpInput"
+                            name="ai_help_input"
+                            rows="2"
+                            placeholder="Ask a quick question…"
+                            aria-label="Ask AI Help a question"></textarea>
+                    </div>
+                    <button type="submit"
+                            class="ai-help-send-btn"
+                            id="aiHelpSendBtn"
+                            aria-label="Send message to AI Help">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </form>
+                <div class="ai-help-footer-hint">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>AI Help won’t ask for passwords or codes.</span>
+                </div>
+            </div>
+        </div>
+    </section>
     
     <!-- System Information Modal -->
     <div class="system-info-modal" id="systemInfoModal">
@@ -1304,7 +1715,12 @@ ob_end_flush();
                     if (spinner) spinner.classList.remove('d-none');
                 }
 
-                // Trigger login transition: center card + portal animation
+                const authCard = document.querySelector('.auth-form-card');
+                const errorAlert = document.getElementById('loginErrorAlert');
+                const errorMessage = document.getElementById('loginErrorMessage');
+                if (errorAlert) errorAlert.classList.add('d-none');
+
+                // Trigger login transition: center card + portal animation (we'll keep it for success)
                 document.body.classList.add('login-transition-active');
 
                 // Add fullscreen circular loader overlay with smooth animations
@@ -1346,15 +1762,394 @@ ob_end_flush();
                     existingOverlay.className = 'login-transition-overlay';
                     document.body.appendChild(existingOverlay);
                 }
-                
-                // Submit to server after animation so dashboard appears right after the effect
-                setTimeout(function() {
-                    loginForm.submit();
-                }, 1200); // allow the portal + loading animation to complete
+
+                function resetLoadingState() {
+                    // Re-enable button/spinner
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        if (btnText) btnText.textContent = 'Sign In';
+                        if (spinner) spinner.classList.add('d-none');
+                    }
+
+                    // Remove transition class
+                    document.body.classList.remove('login-transition-active');
+
+                    // Fade out spinner overlay if present
+                    const overlay = document.querySelector('.login-spinner-overlay');
+                    if (overlay) {
+                        overlay.classList.add('fade-out');
+                        setTimeout(() => {
+                            overlay.remove();
+                        }, 250);
+                    }
+                }
+
+                function shakeLoginCard() {
+                    if (!authCard) return;
+                    authCard.classList.remove('shake');
+                    // force reflow so animation can retrigger
+                    void authCard.offsetWidth;
+                    authCard.classList.add('shake');
+                    setTimeout(() => authCard.classList.remove('shake'), 650);
+                }
+
+                const formData = new FormData(loginForm);
+                fetch(loginForm.getAttribute('action') || window.location.href, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    },
+                    credentials: 'same-origin'
+                })
+                .then(async (res) => {
+                    const data = await res.json().catch(() => null);
+                    if (!data) {
+                        throw new Error('Invalid JSON response');
+                    }
+                    return data;
+                })
+                .then((data) => {
+                    if (data.success && data.redirect) {
+                        // Keep the animation, then navigate
+                        setTimeout(() => {
+                            window.location.href = data.redirect;
+                        }, 850);
+                        return;
+                    }
+
+                    // Failure: stop animation/loader and shake
+                    resetLoadingState();
+                    shakeLoginCard();
+
+                    if (data && data.error === 'status' && data.status && data.message) {
+                        // Reuse existing modal UI (same styling as server-rendered status errors)
+                        const modal = document.getElementById('statusErrorModal');
+                        const messageEl = document.getElementById('statusErrorMessage');
+                        const titleEl = document.getElementById('statusErrorTitle');
+                        const iconEl = document.getElementById('statusErrorIcon');
+                        const infoBoxEl = document.getElementById('statusErrorInfoBox');
+                        const infoTextEl = document.getElementById('statusErrorInfoText');
+
+                        if (modal && messageEl && titleEl && iconEl && infoBoxEl && infoTextEl && window.bootstrap) {
+                            messageEl.textContent = data.message;
+
+                            if (data.status === 'inactive') {
+                                titleEl.textContent = 'Account Inactive';
+                                iconEl.className = 'fas fa-pause-circle futuristic-status-icon';
+                                iconEl.style.color = '#94a3b8';
+                                infoBoxEl.style.borderColor = 'rgba(148, 163, 184, 0.3)';
+                                infoBoxEl.style.background = 'rgba(148, 163, 184, 0.1)';
+                                infoTextEl.textContent = 'Your account has been deactivated. Contact your administrator to reactivate it.';
+                            } else if (data.status === 'suspended') {
+                                titleEl.textContent = 'Account Suspended';
+                                iconEl.className = 'fas fa-ban futuristic-status-icon';
+                                iconEl.style.color = '#ef4444';
+                                infoBoxEl.style.borderColor = 'rgba(239, 68, 68, 0.3)';
+                                infoBoxEl.style.background = 'rgba(239, 68, 68, 0.1)';
+                                infoTextEl.textContent = 'Your account has been suspended. This action may be due to policy violations or security concerns.';
+                            }
+
+                            const modalInstance = new bootstrap.Modal(modal, {
+                                backdrop: 'static',
+                                keyboard: false,
+                                focus: true
+                            });
+                            modalInstance.show();
+                            return;
+                        }
+                    }
+
+                    // Default error: show inline alert
+                    if (errorMessage) {
+                        errorMessage.textContent = (data && data.message) ? data.message : 'Login failed. Please try again.';
+                    }
+                    if (errorAlert) {
+                        errorAlert.classList.remove('d-none');
+                    }
+                })
+                .catch((err) => {
+                    console.error('AJAX login error:', err);
+                    resetLoadingState();
+                    shakeLoginCard();
+                    if (errorMessage) errorMessage.textContent = 'Login failed. Please try again.';
+                    if (errorAlert) errorAlert.classList.remove('d-none');
+                });
             });
         } else {
             console.error('Login form not found!');
         }
+
+        // AI Help widget logic
+        (function initAiHelpWidget() {
+            const toggleBtn = document.getElementById('aiHelpToggleBtn');
+            const panel = document.getElementById('aiHelpPanel');
+            const closeBtn = document.getElementById('aiHelpCloseBtn');
+            const clearBtn = document.getElementById('aiHelpClearBtn');
+            const form = document.getElementById('aiHelpForm');
+            const input = document.getElementById('aiHelpInput');
+            const messagesEl = document.getElementById('aiHelpMessages');
+            const sendBtn = document.getElementById('aiHelpSendBtn');
+
+            if (!toggleBtn || !panel || !form || !input || !messagesEl || !sendBtn) {
+                return;
+            }
+
+            const state = {
+                open: false,
+                // Each item: { role: 'user' | 'assistant', text: string }
+                history: [],
+                thinkingId: null
+            };
+
+            function scrollMessagesToBottom() {
+                try {
+                    messagesEl.scrollTop = messagesEl.scrollHeight;
+                } catch (e) { /* ignore */ }
+            }
+
+            function createMessageElement(role, text, isMutedMeta) {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'ai-help-message ' + (role === 'user' ? 'ai-user' : 'ai-assistant');
+
+                const bubble = document.createElement('div');
+                bubble.className = 'ai-help-bubble ' + (role === 'user' ? 'ai-user' : 'ai-assistant');
+                bubble.textContent = text;
+                wrapper.appendChild(bubble);
+
+                if (isMutedMeta) {
+                    const meta = document.createElement('div');
+                    meta.className = 'ai-help-meta';
+                    meta.textContent = isMutedMeta;
+                    wrapper.appendChild(meta);
+                }
+
+                return wrapper;
+            }
+
+            function addMessage(role, text, options) {
+                const opts = options || {};
+                const el = createMessageElement(role, text, opts.meta || null);
+                if (opts.replaceId && state.thinkingId && state.thinkingId === opts.replaceId) {
+                    const existing = document.getElementById(state.thinkingId);
+                    if (existing && existing.parentNode) {
+                        existing.parentNode.replaceChild(el, existing);
+                    } else {
+                        messagesEl.appendChild(el);
+                    }
+                    state.thinkingId = null;
+                } else {
+                    messagesEl.appendChild(el);
+                }
+
+                if (!opts.skipHistory && role !== 'system') {
+                    state.history.push({ role: role === 'user' ? 'user' : 'assistant', text: text });
+                    if (state.history.length > 12) {
+                        state.history = state.history.slice(-12);
+                    }
+                    try {
+                        sessionStorage.setItem('ai_help_history', JSON.stringify(state.history));
+                    } catch (e) { /* ignore */ }
+                }
+
+                scrollMessagesToBottom();
+                return el;
+            }
+
+            function restoreHistoryFromStorage() {
+                try {
+                    const raw = sessionStorage.getItem('ai_help_history');
+                    if (!raw) return;
+                    const parsed = JSON.parse(raw);
+                    if (!Array.isArray(parsed)) return;
+                    state.history = [];
+                    parsed.slice(-12).forEach(msg => {
+                        if (!msg || typeof msg.text !== 'string') return;
+                        const role = msg.role === 'assistant' ? 'assistant' : 'user';
+                        addMessage(role, msg.text, { skipHistory: true });
+                        state.history.push({ role, text: msg.text });
+                    });
+                    if (state.history.length > 0) {
+                        scrollMessagesToBottom();
+                    }
+                } catch (e) {
+                    // ignore storage issues
+                }
+            }
+
+            restoreHistoryFromStorage();
+
+            function openPanel() {
+                if (state.open) return;
+                state.open = true;
+                panel.classList.add('open');
+                toggleBtn.setAttribute('aria-expanded', 'true');
+                setTimeout(() => {
+                    input.focus();
+                }, 30);
+            }
+
+            function closePanel() {
+                if (!state.open) return;
+                state.open = false;
+                panel.classList.remove('open');
+                toggleBtn.setAttribute('aria-expanded', 'false');
+                toggleBtn.focus();
+            }
+
+            // Basic focus trap inside the panel when open
+            function handleFocusTrap(e) {
+                if (!state.open || e.key !== 'Tab') return;
+                const focusableSelectors = [
+                    'button:not([disabled])',
+                    'textarea:not([disabled])',
+                    'input:not([disabled])',
+                    '[tabindex]:not([tabindex="-1"])'
+                ];
+                const nodes = panel.querySelectorAll(focusableSelectors.join(','));
+                const list = Array.prototype.slice.call(nodes).filter(el => el.offsetParent !== null);
+                if (!list.length) return;
+                const first = list[0];
+                const last = list[list.length - 1];
+                if (e.shiftKey && document.activeElement === first) {
+                    last.focus();
+                    e.preventDefault();
+                } else if (!e.shiftKey && document.activeElement === last) {
+                    first.focus();
+                    e.preventDefault();
+                }
+            }
+
+            toggleBtn.addEventListener('click', function () {
+                if (state.open) {
+                    closePanel();
+                } else {
+                    openPanel();
+                }
+            });
+
+            if (closeBtn) {
+                closeBtn.addEventListener('click', closePanel);
+            }
+
+            if (clearBtn) {
+                clearBtn.addEventListener('click', function () {
+                    while (messagesEl.firstChild) {
+                        messagesEl.removeChild(messagesEl.firstChild);
+                    }
+                    state.history = [];
+                    try {
+                        sessionStorage.removeItem('ai_help_history');
+                    } catch (e) { /* ignore */ }
+                    // Re-add welcome message
+                    const welcome = document.createElement('div');
+                    welcome.className = 'ai-help-message ai-assistant';
+                    const bubble = document.createElement('div');
+                    bubble.className = 'ai-help-bubble ai-assistant';
+                    bubble.innerHTML = '<strong>Welcome.</strong><br>You can ask how to log in, reset your password, or who to contact for help.';
+                    welcome.appendChild(bubble);
+                    messagesEl.appendChild(welcome);
+                    scrollMessagesToBottom();
+                });
+            }
+
+            document.addEventListener('keydown', function (e) {
+                if (!state.open) return;
+                if (e.key === 'Escape') {
+                    e.preventDefault();
+                    closePanel();
+                } else if (e.key === 'Tab') {
+                    handleFocusTrap(e);
+                }
+            });
+
+            function setThinking(isThinking) {
+                if (isThinking) {
+                    sendBtn.disabled = true;
+                    input.setAttribute('aria-busy', 'true');
+                    // Create or update lightweight "Thinking..." bubble
+                    const tempId = 'ai-help-thinking';
+                    let el = document.getElementById(tempId);
+                    if (!el) {
+                        el = document.createElement('div');
+                        el.id = tempId;
+                        el.className = 'ai-help-message ai-assistant';
+                        const bubble = document.createElement('div');
+                        bubble.className = 'ai-help-bubble ai-assistant';
+                        bubble.textContent = 'Thinking…';
+                        el.appendChild(bubble);
+                        messagesEl.appendChild(el);
+                    }
+                    state.thinkingId = tempId;
+                    scrollMessagesToBottom();
+                } else {
+                    sendBtn.disabled = false;
+                    input.removeAttribute('aria-busy');
+                }
+            }
+
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+                const text = (input.value || '').trim();
+                if (!text) {
+                    input.focus();
+                    return;
+                }
+
+                addMessage('user', text);
+                input.value = '';
+                setThinking(true);
+
+                const historyPayload = state.history.slice(-6).map(item => ({
+                    role: item.role,
+                    text: item.text
+                }));
+
+                fetch('/api/ai_help.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        message: text,
+                        history: historyPayload
+                    })
+                })
+                .then(async (res) => {
+                    let json = null;
+                    try {
+                        json = await res.json();
+                    } catch (err) {
+                        throw new Error('Invalid JSON from AI Help');
+                    }
+                    return { ok: res.ok, data: json };
+                })
+                .then(({ ok, data }) => {
+                    setThinking(false);
+                    const reply = data && typeof data.reply === 'string'
+                        ? data.reply
+                        : (!ok ? 'AI help service is unavailable. Please try again later.' : 'I could not generate an answer. Please try again.');
+
+                    if (!ok) {
+                        addMessage('assistant', reply, { replaceId: state.thinkingId || 'ai-help-thinking', meta: null });
+                        return;
+                    }
+
+                    // If backend flagged this as blocked (e.g., security-related), we still show the safe refusal text
+                    addMessage('assistant', reply, { replaceId: state.thinkingId || 'ai-help-thinking' });
+                })
+                .catch(err => {
+                    console.error('AI Help error:', err);
+                    setThinking(false);
+                    addMessage('assistant', 'Service unavailable. Try again later.', {
+                        replaceId: state.thinkingId || 'ai-help-thinking'
+                    });
+                });
+            });
+        })();
     });
     </script>
 
