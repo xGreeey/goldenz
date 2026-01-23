@@ -1041,7 +1041,6 @@ foreach ($violation_history as $history) {
     font-weight: 600;
 }
 
-<<<<<<< HEAD
 /* Compact Filter Bar Styling */
 #violation-types-filter-form .form-label {
     font-size: 0.75rem;
