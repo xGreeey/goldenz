@@ -3,6 +3,9 @@
 .env.local
 .env.*.local
 
+# AI Configuration (contains API keys)
+/config/ai.php
+
 # Composer
 /vendor/
 composer.phar
