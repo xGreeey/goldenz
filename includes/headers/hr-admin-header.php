@@ -108,6 +108,9 @@ $activeSection = getActiveSection($page);
     .hr-icon-message {
         background-image: url('<?php echo $iconUrl('message-icon'); ?>') !important;
     }
+    .hr-icon-search {
+        background-image: url('<?php echo $iconUrl('search-icon'); ?>') !important;
+    }
 
     /* Apply filters to colorize icons for action buttons */
     .btn-action-modern.btn-info-modern .hr-icon {

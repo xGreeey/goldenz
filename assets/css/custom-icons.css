@@ -94,6 +94,10 @@
     background-image: url('../icons/message-icon.svg');
 }
 
+.hr-icon-search {
+    background-image: url('../icons/search-icon.svg');
+}
+
 /* Button icon styling */
 .btn .hr-icon {
     width: 14px;

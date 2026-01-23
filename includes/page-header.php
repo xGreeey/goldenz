@@ -46,6 +46,7 @@ $pageSubtitles = [
     'attendance' => 'Track and manage employee attendance',
     'violations' => 'View and manage employee violations',
     'violation_types' => 'Manage violation categories and sanctions',
+    'violation_history' => 'Complete history of all violation type changes',
 ];
 
 $pageSubtitle = $pageSubtitles[$page] ?? 'Manage your HR operations';
