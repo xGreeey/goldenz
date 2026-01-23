@@ -35,6 +35,11 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+// Session-scoped context initialization flag (reduces token usage)
+if (!isset($_SESSION['ai_context_initialized'])) {
+    $_SESSION['ai_context_initialized'] = false;
+}
+
 // Basic same-origin protection: only accept same host by default
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
 if (!empty($origin)) {
@@ -186,10 +191,10 @@ if (empty($AI_HELP_SYSTEM_ROLE) || empty($AI_HELP_SYSTEM_KNOWLEDGE) || empty($AI
     exit;
 }
 
-// Build the prompt in the REQUIRED structure every time
+// Limit history to reduce prompt size (last 5–8 messages max)
 $historyText = '';
 if (is_array($history)) {
-    $trimmedHistory = array_slice($history, -8);
+    $trimmedHistory = array_slice($history, -6);
     $lines = [];
     foreach ($trimmedHistory as $item) {
         if (!is_array($item)) {
@@ -212,12 +217,27 @@ if (is_array($history)) {
     }
 }
 
-$fullPrompt =
-    "SYSTEM ROLE:\n" . $AI_HELP_SYSTEM_ROLE . "\n\n" .
-    "SYSTEM KNOWLEDGE:\n" . $AI_HELP_SYSTEM_KNOWLEDGE . "\n\n" .
-    $AI_HELP_INSTRUCTIONS . "\n\n" .
-    $historyText .
-    "USER QUESTION:\n" . $message;
+// Session-scoped knowledge injection:
+// - First request per session: include full system knowledge once
+// - Subsequent requests: include only a short reminder + history + user question
+$isInit = empty($_SESSION['ai_context_initialized']);
+$shortReminder = "You are the Golden Z HR Management System helpdesk assistant. Answer only HR system questions and refuse security bypass/credential requests.";
+
+if (!$isInit) {
+    $fullPrompt =
+        "SYSTEM ROLE:\n" . $AI_HELP_SYSTEM_ROLE . "\n\n" .
+        "SYSTEM KNOWLEDGE:\n" . $AI_HELP_SYSTEM_KNOWLEDGE . "\n\n" .
+        $AI_HELP_INSTRUCTIONS . "\n\n" .
+        $historyText .
+        "USER QUESTION:\n" . $message;
+} else {
+    $fullPrompt =
+        "SYSTEM ROLE:\n" . $AI_HELP_SYSTEM_ROLE . "\n\n" .
+        "SYSTEM REMINDER:\n" . $shortReminder . "\n\n" .
+        $AI_HELP_INSTRUCTIONS . "\n\n" .
+        $historyText .
+        "USER QUESTION:\n" . $message;
+}
 
 // Send as a single user prompt (Gemini will treat it as the full context)
 $contents = [
@@ -229,49 +249,15 @@ $contents = [
     ],
 ];
 
-// Optional prior conversation (bounded)
-if (is_array($history)) {
-    $trimmedHistory = array_slice($history, -6);
-    foreach ($trimmedHistory as $item) {
-        if (!is_array($item)) {
-            continue;
-        }
-        $role = $item['role'] ?? 'user';
-        $text = isset($item['text']) ? (string)$item['text'] : '';
-        if ($text === '') {
-            continue;
-        }
-        if (mb_strlen($text) > 800) {
-            $text = mb_substr($text, 0, 800);
-        }
-        // Map roles: user / assistant → user / model
-        $role = strtolower($role) === 'assistant' ? 'model' : 'user';
-        $contents[] = [
-            'role'  => $role,
-            'parts' => [
-                ['text' => $text],
-            ],
-        ];
-    }
-}
-
-// Current user message as final content
-$contents[] = [
-    'role'  => 'user',
-    'parts' => [
-        ['text' => $message],
-    ],
-];
-
 $endpoint = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent";
 
 $payload = [
     'contents'          => $contents,
     'generationConfig'  => [
-        'temperature'      => 0.25,
+        'temperature'      => 0.2,
         'topP'             => 0.9,
         'topK'             => 32,
-        'maxOutputTokens'  => 768,
+        'maxOutputTokens'  => 420,
     ],
 ];
 
@@ -306,6 +292,16 @@ if ($responseBody === false || $curlErr) {
 $apiData = json_decode($responseBody, true);
 
 if (!is_array($apiData) || $statusCode < 200 || $statusCode >= 300) {
+    // Graceful degradation on quota/rate-limit errors
+    if ($statusCode === 429 || $statusCode === 403) {
+        http_response_code(200);
+        echo json_encode([
+            'reply'   => 'AI Help is temporarily unavailable. Please try again later.',
+            'blocked' => false,
+        ]);
+        exit;
+    }
+
     // Avoid leaking detailed error messages to client
     error_log('AI Help Error: Gemini API HTTP ' . $statusCode);
     http_response_code(502);
@@ -327,6 +323,11 @@ if (!empty($apiData['candidates'][0]['content']['parts'])) {
 
 if ($replyText === '') {
     $replyText = 'Sorry, I was unable to generate a helpful answer. Please try again or contact your administrator.';
+}
+
+// Mark context initialized after a successful Gemini response
+if ($_SESSION['ai_context_initialized'] === false) {
+    $_SESSION['ai_context_initialized'] = true;
 }
 
 echo json_encode([

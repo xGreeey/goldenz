@@ -1246,8 +1246,7 @@ ob_end_flush();
                 <div class="ai-help-message ai-assistant">
                     <div class="ai-help-bubble ai-assistant">
                         <strong id="aiHelpDescription">Welcome.</strong>
-                        <br>
-                        You can ask how to log in, reset your password, or who to contact for help.
+                        <br>You can ask how to log in, reset your password, or who to contact for help.
                     </div>
                 </div>
             </div>
