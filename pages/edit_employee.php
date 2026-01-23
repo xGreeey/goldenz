@@ -27,15 +27,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $errors = [];
     
     // Validate required fields
-    $required_fields = ['first_name', 'surname', 'employee_no', 'employee_type', 'post', 'date_hired', 'status', 'cp_number'];
+    $required_fields = ['first_name', 'surname', 'employee_no', 'employee_type', 'post', 'date_hired', 'employment_status', 'status', 'cp_number'];
     $required_labels = [
         'first_name' => 'First Name',
         'surname' => 'Last Name',
         'employee_no' => 'Employee Number',
-        'employee_type' => 'Employee Type',
+        'employee_type' => 'Designation',
         'post' => 'Post / Position',
         'date_hired' => 'Date Hired',
-        'status' => 'Status',
+        'employment_status' => 'Employment Status',
+        'status' => 'Account Access Status',
         'cp_number' => 'Contact Phone Number'
     ];
     foreach ($required_fields as $field) {
@@ -80,6 +81,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'contact_person_number' => $nullIfEmpty($_POST['contact_person_number'] ?? ''),
                 'blood_type' => $nullIfEmpty($_POST['blood_type'] ?? ''),
                 'religion' => $nullIfEmpty($_POST['religion'] ?? ''),
+                'employment_status' => !empty($_POST['employment_status']) ? trim($_POST['employment_status']) : null,
                 'status' => $_POST['status']
             ];
             
@@ -204,7 +206,7 @@ if (!empty($employee['contact_person_number'])) {
                             if (errorAlert) {
                                 errorAlert.scrollIntoView({ behavior: 'smooth', block: 'start' });
                                 // Also highlight invalid fields
-                                const requiredFields = ['first_name', 'surname', 'employee_no', 'employee_type', 'post', 'date_hired', 'status'];
+                                const requiredFields = ['first_name', 'surname', 'employee_no', 'employee_type', 'post', 'date_hired', 'employment_status', 'status'];
                                 requiredFields.forEach(fieldName => {
                                     const field = document.getElementById(fieldName) || document.querySelector(`[name="${fieldName}"]`);
                                     if (field && !field.value.trim()) {
@@ -242,27 +244,41 @@ if (!empty($employee['contact_person_number'])) {
                         </div>
                         <div class="col-md-4">
                             <div class="form-group">
-                                <label for="employee_type" class="form-label">Employee Type <span class="text-danger">*</span></label>
+                                <label for="employee_type" class="form-label">Designation <span class="text-danger">*</span></label>
                                 <select class="form-select <?php echo (isset($errors) && empty($_POST['employee_type'] ?? '')) ? 'is-invalid' : ''; ?>" id="employee_type" name="employee_type" required>
-                                    <option value="">Select Employee Type</option>
+                                    <option value="">Select Designation</option>
                                     <option value="SG" <?php echo (($employee['employee_type'] ?? '') === 'SG') ? 'selected' : ''; ?>>Security Guard (SG)</option>
                                     <option value="LG" <?php echo (($employee['employee_type'] ?? '') === 'LG') ? 'selected' : ''; ?>>Lady Guard (LG)</option>
                                     <option value="SO" <?php echo (($employee['employee_type'] ?? '') === 'SO') ? 'selected' : ''; ?>>Security Officer (SO)</option>
                                 </select>
-                                <div class="invalid-feedback">Employee Type is required.</div>
+                                <small class="form-text text-muted">Indicates the employee's official position or designation.</small>
+                                <div class="invalid-feedback">Designation is required.</div>
                             </div>
                         </div>
                         <div class="col-md-4">
                             <div class="form-group">
-                                <label for="status" class="form-label">Status <span class="text-danger">*</span></label>
+                                <label for="employment_status" class="form-label">Employment Status <span class="text-danger">*</span></label>
+                                <select class="form-select <?php echo (isset($errors) && empty($_POST['employment_status'] ?? '')) ? 'is-invalid' : ''; ?>" id="employment_status" name="employment_status" required>
+                                    <option value="">Select Employment Status</option>
+                                    <option value="Probationary" <?php echo (($employee['employment_status'] ?? '') === 'Probationary') ? 'selected' : ''; ?>>Probationary</option>
+                                    <option value="Regular" <?php echo (($employee['employment_status'] ?? '') === 'Regular') ? 'selected' : ''; ?>>Regular</option>
+                                    <option value="Suspended" <?php echo (($employee['employment_status'] ?? '') === 'Suspended') ? 'selected' : ''; ?>>Suspended</option>
+                                    <option value="Terminated" <?php echo (($employee['employment_status'] ?? '') === 'Terminated') ? 'selected' : ''; ?>>Terminated</option>
+                                </select>
+                                <small class="form-text text-muted">Indicates the employee's official employment status.</small>
+                                <div class="invalid-feedback">Employment Status is required.</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="status" class="form-label">Account Access Status <span class="text-danger">*</span></label>
                                 <select class="form-select <?php echo (isset($errors) && empty($_POST['status'] ?? '')) ? 'is-invalid' : ''; ?>" id="status" name="status" required>
-                                    <option value="">Select Status</option>
+                                    <option value="">Select Account Access Status</option>
                                     <option value="Active" <?php echo (($employee['status'] ?? '') === 'Active') ? 'selected' : ''; ?>>Active</option>
                                     <option value="Inactive" <?php echo (($employee['status'] ?? '') === 'Inactive') ? 'selected' : ''; ?>>Inactive</option>
-                                    <option value="Terminated" <?php echo (($employee['status'] ?? '') === 'Terminated') ? 'selected' : ''; ?>>Terminated</option>
-                                    <option value="Suspended" <?php echo (($employee['status'] ?? '') === 'Suspended') ? 'selected' : ''; ?>>Suspended</option>
                                 </select>
-                                <div class="invalid-feedback">Status is required.</div>
+                                <small class="form-text text-muted">Indicates the employee's access to the information system.</small>
+                                <div class="invalid-feedback">Account Access Status is required.</div>
                             </div>
                         </div>
                     </div>
