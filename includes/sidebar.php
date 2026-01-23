@@ -222,9 +222,9 @@ if ($user_role === 'developer') {
             </a>
         </li>
         <li class="nav-item">
-            <a href="?page=posts"
-               class="nav-link <?php echo (($page === 'posts') && !$fromHeader) ? 'active' : ''; ?>"
-               data-page="posts">
+            <a href="?page=feed"
+               class="nav-link <?php echo (($page === 'feed') && !$fromHeader) ? 'active' : ''; ?>"
+               data-page="feed">
                 <i class="fas fa-rss me-2"></i>
                 <span>Feed</span>
             </a>
