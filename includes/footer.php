@@ -59,6 +59,7 @@
     <script src="<?php echo asset_url('js/comprehensive-functionality.js'); ?>"></script>
     <script src="<?php echo asset_url('js/notifications.js'); ?>"></script>
     <script src="<?php echo asset_url('js/notifications-handler.js'); ?>"></script>
+    <script src="<?php echo asset_url('js/logout-animation.js'); ?>"></script>
     
     <script>
     // Enhanced Sidebar Navigation System
@@ -708,6 +709,19 @@
         include __DIR__ . '/password-expiry-modal.php';
     }
     ?>
+    
+    <!-- Chat Widget - Floating chat accessible from all pages -->
+    <?php 
+    // Only include if user is logged in
+    if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true) {
+        include __DIR__ . '/chat-widget.php';
+    }
+    ?>
+    
+    <!-- Chat Widget JavaScript -->
+    <?php if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true): ?>
+    <script src="<?php echo asset_url('js/chat-widget.js'); ?>"></script>
+    <?php endif; ?>
     
     <!-- Scroll to Top Button -->
     <button id="scrollToTopBtn" class="scroll-to-top-btn" title="Scroll to top" aria-label="Scroll to top">
