@@ -362,6 +362,7 @@ class PageTransitionManager {
         // Page titles mapping
         const pageTitles = {
             'dashboard': 'Dashboard',
+            'violation_history': 'Violation History',
             'employees': 'Employee Management',
             'add_employee': 'Add New Employee',
             'add_employee_page2': 'Add New Employee - Page 2',
@@ -391,7 +392,8 @@ class PageTransitionManager {
             'leave_reports': 'Leave Reports',
             'attendance': 'Attendance Management',
             'violations': 'Employee Violations',
-            'violation_types': 'Violation Types & Sanctions'
+            'violation_types': 'Violation Types & Sanctions',
+            'violation_history': 'Violation History'
         };
 
         // Page subtitles mapping
@@ -427,7 +429,8 @@ class PageTransitionManager {
             'leave_reports': 'Generate leave reports and analytics',
             'attendance': 'Track and manage employee attendance',
             'violations': 'View and manage employee violations',
-            'violation_types': 'Manage violation categories and sanctions'
+            'violation_types': 'Manage violation categories and sanctions',
+            'violation_history': 'Complete history of all violation type changes'
         };
 
         // Get title and subtitle
