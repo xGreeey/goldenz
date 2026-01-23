@@ -174,10 +174,6 @@ if (!empty($employee['contact_person_number'])) {
 <div class="add-employee-container">
     <!-- Page Header -->
     <div class="page-header">
-        <div class="page-title">
-            <h1>Edit Employee</h1>
-            <p class="page-subtitle">Update employee information and records</p>
-        </div>
         <div class="page-actions">
             <a href="?page=employees" class="btn btn-outline-secondary">
                 Back to Employees

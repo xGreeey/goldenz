@@ -75,7 +75,6 @@ $activeSection = getActiveSection($page);
     <link href="<?php echo asset_url('css/style.css'); ?>" rel="stylesheet">
     <link href="<?php echo asset_url('css/font-override.css'); ?>" rel="stylesheet">
     <link href="<?php echo asset_url('css/custom-icons.css'); ?>" rel="stylesheet">
-    <link href="<?php echo asset_url('css/logout-animation.css'); ?>" rel="stylesheet">
     <!-- number-rendering-fix.css merged into font-override.css -->
     <style>
     /* Override icon paths with absolute URLs for SVG icons */
@@ -108,6 +107,9 @@ $activeSection = getActiveSection($page);
     }
     .hr-icon-message {
         background-image: url('<?php echo $iconUrl('message-icon'); ?>') !important;
+    }
+    .hr-icon-search {
+        background-image: url('<?php echo $iconUrl('search-icon'); ?>') !important;
     }
 
     /* Apply filters to colorize icons for action buttons */

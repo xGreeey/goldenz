@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: db:3306
--- Generation Time: Jan 22, 2026 at 08:21 AM
+-- Generation Time: Jan 23, 2026 at 05:01 AM
 -- Server version: 8.0.44
 -- PHP Version: 8.3.26
 
@@ -165,7 +165,23 @@ INSERT INTO `audit_logs` (`id`, `user_id`, `action`, `table_name`, `record_id`, 
 (118, 25, 'UPDATE', 'employees', 10, '{\"id\":10,\"employee_no\":32424,\"employee_type\":\"LG\",\"surname\":\"INOCENCIO\",\"first_name\":\"ALDRIN\",\"middle_name\":\"JOHN\",\"post\":\"UNASSIGNED\",\"license_no\":\"NCR0-94309234234324\",\"license_exp_date\":\"2025-01-22\",\"rlm_exp\":\"2025-02-22\",\"date_hired\":\"2026-01-22\",\"cp_number\":\"9563211331\",\"sss_no\":\"23-424324\",\"pagibig_no\":\"3453-4435-4354\",\"tin_number\":\"233-453-454-35\",\"philhealth_no\":\"54-354353454-3\",\"birth_date\":\"2000-08-27\",\"height\":\"5\'5\\\"\",\"weight\":\"22\",\"address\":\"FSADFASDF\",\"contact_person\":\"ASDF\",\"relationship\":\"Colleague\",\"contact_person_address\":\"FSDA\",\"contact_person_number\":\"9563211331\",\"blood_type\":\"A-\",\"religion\":\"Muslim\",\"vacancy_source\":\"[\\\"Walk-in\\\"]\",\"referral_name\":null,\"knows_agency_person\":\"No\",\"agency_person_name\":null,\"physical_defect\":\"No\",\"physical_defect_specify\":null,\"drives\":\"No\",\"drivers_license_no\":null,\"drivers_license_exp\":null,\"drinks_alcohol\":\"No\",\"alcohol_frequency\":null,\"prohibited_drugs\":\"No\",\"security_guard_experience\":null,\"convicted\":\"Yes\",\"conviction_details\":null,\"filed_case\":\"No\",\"case_specify\":null,\"action_after_termination\":null,\"signature_1\":\"sadfas\",\"signature_2\":\"asdfasfd\",\"signature_3\":null,\"initial_1\":\"asdfasd\",\"initial_2\":\"fasdfsad\",\"initial_3\":null,\"fingerprint_right_thumb\":\"uploads\\/employees\\/fingerprints\\/10_fingerprint_right_thumb.png\",\"fingerprint_right_index\":\"uploads\\/employees\\/fingerprints\\/10_fingerprint_right_index.jpg\",\"fingerprint_right_middle\":\"uploads\\/employees\\/fingerprints\\/10_fingerprint_right_middle.png\",\"fingerprint_right_ring\":\"uploads\\/employees\\/fingerprints\\/10_fingerprint_right_ring.jpg\",\"fingerprint_right_little\":\"uploads\\/employees\\/fingerprints\\/10_fingerprint_right_little.png\",\"fingerprint_left_thumb\":\"uploads\\/employees\\/fingerprints\\/10_fingerprint_left_thumb.png\",\"fingerprint_left_index\":\"uploads\\/employees\\/fingerprints\\/10_fingerprint_left_index.png\",\"fingerprint_left_middle\":\"uploads\\/employees\\/fingerprints\\/10_fingerprint_left_middle.png\",\"fingerprint_left_ring\":\"uploads\\/employees\\/fingerprints\\/10_fingerprint_left_ring.png\",\"fingerprint_left_little\":\"uploads\\/employees\\/fingerprints\\/10_fingerprint_left_little.png\",\"requirements_signature\":null,\"req_2x2\":\"YO\",\"req_birth_cert\":\"NO\",\"req_barangay\":\"YO\",\"req_police\":\"NO\",\"req_nbi\":\"YO\",\"req_di\":\"NO\",\"req_diploma\":\"YO\",\"req_neuro_drug\":\"NO\",\"req_sec_license\":\"YO\",\"sec_lic_no\":null,\"req_sec_lic_no\":\"NO\",\"req_sss\":\"NO\",\"req_pagibig\":\"NO\",\"req_philhealth\":\"NO\",\"req_tin\":\"NO\",\"sworn_day\":\"33\",\"sworn_month\":\"33\",\"sworn_year\":null,\"tax_cert_no\":\"33\",\"tax_cert_issued_at\":\"33\",\"sworn_signature\":\"asdfasfd\",\"affiant_community\":null,\"doc_no\":\"3\",\"page_no\":\"2\",\"book_no\":\"4\",\"series_of\":\"sdf\",\"status\":\"Terminated\",\"created_at\":\"2026-01-22 03:20:59\",\"updated_at\":\"2026-01-22 03:20:59\",\"created_by\":25,\"created_by_name\":\"HR Administrator\",\"gender\":\"Male\",\"civil_status\":\"Single\",\"age\":25,\"birthplace\":\"SFASDF\",\"citizenship\":\"ASDFA\",\"provincial_address\":\"SADFSADF\",\"special_skills\":\"asdf\",\"spouse_name\":\"ASDF\",\"spouse_age\":2,\"spouse_occupation\":\"SDF\",\"father_name\":\"ASDF\",\"father_age\":2,\"father_occupation\":\"ASDF\",\"mother_name\":\"ASDF\",\"mother_age\":2,\"mother_occupation\":\"SDAF\",\"children_names\":\"sdf\",\"college_course\":null,\"college_school_name\":null,\"college_school_address\":null,\"college_years\":null,\"vocational_course\":null,\"vocational_school_name\":null,\"vocational_school_address\":null,\"vocational_years\":null,\"highschool_school_name\":\"FSADASDF\",\"highschool_school_address\":\"ASDF\",\"highschool_years\":\"2002 - 2005\",\"elementary_school_name\":\"ASDFASDF\",\"elementary_school_address\":\"ASDF\",\"elementary_years\":\"2002 - 2005\",\"trainings_json\":\"[{\\\"title\\\":\\\"AFSD\\\",\\\"by\\\":\\\"ASDF\\\",\\\"date\\\":\\\"2026-01-22\\\"}]\",\"gov_exam_taken\":0,\"gov_exam_json\":null,\"employment_history_json\":\"[{\\\"position\\\":\\\"FSDA\\\",\\\"company_name\\\":\\\"SADF\\\",\\\"company_address\\\":\\\"FDSA\\\",\\\"company_phone\\\":\\\"dfg\\\",\\\"period\\\":\\\"02\\\\\\/2005 - 09\\\\\\/2020\\\",\\\"reason\\\":\\\"asdf\\\"}]\",\"profile_image\":null}', '{\"employee_no\":\"32424\",\"employee_type\":\"LG\",\"surname\":\"asdf\",\"first_name\":\"ALDRIN\",\"middle_name\":\"JOHN\",\"post\":\"UNASSIGNED\",\"license_no\":\"NCR0-94309234234324\",\"license_exp_date\":\"2025-01-22\",\"rlm_exp\":\"2025-02-22\",\"date_hired\":\"2026-01-22\",\"cp_number\":\"+63-9563211331\",\"sss_no\":\"23-424324\",\"pagibig_no\":\"3453-4435-4354\",\"tin_number\":\"233-453-454-35\",\"philhealth_no\":\"54-354353454-3\",\"birth_date\":\"2000-08-27\",\"height\":\"5\'5\\\"\",\"weight\":\"22\",\"address\":\"FSADFASDF\",\"contact_person\":\"ASDF\",\"relationship\":\"Colleague\",\"contact_person_address\":\"FSDA\",\"contact_person_number\":\"+63-9563211331\",\"blood_type\":\"A-\",\"religion\":\"Muslim\",\"status\":\"Terminated\"}', '172.18.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-01-22 07:19:29'),
 (119, 1, 'UPDATE', 'employees', 10, '{\"post\": \"UNASSIGNED\", \"status\": \"Terminated\", \"surname\": \"asdf\", \"first_name\": \"ALDRIN\"}', '{\"post\": \"UNASSIGNED\", \"status\": \"Terminated\", \"surname\": \"aldrin\", \"first_name\": \"ALDRIN\"}', NULL, NULL, '2026-01-22 07:24:55'),
 (120, 25, 'UPDATE', 'employees', 10, '{\"id\":10,\"employee_no\":32424,\"employee_type\":\"LG\",\"surname\":\"asdf\",\"first_name\":\"ALDRIN\",\"middle_name\":\"JOHN\",\"post\":\"UNASSIGNED\",\"license_no\":\"NCR0-94309234234324\",\"license_exp_date\":\"2025-01-22\",\"rlm_exp\":\"2025-02-22\",\"date_hired\":\"2026-01-22\",\"cp_number\":\"+63-9563211331\",\"sss_no\":\"23-424324\",\"pagibig_no\":\"3453-4435-4354\",\"tin_number\":\"233-453-454-35\",\"philhealth_no\":\"54-354353454-3\",\"birth_date\":\"2000-08-27\",\"height\":\"5\'5\\\"\",\"weight\":\"22\",\"address\":\"FSADFASDF\",\"contact_person\":\"ASDF\",\"relationship\":\"Colleague\",\"contact_person_address\":\"FSDA\",\"contact_person_number\":\"+63-9563211331\",\"blood_type\":\"A-\",\"religion\":\"Muslim\",\"vacancy_source\":\"[\\\"Walk-in\\\"]\",\"referral_name\":null,\"knows_agency_person\":\"No\",\"agency_person_name\":null,\"physical_defect\":\"No\",\"physical_defect_specify\":null,\"drives\":\"No\",\"drivers_license_no\":null,\"drivers_license_exp\":null,\"drinks_alcohol\":\"No\",\"alcohol_frequency\":null,\"prohibited_drugs\":\"No\",\"security_guard_experience\":null,\"convicted\":\"Yes\",\"conviction_details\":null,\"filed_case\":\"No\",\"case_specify\":null,\"action_after_termination\":null,\"signature_1\":\"sadfas\",\"signature_2\":\"asdfasfd\",\"signature_3\":null,\"initial_1\":\"asdfasd\",\"initial_2\":\"fasdfsad\",\"initial_3\":null,\"fingerprint_right_thumb\":\"uploads\\/employees\\/fingerprints\\/10_fingerprint_right_thumb.png\",\"fingerprint_right_index\":\"uploads\\/employees\\/fingerprints\\/10_fingerprint_right_index.jpg\",\"fingerprint_right_middle\":\"uploads\\/employees\\/fingerprints\\/10_fingerprint_right_middle.png\",\"fingerprint_right_ring\":\"uploads\\/employees\\/fingerprints\\/10_fingerprint_right_ring.jpg\",\"fingerprint_right_little\":\"uploads\\/employees\\/fingerprints\\/10_fingerprint_right_little.png\",\"fingerprint_left_thumb\":\"uploads\\/employees\\/fingerprints\\/10_fingerprint_left_thumb.png\",\"fingerprint_left_index\":\"uploads\\/employees\\/fingerprints\\/10_fingerprint_left_index.png\",\"fingerprint_left_middle\":\"uploads\\/employees\\/fingerprints\\/10_fingerprint_left_middle.png\",\"fingerprint_left_ring\":\"uploads\\/employees\\/fingerprints\\/10_fingerprint_left_ring.png\",\"fingerprint_left_little\":\"uploads\\/employees\\/fingerprints\\/10_fingerprint_left_little.png\",\"requirements_signature\":null,\"req_2x2\":\"YO\",\"req_birth_cert\":\"NO\",\"req_barangay\":\"YO\",\"req_police\":\"NO\",\"req_nbi\":\"YO\",\"req_di\":\"NO\",\"req_diploma\":\"YO\",\"req_neuro_drug\":\"NO\",\"req_sec_license\":\"YO\",\"sec_lic_no\":null,\"req_sec_lic_no\":\"NO\",\"req_sss\":\"NO\",\"req_pagibig\":\"NO\",\"req_philhealth\":\"NO\",\"req_tin\":\"NO\",\"sworn_day\":\"33\",\"sworn_month\":\"33\",\"sworn_year\":null,\"tax_cert_no\":\"33\",\"tax_cert_issued_at\":\"33\",\"sworn_signature\":\"asdfasfd\",\"affiant_community\":null,\"doc_no\":\"3\",\"page_no\":\"2\",\"book_no\":\"4\",\"series_of\":\"sdf\",\"status\":\"Terminated\",\"created_at\":\"2026-01-22 03:20:59\",\"updated_at\":\"2026-01-22 07:19:29\",\"created_by\":25,\"created_by_name\":\"HR Administrator\",\"gender\":null,\"civil_status\":null,\"age\":null,\"birthplace\":null,\"citizenship\":null,\"provincial_address\":null,\"special_skills\":null,\"spouse_name\":null,\"spouse_age\":null,\"spouse_occupation\":null,\"father_name\":null,\"father_age\":null,\"father_occupation\":null,\"mother_name\":null,\"mother_age\":null,\"mother_occupation\":null,\"children_names\":null,\"college_course\":null,\"college_school_name\":null,\"college_school_address\":null,\"college_years\":null,\"vocational_course\":null,\"vocational_school_name\":null,\"vocational_school_address\":null,\"vocational_years\":null,\"highschool_school_name\":null,\"highschool_school_address\":null,\"highschool_years\":null,\"elementary_school_name\":null,\"elementary_school_address\":null,\"elementary_years\":null,\"trainings_json\":null,\"gov_exam_taken\":null,\"gov_exam_json\":null,\"employment_history_json\":null,\"profile_image\":null}', '{\"employee_no\":\"32424\",\"employee_type\":\"LG\",\"surname\":\"aldrin\",\"first_name\":\"ALDRIN\",\"middle_name\":\"JOHN\",\"post\":\"UNASSIGNED\",\"license_no\":\"NCR0-94309234234324\",\"license_exp_date\":\"2025-01-22\",\"rlm_exp\":\"2025-02-22\",\"date_hired\":\"2026-01-22\",\"cp_number\":\"+63-9563211331\",\"sss_no\":\"23-424324\",\"pagibig_no\":\"3453-4435-4354\",\"tin_number\":\"233-453-454-35\",\"philhealth_no\":\"54-354353454-3\",\"birth_date\":\"2000-08-27\",\"height\":\"5\'5\\\"\",\"weight\":\"22\",\"address\":\"FSADFASDF\",\"contact_person\":\"ASDF\",\"relationship\":\"Colleague\",\"contact_person_address\":\"FSDA\",\"contact_person_number\":\"+63-9563211331\",\"blood_type\":\"A-\",\"religion\":\"Muslim\",\"status\":\"Terminated\"}', '172.18.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-01-22 07:24:55'),
-(121, 25, 'LOGIN_ATTEMPT', 'users', 25, NULL, '{\"login_time\":\"2026-01-22 15:48:37\"}', '172.18.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-01-22 07:48:37');
+(121, 25, 'LOGIN_ATTEMPT', 'users', 25, NULL, '{\"login_time\":\"2026-01-22 15:48:37\"}', '172.18.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-01-22 07:48:37'),
+(122, 30, 'LOGIN_ATTEMPT', 'users', 30, NULL, '{\"login_time\":\"2026-01-23 09:13:47\"}', '172.18.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-01-23 01:13:47'),
+(123, 25, 'LOGIN_ATTEMPT', 'users', 25, NULL, '{\"login_time\":\"2026-01-23 09:16:58\"}', '172.18.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-01-23 01:16:58'),
+(124, 30, 'LOGIN_ATTEMPT', 'users', 30, NULL, '{\"login_time\":\"2026-01-23 09:58:26\"}', '172.18.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-01-23 01:58:26'),
+(125, 25, 'LOGIN_ATTEMPT', 'users', 25, NULL, '{\"login_time\":\"2026-01-23 10:09:23\"}', '172.18.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-01-23 02:09:23'),
+(126, 25, 'LOGIN_ATTEMPT', 'users', 25, NULL, '{\"login_time\":\"2026-01-23 10:20:04\"}', '172.18.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-01-23 02:20:04'),
+(127, 25, 'LOGIN_ATTEMPT', 'users', 25, NULL, '{\"login_time\":\"2026-01-23 10:25:43\"}', '172.18.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-01-23 02:25:43'),
+(128, 25, 'LOGIN_ATTEMPT', 'users', 25, NULL, '{\"login_time\":\"2026-01-23 10:26:01\"}', '172.18.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-01-23 02:26:01'),
+(129, 30, 'LOGIN_ATTEMPT', 'users', 30, NULL, '{\"login_time\":\"2026-01-23 10:26:55\"}', '172.18.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-01-23 02:26:55'),
+(130, 30, 'LOGIN_ATTEMPT', 'users', 30, NULL, '{\"login_time\":\"2026-01-23 10:28:50\"}', '172.18.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-01-23 02:28:50'),
+(131, 30, 'LOGIN_ATTEMPT', 'users', 30, NULL, '{\"login_time\":\"2026-01-23 10:29:04\"}', '172.18.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-01-23 02:29:04'),
+(132, 25, 'LOGIN_ATTEMPT', 'users', 25, NULL, '{\"login_time\":\"2026-01-23 10:36:42\"}', '172.18.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-01-23 02:36:42'),
+(133, 30, 'LOGIN_ATTEMPT', 'users', 30, NULL, '{\"login_time\":\"2026-01-23 10:46:38\"}', '172.18.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-01-23 02:46:38'),
+(134, 25, 'LOGIN_ATTEMPT', 'users', 25, NULL, '{\"login_time\":\"2026-01-23 11:00:44\"}', '172.18.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-01-23 03:00:44'),
+(135, 25, 'LOGIN_ATTEMPT', 'users', 25, NULL, '{\"login_time\":\"2026-01-23 11:01:00\"}', '172.18.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-01-23 03:01:00'),
+(136, 25, 'LOGIN_ATTEMPT', 'users', 25, NULL, '{\"login_time\":\"2026-01-23 12:03:55\"}', '172.18.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-01-23 04:03:55'),
+(137, 30, 'LOGIN_ATTEMPT', 'users', 30, NULL, '{\"login_time\":\"2026-01-23 12:35:37\"}', '172.18.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-01-23 04:35:37');
 
 -- --------------------------------------------------------
 
@@ -249,7 +265,99 @@ INSERT INTO `backup_history` (`id`, `filename`, `filepath`, `file_size`, `create
 (61, 'backup_goldenz_hr_2026-01-22_144001.sql', 'minio://db-backups/backup_goldenz_hr_2026-01-22_144001.sql.gz | gdrive://GoldenZ5/backup/backup_goldenz_hr_2026-01-22_144001.sql.gz', 13433, '2026-01-22 06:40:09'),
 (62, 'backup_goldenz_hr_2026-01-22_150002.sql', 'minio://db-backups/backup_goldenz_hr_2026-01-22_150002.sql.gz | gdrive://GoldenZ5/backup/backup_goldenz_hr_2026-01-22_150002.sql.gz', 13482, '2026-01-22 07:00:09'),
 (63, 'backup_goldenz_hr_2026-01-22_153001.sql', 'minio://db-backups/backup_goldenz_hr_2026-01-22_153001.sql.gz', 14830, '2026-01-22 07:30:02'),
-(64, 'backup_goldenz_hr_2026-01-22_160001.sql', 'minio://db-backups/backup_goldenz_hr_2026-01-22_160001.sql.gz', 15317, '2026-01-22 08:00:02');
+(64, 'backup_goldenz_hr_2026-01-22_160001.sql', 'minio://db-backups/backup_goldenz_hr_2026-01-22_160001.sql.gz', 15317, '2026-01-22 08:00:02'),
+(65, 'backup_goldenz_hr_2026-01-22_163001.sql', 'minio://db-backups/backup_goldenz_hr_2026-01-22_163001.sql.gz', 23162, '2026-01-22 08:30:01'),
+(66, 'backup_goldenz_hr_2026-01-22_165919.sql', 'minio://db-backups/backup_goldenz_hr_2026-01-22_165919.sql.gz', 23228, '2026-01-22 08:59:20'),
+(67, 'backup_goldenz_hr_2026-01-22_165941.sql', 'minio://db-backups/backup_goldenz_hr_2026-01-22_165941.sql.gz', 23257, '2026-01-22 08:59:42'),
+(68, 'backup_goldenz_hr_2026-01-22_170001.sql', 'minio://db-backups/backup_goldenz_hr_2026-01-22_170001.sql.gz', 23279, '2026-01-22 09:00:02'),
+(69, 'backup_goldenz_hr_2026-01-22_170655.sql', 'minio://db-backups/backup_goldenz_hr_2026-01-22_170655.sql.gz | gdrive://GoldenZ5/backup/backup_goldenz_hr_2026-01-22_170655.sql.gz', 23301, '2026-01-22 09:07:03'),
+(70, 'backup_goldenz_hr_2026-01-23_080001.sql', 'minio://db-backups/backup_goldenz_hr_2026-01-23_080001.sql.gz', 23327, '2026-01-23 00:00:02'),
+(71, 'backup_goldenz_hr_2026-01-23_083001.sql', 'minio://db-backups/backup_goldenz_hr_2026-01-23_083001.sql.gz', 23355, '2026-01-23 00:30:01'),
+(72, 'backup_goldenz_hr_2026-01-23_090001.sql', 'minio://db-backups/backup_goldenz_hr_2026-01-23_090001.sql.gz', 23379, '2026-01-23 01:00:01'),
+(73, 'backup_goldenz_hr_2026-01-23_093001.sql', 'minio://db-backups/backup_goldenz_hr_2026-01-23_093001.sql.gz', 23465, '2026-01-23 01:30:02'),
+(74, 'backup_goldenz_hr_2026-01-23_100001.sql', 'minio://db-backups/backup_goldenz_hr_2026-01-23_100001.sql.gz', 23529, '2026-01-23 02:00:01'),
+(75, 'backup_goldenz_hr_2026-01-23_103001.sql', 'minio://db-backups/backup_goldenz_hr_2026-01-23_103001.sql.gz', 23682, '2026-01-23 02:30:02'),
+(76, 'backup_goldenz_hr_2026-01-23_110001.sql', 'minio://db-backups/backup_goldenz_hr_2026-01-23_110001.sql.gz', 24260, '2026-01-23 03:00:02'),
+(77, 'backup_goldenz_hr_2026-01-23_113001.sql', 'minio://db-backups/backup_goldenz_hr_2026-01-23_113001.sql.gz', 24393, '2026-01-23 03:30:01'),
+(78, 'backup_goldenz_hr_2026-01-23_120001.sql', 'minio://db-backups/backup_goldenz_hr_2026-01-23_120001.sql.gz', 24260, '2026-01-23 04:00:02'),
+(79, 'backup_goldenz_hr_2026-01-23_123001.sql', 'minio://db-backups/backup_goldenz_hr_2026-01-23_123001.sql.gz', 24514, '2026-01-23 04:30:02'),
+(80, 'backup_goldenz_hr_2026-01-23_130001.sql', 'minio://db-backups/backup_goldenz_hr_2026-01-23_130001.sql.gz', 24591, '2026-01-23 05:00:02');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `chat_conversations`
+--
+
+CREATE TABLE `chat_conversations` (
+  `id` int NOT NULL,
+  `user1_id` int NOT NULL,
+  `user2_id` int NOT NULL,
+  `last_message_id` int DEFAULT NULL,
+  `last_message_at` timestamp NULL DEFAULT NULL,
+  `user1_unread_count` int NOT NULL DEFAULT '0',
+  `user2_unread_count` int NOT NULL DEFAULT '0',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `chat_messages`
+--
+
+CREATE TABLE `chat_messages` (
+  `id` int NOT NULL,
+  `sender_id` int NOT NULL,
+  `receiver_id` int NOT NULL,
+  `message` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `attachment_type` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `attachment_path` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `attachment_size` int DEFAULT NULL,
+  `attachment_name` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `is_read` tinyint(1) NOT NULL DEFAULT '0',
+  `deleted_by_sender` tinyint(1) NOT NULL DEFAULT '0',
+  `deleted_by_receiver` tinyint(1) NOT NULL DEFAULT '0',
+  `read_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `chat_messages`
+--
+
+INSERT INTO `chat_messages` (`id`, `sender_id`, `receiver_id`, `message`, `attachment_type`, `attachment_path`, `attachment_size`, `attachment_name`, `is_read`, `deleted_by_sender`, `deleted_by_receiver`, `read_at`, `created_at`, `updated_at`) VALUES
+(30, 25, 30, 'hi', NULL, NULL, NULL, NULL, 1, 1, 1, '2026-01-23 04:39:31', '2026-01-23 04:39:24', '2026-01-23 04:45:50'),
+(31, 25, 30, 'asdf', NULL, NULL, NULL, NULL, 1, 1, 1, '2026-01-23 04:42:35', '2026-01-23 04:42:31', '2026-01-23 04:45:50'),
+(32, 30, 25, 'a', NULL, NULL, NULL, NULL, 1, 1, 1, '2026-01-23 04:42:44', '2026-01-23 04:42:42', '2026-01-23 04:45:50'),
+(33, 30, 25, 'asdfasd', NULL, NULL, NULL, NULL, 1, 1, 0, '2026-01-23 04:45:43', '2026-01-23 04:45:33', '2026-01-23 04:45:50'),
+(34, 25, 30, 'sdaf', NULL, NULL, NULL, NULL, 1, 0, 0, '2026-01-23 04:49:48', '2026-01-23 04:49:44', '2026-01-23 04:49:48'),
+(35, 30, 25, '[Photo]', 'image', 'uploads/chat_attachments/chat_30_1769143803_f74ab0c82b80b71c.jpg', 78201, 'christian.jpg', 1, 0, 0, '2026-01-23 04:50:04', '2026-01-23 04:50:03', '2026-01-23 04:50:04'),
+(36, 30, 25, '[Photo]', 'image', 'uploads/chat_attachments/chat_30_1769143817_10b5cb74e54763cc.jpg', 271075, '20c9a4a5-cdfe-45fc-a5e7-fc6c2c837147.jpg', 1, 0, 0, '2026-01-23 04:50:19', '2026-01-23 04:50:17', '2026-01-23 04:50:19');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `chat_typing_status`
+--
+
+CREATE TABLE `chat_typing_status` (
+  `id` int NOT NULL,
+  `user_id` int NOT NULL,
+  `recipient_id` int NOT NULL,
+  `is_typing` tinyint(1) NOT NULL DEFAULT '1',
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `chat_typing_status`
+--
+
+INSERT INTO `chat_typing_status` (`id`, `user_id`, `recipient_id`, `is_typing`, `updated_at`) VALUES
+(1, 25, 30, 0, '2026-01-23 04:49:49'),
+(3, 30, 25, 0, '2026-01-23 04:50:17');
 
 -- --------------------------------------------------------
 
@@ -278,12 +386,12 @@ CREATE TABLE `dtr_entries` (
 CREATE TABLE `dtr_summary` (
 `employee_id` int
 ,`employee_name` varchar(102)
-,`entry_date` date
-,`entry_type` enum('time-in','time-out','break','overtime')
-,`hours_worked` bigint
 ,`post` varchar(100)
+,`entry_date` date
 ,`time_in` time
 ,`time_out` time
+,`entry_type` enum('time-in','time-out','break','overtime')
+,`hours_worked` bigint
 );
 
 -- --------------------------------------------------------
@@ -535,18 +643,18 @@ CREATE TABLE `employee_checklist` (
 -- (See below for the actual view)
 --
 CREATE TABLE `employee_details` (
-`created_at` timestamp
-,`date_hired` date
+`id` int
 ,`employee_no` int
 ,`employee_type` enum('SG','LG','SO')
 ,`full_name` varchar(153)
-,`id` int
-,`license_exp_date` date
-,`license_no` varchar(50)
-,`license_status` varchar(13)
 ,`post` varchar(100)
+,`license_no` varchar(50)
+,`license_exp_date` date
+,`date_hired` date
 ,`status` enum('Active','Inactive','Terminated','Suspended')
+,`created_at` timestamp
 ,`updated_at` timestamp
+,`license_status` varchar(13)
 );
 
 -- --------------------------------------------------------
@@ -578,7 +686,8 @@ CREATE TABLE `employee_violations` (
 INSERT INTO `employee_violations` (`id`, `employee_id`, `violation_type_id`, `violation_date`, `description`, `severity`, `offense_number`, `sanction`, `sanction_date`, `reported_by`, `status`, `created_at`, `updated_at`) VALUES
 (1, 10, 178, '2026-01-22', 'asfdsadf', 'Major', 1, 'asfdsdf', '2026-01-22', 'asdfasdfasd', 'Under Review', '2026-01-22 08:15:13', '2026-01-22 08:15:13'),
 (2, 10, 178, '2026-01-22', 'asfdsadf', 'Major', 2, 'asfdsdf', '2026-01-22', 'asdfasdfasd', 'Under Review', '2026-01-22 08:15:57', '2026-01-22 08:15:57'),
-(3, 9, 174, '2026-01-22', 'sadfdsafsdfasd', 'Major', 1, '7 days suspension', '2026-01-20', 'fsdfdsfsdafdsfasdfdsa', 'Pending', '2026-01-22 08:19:41', '2026-01-22 08:19:41');
+(3, 9, 174, '2026-01-22', 'sadfdsafsdfasd', 'Major', 1, '7 days suspension', '2026-01-20', 'fsdfdsfsdafdsfasdfdsa', 'Pending', '2026-01-22 08:19:41', '2026-01-22 08:19:41'),
+(4, 8, 182, '2026-01-22', 'asdfas', 'Major', 1, 'fsadfsadf', '2026-01-22', 'safasffdaff', 'Pending', '2026-01-22 08:41:22', '2026-01-22 08:41:22');
 
 -- --------------------------------------------------------
 
@@ -641,12 +750,12 @@ CREATE TABLE `leave_balance_summary` (
 `employee_id` int
 ,`employee_name` varchar(102)
 ,`employee_type` enum('SG','LG','SO')
-,`leave_type` enum('vacation','sick','personal','emergency','maternity','paternity','bereavement')
 ,`post` varchar(100)
-,`remaining_days` bigint
+,`leave_type` enum('vacation','sick','personal','emergency','maternity','paternity','bereavement')
+,`year` int
 ,`total_entitlement` int
 ,`used_days` int
-,`year` int
+,`remaining_days` bigint
 );
 
 -- --------------------------------------------------------
@@ -719,16 +828,16 @@ INSERT INTO `posts` (`id`, `post_title`, `post_code`, `department`, `employee_ty
 -- (See below for the actual view)
 --
 CREATE TABLE `post_statistics` (
-`available_positions` int
-,`created_at` int
-,`employee_type` int
-,`filled_count` int
-,`id` int
-,`location` int
+`id` int
 ,`post_title` int
-,`priority` int
+,`location` int
+,`employee_type` int
 ,`required_count` int
+,`filled_count` int
+,`available_positions` int
+,`priority` int
 ,`status` int
+,`created_at` int
 );
 
 -- --------------------------------------------------------
@@ -869,16 +978,16 @@ INSERT INTO `users` (`id`, `username`, `email`, `password_hash`, `name`, `role`,
 (4, 'dev.lead', 'dev.lead@goldenz5.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Jacob R. Villanueva', 'developer', 'active', NULL, 'IT/Development', '0917-200-0001', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, 0, NULL, 1, '2025-12-01 02:11:35', '2025-12-01 02:11:35'),
 (5, 'dev.engineer', 'dev.engineer@goldenz5.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Lara S. Mendoza', 'developer', 'active', NULL, 'IT/Development', '0917-200-0002', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, 0, NULL, 1, '2025-12-01 02:11:35', '2025-12-01 02:11:35'),
 (6, 'dev.ops', 'dev.ops@goldenz5.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Noel T. Cruz', 'developer', 'active', NULL, 'IT/Development', '0917-200-0003', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, 0, NULL, 1, '2025-12-01 02:11:35', '2025-12-01 02:11:35'),
-(25, 'hradmin', 'hradmin@goldenz5.com', '$2y$10$2Fp4cu96Oey7AQ87V/fWd.EVqmVzV5chLxspeoyzzSPooNUOXxYDq', 'HR Administrator', 'hr_admin', 'active', NULL, NULL, NULL, 'uploads/users/user_25_1769064960.jpg', '2026-01-22 07:48:37', '172.18.0.1', 0, NULL, '2026-01-13 05:22:28', NULL, NULL, 0, NULL, NULL, '2025-12-11 17:49:50', '2026-01-22 07:48:37'),
-(30, 'grey', 'greycruz00000000@gmail.com', '$2y$10$7qyDoZ3GUP4okfOd0TGQpeDWUkPAdvBJTXDnTVqOXCoOxOu.z/Vui', 'aldrin', 'super_admin', 'active', NULL, 'dikoalam', '09563211331', NULL, '2026-01-22 05:33:25', '172.18.0.1', 0, NULL, '2026-01-15 05:31:24', NULL, NULL, 0, NULL, 25, '2026-01-13 08:36:54', '2026-01-22 05:33:25'),
+(25, 'hradmin', 'hradmin@goldenz5.com', '$2y$10$2Fp4cu96Oey7AQ87V/fWd.EVqmVzV5chLxspeoyzzSPooNUOXxYDq', 'HR Administrator', 'hr_admin', 'active', NULL, NULL, NULL, 'uploads/users/user_25_1769064960.jpg', '2026-01-23 04:03:55', '172.18.0.1', 0, NULL, '2026-01-13 05:22:28', NULL, NULL, 0, NULL, NULL, '2025-12-11 17:49:50', '2026-01-23 04:03:55'),
+(30, 'grey', 'greycruz00000000@gmail.com', '$2y$10$7qyDoZ3GUP4okfOd0TGQpeDWUkPAdvBJTXDnTVqOXCoOxOu.z/Vui', 'aldrin', 'super_admin', 'active', NULL, 'dikoalam', '09563211331', 'uploads/users/user_30_1769142679.jpg', '2026-01-23 04:35:37', '172.18.0.1', 0, NULL, '2026-01-15 05:31:24', NULL, NULL, 0, NULL, 25, '2026-01-13 08:36:54', '2026-01-23 04:35:37'),
 (31, 'amor', 'amor@gmail.com', '$2y$10$evvPUIl.aoXr/icZ85PNH.zTj4wnx.TEzKxHqijLpO0NgoAw7OyAa', 'amor', 'hr_admin', 'active', NULL, 'asdfjh', '09562312321', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, 0, NULL, 30, '2026-01-13 09:58:43', '2026-01-13 09:58:43'),
 (32, 'ChristianAmor', 'christian5787264@gmail.com', '$2y$10$4jtmtLYPqQBDYvKq3D9AouI3kPDYDJObT7mtYZ.PHY2j5rx64rqj.', 'christian amor', 'super_admin', 'active', NULL, 'it', '09613014462', NULL, '2026-01-22 05:24:55', '172.18.0.1', 0, NULL, '2026-01-15 08:18:54', NULL, 'ZHLMOAXVWIX2DK4A', 1, NULL, 30, '2026-01-13 10:01:09', '2026-01-22 05:24:55'),
-(0, 'aaaaa', 'aa@gmail.com', '$2y$10$qQKlgAavsZ6C7QHcXYq2TeSoJeGi7jZs0VXQZMjAvdgFN1eSSkR.6', 'alskdjfjklfdsa', 'hr_admin', 'active', NULL, 'askldjf', '2980374234', NULL, '2026-01-15 05:28:23', '192.168.1.7', 0, NULL, '2026-01-15 06:29:12', 'd95a49d4bb7ba0a9c1a277b9fe776d20bbc3c7fd633877cba5b9f4198b03245d|1768458552', NULL, 0, NULL, 30, '2026-01-15 03:07:15', '2026-01-16 04:54:16'),
-(0, 'zzzzz', 'zzz@gmail.com', '$2y$10$qQKlgAavsZ6C7QHcXYq2TeSoJeGi7jZs0VXQZMjAvdgFN1eSSkR.6', 'salkjfksldaj', 'hr_admin', 'active', NULL, 'salkjfdklsajd', '213849089234', NULL, '2026-01-15 05:28:23', '192.168.1.7', 0, NULL, '2026-01-15 06:29:12', 'd95a49d4bb7ba0a9c1a277b9fe776d20bbc3c7fd633877cba5b9f4198b03245d|1768458552', NULL, 0, NULL, 30, '2026-01-15 03:08:25', '2026-01-16 04:54:16'),
-(0, 'bbbbaaa', 'bb@gmail.com', '$2y$10$qQKlgAavsZ6C7QHcXYq2TeSoJeGi7jZs0VXQZMjAvdgFN1eSSkR.6', 'sadfsdfa', 'hr_admin', 'active', NULL, 'sadfasfd', '2893749823', NULL, '2026-01-15 05:28:23', '192.168.1.7', 0, NULL, '2026-01-15 06:29:12', 'd95a49d4bb7ba0a9c1a277b9fe776d20bbc3c7fd633877cba5b9f4198b03245d|1768458552', NULL, 0, NULL, 30, '2026-01-15 03:21:17', '2026-01-16 04:54:16'),
-(0, 'zazaza', 'zz@gmail.com', '$2y$10$qQKlgAavsZ6C7QHcXYq2TeSoJeGi7jZs0VXQZMjAvdgFN1eSSkR.6', 'saddfsafdas', 'hr_admin', 'active', NULL, 'asfsadf', '12312321', NULL, '2026-01-15 05:28:23', '192.168.1.7', 0, NULL, '2026-01-15 06:29:12', 'd95a49d4bb7ba0a9c1a277b9fe776d20bbc3c7fd633877cba5b9f4198b03245d|1768458552', NULL, 0, NULL, 30, '2026-01-15 03:23:16', '2026-01-16 04:54:16'),
-(0, 'aldrin', 'aldrininocencio212527@gmail.com', '$2y$10$qQKlgAavsZ6C7QHcXYq2TeSoJeGi7jZs0VXQZMjAvdgFN1eSSkR.6', 'aldrin', 'hr_admin', 'active', NULL, 'IT', '09563211331', NULL, '2026-01-15 05:28:23', '192.168.1.7', 0, NULL, '2026-01-15 06:29:12', 'd95a49d4bb7ba0a9c1a277b9fe776d20bbc3c7fd633877cba5b9f4198b03245d|1768458552', NULL, 0, NULL, 30, '2026-01-15 05:23:05', '2026-01-16 04:54:16'),
-(0, 'sssss', 'sss@gmail.com', '$2y$10$V.Tmj4tp3ANqZvMY77yJBurZ1kBuJGCwf5hMdu.vXR1uJbkxioxXi', 'ssssss', 'hr_admin', 'active', NULL, 'sss', '23432432', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, 0, NULL, 30, '2026-01-16 04:34:07', '2026-01-16 04:54:16');
+(33, 'aaaaa', 'aa@gmail.com', '$2y$10$qQKlgAavsZ6C7QHcXYq2TeSoJeGi7jZs0VXQZMjAvdgFN1eSSkR.6', 'alskdjfjklfdsa', 'hr_admin', 'active', NULL, 'askldjf', '2980374234', NULL, '2026-01-15 05:28:23', '192.168.1.7', 0, NULL, '2026-01-15 06:29:12', 'd95a49d4bb7ba0a9c1a277b9fe776d20bbc3c7fd633877cba5b9f4198b03245d|1768458552', NULL, 0, NULL, 30, '2026-01-15 03:07:15', '2026-01-16 04:54:16'),
+(34, 'zzzzz', 'zzz@gmail.com', '$2y$10$qQKlgAavsZ6C7QHcXYq2TeSoJeGi7jZs0VXQZMjAvdgFN1eSSkR.6', 'salkjfksldaj', 'hr_admin', 'active', NULL, 'salkjfdklsajd', '213849089234', NULL, '2026-01-15 05:28:23', '192.168.1.7', 0, NULL, '2026-01-15 06:29:12', 'd95a49d4bb7ba0a9c1a277b9fe776d20bbc3c7fd633877cba5b9f4198b03245d|1768458552', NULL, 0, NULL, 30, '2026-01-15 03:08:25', '2026-01-16 04:54:16'),
+(35, 'bbbbaaa', 'bb@gmail.com', '$2y$10$qQKlgAavsZ6C7QHcXYq2TeSoJeGi7jZs0VXQZMjAvdgFN1eSSkR.6', 'sadfsdfa', 'hr_admin', 'active', NULL, 'sadfasfd', '2893749823', NULL, '2026-01-15 05:28:23', '192.168.1.7', 0, NULL, '2026-01-15 06:29:12', 'd95a49d4bb7ba0a9c1a277b9fe776d20bbc3c7fd633877cba5b9f4198b03245d|1768458552', NULL, 0, NULL, 30, '2026-01-15 03:21:17', '2026-01-16 04:54:16'),
+(36, 'zazaza', 'zz@gmail.com', '$2y$10$qQKlgAavsZ6C7QHcXYq2TeSoJeGi7jZs0VXQZMjAvdgFN1eSSkR.6', 'saddfsafdas', 'hr_admin', 'active', NULL, 'asfsadf', '12312321', NULL, '2026-01-15 05:28:23', '192.168.1.7', 0, NULL, '2026-01-15 06:29:12', 'd95a49d4bb7ba0a9c1a277b9fe776d20bbc3c7fd633877cba5b9f4198b03245d|1768458552', NULL, 0, NULL, 30, '2026-01-15 03:23:16', '2026-01-16 04:54:16'),
+(37, 'aldrin', 'aldrininocencio212527@gmail.com', '$2y$10$qQKlgAavsZ6C7QHcXYq2TeSoJeGi7jZs0VXQZMjAvdgFN1eSSkR.6', 'aldrin', 'hr_admin', 'active', NULL, 'IT', '09563211331', NULL, '2026-01-15 05:28:23', '192.168.1.7', 0, NULL, '2026-01-15 06:29:12', 'd95a49d4bb7ba0a9c1a277b9fe776d20bbc3c7fd633877cba5b9f4198b03245d|1768458552', NULL, 0, NULL, 30, '2026-01-15 05:23:05', '2026-01-16 04:54:16'),
+(38, 'sssss', 'sss@gmail.com', '$2y$10$V.Tmj4tp3ANqZvMY77yJBurZ1kBuJGCwf5hMdu.vXR1uJbkxioxXi', 'ssssss', 'hr_admin', 'active', NULL, 'sss', '23432432', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, 0, NULL, 30, '2026-01-16 04:34:07', '2026-01-16 04:54:16');
 
 -- --------------------------------------------------------
 
@@ -1030,6 +1139,40 @@ ALTER TABLE `backup_history`
   ADD KEY `idx_created_at` (`created_at`);
 
 --
+-- Indexes for table `chat_conversations`
+--
+ALTER TABLE `chat_conversations`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `unique_conversation` (`user1_id`,`user2_id`),
+  ADD KEY `idx_user1_id` (`user1_id`),
+  ADD KEY `idx_user2_id` (`user2_id`),
+  ADD KEY `idx_last_message_at` (`last_message_at`);
+
+--
+-- Indexes for table `chat_messages`
+--
+ALTER TABLE `chat_messages`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_sender_id` (`sender_id`),
+  ADD KEY `idx_receiver_id` (`receiver_id`),
+  ADD KEY `idx_conversation` (`sender_id`,`receiver_id`,`created_at`),
+  ADD KEY `idx_is_read` (`is_read`),
+  ADD KEY `idx_created_at` (`created_at`),
+  ADD KEY `idx_attachment` (`attachment_type`,`attachment_path`),
+  ADD KEY `idx_deleted_by_sender` (`deleted_by_sender`),
+  ADD KEY `idx_deleted_by_receiver` (`deleted_by_receiver`);
+
+--
+-- Indexes for table `chat_typing_status`
+--
+ALTER TABLE `chat_typing_status`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `unique_user_recipient` (`user_id`,`recipient_id`),
+  ADD KEY `idx_user_id` (`user_id`),
+  ADD KEY `idx_recipient_id` (`recipient_id`),
+  ADD KEY `idx_updated_at` (`updated_at`);
+
+--
 -- Indexes for table `dtr_entries`
 --
 ALTER TABLE `dtr_entries`
@@ -1161,6 +1304,12 @@ ALTER TABLE `ticket_replies`
   ADD KEY `idx_ticket_id` (`ticket_id`);
 
 --
+-- Indexes for table `users`
+--
+ALTER TABLE `users`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `violation_types`
 --
 ALTER TABLE `violation_types`
@@ -1178,13 +1327,31 @@ ALTER TABLE `violation_types`
 -- AUTO_INCREMENT for table `audit_logs`
 --
 ALTER TABLE `audit_logs`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=122;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=138;
 
 --
 -- AUTO_INCREMENT for table `backup_history`
 --
 ALTER TABLE `backup_history`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=65;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=81;
+
+--
+-- AUTO_INCREMENT for table `chat_conversations`
+--
+ALTER TABLE `chat_conversations`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `chat_messages`
+--
+ALTER TABLE `chat_messages`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
+
+--
+-- AUTO_INCREMENT for table `chat_typing_status`
+--
+ALTER TABLE `chat_typing_status`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=139;
 
 --
 -- AUTO_INCREMENT for table `dtr_entries`
@@ -1202,7 +1369,7 @@ ALTER TABLE `employees`
 -- AUTO_INCREMENT for table `employee_violations`
 --
 ALTER TABLE `employee_violations`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `hr_tasks`
@@ -1233,6 +1400,12 @@ ALTER TABLE `support_tickets`
 --
 ALTER TABLE `ticket_replies`
   MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `users`
+--
+ALTER TABLE `users`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=49;
 
 --
 -- AUTO_INCREMENT for table `violation_types`
