@@ -33,28 +33,49 @@ $employees = get_employees();
 $leave_requests = [];
 $statuses = ['pending', 'approved', 'rejected'];
 $leave_types = ['Sick Leave', 'Vacation Leave', 'Emergency Leave', 'Maternity Leave', 'Paternity Leave'];
+$employee_roles = ['Head of Department', 'Software Architect', 'Senior Developer', 'QA Engineer', 'Developer', 'Project Manager'];
 
-for ($i = 1; $i <= 20; $i++) {
-    $status = $statuses[array_rand($statuses)];
+// Generate more realistic employee names and data
+$employee_names = [
+    ['Alexey', 'Sergeevich', 'Berestov'],
+    ['Maria', 'Vladimirovna', 'Rodionova'],
+    ['Dmitry', 'Alexeevich', 'Korneev'],
+    ['Elena', 'Viktorovna', 'Vorontsova'],
+    ['Andrey', 'Igorevich', 'Streltsov'],
+    ['Anna', 'Sergeevna', 'Demidova'],
+    ['Mikhail', 'Nikolaevich', 'Lazarev'],
+    ['Sergey', 'Vladimirovich', 'Saveliev'],
+    ['Olga', 'Alexandrovna', 'Orlova'],
+    ['Alexander', 'Pavlovich', 'Krylov'],
+];
+
+for ($i = 0; $i < 10; $i++) {
+    $status = 'pending'; // Focus on pending requests for inbox
     $type = $leave_types[array_rand($leave_types)];
-    $start_date = date('Y-m-d', strtotime('+' . rand(-30, 60) . ' days'));
-    $end_date = date('Y-m-d', strtotime($start_date . ' +' . rand(1, 5) . ' days'));
+    $start_date = date('Y-m-d', strtotime('+' . rand(1, 90) . ' days'));
+    $end_date = date('Y-m-d', strtotime($start_date . ' +' . rand(4, 14) . ' days'));
+    $days = (strtotime($end_date) - strtotime($start_date)) / (60 * 60 * 24) + 1;
+    $remaining_leave = rand(5, 28);
+    
+    $name_parts = $employee_names[$i % count($employee_names)];
+    $full_name = $name_parts[0] . ' ' . $name_parts[1] . ' ' . $name_parts[2];
     
     $leave_requests[] = [
-        'id' => $i,
-        'employee_id' => rand(1, 50),
-        'employee_name' => 'Employee ' . $i,
-        'employee_post' => 'Post ' . rand(1, 10),
+        'id' => $i + 1,
+        'employee_id' => $i + 1,
+        'employee_name' => $full_name,
+        'employee_post' => $employee_roles[array_rand($employee_roles)],
         'leave_type' => $type,
         'start_date' => $start_date,
         'end_date' => $end_date,
-        'days' => (strtotime($end_date) - strtotime($start_date)) / (60 * 60 * 24) + 1,
+        'days' => $days,
+        'remaining_leave' => $remaining_leave,
         'reason' => 'Personal matters that require attention.',
         'status' => $status,
         'request_date' => date('Y-m-d H:i:s', strtotime('-' . rand(1, 30) . ' days')),
-        'processed_by' => $status !== 'pending' ? 'HR Admin' : null,
-        'processed_date' => $status !== 'pending' ? date('Y-m-d H:i:s', strtotime('-' . rand(1, 10) . ' days')) : null,
-        'notes' => $status === 'rejected' ? 'Insufficient leave balance' : ($status === 'approved' ? 'Approved' : null),
+        'processed_by' => null,
+        'processed_date' => null,
+        'notes' => null,
     ];
 }
 
@@ -77,122 +98,67 @@ $stats = [
 $days_pending = array_sum(array_map(fn($r) => $r['status'] === 'pending' ? $r['days'] : 0, $leave_requests));
 ?>
 
-<div class="container-fluid hrdash">
-    <!-- Statistics Cards -->
-    <div class="row g-4 mb-4">
-        <div class="col-xl-3 col-md-6">
-            <div class="card hrdash-stat hrdash-stat--primary">
-                <div class="hrdash-stat__header">
-                    <div class="hrdash-stat__label">Pending Requests</div>
-                </div>
-                <div class="hrdash-stat__content">
-                    <div class="hrdash-stat__value"><?php echo number_format($stats['pending']); ?></div>
-                    <div class="hrdash-stat__trend hrdash-stat__trend--negative">
-                        <i class="fas fa-clock"></i>
-                        <span><?php echo $days_pending; ?> days</span>
-                    </div>
-                </div>
-                <div class="hrdash-stat__meta">Awaiting approval</div>
-            </div>
-        </div>
-        <div class="col-xl-3 col-md-6">
-            <div class="card hrdash-stat">
-                <div class="hrdash-stat__header">
-                    <div class="hrdash-stat__label">Approved</div>
-                </div>
-                <div class="hrdash-stat__content">
-                    <div class="hrdash-stat__value"><?php echo number_format($stats['approved']); ?></div>
-                    <div class="hrdash-stat__trend hrdash-stat__trend--positive">
-                        <i class="fas fa-check"></i>
-                    </div>
-                </div>
-                <div class="hrdash-stat__meta">Approved leave requests</div>
-            </div>
-        </div>
-        <div class="col-xl-3 col-md-6">
-            <div class="card hrdash-stat">
-                <div class="hrdash-stat__header">
-                    <div class="hrdash-stat__label">Rejected</div>
-                </div>
-                <div class="hrdash-stat__content">
-                    <div class="hrdash-stat__value"><?php echo number_format($stats['rejected']); ?></div>
-                </div>
-                <div class="hrdash-stat__meta">Rejected requests</div>
-            </div>
-        </div>
-        <div class="col-xl-3 col-md-6">
-            <div class="card hrdash-stat">
-                <div class="hrdash-stat__header">
-                    <div class="hrdash-stat__label">Total Requests</div>
-                </div>
-                <div class="hrdash-stat__content">
-                    <div class="hrdash-stat__value"><?php echo number_format($stats['total']); ?></div>
-                </div>
-                <div class="hrdash-stat__meta">All time requests</div>
-            </div>
-        </div>
-    </div>
+<style>
+/* Leave Requests (standard branding) - keep minimal, use existing system tokens */
+.leaves-table thead th {
+    background: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+    color: #374151;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    padding: 0.75rem 1rem;
+    white-space: nowrap;
+}
+.leaves-table tbody td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #f3f4f6;
+    vertical-align: middle;
+}
+.leaves-table tbody tr:hover {
+    background: #f9fafb;
+}
+.badge-leave-pending { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; font-weight: 600; }
+.badge-leave-approved { background: #dcfce7; color: #166534; border: 1px solid #86efac; font-weight: 600; }
+.badge-leave-rejected { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; font-weight: 600; }
+</style>
 
-    <!-- Requests Table -->
-    <div class="card card-modern">
+<div class="container-fluid hrdash">
+    <!-- Header -->
+    <div class="card card-modern mb-4">
         <div class="card-header-modern d-flex justify-content-between align-items-center">
             <div>
                 <h5 class="card-title-modern">Leave Requests Inbox</h5>
                 <div class="card-subtitle">Manage employee leave requests</div>
             </div>
             <div class="d-flex gap-2">
-                <button type="button" class="btn btn-outline-modern" id="exportRequestsBtn">
+                <button type="button" class="btn btn-outline-modern" id="exportRequestsBtn" title="Export">
                     <i class="fas fa-file-export me-2"></i>Export
                 </button>
             </div>
         </div>
-
-        <!-- Filters and Status Tabs -->
         <div class="card-body-modern">
-            <!-- Status Tabs -->
-            <ul class="nav nav-tabs mb-4" role="tablist">
-                <li class="nav-item">
-                    <a class="nav-link <?php echo $status_filter === 'pending' ? 'active' : ''; ?>" href="?page=leaves&status=pending">
-                        Pending <span class="badge bg-warning ms-1"><?php echo $stats['pending']; ?></span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link <?php echo $status_filter === 'approved' ? 'active' : ''; ?>" href="?page=leaves&status=approved">
-                        Approved <span class="badge bg-success ms-1"><?php echo $stats['approved']; ?></span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link <?php echo $status_filter === 'rejected' ? 'active' : ''; ?>" href="?page=leaves&status=rejected">
-                        Rejected <span class="badge bg-danger ms-1"><?php echo $stats['rejected']; ?></span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link <?php echo $status_filter === '' ? 'active' : ''; ?>" href="?page=leaves">
-                        All <span class="badge bg-secondary ms-1"><?php echo $stats['total']; ?></span>
-                    </a>
-                </li>
-            </ul>
-
-            <!-- Filters -->
-            <form method="GET" action="" class="mb-4">
+            <!-- Standard Filter Bar -->
+            <form method="GET" action="" id="leaveFilterForm" class="d-flex gap-2 align-items-end" style="flex-wrap: nowrap;">
                 <input type="hidden" name="page" value="leaves">
-                <input type="hidden" name="status" value="<?php echo htmlspecialchars($status_filter); ?>">
-                <div class="row g-3 align-items-end">
-                    <div class="col-md-4">
-                        <label class="form-label">Employee</label>
-                        <select name="employee_id" class="form-select">
-                            <option value="">All Employees</option>
-                            <?php foreach ($employees as $emp): ?>
-                                <option value="<?php echo $emp['id']; ?>" <?php echo $employee_id == $emp['id'] ? 'selected' : ''; ?>>
-                                    <?php echo htmlspecialchars(($emp['surname'] ?? '') . ', ' . ($emp['first_name'] ?? '')); ?>
-                                </option>
-                            <?php endforeach; ?>
+                <div class="flex-grow-1" style="min-width: 0;">
+                    <label class="form-label" style="font-size: 0.75rem; margin-bottom: 0.25rem; font-weight: 500;">Search</label>
+                    <input type="text" id="leaveSearch" class="form-control form-control-sm" placeholder="search employee or post" autocomplete="off">
+                </div>
+                <div style="flex: 0 0 auto; min-width: 160px;">
+                    <label class="form-label" style="font-size: 0.75rem; margin-bottom: 0.25rem; font-weight: 500;">Status</label>
+                    <select name="status" id="leaveStatusFilter" class="form-select form-select-sm">
+                        <option value="" <?php echo $status_filter === '' ? 'selected' : ''; ?>>All</option>
+                        <option value="pending" <?php echo $status_filter === 'pending' ? 'selected' : ''; ?>>Pending</option>
+                        <option value="approved" <?php echo $status_filter === 'approved' ? 'selected' : ''; ?>>Approved</option>
+                        <option value="rejected" <?php echo $status_filter === 'rejected' ? 'selected' : ''; ?>>Rejected</option>
                         </select>
                     </div>
-                    <div class="col-md-3">
-                        <label class="form-label">Leave Type</label>
-                        <select name="leave_type" class="form-select">
-                            <option value="">All Types</option>
+                <div style="flex: 0 0 auto; min-width: 180px;">
+                    <label class="form-label" style="font-size: 0.75rem; margin-bottom: 0.25rem; font-weight: 500;">Leave Type</label>
+                    <select name="leave_type" id="leaveTypeFilter" class="form-select form-select-sm">
+                        <option value="">All</option>
                             <?php foreach ($leave_types as $type): ?>
                                 <option value="<?php echo htmlspecialchars($type); ?>" <?php echo $leave_type === $type ? 'selected' : ''; ?>>
                                     <?php echo htmlspecialchars($type); ?>
@@ -200,88 +166,90 @@ $days_pending = array_sum(array_map(fn($r) => $r['status'] === 'pending' ? $r['d
                             <?php endforeach; ?>
                         </select>
                     </div>
-                    <div class="col-auto">
-                        <button type="submit" class="btn btn-primary-modern">
-                            <i class="fas fa-filter me-2"></i>Filter
-                        </button>
-                    </div>
-                    <div class="col-auto">
-                        <button type="button" class="btn btn-outline-modern" onclick="window.location.href='?page=leaves&status=<?php echo htmlspecialchars($status_filter); ?>'" title="Clear Filters">
+                <div style="flex: 0 0 auto;">
+                    <label class="form-label" style="font-size: 0.75rem; margin-bottom: 0.25rem; font-weight: 500; visibility: hidden;">Reset</label>
+                    <a class="btn btn-outline-modern btn-sm" href="?page=leaves" title="Reset">
                             <i class="fas fa-times"></i>
-                        </button>
+                    </a>
                     </div>
+                <div style="flex: 0 0 30%; min-width: 120px; text-align: right; margin-left: auto;">
+                    <div style="font-size: 0.6875rem; color: #64748b; margin-bottom: 0.125rem;">Results</div>
+                    <div id="leave-count" style="font-size: 1rem; font-weight: 600; color: #1e3a8a;"><?php echo number_format(count($filtered_requests)); ?></div>
                 </div>
             </form>
 
-            <!-- Requests Table -->
-            <div class="table-responsive">
-                <table class="table table-hover align-middle">
+            <div class="table-responsive mt-3">
+                <table class="table table-hover align-middle leaves-table">
                     <thead>
                         <tr>
                             <th>Employee</th>
                             <th>Leave Type</th>
                             <th>Dates</th>
-                            <th>Days</th>
-                            <th>Request Date</th>
+                            <th class="text-center">Days</th>
                             <th>Status</th>
-                            <th>Actions</th>
+                            <th class="text-end">Actions</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="leaveTableBody">
                         <?php if (empty($filtered_requests)): ?>
                             <tr>
-                                <td colspan="7" class="text-center py-5">
+                                <td colspan="6" class="text-center py-5">
                                     <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
-                                    <p class="text-muted">No leave requests found</p>
+                                    <p class="text-muted mb-0">No leave requests found</p>
                                 </td>
                             </tr>
                         <?php else: ?>
                             <?php foreach ($filtered_requests as $request): ?>
-                                <tr>
+                                <tr class="leave-row">
                                     <td>
-                                        <div class="fw-semibold"><?php echo htmlspecialchars($request['employee_name']); ?></div>
-                                        <small class="text-muted"><?php echo htmlspecialchars($request['employee_post']); ?></small>
+                                        <div class="fw-semibold employee-name"><?php echo htmlspecialchars($request['employee_name']); ?></div>
+                                        <small class="text-muted employee-role"><?php echo htmlspecialchars($request['employee_post']); ?></small>
                                     </td>
                                     <td>
-                                        <span class="badge bg-info"><?php echo htmlspecialchars($request['leave_type']); ?></span>
+                                        <span class="badge bg-info-subtle text-info fw-semibold"><?php echo htmlspecialchars($request['leave_type']); ?></span>
                                     </td>
                                     <td>
-                                        <div><?php echo date('M d, Y', strtotime($request['start_date'])); ?></div>
-                                        <small class="text-muted">to <?php echo date('M d, Y', strtotime($request['end_date'])); ?></small>
+                                        <div><?php echo date('M d, Y', strtotime($request['start_date'])); ?> — <?php echo date('M d, Y', strtotime($request['end_date'])); ?></div>
                                     </td>
                                     <td class="text-center">
-                                        <span class="badge bg-secondary"><?php echo $request['days']; ?> day<?php echo $request['days'] > 1 ? 's' : ''; ?></span>
+                                        <span class="badge bg-secondary-subtle text-secondary fw-semibold"><?php echo (int)$request['days']; ?></span>
                                     </td>
-                                    <td><?php echo date('M d, Y', strtotime($request['request_date'])); ?></td>
                                     <td>
                                         <?php if ($request['status'] === 'pending'): ?>
-                                            <span class="badge bg-warning">Pending</span>
+                                            <span class="badge badge-leave-pending">Pending</span>
                                         <?php elseif ($request['status'] === 'approved'): ?>
-                                            <span class="badge bg-success">Approved</span>
+                                            <span class="badge badge-leave-approved">Approved</span>
                                         <?php else: ?>
-                                            <span class="badge bg-danger">Rejected</span>
+                                            <span class="badge badge-leave-rejected">Rejected</span>
                                         <?php endif; ?>
                                     </td>
-                                    <td>
-                                        <div class="btn-group btn-group-sm">
-                                            <button type="button" class="btn btn-outline-primary view-details-btn" 
+                                    <td class="text-end">
+                                        <div class="d-inline-flex gap-2">
+                                            <button type="button"
+                                                    class="btn btn-outline-modern btn-sm view-details-btn"
                                                     data-request='<?php echo json_encode($request); ?>'
-                                                    data-bs-toggle="modal" data-bs-target="#requestDetailsModal"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#requestDetailsModal"
                                                     title="View Details">
                                                 <i class="fas fa-eye"></i>
                                             </button>
                                             <?php if ($request['status'] === 'pending'): ?>
-                                                <button type="button" class="btn btn-outline-success approve-btn" 
+                                                <button type="button"
+                                                        class="btn btn-primary-modern btn-sm approve-btn"
                                                         data-request-id="<?php echo $request['id']; ?>"
-                                                        data-bs-toggle="modal" data-bs-target="#approveModal"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#approveModal"
                                                         title="Approve">
-                                                    <i class="fas fa-check"></i>
+                                                    <i class="fas fa-check me-1"></i>Approve
                                                 </button>
-                                                <button type="button" class="btn btn-outline-danger reject-btn" 
+                                                <button type="button"
+                                                        class="btn btn-outline-modern btn-sm reject-btn"
+                                                        style="border-color:#ef4444;color:#ef4444;"
                                                         data-request-id="<?php echo $request['id']; ?>"
-                                                        data-bs-toggle="modal" data-bs-target="#rejectModal"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#rejectModal"
                                                         title="Reject">
-                                                    <i class="fas fa-times"></i>
+                                                    <i class="fas fa-times me-1"></i>Reject
                                                 </button>
                                             <?php endif; ?>
                                         </div>
@@ -375,64 +343,48 @@ $days_pending = array_sum(array_map(fn($r) => $r['status'] === 'pending' ? $r['d
 </div>
 
 <script>
-// Handle view details button
 document.addEventListener('DOMContentLoaded', function() {
-    // View details
-    document.querySelectorAll('.view-details-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const request = JSON.parse(this.dataset.request);
-            const content = `
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <strong>Employee:</strong><br>
-                        ${request.employee_name}<br>
-                        <small class="text-muted">${request.employee_post}</small>
-                    </div>
-                    <div class="col-md-6">
-                        <strong>Leave Type:</strong><br>
-                        <span class="badge bg-info">${request.leave_type}</span>
-                    </div>
-                    <div class="col-md-6">
-                        <strong>Start Date:</strong><br>
-                        ${new Date(request.start_date).toLocaleDateString('en-US', {year: 'numeric', month: 'long', day: 'numeric'})}
-                    </div>
-                    <div class="col-md-6">
-                        <strong>End Date:</strong><br>
-                        ${new Date(request.end_date).toLocaleDateString('en-US', {year: 'numeric', month: 'long', day: 'numeric'})}
-                    </div>
-                    <div class="col-md-6">
-                        <strong>Duration:</strong><br>
-                        ${request.days} day${request.days > 1 ? 's' : ''}
-                    </div>
-                    <div class="col-md-6">
-                        <strong>Status:</strong><br>
-                        <span class="badge bg-${request.status === 'pending' ? 'warning' : request.status === 'approved' ? 'success' : 'danger'}">${request.status.charAt(0).toUpperCase() + request.status.slice(1)}</span>
-                    </div>
-                    <div class="col-12">
-                        <strong>Reason:</strong><br>
-                        <p class="mb-0">${request.reason}</p>
-                    </div>
-                    ${request.processed_by ? `
-                    <div class="col-md-6">
-                        <strong>Processed By:</strong><br>
-                        ${request.processed_by}
-                    </div>
-                    <div class="col-md-6">
-                        <strong>Processed Date:</strong><br>
-                        ${new Date(request.processed_date).toLocaleDateString('en-US', {year: 'numeric', month: 'long', day: 'numeric'})}
-                    </div>
-                    ` : ''}
-                    ${request.notes ? `
-                    <div class="col-12">
-                        <strong>Notes:</strong><br>
-                        <p class="mb-0">${request.notes}</p>
-                    </div>
-                    ` : ''}
-                </div>
-            `;
-            document.getElementById('requestDetailsContent').innerHTML = content;
+    // Standard: server-side filters for status + leave_type, client-side search for name/post
+    const statusSelect = document.getElementById('leaveStatusFilter');
+    const typeSelect = document.getElementById('leaveTypeFilter');
+    if (statusSelect) {
+        statusSelect.addEventListener('change', () => {
+            document.getElementById('leaveFilterForm')?.submit();
         });
-    });
+    }
+    if (typeSelect) {
+        typeSelect.addEventListener('change', () => {
+            document.getElementById('leaveFilterForm')?.submit();
+        });
+    }
+
+    const searchInput = document.getElementById('leaveSearch');
+    const tableBody = document.getElementById('leaveTableBody');
+    const countEl = document.getElementById('leave-count');
+    const rows = () => Array.from(tableBody?.querySelectorAll('tr.leave-row') || []);
+
+    const updateCount = () => {
+        if (!countEl) return;
+        const visible = rows().filter(r => r.style.display !== 'none').length;
+        countEl.textContent = visible.toLocaleString();
+    };
+
+    if (searchInput) {
+        let t = null;
+        searchInput.addEventListener('input', () => {
+            window.clearTimeout(t);
+            t = window.setTimeout(() => {
+                const q = (searchInput.value || '').trim().toLowerCase();
+                rows().forEach(row => {
+                    const name = (row.querySelector('.employee-name')?.textContent || '').toLowerCase();
+                    const post = (row.querySelector('.employee-role')?.textContent || '').toLowerCase();
+                    row.style.display = (q === '' || name.includes(q) || post.includes(q)) ? '' : 'none';
+                });
+                updateCount();
+            }, 150);
+        });
+    }
+    updateCount();
 
     // Approve button
     document.querySelectorAll('.approve-btn').forEach(btn => {
