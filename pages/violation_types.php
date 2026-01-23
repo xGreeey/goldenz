@@ -1030,9 +1030,33 @@ foreach ($violation_history as $history) {
     font-size: 1.25rem;
 }
 
+#clear-filters {
+    background-color: #ffffff;
+    border: 1.5px solid #e2e8f0;
+    color: #475569;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+}
+
 #clear-filters:hover {
-    background-color: #f3f4f6;
-    border-color: #9ca3af;
+    background-color: #f1f5f9;
+    border-color: #cbd5e1;
+    color: #334155;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+#clear-filters:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
 }
 
 /* Responsive Search/Filter */

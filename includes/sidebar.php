@@ -76,7 +76,17 @@ if ($user_role === 'developer') {
         [
             'title' => 'Attendance',
             'page' => 'attendance',
-            'section' => null,
+            'section' => 'attendance',
+            'children' => [
+                [
+                    'title' => 'Daily Attendance',
+                    'page' => 'attendance',
+                ],
+                [
+                    'title' => 'Daily Time Record (DTR)',
+                    'page' => 'dtr',
+                ],
+            ],
         ],
         [
             'title' => 'Violations',
