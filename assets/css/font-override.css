@@ -476,12 +476,14 @@ div i[class*="fa-"] {
 }
 
 .sidebar .nav-submenu .nav-link:hover {
-    background: var(--sidebar-hover) !important;
-    color: #ffffff !important;
+    background: rgba(255, 255, 255, 0.08) !important;
+    color: var(--sidebar-text) !important;
+    transform: translateX(4px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .sidebar .nav-submenu .nav-link.active {
-    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1e293b 100%) !important;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%) !important;
     color: #ffffff !important;
 }
 
@@ -499,13 +501,15 @@ html[data-theme="dark"] .sidebar .nav-submenu.expanded .nav-link {
 
 html[data-theme="dark"] .sidebar .nav-submenu .nav-link:hover,
 html[data-theme="dark"] .sidebar .nav-submenu.expanded .nav-link:hover {
-    background: #1e293b !important;
-    color: var(--interface-text) !important;
+    background: rgba(255, 255, 255, 0.08) !important;
+    color: var(--sidebar-text) !important;
+    transform: translateX(4px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 html[data-theme="dark"] .sidebar .nav-submenu .nav-link.active,
 html[data-theme="dark"] .sidebar .nav-submenu.expanded .nav-link.active {
-    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1e293b 100%) !important;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%) !important;
     color: #ffffff !important;
 }
 
@@ -654,6 +658,7 @@ body.portal-hr-admin .hrdash {
 
 /* Main dashboard container - consolidated spacing */
 body.portal-hr-admin .container-fluid.hrdash {
+    /* Main-content already has top padding for header, so no additional top padding needed */
     padding-top: 1.75rem !important;
     padding-left: var(--hr-page-px) !important;
     padding-right: var(--hr-page-px) !important;
@@ -663,6 +668,7 @@ body.portal-hr-admin .container-fluid.hrdash {
     width: 100% !important;
     max-width: 100% !important;
     scroll-behavior: smooth;
+    box-sizing: border-box !important;
 }
 
 /* Ensure content element has equal spacing */
@@ -708,25 +714,54 @@ body.portal-hr-admin .container-fluid.post-assignments-modern {
     max-width: 100% !important;
 }
 
-/* Consistent welcome/header section for all HR-Admin pages */
+/* Consistent welcome/header section for all HR-Admin pages - Fixed Layout */
 body.portal-hr-admin .page-header-modern,
 body.portal-hr-admin .hrdash-welcome {
-    position: sticky;
-    top: 0;
-    z-index: 1020;
-    background: #f1f5f9;
-    border-bottom: 1px solid #e2e8f0;
-    padding: 1.25rem var(--hr-page-px) !important;
+    position: fixed !important; /* Changed from sticky to fixed for global consistency */
+    top: 0 !important;
+    z-index: 1020 !important;
+    background: #f1f5f9 !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    /* Fixed height and padding - never changes */
+    height: 88px !important; /* Fixed height: 1.25rem top + 1.25rem bottom + content */
+    min-height: 88px !important;
+    max-height: 88px !important;
+    padding: 1.25rem 1.5rem !important; /* Fixed padding - never changes */
     margin: 0 !important;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 1rem;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    flex-wrap: nowrap !important; /* Prevent wrapping that could change height */
+    gap: 1rem !important;
     width: 100% !important;
-    box-sizing: border-box;
-    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
-    transition: box-shadow 0.2s ease;
+    box-sizing: border-box !important;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04) !important;
+    transition: box-shadow 0.2s ease !important;
+    overflow: hidden !important; /* Prevent content overflow from changing height */
+}
+
+/* Prevent layout shifts from scrollbar */
+body.portal-hr-admin .page-header-modern,
+body.portal-hr-admin .hrdash-welcome {
+    padding-right: calc(1.5rem - var(--scrollbar-width, 0px)) !important;
+}
+
+/* Prevent header from being affected by modals or overlays */
+body.modal-open body.portal-hr-admin .hrdash-welcome,
+body:has(.modal.show) body.portal-hr-admin .hrdash-welcome,
+body:has(.modal-backdrop) body.portal-hr-admin .hrdash-welcome {
+    height: 88px !important;
+    padding: 1.25rem 1.5rem !important;
+    margin: 0 !important;
+    position: sticky !important;
+    top: 0 !important;
+}
+
+/* Prevent header changes during page transitions */
+body.portal-hr-admin .hrdash-welcome.transitioning,
+body.portal-hr-admin .hrdash-welcome.loading {
+    height: 88px !important;
+    padding: 1.25rem 1.5rem !important;
 }
 
 /* ============================================
@@ -734,9 +769,11 @@ body.portal-hr-admin .hrdash-welcome {
    Permanent header with page title, time, notifications
    ============================================ */
 
-/* Sticky header scroll enhancement */
+/* Sticky header scroll enhancement - maintain fixed height */
 body.portal-hr-admin .hrdash-welcome.scrolled {
     box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08);
+    height: 88px !important; /* Maintain fixed height even when scrolled */
+    padding: 1.25rem 1.5rem !important; /* Maintain fixed padding */
 }
 
 /* Ensure dropdown menus appear above other content when header is sticky */
@@ -756,7 +793,7 @@ body.portal-hr-admin .hrdash-welcome .dropdown-menu {
     right: 2rem;
     width: 48px;
     height: 48px;
-    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1e293b 100%);
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
     color: #ffffff;
     border: none;
     border-radius: 12px;
@@ -764,7 +801,7 @@ body.portal-hr-admin .hrdash-welcome .dropdown-menu {
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 16px rgba(30, 58, 138, 0.3), 0 2px 8px rgba(15, 23, 42, 0.2);
+    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.3), 0 2px 8px rgba(15, 23, 42, 0.2);
     z-index: 1015;
     opacity: 0;
     visibility: hidden;
@@ -780,7 +817,7 @@ body.portal-hr-admin .hrdash-welcome .dropdown-menu {
 }
 
 .scroll-to-top-btn:hover {
-    background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 50%, #1e293b 100%);
+    background: linear-gradient(135deg, #1e293b 0%, #334155 50%, #475569 100%);
     box-shadow: 0 8px 24px rgba(30, 58, 138, 0.4), 0 4px 12px rgba(15, 23, 42, 0.3);
     transform: translateY(-4px) scale(1.05);
 }
@@ -853,26 +890,34 @@ body.portal-hr-admin .hrdash-welcome__title {
     font-size: 1.75rem;
     font-weight: 800;
     letter-spacing: -0.03em;
-    margin: 0 0 0.25rem 0;
+    margin: 0 0 0.25rem 0 !important; /* Fixed margin - never changes */
     color: #0f172a;
-    line-height: 1.2;
+    line-height: 1.2 !important; /* Fixed line-height to prevent height changes */
+    white-space: nowrap !important; /* Prevent text wrapping */
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
 }
 
 body.portal-hr-admin .page-subtitle-modern,
 body.portal-hr-admin .page-subtitle,
 body.portal-hr-admin .hrdash-welcome__subtitle {
-    margin: 0;
+    margin: 0 !important; /* Fixed margin - never changes */
     color: #64748b;
     font-size: 0.9375rem;
+    line-height: 1.4 !important; /* Fixed line-height */
+    white-space: nowrap !important; /* Prevent text wrapping */
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
 }
 
 
 body.portal-hr-admin .page-actions-modern,
 body.portal-hr-admin .hrdash-welcome__actions {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    flex-shrink: 0;
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.75rem !important;
+    flex-shrink: 0 !important;
+    min-width: 0 !important;
 }
 
 /* ============================================================================
@@ -1322,19 +1367,20 @@ body.portal-hr-admin .card-body-modern {
    ============================================ */
 
 body.portal-hr-admin .btn-primary-modern {
-    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1e293b 100%);
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
     border: none;
     color: #ffffff;
     font-weight: 600;
     padding: 0.625rem 1.25rem;
     border-radius: 8px;
     transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.25);
 }
 
 body.portal-hr-admin .btn-primary-modern:hover {
-    background: linear-gradient(135deg, #1e40af 0%, #1e293b 50%, #1e3a8a 100%);
+    background: linear-gradient(135deg, #1e293b 0%, #334155 50%, #475569 100%);
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(30, 58, 138, 0.2);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.35);
 }
 
 body.portal-hr-admin .btn-outline-modern {
@@ -1391,7 +1437,7 @@ body.portal-hr-admin .hrdash-welcome__avatar {
     width: 40px;
     height: 40px;
     border-radius: 8px;
-    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
     color: #ffffff;
     display: inline-flex;
     align-items: center;
@@ -1410,10 +1456,13 @@ body.portal-hr-admin .hrdash-welcome__chevron {
 body.portal-hr-admin .main-content {
     margin-left: var(--sidebar-width) !important;
     margin-right: 0 !important;
+    /* HR-Admin uses hrdash-welcome (88px) or hr-admin-topbar (56px) - add top padding */
     padding: 0 !important;
+    padding-top: 88px !important; /* Height of hrdash-welcome header */
     width: calc(100% - var(--sidebar-width)) !important;
     max-width: calc(100% - var(--sidebar-width)) !important;
     overflow-x: hidden !important;
+    box-sizing: border-box !important;
 }
 
 /* Consistent spacing between items in any Bootstrap row inside HR-Admin content */
@@ -1445,9 +1494,14 @@ body.portal-hr-admin .content .row.g-4 {
         --hr-section-spacing: 1.25rem;
     }
     
-    /* Reduce top spacing on mobile */
+    /* Reduce top spacing on mobile - main-content already has header padding */
     body.portal-hr-admin .container-fluid.hrdash {
         padding-top: 1.25rem !important;
+    }
+    
+    /* Ensure main-content has proper top padding on mobile */
+    body.portal-hr-admin .main-content {
+        padding-top: 88px !important; /* Fixed header height */
     }
 }
 
@@ -1545,9 +1599,9 @@ body.portal-hr-admin .hrdash-stat:hover {
     box-shadow: 0 4px 16px rgba(15, 23, 42, 0.12), 0 8px 24px rgba(15, 23, 42, 0.08);
     border-color: #cbd5e1;
 }
-/* Primary card with blue gradient */
+/* Primary card with black gradient */
 body.portal-hr-admin .hrdash-stat--primary {
-    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1e293b 100%);
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
     border: none;
     color: #ffffff;
 }
@@ -1621,7 +1675,7 @@ body.portal-hr-admin .hrdash-stat__value {
     font-weight: 800;
     line-height: 1;
     letter-spacing: -0.02em;
-    color: #0f172a;
+    color: #000000;
     margin: 0;
 }
 body.portal-hr-admin .hrdash-stat__trend {
@@ -1954,14 +2008,19 @@ body.portal-hr-admin .sidebar {
 }
 
 body.portal-hr-admin .hr-admin-topbar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 56px;
-    z-index: 1200;
-    display: flex;
-    align-items: stretch;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    height: 56px !important; /* Fixed height - never changes */
+    min-height: 56px !important;
+    max-height: 56px !important;
+    z-index: 1200 !important;
+    display: flex !important;
+    align-items: stretch !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
 }
 
 body.portal-hr-admin .hr-admin-topbar__left {
@@ -1972,14 +2031,18 @@ body.portal-hr-admin .hr-admin-topbar__left {
 
 body.portal-hr-admin .hr-admin-topbar__main {
     flex: 1;
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 0 1.25rem;
-    background: rgba(255, 255, 255, 0.92);
+    display: flex !important;
+    align-items: center !important;
+    gap: 1rem !important;
+    padding: 0 1.25rem !important; /* Fixed padding - never changes */
+    background: rgba(255, 255, 255, 0.92) !important;
     backdrop-filter: blur(10px);
     border-bottom: 1px solid rgba(15, 23, 42, 0.08);
     box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+    height: 56px !important; /* Fixed height to match topbar */
+    min-height: 56px !important;
+    max-height: 56px !important;
+    box-sizing: border-box !important;
 }
 
 body.portal-hr-admin .hr-admin-topbar__title #pageTitle {
@@ -2085,16 +2148,26 @@ body.portal-hr-admin .hr-admin-profile-name {
 }
 
 @media (max-width: 768px) {
-    /* Sticky header remains functional on mobile */
+    /* Fixed header remains functional on mobile - maintain fixed height */
     body.portal-hr-admin .hrdash-welcome {
-        position: sticky !important;
+        position: fixed !important; /* Fixed position for global consistency */
         top: 0 !important;
         z-index: 1020 !important;
-        flex-direction: column !important;
-        align-items: flex-start !important;
+        /* Fixed height even on mobile - never changes */
+        height: 88px !important;
+        min-height: 88px !important;
+        max-height: 88px !important;
+        flex-direction: row !important; /* Keep horizontal layout to maintain height */
+        align-items: center !important;
         gap: 0.75rem !important;
-        padding-top: 0.875rem !important;
-        padding-bottom: 0.875rem !important;
+        padding: 1.25rem 1rem !important; /* Fixed padding - reduced horizontal on mobile */
+        flex-wrap: nowrap !important; /* Prevent wrapping */
+        overflow: hidden !important; /* Prevent content overflow */
+    }
+    
+    /* Ensure main-content has proper top padding on mobile for fixed header */
+    body.portal-hr-admin .main-content {
+        padding-top: 88px !important; /* Fixed header height */
     }
     
     body.portal-hr-admin .hrdash-welcome__actions {
@@ -2107,6 +2180,29 @@ body.portal-hr-admin .hr-admin-profile-name {
     }
     body.portal-hr-admin .hr-admin-topbar__left {
         width: 72px; /* collapse left bar on small screens */
+    }
+    
+    /* Maintain fixed topbar height on mobile */
+    body.portal-hr-admin .hr-admin-topbar {
+        height: 56px !important;
+        min-height: 56px !important;
+        max-height: 56px !important;
+    }
+    
+    body.portal-hr-admin .hr-admin-topbar__main {
+        height: 56px !important;
+        min-height: 56px !important;
+        max-height: 56px !important;
+        padding: 0 0.75rem !important; /* Reduced horizontal padding on mobile */
+    }
+    
+    /* Maintain fixed header height on mobile */
+    body.portal-hr-admin .hrdash-welcome,
+    body.portal-hr-admin .page-header-modern {
+        height: 88px !important;
+        min-height: 88px !important;
+        max-height: 88px !important;
+        padding: 1.25rem 1rem !important; /* Reduced horizontal padding on mobile */
     }
 }
 
@@ -2607,7 +2703,11 @@ body.portal-hr-admin .hrdash-welcome__time {
     font-size: 0.9375rem;
     font-weight: 600;
     color: #64748b;
-    margin-right: 0.25rem;
+    margin: 0 !important; /* Fixed margin - never changes */
+    margin-right: 0.25rem !important;
+    padding: 0 !important; /* Fixed padding - never changes */
+    white-space: nowrap !important; /* Prevent text wrapping */
+    flex-shrink: 0 !important;
 }
 
 /* ============================================
@@ -2664,18 +2764,22 @@ body.portal-super-admin .content {
 
 /* Super Admin: Main dashboard container - same spacing as HR Admin */
 body.portal-super-admin .container-fluid.hrdash {
+    /* Main-content already has top padding for header, so no additional top padding needed */
     padding-top: 1.75rem !important;
     padding-left: var(--hr-page-px) !important;
     padding-right: var(--hr-page-px) !important;
     padding-bottom: var(--hr-page-py) !important;
     scroll-behavior: smooth;
+    box-sizing: border-box !important;
 }
 
 /* Super Admin: Ensure main-content starts after sidebar and uses remaining width */
 body.portal-super-admin .main-content {
     margin-left: var(--sidebar-width) !important;
     margin-right: 0 !important;
+    /* Super-Admin uses hrdash-welcome (88px) - add top padding */
     padding: 0 !important;
+    padding-top: 88px !important; /* Height of hrdash-welcome header */
     width: calc(100% - var(--sidebar-width)) !important;
     max-width: calc(100% - var(--sidebar-width)) !important;
     overflow-x: hidden !important;
@@ -2934,9 +3038,9 @@ body.portal-super-admin .stat-card-modern {
     overflow: hidden !important;
 }
 
-/* Primary card with blue gradient (same as HR Admin) */
+/* Primary card with black gradient (same as HR Admin) */
 body.portal-super-admin .stat-card-modern.stat-card-primary {
-    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1e293b 100%) !important;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%) !important;
     border: none !important;
     color: #ffffff !important;
 }
@@ -2994,7 +3098,7 @@ body.portal-super-admin .stat-content {
 body.portal-super-admin .stat-number {
     font-size: 2.25rem !important;
     font-weight: 700 !important;
-    color: #1e293b !important;
+    color: #000000 !important;
     margin: 0 !important;
     line-height: 1 !important;
     letter-spacing: -0.02em !important;
@@ -3077,7 +3181,7 @@ body.portal-super-admin .btn-outline-modern:hover {
 }
 
 body.portal-super-admin .btn-primary-modern {
-    background: linear-gradient(135deg, #1fb2d5 0%, #0ea5e9 100%) !important;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%) !important;
     color: #ffffff !important;
     border: none !important;
     padding: 0.5rem 1rem !important;
@@ -3085,13 +3189,13 @@ body.portal-super-admin .btn-primary-modern {
     font-weight: 600 !important;
     font-size: 0.875rem !important;
     transition: all 0.2s ease !important;
-    box-shadow: 0 2px 8px rgba(31, 178, 213, 0.25) !important;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.25) !important;
 }
 
 body.portal-super-admin .btn-primary-modern:hover {
     transform: translateY(-1px) !important;
-    box-shadow: 0 4px 12px rgba(31, 178, 213, 0.35) !important;
-    background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%) !important;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.35) !important;
+    background: linear-gradient(135deg, #1e293b 0%, #334155 50%, #475569 100%) !important;
 }
 
 body.portal-super-admin .btn-link-modern {
@@ -3361,9 +3465,9 @@ body.portal-super-admin .tab-button:hover {
 }
 
 body.portal-super-admin .tab-button.active {
-    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1e293b 100%) !important;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%) !important;
     color: #ffffff !important;
-    box-shadow: 0 2px 8px rgba(30, 58, 138, 0.2) !important;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.2) !important;
 }
 
 /* Bootstrap Nav Tabs */
@@ -3391,11 +3495,11 @@ body.portal-super-admin .nav-tabs .nav-link:hover {
 }
 
 body.portal-super-admin .nav-tabs .nav-link.active {
-    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1e293b 100%) !important;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%) !important;
     color: #ffffff !important;
     border-bottom-color: transparent !important;
     border-radius: 8px 8px 0 0 !important;
-    box-shadow: 0 2px 8px rgba(30, 58, 138, 0.2) !important;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.2) !important;
 }
 
 /* Settings Navigation Tabs (list-group based) */
@@ -3428,10 +3532,10 @@ body.portal-super-admin .settings-nav .list-group-item i {
 }
 
 body.portal-super-admin .settings-nav .list-group-item.active {
-    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1e293b 100%) !important;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%) !important;
     color: #ffffff !important;
     border-radius: 8px !important;
-    box-shadow: 0 2px 8px rgba(30, 58, 138, 0.2) !important;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.2) !important;
 }
 
 body.portal-super-admin .settings-nav .list-group-item.active i {
@@ -3440,22 +3544,27 @@ body.portal-super-admin .settings-nav .list-group-item.active i {
 
 /* Super Admin: Match hrdash-welcome section styling exactly - full width */
 body.portal-super-admin .hrdash-welcome {
-    position: sticky !important;
+    position: fixed !important; /* Changed from sticky to fixed for global consistency */
     top: 0 !important;
     z-index: 1020 !important;
     background: #f1f5f9 !important;
     border-bottom: 1px solid #e2e8f0 !important;
     margin: 0 !important;
-    padding: 1.25rem var(--hr-page-px) !important;
+    /* Fixed height and padding - never changes */
+    height: 88px !important;
+    min-height: 88px !important;
+    max-height: 88px !important;
+    padding: 1.25rem 1.5rem !important; /* Fixed padding - never changes */
     width: 100% !important;
     display: flex !important;
     align-items: center !important;
     justify-content: space-between !important;
-    flex-wrap: wrap !important;
+    flex-wrap: nowrap !important; /* Prevent wrapping that could change height */
     gap: 1rem !important;
     box-sizing: border-box !important;
     box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04) !important;
     transition: box-shadow 0.2s ease !important;
+    overflow: hidden !important; /* Prevent content overflow from changing height */
 }
 
 body.portal-super-admin .hrdash-welcome::before {
@@ -3470,16 +3579,23 @@ body.portal-super-admin .hrdash-welcome__title {
     font-size: 1.75rem !important;
     font-weight: 800 !important;
     letter-spacing: -0.03em !important;
-    margin: 0 0 0.25rem 0 !important;
+    margin: 0 0 0.25rem 0 !important; /* Fixed margin - never changes */
     color: #0f172a !important;
-    line-height: 1.2 !important;
+    line-height: 1.2 !important; /* Fixed line-height to prevent height changes */
+    white-space: nowrap !important; /* Prevent text wrapping */
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
 }
 
 body.portal-super-admin .hrdash-welcome__time {
     font-size: 0.9375rem !important;
     font-weight: 600 !important;
     color: #64748b !important;
+    margin: 0 !important; /* Fixed margin - never changes */
     margin-right: 0.25rem !important;
+    padding: 0 !important; /* Fixed padding - never changes */
+    white-space: nowrap !important; /* Prevent text wrapping */
+    flex-shrink: 0 !important;
 }
 
 body.portal-super-admin .hrdash-welcome__subtitle {
@@ -3513,12 +3629,12 @@ body.portal-super-admin .hrdash-stat:hover {
     border-color: #cbd5e1;
 }
 
-/* Primary card with blue gradient */
+/* Primary card with black gradient */
 body.portal-super-admin .hrdash-stat--primary {
-    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1e293b 100%);
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
     border: none;
     color: #ffffff;
-    box-shadow: 0 2px 8px rgba(30, 58, 138, 0.15), 0 4px 16px rgba(30, 58, 138, 0.12);
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.15), 0 4px 16px rgba(15, 23, 42, 0.12);
 }
 
 body.portal-super-admin .hrdash-stat--primary:hover {
@@ -3560,7 +3676,7 @@ body.portal-super-admin .hrdash-stat__value {
     font-weight: 800;
     line-height: 1;
     letter-spacing: -0.02em;
-    color: #0f172a;
+    color: #000000;
     margin: 0;
 }
 
@@ -3677,6 +3793,7 @@ body.portal-super-admin .hrdash-welcome__actions {
     align-items: center !important;
     gap: 0.75rem !important;
     flex-shrink: 0 !important;
+    min-width: 0 !important;
 }
 
 body.portal-super-admin .hrdash-welcome__icon-btn {
@@ -3921,9 +4038,11 @@ body.portal-super-admin .hrdash-welcome__profile-btn + .dropdown-menu {
     min-width: 200px !important;
 }
 
-/* Sticky header scroll enhancement for Super Admin */
+/* Sticky header scroll enhancement for Super Admin - maintain fixed height */
 body.portal-super-admin .hrdash-welcome.scrolled {
     box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08) !important;
+    height: 88px !important; /* Maintain fixed height even when scrolled */
+    padding: 1.25rem 1.5rem !important; /* Maintain fixed padding */
 }
 
 /* Ensure dropdown menus appear above other content when header is sticky */
@@ -3950,6 +4069,14 @@ html {
         max-width: 100% !important;
     }
     
+    /* Maintain fixed header height on mobile */
+    body.portal-super-admin .hrdash-welcome {
+        height: 88px !important;
+        min-height: 88px !important;
+        max-height: 88px !important;
+        padding: 1.25rem 1rem !important; /* Reduced horizontal padding on mobile */
+    }
+    
     body.portal-super-admin {
         --hr-page-px: 1rem;
         --hr-page-py: 1.25rem;
@@ -3957,26 +4084,42 @@ html {
         --hr-section-spacing: 1.25rem;
     }
     
-    /* Reduce top spacing on mobile */
+    /* Reduce top spacing on mobile - main-content already has header padding */
     body.portal-super-admin .container-fluid.hrdash {
         padding-top: 1.25rem !important;
     }
     
-    /* Sticky header remains functional on mobile */
+    /* Ensure main-content has proper top padding on mobile */
+    body.portal-super-admin .main-content {
+        padding-top: 88px !important; /* Fixed header height */
+    }
+    
+    /* Fixed header remains functional on mobile - maintain fixed height */
     body.portal-super-admin .hrdash-welcome {
-        position: sticky !important;
+        position: fixed !important; /* Fixed position for global consistency */
         top: 0 !important;
         z-index: 1020 !important;
-        flex-direction: column !important;
-        align-items: flex-start !important;
+        /* Fixed height even on mobile - never changes */
+        height: 88px !important;
+        min-height: 88px !important;
+        max-height: 88px !important;
+        flex-direction: row !important; /* Keep horizontal layout to maintain height */
+        align-items: center !important;
         gap: 0.75rem !important;
-        padding-top: 0.875rem !important;
-        padding-bottom: 0.875rem !important;
+        padding: 1.25rem 1rem !important; /* Fixed padding - reduced horizontal on mobile */
+        flex-wrap: nowrap !important; /* Prevent wrapping */
+        overflow: hidden !important; /* Prevent content overflow */
+    }
+    
+    /* Ensure main-content has proper top padding on mobile for fixed header */
+    body.portal-super-admin .main-content {
+        padding-top: 88px !important; /* Fixed header height */
     }
     
     body.portal-super-admin .hrdash-welcome__actions {
-        width: 100% !important;
-        flex-wrap: wrap !important;
+        flex-shrink: 0 !important;
+        flex-wrap: nowrap !important; /* Prevent wrapping that could change height */
+        min-width: 0 !important;
     }
     
     /* Ensure sections still align properly on mobile */
@@ -4236,7 +4379,7 @@ html[data-theme="dark"] body.portal-super-admin .settings-nav .list-group-item:h
 }
 
 html[data-theme="dark"] body.portal-super-admin .settings-nav .list-group-item.active {
-    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1e293b 100%) !important;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%) !important;
     color: #ffffff !important;
 }
 
