@@ -17,6 +17,7 @@ $pageSubtitles = [
     'dashboard' => 'Overview of your HR management system',
     'employees' => 'Manage employee information and records',
     'posts' => 'Manage posts, locations, and assignments',
+    'feed' => 'Announcements and status updates',
     'post_assignments' => 'Assign employees to specific posts',
     'alerts' => 'View and manage employee alerts',
     'tasks' => 'Manage your tasks and assignments',
@@ -47,6 +48,7 @@ $pageSubtitles = [
     'violations' => 'View and manage employee violations',
     'violation_types' => 'Manage violation categories and sanctions',
     'violation_history' => 'Complete history of all violation type changes',
+    'chat' => 'Secure one-to-one communication with team members',
 ];
 
 $pageSubtitle = $pageSubtitles[$page] ?? 'Manage your HR operations';

@@ -45,7 +45,14 @@
         chatEmptyState: document.getElementById('chatEmptyState'),
         typingIndicator: document.getElementById('chatTypingIndicator'),
         refreshUsersBtn: document.getElementById('refreshUsersBtn'),
-        refreshMessagesBtn: document.getElementById('refreshMessagesBtn')
+        refreshMessagesBtn: document.getElementById('refreshMessagesBtn'),
+        topAvatars: document.getElementById('chatTopAvatars'),
+        pinnedList: document.getElementById('chatPinnedList'),
+        pinnedCount: document.getElementById('chatPinnedCount'),
+        infoAvatar: document.getElementById('chatInfoAvatar'),
+        infoName: document.getElementById('chatInfoName'),
+        infoSub: document.getElementById('chatInfoSub'),
+        infoMembers: document.getElementById('chatInfoMembers')
     };
 
     // Initialize
@@ -100,6 +107,25 @@
             if (state.selectedUserId) {
                 loadMessages(state.selectedUserId, true);
             }
+        });
+
+        // Tabs: All / Pinned
+        document.querySelectorAll('.chat-list-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                const selected = this.dataset.tab || 'all';
+
+                document.querySelectorAll('.chat-list-tab').forEach(btn => {
+                    btn.classList.toggle('active', btn === this);
+                    btn.setAttribute('aria-selected', btn === this ? 'true' : 'false');
+                });
+
+                if (elements.usersList) {
+                    elements.usersList.style.display = selected === 'all' ? 'block' : 'none';
+                }
+                if (elements.pinnedList) {
+                    elements.pinnedList.style.display = selected === 'pinned' ? 'block' : 'none';
+                }
+            });
         });
 
         // Scroll detection
@@ -201,8 +227,101 @@
             `;
         }).join('');
 
+        // Update top avatar strip (UI only)
+        renderTopAvatars(users);
+
+        // Update pinned list (conversations with unread messages)
+        const pinnedUsers = (users || []).filter(u => (u.unread_count || 0) > 0);
+        renderPinnedUsers(pinnedUsers);
+
         // Add click handlers
         document.querySelectorAll('.chat-user-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const userId = parseInt(this.dataset.userId);
+                const userName = this.dataset.userName;
+                const userAvatar = this.dataset.userAvatar;
+                selectUser(userId, userName, userAvatar);
+            });
+        });
+    }
+
+    function renderTopAvatars(users) {
+        if (!elements.topAvatars) return;
+        const top = (users || []).slice(0, 8);
+        if (top.length === 0) {
+            elements.topAvatars.innerHTML = '<div class="chat-avatars-strip__loading">No contacts</div>';
+            return;
+        }
+
+        elements.topAvatars.innerHTML = top.map(u => {
+            const initials = getInitials(u.name);
+            const avatar = u.avatar_url
+                ? `<img src="${u.avatar_url}" alt="${escapeHtml(u.name)}">`
+                : `${initials}`;
+            return `<button class="chat-avatar-pill" type="button" title="${escapeHtml(u.name)}" data-user-id="${u.id}" data-user-name="${escapeHtml(u.name)}" data-user-avatar="${u.avatar_url || ''}">${avatar}</button>`;
+        }).join('');
+
+        elements.topAvatars.querySelectorAll('.chat-avatar-pill').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const userId = parseInt(this.dataset.userId);
+                const userName = this.dataset.userName;
+                const userAvatar = this.dataset.userAvatar;
+                selectUser(userId, userName, userAvatar);
+            });
+        });
+    }
+
+    function renderPinnedUsers(users) {
+        if (!elements.pinnedList) return;
+
+        if (!users || users.length === 0) {
+            elements.pinnedList.innerHTML = `
+                <div class="text-center text-muted py-2 small">No pinned conversations</div>
+            `;
+            if (elements.pinnedCount) {
+                elements.pinnedCount.textContent = '0';
+            }
+            return;
+        }
+
+        if (elements.pinnedCount) {
+            elements.pinnedCount.textContent = String(users.length);
+        }
+
+        elements.pinnedList.innerHTML = users.map(user => {
+            const initials = getInitials(user.name);
+            const unreadBadge = user.unread_count > 0 
+                ? `<span class="chat-user-badge">${user.unread_count}</span>` 
+                : '';
+
+            let lastMessageHtml = '';
+            if (user.last_message) {
+                const prefix = user.last_message_from_me ? 'You: ' : '';
+                const message = escapeHtml(user.last_message);
+                const truncated = message.length > 40 ? message.substring(0, 37) + '...' : message;
+                lastMessageHtml = `<div class="chat-user-last-message">${prefix}${truncated}</div>`;
+            } else {
+                lastMessageHtml = `<div class="chat-user-last-message text-muted">No messages yet</div>`;
+            }
+
+            return `
+                <div class="chat-user-item ${state.selectedUserId === user.id ? 'active' : ''}" 
+                     data-user-id="${user.id}"
+                     data-user-name="${escapeHtml(user.name)}"
+                     data-user-avatar="${user.avatar_url || ''}">
+                    <div class="chat-user-avatar">
+                        ${user.avatar_url ? `<img src="${user.avatar_url}" alt="${escapeHtml(user.name)}">` : initials}
+                    </div>
+                    <div class="chat-user-info">
+                        <div class="chat-user-name">${escapeHtml(user.name)}</div>
+                        ${lastMessageHtml}
+                    </div>
+                    ${unreadBadge}
+                </div>
+            `;
+        }).join('');
+
+        elements.pinnedList.querySelectorAll('.chat-user-item').forEach(item => {
             item.addEventListener('click', function() {
                 const userId = parseInt(this.dataset.userId);
                 const userName = this.dataset.userName;
@@ -293,6 +412,50 @@
 
         if (elements.chatHeaderStatus) {
             elements.chatHeaderStatus.textContent = 'Active';
+        }
+
+        // Update right-side info panel (UI only)
+        updateInfoPanel();
+    }
+
+    function updateInfoPanel() {
+        if (!state.selectedUserId) return;
+        const initials = getInitials(state.selectedUserName);
+
+        if (elements.infoName) elements.infoName.textContent = state.selectedUserName || '—';
+        if (elements.infoSub) elements.infoSub.textContent = 'Active now';
+
+        if (elements.infoAvatar) {
+            if (state.selectedUserAvatar) {
+                elements.infoAvatar.innerHTML = `<img src="${state.selectedUserAvatar}" alt="${escapeHtml(state.selectedUserName)}">`;
+            } else {
+                elements.infoAvatar.textContent = initials;
+            }
+        }
+
+        if (elements.infoMembers) {
+            // One-to-one chat: show current user + selected user
+            const meName = config.currentUserName || 'You';
+            const meInitials = getInitials(meName);
+            const otherInitials = initials;
+            const otherName = state.selectedUserName || '—';
+
+            elements.infoMembers.innerHTML = `
+                <div class="chat-info-member">
+                    <div class="chat-info-member__avatar">${meInitials}</div>
+                    <div class="chat-info-member__meta">
+                        <div class="chat-info-member__name">${escapeHtml(meName)}</div>
+                        <div class="chat-info-member__sub">You</div>
+                    </div>
+                </div>
+                <div class="chat-info-member">
+                    <div class="chat-info-member__avatar">${otherInitials}</div>
+                    <div class="chat-info-member__meta">
+                        <div class="chat-info-member__name">${escapeHtml(otherName)}</div>
+                        <div class="chat-info-member__sub">Contact</div>
+                    </div>
+                </div>
+            `;
         }
     }
 
