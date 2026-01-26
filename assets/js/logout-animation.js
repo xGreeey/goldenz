@@ -22,9 +22,9 @@
         MAX_DELAY: 1500,          // Maximum delay before forcing logout
         PARTICLE_COUNT: 7,        // Number of decorative particles
         MESSAGES: {
-            main: "You leaving me? Why?",
-            sub: "Redirecting you out...",
-            srAnnouncement: "Logout animation in progress. You will be logged out shortly."
+            main: "Logging out...",
+            sub: "Please wait while we sign you out.",
+            srAnnouncement: "Logout in progress. You will be logged out shortly."
         }
     };
     
@@ -70,13 +70,6 @@
         const messageCard = document.createElement('div');
         messageCard.className = 'logout-message-card';
         
-        // Emoji
-        const emoji = document.createElement('span');
-        emoji.className = 'logout-emoji';
-        emoji.setAttribute('role', 'img');
-        emoji.setAttribute('aria-label', 'Sad face');
-        emoji.textContent = '😢';
-        
         // Main message
         const messageText = document.createElement('h2');
         messageText.className = 'logout-message-text';
@@ -103,7 +96,6 @@
         progressContainer.appendChild(progressBar);
         
         // Assemble the card
-        messageCard.appendChild(emoji);
         messageCard.appendChild(messageText);
         messageCard.appendChild(subtext);
         messageCard.appendChild(progressContainer);
