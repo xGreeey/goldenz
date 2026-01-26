@@ -1913,25 +1913,16 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Initialize auto-hide for success alerts
-    initAutoHideAlerts();
-    
-    // Also clean URL on page load if parameter exists (fallback)
-    if (window.location.search.includes('updated=')) {
-        // Small delay to ensure message is visible before cleaning URL
-        setTimeout(cleanUrlParameter, 100);
-    }
-    
-    // Profile Edit Modal
-    const editModal = document.getElementById('profileEditModal');
-    const editModalBackdrop = editModal.querySelector('.profile-edit-modal-backdrop');
-    const editModalClose = editModal.querySelector('.profile-edit-modal-close');
-    const editModalCancel = editModal.querySelector('.profile-edit-btn-cancel');
-    const editModalSave = editModal.querySelector('.profile-edit-btn-save');
-    const editModalTitle = editModal.querySelector('.profile-edit-modal-title');
-    const editModalLabel = editModal.querySelector('.profile-edit-label');
-    const editModalInput = editModal.querySelector('.profile-edit-input');
-    const editModalHint = editModal.querySelector('.profile-edit-hint');
+    // Profile Edit Modal - Global variables (will be initialized in initProfilePage)
+    let editModal = null;
+    let editModalBackdrop = null;
+    let editModalClose = null;
+    let editModalCancel = null;
+    let editModalSave = null;
+    let editModalTitle = null;
+    let editModalLabel = null;
+    let editModalInput = null;
+    let editModalHint = null;
     let currentFieldName = null;
     let currentFieldInput = null;
     let currentEditButton = null;
@@ -1971,6 +1962,17 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Open modal function
     function openEditModal(fieldName, editButton) {
+        // Ensure modal elements are initialized
+        if (!editModal || !editModalTitle || !editModalLabel || !editModalInput || !editModalHint || !editModalSave) {
+            // Try to initialize if not already done
+            initProfilePage();
+            // If still not available, return early
+            if (!editModal || !editModalTitle || !editModalLabel || !editModalInput || !editModalHint || !editModalSave) {
+                console.warn('Profile edit modal elements not found');
+                return;
+            }
+        }
+        
         const config = fieldConfig[fieldName];
         if (!config) return;
         
@@ -2010,7 +2012,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Focus input after animation
         setTimeout(function() {
-            if (!config.readonly) {
+            if (!config.readonly && editModalInput) {
                 editModalInput.focus();
                 editModalInput.select();
             }
@@ -2019,6 +2021,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Close modal function
     function closeEditModal() {
+        if (!editModal) return;
         editModal.classList.remove('active');
         editModal.setAttribute('aria-hidden', 'true');
         document.body.style.overflow = '';
@@ -2029,19 +2032,21 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Save changes function
     function saveEditModal() {
-        if (!currentFieldInput || !currentFieldName) return;
+        if (!currentFieldInput || !currentFieldName || !editModalInput) return;
         
         const newValue = editModalInput.value.trim();
         const config = fieldConfig[currentFieldName];
         
         // Validation
-        if (config.type === 'email' && newValue) {
+        if (config && config.type === 'email' && newValue) {
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailRegex.test(newValue)) {
                 editModalInput.focus();
                 editModalInput.style.borderColor = '#ef4444';
                 setTimeout(function() {
-                    editModalInput.style.borderColor = '';
+                    if (editModalInput) {
+                        editModalInput.style.borderColor = '';
+                    }
                 }, 2000);
                 return;
             }
@@ -2064,40 +2069,126 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Event listeners for modal
-    editModalBackdrop.addEventListener('click', closeEditModal);
-    editModalClose.addEventListener('click', closeEditModal);
-    editModalCancel.addEventListener('click', closeEditModal);
-    editModalSave.addEventListener('click', saveEditModal);
+    // Initialize modal event listeners
+    function initEditModal() {
+        if (!editModal || !editModalBackdrop || !editModalClose || !editModalCancel || !editModalSave) {
+            return;
+        }
+        
+        // Check if already initialized
+        if (editModal.dataset.modalInitialized === 'true') {
+            return;
+        }
+        
+        // Mark as initialized
+        editModal.dataset.modalInitialized = 'true';
+        
+        // Attach event listeners
+        editModalBackdrop.addEventListener('click', closeEditModal);
+        editModalClose.addEventListener('click', closeEditModal);
+        editModalCancel.addEventListener('click', closeEditModal);
+        editModalSave.addEventListener('click', saveEditModal);
+        
+        // Keyboard support
+        editModal.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeEditModal();
+            } else if (e.key === 'Enter' && e.ctrlKey) {
+                e.preventDefault();
+                saveEditModal();
+            }
+        });
+    }
     
-    // Keyboard support
-    editModal.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-            closeEditModal();
-        } else if (e.key === 'Enter' && e.ctrlKey) {
-            e.preventDefault();
-            saveEditModal();
+    // Initialize all profile page functionality
+    function initProfilePage() {
+        // Initialize modal elements (safe - check if exists)
+        editModal = document.getElementById('profileEditModal');
+        if (editModal) {
+            editModalBackdrop = editModal.querySelector('.profile-edit-modal-backdrop');
+            editModalClose = editModal.querySelector('.profile-edit-modal-close');
+            editModalCancel = editModal.querySelector('.profile-edit-btn-cancel');
+            editModalSave = editModal.querySelector('.profile-edit-btn-save');
+            editModalTitle = editModal.querySelector('.profile-edit-modal-title');
+            editModalLabel = editModal.querySelector('.profile-edit-label');
+            editModalInput = editModal.querySelector('.profile-edit-input');
+            editModalHint = editModal.querySelector('.profile-edit-hint');
+            
+            // Initialize modal event listeners (only once)
+            initEditModal();
+        }
+        
+        // Initialize auto-hide for success alerts
+        initAutoHideAlerts();
+        
+        // Initialize edit buttons
+        initEditButtons();
+        
+        // Clean URL on page load if parameter exists (fallback)
+        if (window.location.search.includes('updated=')) {
+            // Small delay to ensure message is visible before cleaning URL
+            setTimeout(cleanUrlParameter, 100);
+        }
+    }
+    
+    // Initialize on DOMContentLoaded (initial page load)
+    initProfilePage();
+    
+    // Also initialize when page is loaded via AJAX navigation
+    document.addEventListener('pageLoaded', function(e) {
+        if (e.detail && e.detail.page === 'profile') {
+            initProfilePage();
         }
     });
     
-    // Handle edit buttons for first_name, last_name, email, and username
-    const editButtons = document.querySelectorAll('.profile-field-edit-btn');
-    editButtons.forEach(function(btn) {
-        btn.addEventListener('click', function() {
-            const fieldName = this.getAttribute('data-field');
-            if (fieldName && fieldConfig[fieldName]) {
-                openEditModal(fieldName, this);
+    // Also listen for pageContentLoaded event (alternative event name)
+    document.addEventListener('pageContentLoaded', function(e) {
+        if (e.detail && e.detail.page === 'profile') {
+            initProfilePage();
+        }
+    });
+    
+    // Initialize edit buttons - use event delegation for AJAX-loaded content
+    function initEditButtons() {
+        const profilePage = document.querySelector('.profile-page');
+        if (!profilePage) return;
+        
+        // Check if listeners are already attached using data attribute
+        // This prevents duplicates when called multiple times
+        // Note: If the entire .profile-page element is replaced via AJAX,
+        // the new element won't have this attribute, so listeners will be re-attached (correct behavior)
+        if (profilePage.dataset.editButtonsInitialized === 'true') {
+            return;
+        }
+        
+        // Mark as initialized
+        profilePage.dataset.editButtonsInitialized = 'true';
+        
+        // Use event delegation on the stable parent container
+        // This works for both initial load and AJAX-loaded content
+        // Event delegation means we don't need to re-attach when content changes
+        profilePage.addEventListener('click', function(e) {
+            const editBtn = e.target.closest('.profile-field-edit-btn');
+            if (editBtn) {
+                e.preventDefault();
+                e.stopPropagation();
+                const fieldName = editBtn.getAttribute('data-field');
+                if (fieldName && fieldConfig && fieldConfig[fieldName]) {
+                    openEditModal(fieldName, editBtn);
+                }
             }
         });
         
-        // Keyboard support
-        btn.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' || e.key === ' ') {
+        // Keyboard support via delegation
+        profilePage.addEventListener('keydown', function(e) {
+            const editBtn = e.target.closest('.profile-field-edit-btn');
+            if (editBtn && (e.key === 'Enter' || e.key === ' ')) {
                 e.preventDefault();
-                this.click();
+                e.stopPropagation();
+                editBtn.click();
             }
         });
-    });
+    }
     
     // Also handle username field if it has an edit button (for future use)
     const usernameInput = document.getElementById('username');
