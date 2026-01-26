@@ -1284,7 +1284,29 @@ if (!function_exists('update_post')) {
     function update_post($id, $data) {
         try {
             $pdo = get_db_connection();
-            $data['id'] = $id;
+            
+            // Prepare data array with proper null handling
+            $update_data = [
+                'id' => (int)$id,
+                'post_title' => trim((string)($data['post_title'] ?? '')),
+                'post_code' => trim((string)($data['post_code'] ?? '')),
+                'department' => trim((string)($data['department'] ?? '')),
+                'employee_type' => trim((string)($data['employee_type'] ?? '')),
+                'location' => trim((string)($data['location'] ?? '')),
+                'description' => !empty($data['description']) ? trim((string)$data['description']) : null,
+                'requirements' => !empty($data['requirements']) ? trim((string)$data['requirements']) : null,
+                'responsibilities' => !empty($data['responsibilities']) ? trim((string)$data['responsibilities']) : null,
+                'required_count' => (int)($data['required_count'] ?? 1),
+                'priority' => trim((string)($data['priority'] ?? 'Medium')),
+                'status' => trim((string)($data['status'] ?? 'Active')),
+                'shift_type' => trim((string)($data['shift_type'] ?? 'Day')),
+                'work_hours' => !empty($data['work_hours']) ? trim((string)$data['work_hours']) : null,
+                'salary_range' => !empty($data['salary_range']) ? trim((string)$data['salary_range']) : null,
+                'benefits' => !empty($data['benefits']) ? trim((string)$data['benefits']) : null,
+                'reporting_to' => !empty($data['reporting_to']) ? trim((string)$data['reporting_to']) : null,
+                'expires_at' => !empty($data['expires_at']) ? trim((string)$data['expires_at']) : null
+            ];
+            
             $sql = "UPDATE posts SET 
                     post_title = :post_title,
                     post_code = :post_code,
@@ -1307,9 +1329,19 @@ if (!function_exists('update_post')) {
                     WHERE id = :id";
             
             $stmt = $pdo->prepare($sql);
-            return $stmt->execute($data);
+            $result = $stmt->execute($update_data);
+            
+            if ($result) {
+                error_log("update_post: Post ID {$id} updated successfully");
+                return true;
+            } else {
+                error_log("update_post: Failed to update post ID {$id}");
+                return false;
+            }
         } catch (PDOException $e) {
             error_log("Database error in update_post: " . $e->getMessage());
+            error_log("update_post: SQL - " . $sql);
+            error_log("update_post: Data - " . print_r($update_data, true));
             return false;
         }
     }
@@ -5714,6 +5746,9 @@ if (!function_exists('create_event')) {
                 return false;
             }
             
+            // Get database connection
+            $pdo = get_db_connection();
+            
             // Prepare SQL with all fields from events table
             $sql = "INSERT INTO events (
                 title, 
@@ -5746,11 +5781,11 @@ if (!function_exists('create_event')) {
                 !empty($data['notes']) ? trim((string)$data['notes']) : null
             ];
             
-            // Execute query
-            $stmt = execute_query($sql, $params);
+            // Prepare and execute query using the same connection
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute($params);
             
-            // Get the inserted event ID
-            $pdo = get_db_connection();
+            // Get the inserted event ID from the same connection
             $event_id = (int)$pdo->lastInsertId();
             
             if ($event_id > 0) {
@@ -5758,9 +5793,16 @@ if (!function_exists('create_event')) {
                 return $event_id;
             }
             
+            error_log('create_event: Failed to get event ID after insert');
+            return false;
+        } catch (PDOException $e) {
+            error_log("create_event: PDO Exception - " . $e->getMessage());
+            error_log("create_event: SQL - " . $sql);
+            error_log("create_event: Params - " . print_r($params, true));
             return false;
         } catch (Exception $e) {
             error_log("create_event: Exception - " . $e->getMessage());
+            error_log("create_event: Stack trace - " . $e->getTraceAsString());
             return false;
         }
     }

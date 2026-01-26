@@ -107,7 +107,6 @@ if ($userRole === 'hr_admin') {
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400,0,0&family=Google+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&family=Open+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="<?php echo asset_url('css/style.css'); ?>" rel="stylesheet">
     <link href="<?php echo asset_url('css/font-override.css'); ?>" rel="stylesheet">
-    <link href="<?php echo asset_url('css/header-fixed.css'); ?>" rel="stylesheet">
     <link href="<?php echo asset_url('css/utilities.css'); ?>" rel="stylesheet">
     <link href="<?php echo asset_url('css/notifications.css'); ?>" rel="stylesheet">
     <link href="<?php echo asset_url('css/logout-animation.css'); ?>" rel="stylesheet">
@@ -179,7 +178,12 @@ if ($userRole === 'hr_admin') {
                     include $pagesPath . 'add_post.php';
                     break;
                 case 'edit_post':
-                    include $pagesPath . 'edit_post.php';
+                    $editPostFile = $pagesPath . 'edit_post.php';
+                    if (file_exists($editPostFile)) {
+                        include $editPostFile;
+                    } else {
+                        echo '<div class="alert alert-danger">Edit post page is not available. Please contact the administrator.</div>';
+                    }
                     break;
                 case 'post_assignments':
                     include $pagesPath . 'post_assignments.php';

@@ -27,7 +27,7 @@ $posts = get_posts($filters);
                 <div class="hrdash-stat__content">
                     <div class="hrdash-stat__value"><?php echo number_format($post_stats['total_posts']); ?></div>
                     <div class="hrdash-stat__trend hrdash-stat__trend--positive">
-                        <i class="fas fa-arrow-up"></i>
+                        <i class="fas fa-arrow-up" aria-hidden="true"></i>
                         <span>5%</span>
                     </div>
                 </div>
@@ -43,7 +43,7 @@ $posts = get_posts($filters);
                 <div class="hrdash-stat__content">
                     <div class="hrdash-stat__value"><?php echo number_format($post_stats['total_required']); ?></div>
                     <div class="hrdash-stat__trend hrdash-stat__trend--positive">
-                        <i class="fas fa-arrow-up"></i>
+                        <i class="fas fa-arrow-up" aria-hidden="true"></i>
                         <span><?php echo $post_stats['total_filled']; ?> filled</span>
                     </div>
                 </div>
@@ -59,7 +59,7 @@ $posts = get_posts($filters);
                 <div class="hrdash-stat__content">
                     <div class="hrdash-stat__value"><?php echo number_format($post_stats['total_vacant']); ?></div>
                     <div class="hrdash-stat__trend hrdash-stat__trend--negative">
-                        <i class="fas fa-arrow-down"></i>
+                        <i class="fas fa-arrow-down" aria-hidden="true"></i>
                         <span>2%</span>
                     </div>
                 </div>
@@ -75,7 +75,7 @@ $posts = get_posts($filters);
                 <div class="hrdash-stat__content">
                     <div class="hrdash-stat__value"><?php echo number_format($post_stats['urgent_posts']); ?></div>
                     <div class="hrdash-stat__trend hrdash-stat__trend--negative">
-                        <i class="fas fa-arrow-down"></i>
+                        <i class="fas fa-arrow-down" aria-hidden="true"></i>
                         <span>3%</span>
                     </div>
                 </div>
@@ -91,7 +91,7 @@ $posts = get_posts($filters);
                 <div class="col-md-3">
                     <label class="form-label">Search Posts</label>
                     <div class="input-group">
-                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        <span class="input-group-text"><i class="fas fa-search" aria-hidden="true"></i></span>
                         <input type="text" 
                                id="searchInput" 
                                class="form-control"
@@ -140,8 +140,8 @@ $posts = get_posts($filters);
                     </select>
                 </div>
                 <div class="col-auto">
-                    <button class="btn btn-outline-modern" onclick="resetFilters()" title="Clear Filters">
-                        <i class="fas fa-times"></i>
+                    <button class="btn btn-outline-modern" onclick="resetFilters()" title="Clear Filters" aria-label="Clear Filters">
+                        <i class="fas fa-times" aria-hidden="true"></i>
                     </button>
                 </div>
             </div>
@@ -157,14 +157,14 @@ $posts = get_posts($filters);
                     <small class="card-subtitle">Viewing <?php echo count($posts); ?> posts</small>
                 </div>
                 <div class="d-flex gap-2">
-                    <button class="btn btn-outline-modern" onclick="exportToCSV()" title="Export post list">
-                        <i class="fas fa-download me-2"></i>Export
+                    <button class="btn btn-outline-modern" onclick="exportToCSV()" title="Export post list" aria-label="Export post list">
+                        <i class="fas fa-download me-2" aria-hidden="true"></i>Export
                     </button>
-                    <a href="?page=post_assignments" class="btn btn-outline-modern" title="View post assignments">
-                        <i class="fas fa-users-cog me-2"></i>Assignments
+                    <a href="?page=post_assignments" class="btn btn-outline-modern" title="View post assignments" aria-label="View post assignments">
+                        <i class="fas fa-users-cog me-2" aria-hidden="true"></i>Assignments
                     </a>
                     <a href="?page=add_post" class="btn btn-primary-modern">
-                        <span class="hr-icon hr-icon-plus me-2"></span>Add Post
+                        <i class="fas fa-plus me-2" aria-hidden="true"></i>Add Post
                     </a>
                 </div>
             </div>
@@ -177,31 +177,31 @@ $posts = get_posts($filters);
                     </th>
                     <th class="sortable" data-sort="post_details">
                         Post Details
-                        <i class="fas fa-sort"></i>
+                        <i class="fas fa-sort" aria-hidden="true"></i>
                     </th>
                     <th class="sortable" data-sort="department">
                         Department
-                        <i class="fas fa-sort"></i>
+                        <i class="fas fa-sort" aria-hidden="true"></i>
                     </th>
                     <th class="sortable" data-sort="employee_type">
                         Employee Type
-                        <i class="fas fa-sort"></i>
+                        <i class="fas fa-sort" aria-hidden="true"></i>
                     </th>
                     <th class="sortable" data-sort="location">
                         Location
-                        <i class="fas fa-sort"></i>
+                        <i class="fas fa-sort" aria-hidden="true"></i>
                     </th>
                     <th class="sortable" data-sort="positions">
                         Positions
-                        <i class="fas fa-sort"></i>
+                        <i class="fas fa-sort" aria-hidden="true"></i>
                     </th>
                     <th class="sortable" data-sort="priority">
                         Priority
-                        <i class="fas fa-sort"></i>
+                        <i class="fas fa-sort" aria-hidden="true"></i>
                     </th>
                     <th class="sortable" data-sort="status">
                         Status
-                        <i class="fas fa-sort"></i>
+                        <i class="fas fa-sort" aria-hidden="true"></i>
                     </th>
                     <th>Actions</th>
                 </tr>
@@ -211,7 +211,7 @@ $posts = get_posts($filters);
                     <tr>
                         <td colspan="9" class="text-center py-4">
                             <div class="text-muted">
-                                <i class="fas fa-inbox fa-2x mb-3"></i>
+                                <i class="fas fa-inbox fa-2x mb-3" aria-hidden="true"></i>
                                 <p>No posts found. <a href="?page=add_post">Create your first post</a></p>
                             </div>
                         </td>
@@ -243,7 +243,7 @@ $posts = get_posts($filters);
                             </td>
                             <td>
                                 <div class="location-info">
-                                    <i class="fas fa-map-marker-alt me-1"></i>
+                                    <i class="fas fa-map-marker-alt me-1" aria-hidden="true"></i>
                                     <?php echo htmlspecialchars($post['location']); ?>
                                 </div>
                             </td>
@@ -280,11 +280,11 @@ $posts = get_posts($filters);
                             </td>
                             <td>
                                 <div class="post-actions">
-                                    <a href="?page=edit_post&id=<?php echo $post['id']; ?>" class="btn btn-sm btn-outline-primary" title="Edit Post">
-                                        <span class="hr-icon hr-icon-edit"></span>
+                                    <a href="?page=edit_post&id=<?php echo $post['id']; ?>" class="btn btn-sm btn-outline-primary" title="Edit Post" aria-label="Edit Post">
+                                        <i class="fas fa-edit" aria-hidden="true"></i>
                                     </a>
-                                    <a href="?page=post_assignments&post_id=<?php echo $post['id']; ?>" class="btn btn-sm btn-outline-info" title="View Assignments">
-                                        <span class="hr-icon hr-icon-view"></span>
+                                    <a href="?page=post_assignments&post_id=<?php echo $post['id']; ?>" class="btn btn-sm btn-outline-info" title="View Assignments" aria-label="View Assignments">
+                                        <i class="fas fa-eye" aria-hidden="true"></i>
                                     </a>
                                 </div>
                             </td>
@@ -505,7 +505,7 @@ body.portal-hr-admin .posts-modern {
 .stat-number {
     font-size: 2.25rem;
     font-weight: 700;
-    color: #000000;
+    color: #1e293b;
     margin: 0;
     line-height: 1;
     letter-spacing: -0.02em;
@@ -886,8 +886,18 @@ body.portal-hr-admin .posts-modern {
     background: #ffffff;
 }
 
-.posts-table .post-actions .btn i {
-    font-size: 0.875rem;
+.posts-table .post-actions .btn i,
+.posts-table .post-actions .btn .fas,
+.posts-table .post-actions .btn .far,
+.posts-table .post-actions .btn .fal {
+    font-family: 'Font Awesome 6 Free', 'Font Awesome 5 Free' !important;
+    font-weight: 900 !important;
+    font-style: normal !important;
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    font-size: 0.875rem !important;
+    line-height: 1 !important;
 }
 
 .posts-table .post-actions .btn:hover {
@@ -919,6 +929,133 @@ body.portal-hr-admin .posts-modern {
     background: #06b6d4;
     color: #ffffff;
     border-color: #06b6d4;
+}
+
+/* Ensure all Font Awesome icons are visible in posts page */
+.posts-modern i[class*="fa-"],
+.posts-modern [class*="fa-"],
+.hrdash i[class*="fa-"],
+.hrdash [class*="fa-"] {
+    font-family: 'Font Awesome 6 Free', 'Font Awesome 5 Free', 'Font Awesome 6 Brands', 'Font Awesome 5 Brands' !important;
+    font-style: normal !important;
+    font-variant: normal !important;
+    text-rendering: auto !important;
+    -webkit-font-smoothing: antialiased !important;
+    -moz-osx-font-smoothing: grayscale !important;
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+.posts-modern i.fas,
+.posts-modern [class*="fa-"].fas,
+.hrdash i.fas,
+.hrdash [class*="fa-"].fas {
+    font-weight: 900 !important;
+}
+
+.posts-modern i.far,
+.posts-modern [class*="fa-"].far,
+.hrdash i.far,
+.hrdash [class*="fa-"].far {
+    font-weight: 400 !important;
+}
+
+.posts-modern i.fal,
+.posts-modern [class*="fa-"].fal,
+.hrdash i.fal,
+.hrdash [class*="fa-"].fal {
+    font-weight: 300 !important;
+}
+
+.posts-modern i.fab,
+.posts-modern [class*="fa-"].fab,
+.hrdash i.fab,
+.hrdash [class*="fa-"].fab {
+    font-family: 'Font Awesome 6 Brands', 'Font Awesome 5 Brands' !important;
+    font-weight: 400 !important;
+}
+
+/* Button icon visibility */
+.btn-primary-modern i,
+.btn-outline-modern i,
+.btn-outline-primary i,
+.btn-outline-info i {
+    font-family: 'Font Awesome 6 Free', 'Font Awesome 5 Free' !important;
+    font-weight: 900 !important;
+    font-style: normal !important;
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* Ensure icons in action buttons are properly sized and visible */
+.posts-table .post-actions .btn i {
+    width: auto !important;
+    height: auto !important;
+    font-size: 0.875rem !important;
+    line-height: 1 !important;
+    color: inherit !important;
+}
+
+/* Stat card trend icons */
+.hrdash-stat__trend i,
+.hrdash-stat__trend .fas,
+.hrdash-stat__trend .far,
+.hrdash-stat__trend .fal {
+    font-family: 'Font Awesome 6 Free', 'Font Awesome 5 Free' !important;
+    font-weight: 900 !important;
+    font-style: normal !important;
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* Input group icons */
+.input-group-text i,
+.input-group-text .fas,
+.input-group-text .far,
+.input-group-text .fal {
+    font-family: 'Font Awesome 6 Free', 'Font Awesome 5 Free' !important;
+    font-weight: 900 !important;
+    font-style: normal !important;
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    color: #64748b !important;
+}
+
+/* Sort icons in table headers */
+.sortable i,
+.sortable .fas,
+.sortable .far,
+.sortable .fal {
+    font-family: 'Font Awesome 6 Free', 'Font Awesome 5 Free' !important;
+    font-weight: 400 !important;
+    font-style: normal !important;
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 0.6 !important;
+    color: #94a3b8 !important;
+    margin-left: 0.25rem;
+}
+
+.sortable:hover i,
+.sortable:hover .fas {
+    opacity: 1 !important;
+    color: #1fb2d5 !important;
+}
+
+/* Location icons */
+.location-info i,
+.location-info .fas {
+    font-family: 'Font Awesome 6 Free', 'Font Awesome 5 Free' !important;
+    font-weight: 900 !important;
+    font-style: normal !important;
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    color: #64748b !important;
 }
 
 /* Pagination */
