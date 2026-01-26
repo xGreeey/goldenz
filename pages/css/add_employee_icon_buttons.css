@@ -39,17 +39,17 @@
 
 /* Primary variant for Add buttons */
 .btn-icon-action-primary {
-    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1e293b 100%);
-    border-color: #1e40af;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+    border-color: #1e293b;
     color: #ffffff;
 }
 
 .btn-icon-action-primary:hover {
-    background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 50%, #0f172a 100%);
-    border-color: #1e3a8a;
+    background: linear-gradient(135deg, #1e293b 0%, #334155 50%, #475569 100%);
+    border-color: #334155;
     color: #ffffff;
     transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(30, 58, 138, 0.2);
+    box-shadow: 0 2px 4px rgba(15, 23, 42, 0.2);
 }
 
 .btn-icon-action-primary:active {

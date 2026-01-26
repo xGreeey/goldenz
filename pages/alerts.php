@@ -648,7 +648,7 @@ body.portal-hr-admin .alerts-modern {
 
 /* Modern Buttons */
 .btn-primary-modern {
-    background: linear-gradient(135deg, #1fb2d5 0%, #0ea5e9 100%);
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
     color: #ffffff;
     border: none;
     padding: 0.5rem 1rem;
@@ -656,7 +656,7 @@ body.portal-hr-admin .alerts-modern {
     font-weight: 600;
     font-size: 0.875rem;
     transition: all 0.2s ease;
-    box-shadow: 0 2px 8px rgba(31, 178, 213, 0.25);
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.25);
     text-decoration: none;
     display: inline-flex;
     align-items: center;
@@ -664,8 +664,8 @@ body.portal-hr-admin .alerts-modern {
 
 .btn-primary-modern:hover {
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(31, 178, 213, 0.35);
-    background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.35);
+    background: linear-gradient(135deg, #1e293b 0%, #334155 50%, #475569 100%);
     color: #ffffff;
 }
 
@@ -747,7 +747,7 @@ body.portal-hr-admin .alerts-modern {
 .stat-number {
     font-size: 2rem;
     font-weight: 700;
-    color: #1e293b;
+    color: #000000;
     margin: 0;
     line-height: 1;
     letter-spacing: -0.02em;
@@ -1051,17 +1051,17 @@ body.portal-hr-admin .alerts-modern {
 }
 
 .btn-action-modern.btn-primary-modern {
-    background: linear-gradient(135deg, #1fb2d5 0%, #0ea5e9 100%);
-    border-color: #1fb2d5;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+    border-color: #1e293b;
     color: #ffffff;
-    box-shadow: 0 2px 4px rgba(31, 178, 213, 0.2);
+    box-shadow: 0 2px 4px rgba(15, 23, 42, 0.2);
 }
 
 .btn-action-modern.btn-primary-modern:hover {
-    background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
-    border-color: #0ea5e9;
+    background: linear-gradient(135deg, #1e293b 0%, #334155 50%, #475569 100%);
+    border-color: #334155;
     transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(31, 178, 213, 0.3);
+    box-shadow: 0 4px 8px rgba(15, 23, 42, 0.3);
 }
 
 /* Filter Section */

@@ -658,7 +658,7 @@ $role_config = config('roles.roles', []);
 }
 
 #createUserModal .modal-header {
-    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1e293b 100%);
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
     color: white;
     border-bottom: none;
     padding: 0.75rem 1rem;
@@ -771,7 +771,7 @@ $role_config = config('roles.roles', []);
 
 /* Make Create User button more visible */
 .btn-primary-modern {
-    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1e293b 100%) !important;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%) !important;
     color: #ffffff !important;
     border: none !important;
     padding: 0.625rem 1.25rem !important;
@@ -779,14 +779,14 @@ $role_config = config('roles.roles', []);
     font-weight: 600 !important;
     font-size: 0.875rem !important;
     transition: all 0.2s ease !important;
-    box-shadow: 0 2px 8px rgba(30, 58, 138, 0.3) !important;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.3) !important;
     cursor: pointer !important;
 }
 
 .btn-primary-modern:hover {
-    background: linear-gradient(135deg, #1e40af 0%, #1e293b 50%, #1e3a8a 100%) !important;
+    background: linear-gradient(135deg, #1e293b 0%, #334155 50%, #475569 100%) !important;
     transform: translateY(-1px) !important;
-    box-shadow: 0 4px 16px rgba(30, 58, 138, 0.4) !important;
+    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.4) !important;
 }
 
 .btn-primary-modern:focus,
@@ -1280,7 +1280,7 @@ html[data-theme="dark"] .alert-info {
 }
 
 #userDetailsModal .modal-header {
-    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1e293b 100%);
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
     color: white;
     border-bottom: none;
     padding: 1rem 1.5rem;
@@ -1369,7 +1369,7 @@ html[data-theme="dark"] #userDetailsModal .modal-content {
 }
 
 html[data-theme="dark"] #userDetailsModal .modal-header {
-    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1e293b 100%) !important;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%) !important;
     border-bottom-color: var(--interface-border) !important;
 }
 

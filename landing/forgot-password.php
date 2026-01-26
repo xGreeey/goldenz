@@ -360,10 +360,38 @@ ob_end_flush();
                 
                 if (submitBtn) {
                     submitBtn.disabled = true;
-                    if (btnText) btnText.textContent = 'Sending...';
-                    if (spinner) spinner.classList.remove('d-none');
+                    // Hide text and show centered spinner
+                    if (btnText) btnText.style.display = 'none';
+                    if (spinner) {
+                        spinner.classList.remove('d-none');
+                        spinner.style.display = 'inline-block';
+                    }
                 }
             });
+        }
+        
+        // Auto-redirect to login page after 5 seconds if email was sent successfully
+        const successAlert = document.querySelector('.alert-success');
+        if (successAlert) {
+            let countdown = 5;
+            const redirectMessage = document.createElement('div');
+            redirectMessage.className = 'text-center mt-3';
+            redirectMessage.style.color = '#2563eb';
+            redirectMessage.style.fontSize = '14px';
+            redirectMessage.innerHTML = `<i class="fas fa-info-circle me-1"></i>Redirecting to login page in <span id="countdown">${countdown}</span> seconds...`;
+            successAlert.parentNode.insertBefore(redirectMessage, successAlert.nextSibling);
+            
+            const countdownElement = document.getElementById('countdown');
+            const countdownInterval = setInterval(function() {
+                countdown--;
+                if (countdownElement) {
+                    countdownElement.textContent = countdown;
+                }
+                if (countdown <= 0) {
+                    clearInterval(countdownInterval);
+                    window.location.href = 'index.php';
+                }
+            }, 1000);
         }
     });
     </script>
