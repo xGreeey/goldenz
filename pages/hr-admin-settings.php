@@ -736,10 +736,10 @@ document.addEventListener('DOMContentLoaded', function() {
 }
 
 .hr-admin-settings .settings-nav .list-group-item.active {
-    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1e293b 100%);
     color: #fff;
     border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.2);
+    box-shadow: 0 2px 8px rgba(30, 58, 138, 0.2);
 }
 
 .hr-admin-settings .settings-nav .list-group-item.active i {
@@ -862,7 +862,7 @@ document.addEventListener('DOMContentLoaded', function() {
 /* Make Change Password button highly visible */
 .hr-admin-settings #changePasswordBtn,
 .hr-admin-settings .btn-primary-modern {
-    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%) !important;
+    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1e293b 100%) !important;
     color: #ffffff !important;
     border: none !important;
     padding: 0.75rem 1.5rem !important;
@@ -870,7 +870,7 @@ document.addEventListener('DOMContentLoaded', function() {
     font-weight: 600 !important;
     font-size: 0.9375rem !important;
     transition: all 0.2s ease !important;
-    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.35) !important;
+    box-shadow: 0 4px 12px rgba(30, 58, 138, 0.35) !important;
     cursor: pointer !important;
     min-height: 44px !important;
     display: inline-flex !important;
@@ -880,9 +880,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
 .hr-admin-settings #changePasswordBtn:hover,
 .hr-admin-settings .btn-primary-modern:hover {
-    background: linear-gradient(135deg, #1e293b 0%, #334155 50%, #475569 100%) !important;
+    background: linear-gradient(135deg, #1e40af 0%, #1e293b 50%, #1e3a8a 100%) !important;
     transform: translateY(-2px) !important;
-    box-shadow: 0 6px 20px rgba(15, 23, 42, 0.45) !important;
+    box-shadow: 0 6px 20px rgba(30, 58, 138, 0.45) !important;
 }
 
 .hr-admin-settings #changePasswordBtn:active,
