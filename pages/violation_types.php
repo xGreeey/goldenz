@@ -936,9 +936,9 @@ foreach ($violation_history as $history) {
 }
 
 .hrdash-segment__btn.active {
-    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1e293b 100%);
     color: #ffffff;
-    box-shadow: 0 2px 4px rgba(15, 23, 42, 0.2);
+    box-shadow: 0 2px 4px rgba(30, 58, 138, 0.2);
 }
 
 /* Add Violation Button - Using btn-primary-modern class (matching Add Employee button) */
@@ -2127,7 +2127,7 @@ document.addEventListener('DOMContentLoaded', function() {
 }
 
 .add-violation-modal-header {
-    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1e293b 100%);
     color: #ffffff;
     border-bottom: none;
     padding: 1rem 1.5rem;

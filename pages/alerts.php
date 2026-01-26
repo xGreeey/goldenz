@@ -747,7 +747,7 @@ body.portal-hr-admin .alerts-modern {
 .stat-number {
     font-size: 2rem;
     font-weight: 700;
-    color: #000000;
+    color: #1e293b;
     margin: 0;
     line-height: 1;
     letter-spacing: -0.02em;

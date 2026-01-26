@@ -512,7 +512,7 @@ if (!empty($display_first_name) || !empty($display_last_name)) {
 }
 
 .profile-page .btn-primary-modern {
-    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1e293b 100%);
     color: #ffffff;
     border: none;
     padding: 0.75rem 1.5rem;
@@ -520,13 +520,13 @@ if (!empty($display_first_name) || !empty($display_last_name)) {
     font-weight: 600;
     font-size: 0.9375rem;
     transition: all 0.2s ease;
-    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.35);
+    box-shadow: 0 4px 12px rgba(30, 58, 138, 0.35);
 }
 
 .profile-page .btn-primary-modern:hover {
-    background: linear-gradient(135deg, #1e293b 0%, #334155 50%, #475569 100%);
+    background: linear-gradient(135deg, #1e40af 0%, #1e293b 50%, #1e3a8a 100%);
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(15, 23, 42, 0.45);
+    box-shadow: 0 6px 20px rgba(30, 58, 138, 0.45);
 }
 
 .profile-page .btn-outline-modern {
