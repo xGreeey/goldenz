@@ -282,8 +282,16 @@ html[data-theme="dark"] .sidebar .nav-submenu.expanded .nav-link:hover {
 
 html[data-theme="dark"] .sidebar .nav-submenu .nav-link.active,
 html[data-theme="dark"] .sidebar .nav-submenu.expanded .nav-link.active {
-    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%) !important;
+    background: linear-gradient(135deg, rgba(31, 178, 213, 0.2) 0%, rgba(14, 165, 233, 0.15) 50%, rgba(2, 132, 199, 0.1) 100%) !important;
+    background-image: 
+        linear-gradient(135deg, rgba(31, 178, 213, 0.2) 0%, rgba(14, 165, 233, 0.15) 50%, rgba(2, 132, 199, 0.1) 100%),
+        radial-gradient(circle at 50% 50%, rgba(31, 178, 213, 0.1) 0%, transparent 70%) !important;
     color: #ffffff !important;
+    border: 1px solid rgba(31, 178, 213, 0.3) !important;
+    box-shadow: 
+        0 2px 8px rgba(31, 178, 213, 0.2),
+        0 0 0 1px rgba(31, 178, 213, 0.1) inset,
+        0 0 20px rgba(31, 178, 213, 0.15) !important;
 }
 
 html[data-theme="dark"] .nav-toggle {
@@ -776,7 +784,7 @@ body {
     display: none !important;
 }
 
-/* Sidebar Navigation Links - Enhanced Modern Styling */
+/* Sidebar Navigation Links - Pill-Style Active Navigation (Microsoft Teams Style) */
 .sidebar .nav-link {
     display: flex !important;
     align-items: center;
@@ -784,7 +792,7 @@ body {
     color: var(--sidebar-text) !important;
     text-decoration: none;
     transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
-    border-radius: 999px;
+    border-radius: 9999px !important; /* True pill shape */
     margin: 0.25rem 0 !important;
     font-weight: 500;
     font-size: 0.9375rem !important;
@@ -796,6 +804,9 @@ body {
     line-height: 1.5;
     background: transparent !important;
     z-index: 1;
+    /* Prevent layout shifts - fixed dimensions */
+    box-sizing: border-box;
+    width: 100%;
 }
 
 .sidebar .nav-link > * {
@@ -807,30 +818,49 @@ body {
     display: none !important;
 }
 
+/* Hover State - Lighter than active, subtle background */
 .sidebar .nav-link:hover {
-    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%) !important;
+    background: rgba(255, 255, 255, 0.08) !important;
     color: #ffffff !important;
     border: 1px solid transparent !important;
     position: relative !important;
     transform: none;
     padding-left: 1rem !important;
-    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.2) !important;
+    padding-right: 1rem !important;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1) !important;
 }
 
 .sidebar .nav-link:hover::after {
     display: none !important;
 }
 
+/* Focus-Visible State - Keyboard Navigation Accessibility */
+.sidebar .nav-link:focus-visible {
+    outline: 2px solid rgba(31, 178, 213, 0.6) !important;
+    outline-offset: 2px !important;
+    background: rgba(255, 255, 255, 0.06) !important;
+    color: #ffffff !important;
+    border-radius: 9999px !important;
+}
+
+/* Active State - Pill Highlight with Gradient & Glow */
 .sidebar .nav-link.active {
-    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%) !important;
+    background: linear-gradient(135deg, rgba(31, 178, 213, 0.2) 0%, rgba(14, 165, 233, 0.15) 50%, rgba(2, 132, 199, 0.1) 100%) !important;
     color: #ffffff !important;
     font-weight: 600 !important;
-    border-left-color: transparent !important;
-    border-radius: 999px !important;
-    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.25) !important;
+    border: 1px solid rgba(31, 178, 213, 0.3) !important;
+    border-radius: 9999px !important;
+    box-shadow: 
+        0 2px 8px rgba(31, 178, 213, 0.2),
+        0 0 0 1px rgba(31, 178, 213, 0.1) inset,
+        0 0 20px rgba(31, 178, 213, 0.15) !important;
     position: relative;
     padding-left: 1rem !important;
     padding-right: 1rem !important;
+    /* Subtle glow effect */
+    background-image: 
+        linear-gradient(135deg, rgba(31, 178, 213, 0.2) 0%, rgba(14, 165, 233, 0.15) 50%, rgba(2, 132, 199, 0.1) 100%),
+        radial-gradient(circle at 50% 50%, rgba(31, 178, 213, 0.1) 0%, transparent 70%) !important;
 }
 
 .sidebar .nav-link.active::before {
@@ -838,9 +868,16 @@ body {
 }
 
 .sidebar .nav-link.active::after {
-    /* Remove the yellow active indicator dot */
     content: none !important;
     display: none !important;
+}
+
+/* Active state icon enhancement */
+.sidebar .nav-link.active i {
+    opacity: 1 !important;
+    transform: scale(1.05);
+    color: rgba(31, 178, 213, 1) !important;
+    filter: drop-shadow(0 0 4px rgba(31, 178, 213, 0.4));
 }
 
 .sidebar .nav-link i {
@@ -849,13 +886,41 @@ body {
     text-align: center;
     font-size: 1rem;
     opacity: 0.8;
-    transition: opacity 0.25s ease, transform 0.25s ease;
+    transition: opacity 0.25s ease, transform 0.25s ease, color 0.25s ease, filter 0.25s ease;
+    flex-shrink: 0;
 }
 
-.sidebar .nav-link:hover i,
-.sidebar .nav-link.active i {
-    opacity: 1 !important;
-    transform: scale(1.05);
+.sidebar .nav-link:hover i {
+    opacity: 0.95 !important;
+    transform: scale(1.02);
+}
+
+/* Dark Theme Support for Main Nav Links */
+html[data-theme="dark"] .sidebar .nav-link {
+    color: var(--sidebar-text) !important;
+}
+
+html[data-theme="dark"] .sidebar .nav-link:hover {
+    background: rgba(255, 255, 255, 0.08) !important;
+    color: #ffffff !important;
+}
+
+html[data-theme="dark"] .sidebar .nav-link:focus-visible {
+    background: rgba(255, 255, 255, 0.06) !important;
+    outline-color: rgba(31, 178, 213, 0.6) !important;
+}
+
+html[data-theme="dark"] .sidebar .nav-link.active {
+    background: linear-gradient(135deg, rgba(31, 178, 213, 0.2) 0%, rgba(14, 165, 233, 0.15) 50%, rgba(2, 132, 199, 0.1) 100%) !important;
+    background-image: 
+        linear-gradient(135deg, rgba(31, 178, 213, 0.2) 0%, rgba(14, 165, 233, 0.15) 50%, rgba(2, 132, 199, 0.1) 100%),
+        radial-gradient(circle at 50% 50%, rgba(31, 178, 213, 0.1) 0%, transparent 70%) !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(31, 178, 213, 0.3) !important;
+    box-shadow: 
+        0 2px 8px rgba(31, 178, 213, 0.2),
+        0 0 0 1px rgba(31, 178, 213, 0.1) inset,
+        0 0 20px rgba(31, 178, 213, 0.15) !important;
 }
 
 /* Enhanced Navigation Sections */
@@ -972,16 +1037,21 @@ body {
     margin: 0.125rem 0;
 }
 
+/* Submenu Links - Pill-Style Active Navigation */
 .sidebar .nav-submenu .nav-link {
     padding: 0.75rem 1rem 0.75rem 2.5rem !important;
     margin: 0.125rem 0;
     font-size: 0.875rem !important;
-    color: var(--sidebar-text) !important; /* light text on dark background */
+    color: var(--sidebar-text) !important;
     min-height: 40px;
     border: 1px solid transparent !important;
-    border-radius: 999px;
+    border-radius: 9999px !important; /* True pill shape */
     position: relative;
     z-index: 1;
+    /* Prevent layout shifts */
+    box-sizing: border-box;
+    width: 100%;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
 .sidebar .nav-submenu .nav-link > * {
@@ -989,19 +1059,16 @@ body {
     z-index: 2;
 }
 
+/* Submenu Hover State - Lighter than active */
 .sidebar .nav-submenu .nav-link:hover {
-    background: var(--sidebar-hover) !important;
+    background: rgba(255, 255, 255, 0.08) !important;
     color: #ffffff !important;
     border: 1px solid transparent !important;
     position: relative !important;
     transform: none;
     padding-left: 2.5rem !important;
-}
-
-.sidebar .nav-submenu .nav-link:hover {
-    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%) !important;
-    color: #ffffff !important;
-    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.2) !important;
+    padding-right: 1rem !important;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1) !important;
 }
 
 .sidebar .nav-submenu .nav-link:hover::after {
@@ -1010,21 +1077,52 @@ body {
     z-index: 0;
 }
 
+/* Submenu Focus-Visible State */
+.sidebar .nav-submenu .nav-link:focus-visible {
+    outline: 2px solid rgba(31, 178, 213, 0.6) !important;
+    outline-offset: 2px !important;
+    background: rgba(255, 255, 255, 0.06) !important;
+    color: #ffffff !important;
+    border-radius: 9999px !important;
+}
+
+/* Submenu Active State - Pill Highlight */
 .sidebar .nav-submenu .nav-link.active {
-    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%) !important;
+    background: linear-gradient(135deg, rgba(31, 178, 213, 0.2) 0%, rgba(14, 165, 233, 0.15) 50%, rgba(2, 132, 199, 0.1) 100%) !important;
     color: #ffffff !important;
     font-weight: 600 !important;
-    border-left-color: transparent !important;
-    border-radius: 999px !important;
-    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.25) !important;
+    border: 1px solid rgba(31, 178, 213, 0.3) !important;
+    border-radius: 9999px !important;
+    box-shadow: 
+        0 2px 8px rgba(31, 178, 213, 0.2),
+        0 0 0 1px rgba(31, 178, 213, 0.1) inset,
+        0 0 20px rgba(31, 178, 213, 0.15) !important;
     padding-left: 2.5rem !important;
     padding-right: 1rem !important;
+    background-image: 
+        linear-gradient(135deg, rgba(31, 178, 213, 0.2) 0%, rgba(14, 165, 233, 0.15) 50%, rgba(2, 132, 199, 0.1) 100%),
+        radial-gradient(circle at 50% 50%, rgba(31, 178, 213, 0.1) 0%, transparent 70%) !important;
 }
 
 .sidebar .nav-submenu .nav-link.active::after {
-    /* Remove the yellow active indicator dot (submenu) */
     content: none !important;
     display: none !important;
+}
+
+.sidebar .nav-submenu .nav-link.active i {
+    opacity: 1 !important;
+    transform: scale(1.05);
+    color: rgba(31, 178, 213, 1) !important;
+    filter: drop-shadow(0 0 4px rgba(31, 178, 213, 0.4));
+}
+
+.sidebar .nav-submenu .nav-link i {
+    transition: opacity 0.25s ease, transform 0.25s ease, color 0.25s ease, filter 0.25s ease;
+}
+
+.sidebar .nav-submenu .nav-link:hover i {
+    opacity: 0.95 !important;
+    transform: scale(1.02);
 }
 
 /* Dark theme support for sidebar submenu - placed after base rules to ensure override */
@@ -1047,8 +1145,16 @@ html[data-theme="dark"] .sidebar .nav-submenu.expanded .nav-link:hover {
 
 html[data-theme="dark"] .sidebar .nav-submenu .nav-link.active,
 html[data-theme="dark"] .sidebar .nav-submenu.expanded .nav-link.active {
-    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%) !important;
+    background: linear-gradient(135deg, rgba(31, 178, 213, 0.2) 0%, rgba(14, 165, 233, 0.15) 50%, rgba(2, 132, 199, 0.1) 100%) !important;
+    background-image: 
+        linear-gradient(135deg, rgba(31, 178, 213, 0.2) 0%, rgba(14, 165, 233, 0.15) 50%, rgba(2, 132, 199, 0.1) 100%),
+        radial-gradient(circle at 50% 50%, rgba(31, 178, 213, 0.1) 0%, transparent 70%) !important;
     color: #ffffff !important;
+    border: 1px solid rgba(31, 178, 213, 0.3) !important;
+    box-shadow: 
+        0 2px 8px rgba(31, 178, 213, 0.2),
+        0 0 0 1px rgba(31, 178, 213, 0.1) inset,
+        0 0 20px rgba(31, 178, 213, 0.15) !important;
 }
 
 /* Dark theme support for Employees Table */
