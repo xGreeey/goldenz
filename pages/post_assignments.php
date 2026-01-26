@@ -368,8 +368,7 @@ if (!empty($_SESSION['user_id']) && function_exists('get_user_by_id')) {
                         <div class="mb-3">
                             <div class="search-input-modern">
                                 <i class="fas fa-search search-icon"></i>
-                                <input type="text" id="employeeSearch" class="search-field" placeholder="Search employees..." 
-                                       onkeyup="filterEmployees(this.value)">
+                                <input type="text" id="employeeSearch" class="search-field" placeholder="Search employees...">
                             </div>
                         </div>
                         
@@ -1062,19 +1061,77 @@ function loadPostAssignments(postId) {
 
 function filterEmployees(searchTerm) {
     const employeeItems = document.querySelectorAll('.employee-item');
-    const term = searchTerm.toLowerCase();
+    const term = (searchTerm || '').toLowerCase().trim();
     
     employeeItems.forEach(item => {
-        const employeeName = item.querySelector('h6').textContent.toLowerCase();
-        const employeeNumber = item.querySelector('small').textContent.toLowerCase();
+        const employeeName = (item.querySelector('h6')?.textContent || '').toLowerCase();
+        const employeeNumber = (item.querySelector('small')?.textContent || '').toLowerCase();
         
-        if (employeeName.includes(term) || employeeNumber.includes(term)) {
+        if (term === '' || employeeName.includes(term) || employeeNumber.includes(term)) {
             item.classList.remove('hidden');
+            item.style.display = '';
         } else {
             item.classList.add('hidden');
+            item.style.display = 'none';
         }
     });
 }
+
+// Initialize search filter with proper event listener
+function initEmployeeSearch() {
+    const searchInput = document.getElementById('employeeSearch');
+    if (searchInput) {
+        // Remove any existing listeners by cloning
+        const newInput = searchInput.cloneNode(true);
+        searchInput.parentNode.replaceChild(newInput, searchInput);
+        
+        let searchTimeout;
+        
+        // Add input event listener with debounce
+        newInput.addEventListener('input', function(e) {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                filterEmployees(e.target.value);
+            }, 300);
+        });
+        
+        // Also trigger on Enter for immediate search
+        newInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                clearTimeout(searchTimeout);
+                filterEmployees(e.target.value);
+            }
+        });
+        
+        // Trigger initial filter if there's a value
+        if (newInput.value) {
+            filterEmployees(newInput.value);
+        }
+    }
+}
+
+// Initialize on page load
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initEmployeeSearch);
+} else {
+    initEmployeeSearch();
+}
+
+// Re-initialize when page content is loaded via AJAX
+document.addEventListener('pageContentLoaded', function(e) {
+    const page = e.detail?.page || new URLSearchParams(window.location.search).get('page');
+    if (page === 'post_assignments') {
+        setTimeout(initEmployeeSearch, 100);
+    }
+});
+
+// Also listen for the old event name (backwards compatibility)
+document.addEventListener('pageLoaded', function(e) {
+    const page = e.detail?.page || new URLSearchParams(window.location.search).get('page');
+    if (page === 'post_assignments') {
+        setTimeout(initEmployeeSearch, 100);
+    }
+});
 
 function assignEmployee(employeeId, postTitle) {
     if (confirm('Are you sure you want to assign this employee to the post?')) {

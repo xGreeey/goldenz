@@ -639,33 +639,77 @@ function uploadToFolder(employeeId, employeeName) {
 }
 
 // Search functionality
-document.addEventListener('DOMContentLoaded', function() {
+function initDocumentSearch() {
     const searchInput = document.getElementById('documentSearch');
     const tagFilter = document.getElementById('tagFilter');
     
+    function submitSearch() {
+        const search = searchInput ? searchInput.value.trim() : '';
+        const tag = tagFilter ? tagFilter.value : '';
+        const params = new URLSearchParams();
+        if (search) params.set('search', search);
+        if (tag) params.set('tag', tag);
+        window.location.href = '?page=documents' + (params.toString() ? '&' + params.toString() : '');
+    }
+    
     if (searchInput) {
-        searchInput.addEventListener('keypress', function(e) {
+        // Remove any existing listeners by cloning
+        const newInput = searchInput.cloneNode(true);
+        searchInput.parentNode.replaceChild(newInput, searchInput);
+        
+        let searchTimeout;
+        
+        // Add input event listener with debounce for live search
+        newInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                submitSearch();
+            }, 500);
+        });
+        
+        // Also trigger on Enter key for immediate search
+        newInput.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
-                const search = this.value.trim();
-                const tag = tagFilter ? tagFilter.value : '';
-                const params = new URLSearchParams();
-                if (search) params.set('search', search);
-                if (tag) params.set('tag', tag);
-                window.location.href = '?page=documents' + (params.toString() ? '&' + params.toString() : '');
+                clearTimeout(searchTimeout);
+                e.preventDefault();
+                submitSearch();
             }
         });
     }
     
     if (tagFilter) {
-        tagFilter.addEventListener('change', function() {
-            const search = searchInput ? searchInput.value.trim() : '';
-            const tag = this.value;
-            const params = new URLSearchParams();
-            if (search) params.set('search', search);
-            if (tag) params.set('tag', tag);
-            window.location.href = '?page=documents' + (params.toString() ? '&' + params.toString() : '');
+        // Remove any existing listeners by cloning
+        const newTagFilter = tagFilter.cloneNode(true);
+        tagFilter.parentNode.replaceChild(newTagFilter, tagFilter);
+        
+        newTagFilter.addEventListener('change', function() {
+            submitSearch();
         });
     }
+}
+
+// Initialize on page load
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initDocumentSearch);
+} else {
+    initDocumentSearch();
+}
+
+// Re-initialize when page content is loaded via AJAX
+document.addEventListener('pageContentLoaded', function(e) {
+    const page = e.detail?.page || new URLSearchParams(window.location.search).get('page');
+    if (page === 'documents') {
+        setTimeout(initDocumentSearch, 100);
+    }
+});
+
+// Also listen for the old event name (backwards compatibility)
+document.addEventListener('pageLoaded', function(e) {
+    const page = e.detail?.page || new URLSearchParams(window.location.search).get('page');
+    if (page === 'documents') {
+        setTimeout(initDocumentSearch, 100);
+    }
+});
     
     // Folder select all checkboxes
     document.querySelectorAll('.folder-select-all').forEach(checkbox => {
