@@ -394,7 +394,7 @@ body.portal-hr-admin .posts-modern {
 
 /* Buttons */
 .btn-primary-modern {
-    background: linear-gradient(135deg, #1fb2d5 0%, #0ea5e9 100%);
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
     color: #ffffff;
     border: none;
     padding: 0.5rem 1rem;
@@ -402,13 +402,13 @@ body.portal-hr-admin .posts-modern {
     font-weight: 600;
     font-size: 0.875rem;
     transition: all 0.2s ease;
-    box-shadow: 0 2px 8px rgba(31, 178, 213, 0.25);
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.25);
 }
 
 .btn-primary-modern:hover {
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(31, 178, 213, 0.35);
-    background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.35);
+    background: linear-gradient(135deg, #1e293b 0%, #334155 50%, #475569 100%);
 }
 
 .btn-outline-modern {
@@ -505,7 +505,7 @@ body.portal-hr-admin .posts-modern {
 .stat-number {
     font-size: 2.25rem;
     font-weight: 700;
-    color: #1e293b;
+    color: #000000;
     margin: 0;
     line-height: 1;
     letter-spacing: -0.02em;

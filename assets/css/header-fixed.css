@@ -1,0 +1,264 @@
+/* ============================================
+   FIXED HEADER LAYOUT - NO LAYOUT SHIFTS
+   Production-ready, responsive, cross-browser
+   ============================================ */
+
+/* Prevent scrollbar from causing layout shifts */
+:root {
+    --scrollbar-width: 0px;
+}
+
+html {
+    scrollbar-gutter: stable; /* Reserve space for scrollbar - prevents layout shift */
+}
+
+/* Calculate scrollbar width on load */
+body::before {
+    content: '';
+    position: fixed;
+    width: 100vw;
+    height: 0;
+    overflow-y: scroll;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+/* Global header stability rules - All headers must be fixed */
+.header,
+.hrdash-welcome,
+.page-header-modern,
+.hr-admin-topbar {
+    /* Prevent any dynamic size changes */
+    contain: layout style size !important;
+    will-change: auto !important;
+}
+
+/* Ensure all headers are fixed position globally */
+.header {
+    position: fixed !important;
+    top: 0 !important;
+    z-index: 1100 !important;
+}
+
+body.portal-hr-admin .hrdash-welcome,
+body.portal-hr-admin .page-header-modern,
+body.portal-super-admin .hrdash-welcome {
+    position: fixed !important;
+    top: 0 !important;
+    z-index: 1020 !important;
+}
+
+body.portal-hr-admin .hr-admin-topbar {
+    position: fixed !important;
+    top: 0 !important;
+    z-index: 1200 !important;
+}
+
+/* Lock hr-admin-topbar to fixed dimensions */
+body.portal-hr-admin .hr-admin-topbar {
+    height: 56px !important;
+    min-height: 56px !important;
+    max-height: 56px !important;
+}
+
+body.portal-hr-admin .hr-admin-topbar__main {
+    height: 56px !important;
+    min-height: 56px !important;
+    max-height: 56px !important;
+}
+
+/* Ensure modals and overlays never affect header - maintain fixed dimensions */
+body.modal-open .header,
+body:has(.modal.show) .header,
+body:has(.modal-backdrop) .header {
+    height: 72px !important;
+    min-height: 72px !important;
+    max-height: 72px !important;
+    padding: 0 2rem !important;
+    margin: 0 !important;
+    position: fixed !important;
+    top: 0 !important;
+}
+
+body.modal-open .hrdash-welcome,
+body:has(.modal.show) .hrdash-welcome,
+body:has(.modal-backdrop) .hrdash-welcome,
+body.modal-open .page-header-modern,
+body:has(.modal.show) .page-header-modern,
+body:has(.modal-backdrop) .page-header-modern {
+    height: 88px !important;
+    min-height: 88px !important;
+    max-height: 88px !important;
+    padding: 1.25rem 1.5rem !important;
+    margin: 0 !important;
+    position: fixed !important; /* Changed from sticky to fixed for global consistency */
+    top: 0 !important;
+}
+
+body.modal-open .hr-admin-topbar,
+body:has(.modal.show) .hr-admin-topbar,
+body:has(.modal-backdrop) .hr-admin-topbar {
+    height: 56px !important;
+    min-height: 56px !important;
+    max-height: 56px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    position: fixed !important;
+    top: 0 !important;
+}
+
+/* Prevent page transitions from affecting header */
+.header.transitioning,
+.header.loading {
+    height: 72px !important;
+    padding: 0 2rem !important;
+    margin: 0 !important;
+}
+
+.hrdash-welcome.transitioning,
+.hrdash-welcome.loading,
+.page-header-modern.transitioning,
+.page-header-modern.loading {
+    height: 88px !important;
+    padding: 1.25rem 1.5rem !important;
+    margin: 0 !important;
+}
+
+.hr-admin-topbar.transitioning,
+.hr-admin-topbar.loading {
+    height: 56px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* Lock all header content elements */
+.header > *,
+.hrdash-welcome > *,
+.page-header-modern > *,
+.hr-admin-topbar > * {
+    flex-shrink: 0 !important;
+    min-width: 0 !important;
+}
+
+/* Prevent text content from causing layout shifts */
+.header h1,
+.header #pageTitle,
+.hrdash-welcome__title,
+.hrdash-welcome__subtitle,
+.hrdash-welcome__time {
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    line-height: 1.2 !important; /* Fixed line-height */
+}
+
+/* Responsive breakpoints - maintain fixed heights */
+@media (max-width: 991.98px) {
+    .header {
+        height: 72px !important;
+        min-height: 72px !important;
+        max-height: 72px !important;
+    }
+    
+    body.portal-hr-admin .hrdash-welcome,
+    body.portal-hr-admin .page-header-modern,
+    body.portal-super-admin .hrdash-welcome {
+        height: 88px !important;
+        min-height: 88px !important;
+        max-height: 88px !important;
+    }
+    
+    body.portal-hr-admin .hr-admin-topbar {
+        height: 56px !important;
+        min-height: 56px !important;
+        max-height: 56px !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .header {
+        height: 72px !important;
+        min-height: 72px !important;
+        max-height: 72px !important;
+    }
+    
+    body.portal-hr-admin .hrdash-welcome,
+    body.portal-hr-admin .page-header-modern,
+    body.portal-super-admin .hrdash-welcome {
+        height: 88px !important;
+        min-height: 88px !important;
+        max-height: 88px !important;
+    }
+    
+    body.portal-hr-admin .hr-admin-topbar {
+        height: 56px !important;
+        min-height: 56px !important;
+        max-height: 56px !important;
+    }
+}
+
+/* Prevent Bootstrap modal from affecting header - maintain fixed dimensions */
+.modal.show ~ .header,
+.modal-backdrop ~ .header {
+    height: 72px !important;
+    padding: 0 2rem !important;
+    margin: 0 !important;
+}
+
+.modal.show ~ .hrdash-welcome,
+.modal-backdrop ~ .hrdash-welcome,
+.modal.show ~ .page-header-modern,
+.modal-backdrop ~ .page-header-modern {
+    height: 88px !important;
+    padding: 1.25rem 1.5rem !important;
+    margin: 0 !important;
+}
+
+.modal.show ~ .hr-admin-topbar,
+.modal-backdrop ~ .hr-admin-topbar {
+    height: 56px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* Ensure dropdowns don't affect header layout */
+.dropdown-menu {
+    position: absolute !important;
+    z-index: 1050 !important;
+}
+
+/* Prevent any JavaScript from modifying header dimensions - override inline styles */
+.header[style*="height"] {
+    height: 72px !important;
+    min-height: 72px !important;
+    max-height: 72px !important;
+}
+
+.hrdash-welcome[style*="height"],
+.page-header-modern[style*="height"] {
+    height: 88px !important;
+    min-height: 88px !important;
+    max-height: 88px !important;
+}
+
+.hr-admin-topbar[style*="height"] {
+    height: 56px !important;
+    min-height: 56px !important;
+    max-height: 56px !important;
+}
+
+.header[style*="padding"] {
+    padding: 0 2rem !important;
+}
+
+.hrdash-welcome[style*="padding"],
+.page-header-modern[style*="padding"] {
+    padding: 1.25rem 1.5rem !important;
+}
+
+.header[style*="margin"],
+.hrdash-welcome[style*="margin"],
+.page-header-modern[style*="margin"],
+.hr-admin-topbar[style*="margin"] {
+    margin: 0 !important;
+}
