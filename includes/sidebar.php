@@ -210,6 +210,26 @@ if ($user_role === 'developer') {
             </a>
         </li>
     </ul>
+    <?php else: ?>
+    <!-- HR Admin bottom quick actions -->
+    <ul class="sidebar-menu sidebar-bottom" role="menubar" aria-label="Quick actions">
+        <li class="nav-item">
+            <a href="?page=chat"
+               class="nav-link <?php echo (($page === 'chat') && !$fromHeader) ? 'active' : ''; ?>"
+               data-page="chat">
+                <i class="fas fa-comments me-2"></i>
+                <span>Messages</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="?page=feed"
+               class="nav-link <?php echo (($page === 'feed') && !$fromHeader) ? 'active' : ''; ?>"
+               data-page="feed">
+                <i class="fas fa-rss me-2"></i>
+                <span>Feed</span>
+            </a>
+        </li>
+    </ul>
     <?php endif; ?>
 </nav>
 

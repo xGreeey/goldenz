@@ -101,7 +101,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['first_name'])) {
     }
     
     // Validate required fields
-    $required_fields = ['first_name', 'surname', 'employee_no', 'employee_type', 'post', 'date_hired', 'status'];
+    $required_fields = ['first_name', 'surname', 'employee_no', 'employee_type', 'post', 'date_hired', 'employment_status', 'status'];
     foreach ($required_fields as $field) {
         if (empty($_POST[$field])) {
             $errors[] = ucfirst(str_replace('_', ' ', $field)) . ' is required.';
@@ -493,6 +493,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['first_name'])) {
             'contact_person_number' => !empty($_POST['contact_person_number']) ? preg_replace('/[^0-9]/', '', $_POST['contact_person_number']) : null,
             'blood_type' => !empty($_POST['blood_type']) ? trim($_POST['blood_type']) : null,
             'religion' => !empty($_POST['religion']) ? trim($_POST['religion']) : null,
+            'employment_status' => !empty($_POST['employment_status']) ? trim($_POST['employment_status']) : null,
             'status' => $_POST['status'],
             'created_by' => $current_user_id,
             'created_by_name' => $current_user_name
@@ -816,30 +817,40 @@ if (isset($_SESSION['employee_redirect_url'])) {
                             <small class="form-text text-muted" style="visibility: hidden;">Placeholder</small>
                         </div>
                     </div>
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                         <div class="form-group">
-                            <label for="employee_type" class="form-label">Employee Type <span class="text-danger">*</span></label>
+                            <label for="employee_type" class="form-label">Designation <span class="text-danger">*</span></label>
                             <select class="form-select" id="employee_type" name="employee_type" required>
-                                <option value="">Select Employee Type</option>
+                                <option value="">Select Designation</option>
                                 <option value="SG" <?php echo (($_POST['employee_type'] ?? '') === 'SG') ? 'selected' : ''; ?>>Security Guard (SG)</option>
                                 <option value="LG" <?php echo (($_POST['employee_type'] ?? '') === 'LG') ? 'selected' : ''; ?>>Lady Guard (LG)</option>
                                 <option value="SO" <?php echo (($_POST['employee_type'] ?? '') === 'SO') ? 'selected' : ''; ?>>Security Officer (SO)</option>
                             </select>
-                            <small class="form-text text-muted" style="visibility: hidden;">Placeholder</small>
+                            <small class="form-text text-muted">Indicates the employee's official position or designation.</small>
                         </div>
                     </div>
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                         <div class="form-group">
-                            <label for="status" class="form-label">Status <span class="text-danger">*</span></label>
+                            <label for="employment_status" class="form-label">Employment Status <span class="text-danger">*</span></label>
+                            <select class="form-select" id="employment_status" name="employment_status" required>
+                                <option value="">Select Employment Status</option>
+                                <option value="Probationary" <?php echo (($_POST['employment_status'] ?? '') === 'Probationary') ? 'selected' : ''; ?>>Probationary</option>
+                                <option value="Regular" <?php echo (($_POST['employment_status'] ?? '') === 'Regular') ? 'selected' : ''; ?>>Regular</option>
+                                <option value="Suspended" <?php echo (($_POST['employment_status'] ?? '') === 'Suspended') ? 'selected' : ''; ?>>Suspended</option>
+                                <option value="Terminated" <?php echo (($_POST['employment_status'] ?? '') === 'Terminated') ? 'selected' : ''; ?>>Terminated</option>
+                            </select>
+                            <small class="form-text text-muted">Indicates the employee's official employment status.</small>
+                        </div>
+                    </div>
+                            <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="status" class="form-label">Account Access Status <span class="text-danger">*</span></label>
                             <select class="form-select" id="status" name="status" required>
-                                <option value="">Select Status</option>
+                                <option value="">Select Account Access Status</option>
                                 <option value="Active" <?php echo (($_POST['status'] ?? '') === 'Active') ? 'selected' : ''; ?>>Active</option>
                                 <option value="Inactive" <?php echo (($_POST['status'] ?? '') === 'Inactive') ? 'selected' : ''; ?>>Inactive</option>
-                                <option value="Terminated" <?php echo (($_POST['status'] ?? '') === 'Terminated') ? 'selected' : ''; ?>>Terminated</option>
-                                <option value="Suspended" <?php echo (($_POST['status'] ?? '') === 'Suspended') ? 'selected' : ''; ?>>Suspended</option>
-                                <option value="Probationary" <?php echo (($_POST['status'] ?? '') === 'Probationary') ? 'selected' : ''; ?>>Probationary</option>
                             </select>
-                            <small class="form-text text-muted" style="visibility: hidden;">Placeholder</small>
+                            <small class="form-text text-muted">Indicates the employee's access to the information system.</small>
                                 </div>
                             </div>
                         </div>

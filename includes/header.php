@@ -25,6 +25,7 @@ function getPageTitle($page) {
         'add_alert' => 'Add New Alert',
         'tasks' => 'Tasks',
         'posts' => 'Posts & Locations',
+        'feed' => 'Feed',
         'add_post' => 'Add New Post',
         'edit_post' => 'Edit Post',
         'post_assignments' => 'Post Assignments',
@@ -44,6 +45,7 @@ function getPageTitle($page) {
         'edit_violation' => 'Edit Employee Violation',
         'violation_types' => 'Violation Types & Sanctions',
         'violation_history' => 'Violation History',
+        'chat' => 'Messages',
     ];
     
     return $titles[$page] ?? 'Dashboard';
@@ -169,6 +171,9 @@ if ($userRole === 'hr_admin') {
                 case 'posts':
                     include $pagesPath . 'posts.php';
                     break;
+                case 'feed':
+                    include $pagesPath . 'feed.php';
+                    break;
                 case 'add_post':
                     include $pagesPath . 'add_post.php';
                     break;
@@ -224,6 +229,9 @@ if ($userRole === 'hr_admin') {
                     break;
                 case 'violation_history':
                     include $pagesPath . 'violation_history.php';
+                    break;
+                case 'chat':
+                    include $pagesPath . 'chat.php';
                     break;
                 default:
                     include $pagesPath . 'dashboard.php';
