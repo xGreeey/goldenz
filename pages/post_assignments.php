@@ -52,6 +52,24 @@ if ($post_id) {
 
 // Get all employees for assignment
 $all_employees = get_employees();
+
+// Get current user avatar and data
+$current_user_avatar = null;
+$current_user_data = null;
+if (!empty($_SESSION['user_id']) && function_exists('get_user_by_id')) {
+    // Include database if not already included
+    if (!function_exists('get_db_connection')) {
+        require_once __DIR__ . '/../includes/database.php';
+    }
+    // Include paths helper for avatar URL resolution
+    if (!function_exists('get_avatar_url')) {
+        require_once __DIR__ . '/../includes/paths.php';
+    }
+    $current_user_data = get_user_by_id($_SESSION['user_id']);
+    if (!empty($current_user_data['avatar'])) {
+        $current_user_avatar = get_avatar_url($current_user_data['avatar']);
+    }
+}
 ?>
 
 <div class="container-fluid hrdash">
@@ -169,10 +187,31 @@ $all_employees = get_employees();
                         $initials = strtoupper($first . $last);
                     }
                     ?>
-                    <span class="hrdash-welcome__avatar"><?php echo htmlspecialchars($initials); ?></span>
+                    <?php if ($current_user_avatar): ?>
+                        <img src="<?php echo htmlspecialchars($current_user_avatar); ?>" 
+                             alt="<?php echo htmlspecialchars($displayName); ?>" 
+                             class="hrdash-welcome__avatar hrdash-welcome__avatar-img">
+                    <?php else: ?>
+                        <span class="hrdash-welcome__avatar"><?php echo htmlspecialchars($initials); ?></span>
+                    <?php endif; ?>
                     <i class="fas fa-chevron-down hrdash-welcome__chevron"></i>
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end">
+                    <li class="dropdown-header d-flex align-items-center gap-2 px-3 py-2">
+                        <?php if ($current_user_avatar): ?>
+                            <img src="<?php echo htmlspecialchars($current_user_avatar); ?>" 
+                                 alt="<?php echo htmlspecialchars($displayName); ?>" 
+                                 class="hrdash-welcome__avatar hrdash-welcome__avatar-img" 
+                                 style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;">
+                        <?php else: ?>
+                            <span class="hrdash-welcome__avatar" style="width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.75rem;"><?php echo htmlspecialchars($initials); ?></span>
+                        <?php endif; ?>
+                        <div class="d-flex flex-column">
+                            <strong style="font-size: 0.875rem; color: #1e293b;"><?php echo htmlspecialchars($displayName); ?></strong>
+                            <small style="font-size: 0.75rem; color: #64748b;">HR Administrator</small>
+                        </div>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
                     <li><a class="dropdown-item" href="?page=profile"><i class="fas fa-user me-2"></i>Profile</a></li>
                     <li><a class="dropdown-item" href="?page=settings"><i class="fas fa-cog me-2"></i>Settings</a></li>
                     <li><hr class="dropdown-divider"></li>

@@ -225,7 +225,7 @@ $days_pending = array_sum(array_map(fn($r) => $r['status'] === 'pending' ? $r['d
                 <div style="flex: 0 0 auto;">
                     <label class="form-label" style="font-size: 0.75rem; margin-bottom: 0.25rem; font-weight: 500; visibility: hidden;">Reset</label>
                     <a class="btn btn-outline-modern btn-sm" href="?page=leaves" title="Reset">
-                            <i class="fas fa-times"></i>
+                            <i class="fas fa-redo"></i>
                     </a>
                     </div>
                 <div style="flex: 0 0 30%; min-width: 120px; text-align: right; margin-left: auto;">
