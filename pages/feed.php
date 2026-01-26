@@ -287,46 +287,51 @@ function formatBirthdayDate($date) {
                         <div class="feed-expanded-form-header">
                             <div class="d-flex align-items-center justify-content-between">
                                 <h5 class="feed-expanded-form-title">
-                                    <i class="fas fa-calendar-plus me-2"></i>Create New Event
+                                    <i class="fas fa-calendar-plus me-2" aria-hidden="true"></i>Create New Event
                                 </h5>
-                                <button type="button" class="btn feed-close-expanded-form" id="closeExpandedForm" aria-label="Close">
-                                    <i class="fas fa-times"></i>
+                                <button type="button" class="btn feed-close-expanded-form" id="closeExpandedForm" aria-label="Close modal">
+                                    <i class="fas fa-times" aria-hidden="true"></i>
                                 </button>
                             </div>
                         </div>
                         <form id="createEventForm" method="POST">
                             <input type="hidden" name="action" value="create_event">
                             <div class="feed-expanded-form-body">
-                                <div id="eventFormErrors" class="alert alert-danger d-none" role="alert"></div>
+                                <div id="eventFormErrors" class="alert alert-danger d-none" role="alert" aria-live="polite"></div>
                                 
-                                <!-- Title -->
-                                <div class="event-form-group">
-                                    <label for="eventTitle" class="event-form-label">
-                                        <i class="fas fa-heading me-2"></i>Event Title <span class="text-danger">*</span>
-                                    </label>
-                                    <input type="text" 
-                                           class="form-control event-form-input" 
-                                           id="eventTitle" 
-                                           name="title" 
-                                           required 
-                                           placeholder="Enter event title">
-                                </div>
-
-                                <!-- Description -->
-                                <div class="event-form-group">
-                                    <label for="eventDescription" class="event-form-label">
-                                        <i class="fas fa-align-left me-2"></i>Description
-                                    </label>
-                                    <textarea class="form-control event-form-input event-form-textarea" 
-                                              id="eventDescription" 
-                                              name="description" 
-                                              rows="2" 
-                                              placeholder="Enter event description (optional)"></textarea>
+                                <!-- Title and Description Row -->
+                                <div class="row g-2">
+                                    <div class="col-md-6">
+                                        <div class="event-form-group">
+                                            <label for="eventTitle" class="event-form-label">
+                                                <i class="fas fa-heading me-2"></i>Event Title <span class="text-danger">*</span>
+                                            </label>
+                                            <input type="text" 
+                                                   class="form-control event-form-input" 
+                                                   id="eventTitle" 
+                                                   name="title" 
+                                                   required 
+                                                   placeholder="Enter event title…"
+                                                   autocomplete="off">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="event-form-group">
+                                            <label for="eventDescription" class="event-form-label">
+                                                <i class="fas fa-align-left me-2"></i>Description
+                                            </label>
+                                            <textarea class="form-control event-form-input event-form-textarea" 
+                                                      id="eventDescription" 
+                                                      name="description" 
+                                                      rows="2" 
+                                                      placeholder="Enter event description (optional)…"></textarea>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <!-- Event Type and Category Row -->
                                 <div class="row g-2">
-                                    <div class="col-md-6">
+                                    <div class="col-md-4">
                                         <div class="event-form-group">
                                             <label for="eventType" class="event-form-label">
                                                 <i class="fas fa-tag me-2"></i>Event Type
@@ -340,7 +345,7 @@ function formatBirthdayDate($date) {
                                             </select>
                                         </div>
                                     </div>
-                                    <div class="col-md-6">
+                                    <div class="col-md-4">
                                         <div class="event-form-group">
                                             <label for="eventCategory" class="event-form-label">
                                                 <i class="fas fa-folder me-2"></i>Category
@@ -349,27 +354,28 @@ function formatBirthdayDate($date) {
                                                    class="form-control event-form-input" 
                                                    id="eventCategory" 
                                                    name="category" 
-                                                   placeholder="e.g., Semester Start, Conference">
+                                                   placeholder="e.g., Semester Start, Conference…"
+                                                   autocomplete="off">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="event-form-group" id="holidayTypeGroup" style="display: none;">
+                                            <label for="holidayType" class="event-form-label">
+                                                <i class="fas fa-calendar-check me-2"></i>Holiday Type
+                                            </label>
+                                            <select class="form-select event-form-input" id="holidayType" name="holiday_type">
+                                                <option value="N/A">N/A</option>
+                                                <option value="Regular Holiday">Regular Holiday</option>
+                                                <option value="Special Non-Working Holiday">Special Non-Working Holiday</option>
+                                                <option value="Local Special Non-Working Holiday">Local Special Non-Working Holiday</option>
+                                            </select>
                                         </div>
                                     </div>
                                 </div>
 
-                                <!-- Holiday Type (shown when Event Type is Holiday) -->
-                                <div class="event-form-group" id="holidayTypeGroup" style="display: none;">
-                                    <label for="holidayType" class="event-form-label">
-                                        <i class="fas fa-calendar-check me-2"></i>Holiday Type
-                                    </label>
-                                    <select class="form-select event-form-input" id="holidayType" name="holiday_type">
-                                        <option value="N/A">N/A</option>
-                                        <option value="Regular Holiday">Regular Holiday</option>
-                                        <option value="Special Non-Working Holiday">Special Non-Working Holiday</option>
-                                        <option value="Local Special Non-Working Holiday">Local Special Non-Working Holiday</option>
-                                    </select>
-                                </div>
-
-                                <!-- Start Date and Time Row -->
+                                <!-- Date and Time Row - Compact Horizontal Layout -->
                                 <div class="row g-2">
-                                    <div class="col-md-6">
+                                    <div class="col-md-3">
                                         <div class="event-form-group">
                                             <label for="eventStartDate" class="event-form-label">
                                                 <i class="fas fa-calendar-day me-2"></i>Start Date <span class="text-danger">*</span>
@@ -378,10 +384,11 @@ function formatBirthdayDate($date) {
                                                    class="form-control event-form-input" 
                                                    id="eventStartDate" 
                                                    name="start_date" 
-                                                   required>
+                                                   required
+                                                   autocomplete="off">
                                         </div>
                                     </div>
-                                    <div class="col-md-6">
+                                    <div class="col-md-3">
                                         <div class="event-form-group">
                                             <label for="eventStartTime" class="event-form-label">
                                                 <i class="fas fa-clock me-2"></i>Start Time
@@ -389,14 +396,11 @@ function formatBirthdayDate($date) {
                                             <input type="time" 
                                                    class="form-control event-form-input" 
                                                    id="eventStartTime" 
-                                                   name="start_time">
+                                                   name="start_time"
+                                                   autocomplete="off">
                                         </div>
                                     </div>
-                                </div>
-
-                                <!-- End Date and Time Row -->
-                                <div class="row g-2">
-                                    <div class="col-md-6">
+                                    <div class="col-md-3">
                                         <div class="event-form-group">
                                             <label for="eventEndDate" class="event-form-label">
                                                 <i class="fas fa-calendar-times me-2"></i>End Date
@@ -404,10 +408,11 @@ function formatBirthdayDate($date) {
                                             <input type="date" 
                                                    class="form-control event-form-input" 
                                                    id="eventEndDate" 
-                                                   name="end_date">
+                                                   name="end_date"
+                                                   autocomplete="off">
                                         </div>
                                     </div>
-                                    <div class="col-md-6">
+                                    <div class="col-md-3">
                                         <div class="event-form-group">
                                             <label for="eventEndTime" class="event-form-label">
                                                 <i class="fas fa-clock me-2"></i>End Time
@@ -415,7 +420,8 @@ function formatBirthdayDate($date) {
                                             <input type="time" 
                                                    class="form-control event-form-input" 
                                                    id="eventEndTime" 
-                                                   name="end_time">
+                                                   name="end_time"
+                                                   autocomplete="off">
                                         </div>
                                     </div>
                                 </div>
@@ -429,7 +435,7 @@ function formatBirthdayDate($date) {
                                               id="eventNotes" 
                                               name="notes" 
                                               rows="2" 
-                                              placeholder="Any additional information about the event"></textarea>
+                                              placeholder="Any additional information about the event…"></textarea>
                                 </div>
                             </div>
                             <div class="feed-expanded-form-footer">
@@ -578,8 +584,8 @@ function formatBirthdayDate($date) {
                                            class="form-control" 
                                            placeholder="Add a comment..."
                                            data-post-id="<?php echo $post['id']; ?>">
-                                    <button class="btn btn-link feed-comment-emoji" type="button">
-                                        <i class="far fa-smile"></i>
+                                    <button class="btn btn-link feed-comment-emoji" type="button" aria-label="Add emoji">
+                                        <i class="far fa-smile" aria-hidden="true"></i>
                                     </button>
                                 </div>
                             </div>
@@ -710,6 +716,41 @@ function formatBirthdayDate($date) {
     margin: 0 auto;
 }
 
+/* Ensure all Font Awesome icons are visible in feed page */
+.feed-page i[class*="fa-"],
+.feed-page [class*="fa-"] {
+    font-family: 'Font Awesome 6 Free', 'Font Awesome 5 Free', 'Font Awesome 6 Brands', 'Font Awesome 5 Brands' !important;
+    font-style: normal !important;
+    font-variant: normal !important;
+    text-rendering: auto !important;
+    -webkit-font-smoothing: antialiased !important;
+    -moz-osx-font-smoothing: grayscale !important;
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+.feed-page i.fas,
+.feed-page [class*="fa-"].fas {
+    font-weight: 900 !important;
+}
+
+.feed-page i.far,
+.feed-page [class*="fa-"].far {
+    font-weight: 400 !important;
+}
+
+.feed-page i.fal,
+.feed-page [class*="fa-"].fal {
+    font-weight: 300 !important;
+}
+
+.feed-page i.fab,
+.feed-page [class*="fa-"].fab {
+    font-family: 'Font Awesome 6 Brands', 'Font Awesome 5 Brands' !important;
+    font-weight: 400 !important;
+}
+
 /* Expandable Form Container */
 .feed-expandable-form-container {
     position: relative;
@@ -726,6 +767,8 @@ function formatBirthdayDate($date) {
     backdrop-filter: blur(4px);
     z-index: 1000;
     animation: fadeIn 0.3s ease;
+    touch-action: manipulation;
+    overscroll-behavior: contain;
 }
 
 @keyframes fadeIn {
@@ -739,27 +782,37 @@ function formatBirthdayDate($date) {
 
 .feed-form-expanded {
     position: fixed;
-    top: 5vh;
+    top: 12vh;
     left: 50%;
     transform: translateX(-50%);
     z-index: 1001;
     width: 90%;
-    max-width: 500px;
+    max-width: 800px;
     max-height: 80vh;
-    animation: zoomInExpand 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    animation: zoomInExpand 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    touch-action: manipulation;
 }
 
 @keyframes zoomInExpand {
     0% {
         opacity: 0;
-        transform: translateX(-50%) translateY(-20px) scale(0.9);
-    }
-    50% {
-        transform: translateX(-50%) translateY(0) scale(1.01);
+        transform: translateX(-50%) translateY(-20px) scale(0.95);
     }
     100% {
         opacity: 1;
         transform: translateX(-50%) translateY(0) scale(1);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .feed-form-expanded {
+        animation: none;
+    }
+    @keyframes zoomInExpand {
+        0%, 100% {
+            opacity: 1;
+            transform: translateX(-50%);
+        }
     }
 }
 
@@ -856,6 +909,18 @@ function formatBirthdayDate($date) {
     font-size: 1rem;
 }
 
+.feed-post-event-btn i,
+.feed-post-event-btn .fas,
+.feed-post-event-btn .far,
+.feed-post-event-btn .fal {
+    font-family: 'Font Awesome 6 Free', 'Font Awesome 5 Free' !important;
+    font-weight: 900 !important;
+    font-style: normal !important;
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
 .feed-create-actions {
     display: flex;
     gap: 0.5rem;
@@ -871,6 +936,22 @@ function formatBirthdayDate($date) {
 
 .feed-action-btn:hover {
     color: #3b82f6;
+}
+
+.feed-action-btn i,
+.feed-action-btn .fas,
+.feed-action-btn .far,
+.feed-action-btn .fal {
+    font-family: 'Font Awesome 6 Free', 'Font Awesome 5 Free' !important;
+    font-weight: 400 !important;
+    font-style: normal !important;
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+.feed-action-btn .fas {
+    font-weight: 900 !important;
 }
 
 /* Feed Post Card */
@@ -933,6 +1014,18 @@ function formatBirthdayDate($date) {
 .feed-post-menu-btn {
     color: #64748b;
     padding: 0.25rem 0.5rem;
+}
+
+.feed-post-menu-btn i,
+.feed-post-menu-btn .fas,
+.feed-post-menu-btn .far,
+.feed-post-menu-btn .fal {
+    font-family: 'Font Awesome 6 Free', 'Font Awesome 5 Free' !important;
+    font-weight: 900 !important;
+    font-style: normal !important;
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
 }
 
 .feed-post-content {
@@ -1008,6 +1101,18 @@ function formatBirthdayDate($date) {
     padding: 0.5rem;
 }
 
+.feed-comment-emoji i,
+.feed-comment-emoji .fas,
+.feed-comment-emoji .far,
+.feed-comment-emoji .fal {
+    font-family: 'Font Awesome 6 Free', 'Font Awesome 5 Free' !important;
+    font-weight: 400 !important;
+    font-style: normal !important;
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
 /* Sidebar Cards */
 .feed-sidebar-card {
     border-radius: 12px;
@@ -1036,6 +1141,18 @@ function formatBirthdayDate($date) {
     font-size: 0.875rem;
 }
 
+.feed-sidebar-action i,
+.feed-sidebar-action .fas,
+.feed-sidebar-action .far,
+.feed-sidebar-action .fal {
+    font-family: 'Font Awesome 6 Free', 'Font Awesome 5 Free' !important;
+    font-weight: 900 !important;
+    font-style: normal !important;
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
 /* Events List */
 .feed-events-list {
     display: flex;
@@ -1059,6 +1176,18 @@ function formatBirthdayDate($date) {
     justify-content: center;
     color: #3b82f6;
     flex-shrink: 0;
+}
+
+.feed-event-icon i,
+.feed-event-icon .fas,
+.feed-event-icon .far,
+.feed-event-icon .fal {
+    font-family: 'Font Awesome 6 Free', 'Font Awesome 5 Free' !important;
+    font-weight: 900 !important;
+    font-style: normal !important;
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
 }
 
 .feed-event-title {
@@ -1174,8 +1303,13 @@ function formatBirthdayDate($date) {
     .feed-form-expanded {
         width: 95%;
         max-width: 95%;
-        top: 2vh;
-        max-height: 90vh;
+        top: 7vh;
+        transform: translateX(-50%);
+        max-height: 85vh;
+    }
+    
+    .feed-expanded-form-body .row > [class*="col-"] {
+        margin-bottom: 0.5rem;
     }
     
     .feed-expanded-form-footer {
@@ -1204,16 +1338,17 @@ function formatBirthdayDate($date) {
     position: relative;
     display: flex;
     flex-direction: column;
-    max-height: 80vh;
+    max-height: 70vh;
 }
 
 .feed-expanded-form-header {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
     border: none;
-    padding: 1rem 1.5rem;
+    padding: 0.875rem 1.25rem;
     position: relative;
     overflow: hidden;
+    flex-shrink: 0;
 }
 
 .feed-expanded-form-header::before {
@@ -1234,7 +1369,7 @@ function formatBirthdayDate($date) {
 
 .feed-expanded-form-title {
     font-weight: 700;
-    font-size: 1.25rem;
+    font-size: 1.125rem;
     margin: 0;
     display: flex;
     align-items: center;
@@ -1244,21 +1379,39 @@ function formatBirthdayDate($date) {
     color: white;
 }
 
+.feed-expanded-form-title i,
+.feed-expanded-form-title .fas,
+.feed-expanded-form-title .far,
+.feed-expanded-form-title .fal {
+    font-family: 'Font Awesome 6 Free', 'Font Awesome 5 Free' !important;
+    font-weight: 900 !important;
+    font-style: normal !important;
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
 .feed-close-expanded-form {
     background: rgba(255, 255, 255, 0.2);
     border: none;
     color: white;
-    width: 32px;
-    height: 32px;
+    width: 28px;
+    height: 28px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: background 0.2s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     z-index: 1;
     font-size: 0.875rem;
     padding: 0;
+    cursor: pointer;
+}
+
+.feed-close-expanded-form:focus-visible {
+    outline: 2px solid white;
+    outline-offset: 2px;
 }
 
 .feed-close-expanded-form:hover {
@@ -1267,12 +1420,29 @@ function formatBirthdayDate($date) {
     color: white;
 }
 
+.feed-close-expanded-form:active {
+    transform: rotate(90deg) scale(0.95);
+}
+
+.feed-close-expanded-form i,
+.feed-close-expanded-form .fas,
+.feed-close-expanded-form .far,
+.feed-close-expanded-form .fal {
+    font-family: 'Font Awesome 6 Free', 'Font Awesome 5 Free' !important;
+    font-weight: 900 !important;
+    font-style: normal !important;
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
 .feed-expanded-form-body {
-    padding: 1.25rem 1.5rem;
+    padding: 1rem 1.25rem;
     background: linear-gradient(to bottom, #ffffff 0%, #f8fafc 100%);
     overflow-y: auto;
     flex: 1;
     min-height: 0;
+    overscroll-behavior: contain;
 }
 
 .feed-expanded-form-body::-webkit-scrollbar {
@@ -1295,35 +1465,59 @@ function formatBirthdayDate($date) {
 
 .feed-expanded-form-footer {
     border: none;
-    padding: 1rem 1.5rem;
+    padding: 0.875rem 1.25rem;
     background: white;
     border-top: 1px solid #e2e8f0;
     display: flex;
     justify-content: flex-end;
     gap: 0.75rem;
+    flex-shrink: 0;
 }
 
 .event-form-group {
-    margin-bottom: 1rem;
+    margin-bottom: 0.75rem;
+}
+
+/* Compact horizontal layout for form fields */
+.feed-expanded-form-body .row {
+    margin-left: -0.5rem;
+    margin-right: -0.5rem;
+}
+
+.feed-expanded-form-body .row > [class*="col-"] {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
 }
 
 .event-form-label {
     font-weight: 600;
     color: #1e293b;
     font-size: 0.75rem;
-    margin-bottom: 0.375rem;
+    margin-bottom: 0.25rem;
     display: block;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+}
+
+.event-form-label i,
+.event-form-label .fas,
+.event-form-label .far,
+.event-form-label .fal {
+    font-family: 'Font Awesome 6 Free', 'Font Awesome 5 Free' !important;
+    font-weight: 900 !important;
+    font-style: normal !important;
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
 }
 
 .event-form-input,
 .event-form-textarea {
     border: 2px solid #e2e8f0;
     border-radius: 8px;
-    padding: 0.5rem 0.875rem;
+    padding: 0.4375rem 0.75rem;
     font-size: 0.875rem;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: border-color 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     background: white;
     color: #1e293b;
 }
@@ -1334,17 +1528,24 @@ function formatBirthdayDate($date) {
     box-shadow: 0 2px 8px rgba(102, 126, 234, 0.08);
 }
 
-.event-form-input:focus,
-.event-form-textarea:focus {
+.event-form-input:focus-visible,
+.event-form-textarea:focus-visible {
     border-color: #667eea;
-    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.12), 0 4px 12px rgba(102, 126, 234, 0.15);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.12), 0 2px 8px rgba(102, 126, 234, 0.15);
     outline: none;
     transform: translateY(-1px);
 }
 
+.event-form-input:focus:not(:focus-visible),
+.event-form-textarea:focus:not(:focus-visible) {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.12);
+    outline: none;
+}
+
 .event-form-textarea {
     resize: vertical;
-    min-height: 60px;
+    min-height: 50px;
 }
 
 
@@ -1353,15 +1554,20 @@ function formatBirthdayDate($date) {
     border: none;
     color: white;
     font-weight: 600;
-    padding: 0.5rem 1.5rem;
+    padding: 0.4375rem 1.25rem;
     border-radius: 8px;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: background 0.2s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     align-items: center;
     box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
     position: relative;
     overflow: hidden;
     font-size: 0.875rem;
+}
+
+.event-btn-primary:focus-visible {
+    outline: 2px solid #667eea;
+    outline-offset: 2px;
 }
 
 .event-btn-primary::before {
@@ -1396,15 +1602,36 @@ function formatBirthdayDate($date) {
     transform: none;
 }
 
+.event-btn-primary i,
+.event-btn-primary .fas,
+.event-btn-primary .far,
+.event-btn-primary .fal,
+.event-btn-secondary i,
+.event-btn-secondary .fas,
+.event-btn-secondary .far,
+.event-btn-secondary .fal {
+    font-family: 'Font Awesome 6 Free', 'Font Awesome 5 Free' !important;
+    font-weight: 900 !important;
+    font-style: normal !important;
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
 .event-btn-secondary {
     background: #f1f5f9;
     border: 2px solid #e2e8f0;
     color: #64748b;
     font-weight: 600;
-    padding: 0.5rem 1.5rem;
+    padding: 0.4375rem 1.25rem;
     border-radius: 8px;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: background 0.2s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.2s cubic-bezier(0.4, 0, 0.2, 1), color 0.2s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     font-size: 0.875rem;
+}
+
+.event-btn-secondary:focus-visible {
+    outline: 2px solid #64748b;
+    outline-offset: 2px;
 }
 
 .event-btn-secondary:hover {
@@ -1584,6 +1811,13 @@ document.addEventListener('DOMContentLoaded', function() {
         eventTypeSelect.addEventListener('change', function() {
             if (this.value === 'Holiday') {
                 holidayTypeGroup.style.display = 'block';
+                // Focus on holiday type select when shown
+                setTimeout(() => {
+                    const holidayTypeSelect = document.getElementById('holidayType');
+                    if (holidayTypeSelect) {
+                        holidayTypeSelect.focus();
+                    }
+                }, 100);
             } else {
                 holidayTypeGroup.style.display = 'none';
                 document.getElementById('holidayType').value = 'N/A';
