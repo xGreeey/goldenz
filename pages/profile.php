@@ -1098,6 +1098,8 @@ if (!empty($display_first_name) || !empty($display_last_name)) {
     position: relative;
     display: flex;
     align-items: stretch;
+    /* Ensure edit buttons are clickable */
+    z-index: 1;
 }
 
 .profile-field-input {
@@ -1165,6 +1167,10 @@ if (!empty($display_first_name) || !empty($display_last_name)) {
     cursor: pointer;
     transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
     font-size: 0.875rem;
+    /* Ensure buttons are clickable and above other elements */
+    z-index: 10;
+    pointer-events: auto;
+    touch-action: manipulation;
 }
 
 .profile-field-edit-btn i,
@@ -1860,7 +1866,60 @@ html[data-theme="dark"] .profile-edit-btn-cancel:hover {
 </style>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+(function() {
+    'use strict';
+    
+    // CRITICAL FIX: Attach document-level event delegation IMMEDIATELY when script executes
+    // This runs on both initial page load AND AJAX navigation (when script is re-executed)
+    // The handlers persist and work even if DOMContentLoaded already fired
+    
+    // Use a global flag to prevent duplicate listeners across script re-executions
+    if (!window._profileEditHandlersAttached) {
+        window._profileEditHandlersAttached = true;
+        
+        console.log('[Profile] Attaching document-level event delegation for edit buttons');
+        
+        // Click handler - use capture phase to catch events early, before any other handlers
+        document.addEventListener('click', function handleEditButtonClick(e) {
+            // Only process clicks within profile page
+            const profilePage = document.querySelector('.profile-page');
+            if (!profilePage || !profilePage.contains(e.target)) {
+                return;
+            }
+            
+            const editBtn = e.target.closest('.profile-field-edit-btn');
+            if (editBtn) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const fieldName = editBtn.getAttribute('data-field');
+                // Check if functions are available (they're defined later in this script)
+                if (fieldName && typeof window._profileFieldConfig !== 'undefined' && 
+                    window._profileFieldConfig && window._profileFieldConfig[fieldName]) {
+                    if (typeof window._profileOpenEditModal === 'function') {
+                        window._profileOpenEditModal(fieldName, editBtn);
+                    }
+                }
+            }
+        }, true); // Capture phase - catches events before bubbling
+        
+        // Keyboard support
+        document.addEventListener('keydown', function handleEditButtonKeydown(e) {
+            const profilePage = document.querySelector('.profile-page');
+            if (!profilePage || !profilePage.contains(e.target)) {
+                return;
+            }
+            
+            const editBtn = e.target.closest('.profile-field-edit-btn');
+            if (editBtn && (e.key === 'Enter' || e.key === ' ')) {
+                e.preventDefault();
+                e.stopPropagation();
+                editBtn.click();
+            }
+        }, true);
+    }
+    
+    // Now initialize the rest of the page functionality
     const profileForm = document.getElementById('profileForm');
     const saveProfileBtn = document.getElementById('saveProfileBtn');
     const avatarInput = document.getElementById('avatarInput');
@@ -1927,7 +1986,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentFieldInput = null;
     let currentEditButton = null;
     
-    // Field configuration
+    // Field configuration - expose globally so event handlers can access it
     const fieldConfig = {
         'first_name': {
             label: 'First Name',
@@ -1960,7 +2019,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
     
-    // Open modal function
+    // Open modal function - defined before exposing globally
     function openEditModal(fieldName, editButton) {
         // Ensure modal elements are initialized
         if (!editModal || !editModalTitle || !editModalLabel || !editModalInput || !editModalHint || !editModalSave) {
@@ -2018,6 +2077,11 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }, 100);
     }
+    
+    // Expose fieldConfig and openEditModal globally IMMEDIATELY after definition
+    // This ensures event handlers (attached at script load) can access them
+    window._profileFieldConfig = fieldConfig;
+    window._profileOpenEditModal = openEditModal;
     
     // Close modal function
     function closeEditModal() {
@@ -2100,95 +2164,136 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Initialize all profile page functionality
-    function initProfilePage() {
-        // Initialize modal elements (safe - check if exists)
-        editModal = document.getElementById('profileEditModal');
-        if (editModal) {
-            editModalBackdrop = editModal.querySelector('.profile-edit-modal-backdrop');
-            editModalClose = editModal.querySelector('.profile-edit-modal-close');
-            editModalCancel = editModal.querySelector('.profile-edit-btn-cancel');
-            editModalSave = editModal.querySelector('.profile-edit-btn-save');
-            editModalTitle = editModal.querySelector('.profile-edit-modal-title');
-            editModalLabel = editModal.querySelector('.profile-edit-label');
-            editModalInput = editModal.querySelector('.profile-edit-input');
-            editModalHint = editModal.querySelector('.profile-edit-hint');
-            
-            // Initialize modal event listeners (only once)
-            initEditModal();
-        }
-        
-        // Initialize auto-hide for success alerts
-        initAutoHideAlerts();
-        
-        // Initialize edit buttons
-        initEditButtons();
-        
-        // Clean URL on page load if parameter exists (fallback)
-        if (window.location.search.includes('updated=')) {
-            // Small delay to ensure message is visible before cleaning URL
-            setTimeout(cleanUrlParameter, 100);
+    // Debug flag - set to false to disable debug logs in production
+    const PROFILE_DEBUG = false;
+    function debugLog(...args) {
+        if (PROFILE_DEBUG) {
+            console.log('[Profile Debug]', ...args);
         }
     }
     
+    // initEditButtons - handlers are already attached globally at script load
+    // This function just verifies buttons exist (for debugging)
+    function initEditButtons() {
+        debugLog('initEditButtons called (handlers already attached globally)');
+        
+        // Verify buttons exist
+        const editButtons = document.querySelectorAll('.profile-field-edit-btn');
+        debugLog('Found edit buttons:', editButtons.length);
+        
+        if (editButtons.length > 0 && PROFILE_DEBUG) {
+            // Debug: Check button states
+            editButtons.forEach((btn, idx) => {
+                const computedStyle = window.getComputedStyle(btn);
+                console.log(`[Profile Debug] Button ${idx}:`, {
+                    pointerEvents: computedStyle.pointerEvents,
+                    zIndex: computedStyle.zIndex,
+                    disabled: btn.disabled,
+                    visible: btn.offsetParent !== null,
+                    dataField: btn.getAttribute('data-field')
+                });
+            });
+        }
+        
+        // Global references are already set when functions are defined above
+        // No need to update here - they persist across script re-executions
+    }
+    
+    // Initialize all profile page functionality
+    function initProfilePage() {
+        debugLog('initProfilePage called');
+        
+        // Small delay to ensure DOM is fully ready (especially for AJAX loads)
+        setTimeout(function() {
+            debugLog('Running delayed initialization');
+            
+            // Initialize modal elements (safe - check if exists)
+            editModal = document.getElementById('profileEditModal');
+            if (editModal) {
+                editModalBackdrop = editModal.querySelector('.profile-edit-modal-backdrop');
+                editModalClose = editModal.querySelector('.profile-edit-modal-close');
+                editModalCancel = editModal.querySelector('.profile-edit-btn-cancel');
+                editModalSave = editModal.querySelector('.profile-edit-btn-save');
+                editModalTitle = editModal.querySelector('.profile-edit-modal-title');
+                editModalLabel = editModal.querySelector('.profile-edit-label');
+                editModalInput = editModal.querySelector('.profile-edit-input');
+                editModalHint = editModal.querySelector('.profile-edit-hint');
+                
+                // Initialize modal event listeners (only once)
+                initEditModal();
+                debugLog('Modal initialized');
+            } else if (PROFILE_DEBUG) {
+                console.warn('[Profile Debug] Modal element not found');
+            }
+            
+            // Initialize auto-hide for success alerts
+            initAutoHideAlerts();
+            
+            // Initialize edit buttons (most critical - ensure this runs)
+            initEditButtons();
+            
+            // Clean URL on page load if parameter exists (fallback)
+            if (window.location.search.includes('updated=')) {
+                // Small delay to ensure message is visible before cleaning URL
+                setTimeout(cleanUrlParameter, 100);
+            }
+            
+            debugLog('Initialization complete');
+        }, 50); // Small delay to ensure DOM is ready
+    }
+    
     // Initialize on DOMContentLoaded (initial page load)
-    initProfilePage();
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+            debugLog('DOMContentLoaded fired');
+            initProfilePage();
+        });
+    } else {
+        debugLog('DOM already ready, initializing immediately');
+        initProfilePage();
+    }
     
     // Also initialize when page is loaded via AJAX navigation
     document.addEventListener('pageLoaded', function(e) {
+        debugLog('pageLoaded event fired', e.detail);
         if (e.detail && e.detail.page === 'profile') {
+            debugLog('Profile page detected in pageLoaded');
             initProfilePage();
         }
     });
     
     // Also listen for pageContentLoaded event (alternative event name)
     document.addEventListener('pageContentLoaded', function(e) {
+        debugLog('pageContentLoaded event fired', e.detail);
         if (e.detail && e.detail.page === 'profile') {
+            debugLog('Profile page detected in pageContentLoaded');
             initProfilePage();
         }
     });
     
-    // Initialize edit buttons - use event delegation for AJAX-loaded content
-    function initEditButtons() {
-        const profilePage = document.querySelector('.profile-page');
-        if (!profilePage) return;
+    // Fallback: Also check on any content change (MutationObserver as last resort)
+    if (typeof MutationObserver !== 'undefined') {
+        const observer = new MutationObserver(function(mutations) {
+            const profilePage = document.querySelector('.profile-page');
+            if (profilePage && !profilePage.dataset.profileObserved) {
+                profilePage.dataset.profileObserved = 'true';
+                debugLog('Profile page detected via MutationObserver');
+                // Small delay to ensure content is fully rendered
+                setTimeout(initProfilePage, 100);
+            }
+        });
         
-        // Check if listeners are already attached using data attribute
-        // This prevents duplicates when called multiple times
-        // Note: If the entire .profile-page element is replaced via AJAX,
-        // the new element won't have this attribute, so listeners will be re-attached (correct behavior)
-        if (profilePage.dataset.editButtonsInitialized === 'true') {
-            return;
+        // Observe the main content area for profile page insertion
+        const mainContent = document.querySelector('.main-content, main, body');
+        if (mainContent) {
+            observer.observe(mainContent, {
+                childList: true,
+                subtree: true
+            });
+            debugLog('MutationObserver attached');
         }
-        
-        // Mark as initialized
-        profilePage.dataset.editButtonsInitialized = 'true';
-        
-        // Use event delegation on the stable parent container
-        // This works for both initial load and AJAX-loaded content
-        // Event delegation means we don't need to re-attach when content changes
-        profilePage.addEventListener('click', function(e) {
-            const editBtn = e.target.closest('.profile-field-edit-btn');
-            if (editBtn) {
-                e.preventDefault();
-                e.stopPropagation();
-                const fieldName = editBtn.getAttribute('data-field');
-                if (fieldName && fieldConfig && fieldConfig[fieldName]) {
-                    openEditModal(fieldName, editBtn);
-                }
-            }
-        });
-        
-        // Keyboard support via delegation
-        profilePage.addEventListener('keydown', function(e) {
-            const editBtn = e.target.closest('.profile-field-edit-btn');
-            if (editBtn && (e.key === 'Enter' || e.key === ' ')) {
-                e.preventDefault();
-                e.stopPropagation();
-                editBtn.click();
-            }
-        });
     }
+    
     
     // Also handle username field if it has an edit button (for future use)
     const usernameInput = document.getElementById('username');
@@ -2323,5 +2428,5 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     }
-});
+})();
 </script>
