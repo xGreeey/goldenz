@@ -5714,6 +5714,9 @@ if (!function_exists('create_event')) {
                 return false;
             }
             
+            // Get database connection
+            $pdo = get_db_connection();
+            
             // Prepare SQL with all fields from events table
             $sql = "INSERT INTO events (
                 title, 
@@ -5746,11 +5749,11 @@ if (!function_exists('create_event')) {
                 !empty($data['notes']) ? trim((string)$data['notes']) : null
             ];
             
-            // Execute query
-            $stmt = execute_query($sql, $params);
+            // Prepare and execute query using the same connection
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute($params);
             
-            // Get the inserted event ID
-            $pdo = get_db_connection();
+            // Get the inserted event ID from the same connection
             $event_id = (int)$pdo->lastInsertId();
             
             if ($event_id > 0) {
@@ -5758,9 +5761,16 @@ if (!function_exists('create_event')) {
                 return $event_id;
             }
             
+            error_log('create_event: Failed to get event ID after insert');
+            return false;
+        } catch (PDOException $e) {
+            error_log("create_event: PDO Exception - " . $e->getMessage());
+            error_log("create_event: SQL - " . $sql);
+            error_log("create_event: Params - " . print_r($params, true));
             return false;
         } catch (Exception $e) {
             error_log("create_event: Exception - " . $e->getMessage());
+            error_log("create_event: Stack trace - " . $e->getTraceAsString());
             return false;
         }
     }
