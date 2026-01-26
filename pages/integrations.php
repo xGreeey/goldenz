@@ -413,7 +413,7 @@ if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'super_admin') 
     color: #64748b;
 }
 .settings-nav .list-group-item.active {
-    background: linear-gradient(135deg, #1fb2d5 0%, #0ea5e9 100%);
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
     color: #fff;
     border-radius: 0.5rem;
 }

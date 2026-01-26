@@ -936,14 +936,14 @@ foreach ($violation_history as $history) {
 }
 
 .hrdash-segment__btn.active {
-    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1e293b 100%);
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
     color: #ffffff;
-    box-shadow: 0 2px 4px rgba(30, 58, 138, 0.2);
+    box-shadow: 0 2px 4px rgba(15, 23, 42, 0.2);
 }
 
 /* Add Violation Button - Using btn-primary-modern class (matching Add Employee button) */
 .btn-primary-modern {
-    background: linear-gradient(135deg, #1fb2d5 0%, #0ea5e9 100%);
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
     color: #ffffff;
     border: none;
     padding: 0.5rem 1rem;
@@ -951,7 +951,7 @@ foreach ($violation_history as $history) {
     font-weight: 600;
     font-size: 0.875rem;
     transition: all 0.2s ease;
-    box-shadow: 0 2px 8px rgba(31, 178, 213, 0.25);
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.25);
     text-decoration: none;
     display: inline-flex;
     align-items: center;
@@ -959,20 +959,20 @@ foreach ($violation_history as $history) {
 
 .btn-primary-modern:hover {
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(31, 178, 213, 0.35);
-    background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.35);
+    background: linear-gradient(135deg, #1e293b 0%, #334155 50%, #475569 100%);
     color: #ffffff;
 }
 
 .btn-primary-modern:active {
     transform: translateY(0);
-    box-shadow: 0 2px 8px rgba(31, 178, 213, 0.25);
-    background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.25);
+    background: linear-gradient(135deg, #334155 0%, #475569 100%);
 }
 
 .btn-primary-modern:focus {
     outline: none;
-    box-shadow: 0 2px 8px rgba(31, 178, 213, 0.25), 0 0 0 3px rgba(31, 178, 213, 0.2);
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.25), 0 0 0 3px rgba(15, 23, 42, 0.2);
 }
 
 .hrdash-card__header--split {
@@ -2127,7 +2127,7 @@ document.addEventListener('DOMContentLoaded', function() {
 }
 
 .add-violation-modal-header {
-    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1e293b 100%);
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
     color: #ffffff;
     border-bottom: none;
     padding: 1rem 1.5rem;
