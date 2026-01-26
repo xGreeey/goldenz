@@ -22,7 +22,7 @@
         MAX_DELAY: 1500,          // Maximum delay before forcing logout
         PARTICLE_COUNT: 7,        // Number of decorative particles
         MESSAGES: {
-            main: "Logging out...",
+            main: "You are leaving? Why? 😢",
             sub: "Please wait while we sign you out.",
             srAnnouncement: "Logout in progress. You will be logged out shortly."
         }
