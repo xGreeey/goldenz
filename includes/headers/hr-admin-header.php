@@ -55,6 +55,25 @@ function getActiveSection($page) {
 // Get current page
 $page = $_GET['page'] ?? 'dashboard';
 $activeSection = getActiveSection($page);
+
+/**
+ * Helper function to determine if a nav link should be active
+ * Ensures only ONE item is active at a time based on current page
+ * 
+ * @param string $linkPage The page value from the nav link
+ * @param string $currentPage The current page from $_GET['page']
+ * @param bool $fromHeader Whether navigation was triggered from header dropdown
+ * @return bool True if this link should be active
+ */
+function isNavLinkActive($linkPage, $currentPage, $fromHeader = false) {
+    // Don't mark as active if navigation was triggered from header dropdown
+    if ($fromHeader) {
+        return false;
+    }
+    
+    // Exact match - only one item should match
+    return $linkPage === $currentPage;
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -198,7 +217,7 @@ $activeSection = getActiveSection($page);
         <ul class="sidebar-menu" id="sidebarMenu">
             <li class="nav-item">
                 <a href="?page=dashboard"
-                   class="nav-link <?php echo ($page === 'dashboard') ? 'active' : ''; ?>"
+                   class="nav-link <?php echo isNavLinkActive('dashboard', $page, isset($_GET['from']) && $_GET['from'] === 'header') ? 'active' : ''; ?>"
                    data-page="dashboard">
                     <i class="fas fa-home" aria-hidden="true"></i>
                     <span>Dashboard</span>
@@ -221,7 +240,7 @@ $activeSection = getActiveSection($page);
                 <ul class="nav-submenu <?php echo ($activeSection === 'teams') ? 'expanded' : ''; ?>" id="teams-submenu" role="menu">
                     <li class="nav-item">
                         <a href="?page=employees"
-                           class="nav-link <?php echo ($page === 'employees') ? 'active' : ''; ?>"
+                           class="nav-link <?php echo isNavLinkActive('employees', $page, isset($_GET['from']) && $_GET['from'] === 'header') ? 'active' : ''; ?>"
                            data-page="employees">
                             <i class="fas fa-user" aria-hidden="true"></i>
                             <span>Employee</span>
@@ -229,7 +248,7 @@ $activeSection = getActiveSection($page);
                     </li>
                     <li class="nav-item">
                         <a href="?page=dtr"
-                           class="nav-link <?php echo ($page === 'dtr') ? 'active' : ''; ?>"
+                           class="nav-link <?php echo isNavLinkActive('dtr', $page, isset($_GET['from']) && $_GET['from'] === 'header') ? 'active' : ''; ?>"
                            data-page="dtr">
                             <i class="fas fa-clock" aria-hidden="true"></i>
                             <span>Attendance</span>
@@ -237,7 +256,7 @@ $activeSection = getActiveSection($page);
                     </li>
                     <li class="nav-item">
                         <a href="?page=checklist"
-                           class="nav-link <?php echo ($page === 'checklist') ? 'active' : ''; ?>"
+                           class="nav-link <?php echo isNavLinkActive('checklist', $page, isset($_GET['from']) && $_GET['from'] === 'header') ? 'active' : ''; ?>"
                            data-page="checklist">
                             <i class="fas fa-clipboard-check" aria-hidden="true"></i>
                             <span>Checklist</span>
@@ -245,7 +264,7 @@ $activeSection = getActiveSection($page);
                     </li>
                     <li class="nav-item">
                         <a href="?page=timeoff"
-                           class="nav-link <?php echo ($page === 'timeoff') ? 'active' : ''; ?>"
+                           class="nav-link <?php echo isNavLinkActive('timeoff', $page, isset($_GET['from']) && $_GET['from'] === 'header') ? 'active' : ''; ?>"
                            data-page="timeoff">
                             <i class="fas fa-calendar-times" aria-hidden="true"></i>
                             <span>Time off</span>
@@ -311,7 +330,7 @@ $activeSection = getActiveSection($page);
                 <ul class="nav-submenu <?php echo ($activeSection === 'posts') ? 'expanded' : ''; ?>" id="posts-submenu" role="menu">
                     <li class="nav-item">
                         <a href="?page=posts"
-                           class="nav-link <?php echo ($page === 'posts') ? 'active' : ''; ?>"
+                           class="nav-link <?php echo isNavLinkActive('posts', $page, isset($_GET['from']) && $_GET['from'] === 'header') ? 'active' : ''; ?>"
                            data-page="posts">
                             <i class="fas fa-list" aria-hidden="true"></i>
                             <span>All Posts</span>
@@ -319,7 +338,7 @@ $activeSection = getActiveSection($page);
                     </li>
                     <li class="nav-item">
                         <a href="?page=add_post"
-                           class="nav-link <?php echo ($page === 'add_post') ? 'active' : ''; ?>"
+                           class="nav-link <?php echo isNavLinkActive('add_post', $page, isset($_GET['from']) && $_GET['from'] === 'header') ? 'active' : ''; ?>"
                            data-page="add_post">
                             <i class="fas fa-plus" aria-hidden="true"></i>
                             <span>Add New Post</span>
@@ -331,7 +350,7 @@ $activeSection = getActiveSection($page);
             <!-- Alerts Section -->
             <li class="nav-item">
                 <a href="?page=alerts"
-                   class="nav-link <?php echo ($page === 'alerts') ? 'active' : ''; ?>"
+                   class="nav-link <?php echo isNavLinkActive('alerts', $page, isset($_GET['from']) && $_GET['from'] === 'header') ? 'active' : ''; ?>"
                    data-page="alerts">
                     <i class="fas fa-bell" aria-hidden="true"></i>
                     <span>Alerts</span>
@@ -349,7 +368,7 @@ $activeSection = getActiveSection($page);
         <ul class="sidebar-menu sidebar-bottom" role="menubar">
             <li class="nav-item">
                 <a href="?page=settings"
-                   class="nav-link <?php echo ($page === 'settings') ? 'active' : ''; ?>"
+                   class="nav-link <?php echo isNavLinkActive('settings', $page, isset($_GET['from']) && $_GET['from'] === 'header') ? 'active' : ''; ?>"
                    data-page="settings">
                     <i class="fas fa-cog" aria-hidden="true"></i>
                     <span>Settings</span>
@@ -358,7 +377,7 @@ $activeSection = getActiveSection($page);
 
             <li class="nav-item">
                 <a href="?page=tasks"
-                   class="nav-link <?php echo ($page === 'tasks') ? 'active' : ''; ?>"
+                   class="nav-link <?php echo isNavLinkActive('tasks', $page, isset($_GET['from']) && $_GET['from'] === 'header') ? 'active' : ''; ?>"
                    data-page="tasks">
                     <i class="fas fa-tasks" aria-hidden="true"></i>
                     <span>Tasks</span>
@@ -367,7 +386,7 @@ $activeSection = getActiveSection($page);
 
             <li class="nav-item">
                 <a href="?page=help"
-                   class="nav-link <?php echo ($page === 'help') ? 'active' : ''; ?>"
+                   class="nav-link <?php echo isNavLinkActive('help', $page, isset($_GET['from']) && $_GET['from'] === 'header') ? 'active' : ''; ?>"
                    data-page="help">
                     <i class="fas fa-headset" aria-hidden="true"></i>
                     <span>Help & Support</span>
