@@ -658,48 +658,67 @@ try {
     display: none;
 }
 .hrdash-welcome {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 0;
-    padding: 1.5rem var(--hr-page-px);
-    background: #f1f5f9;
-    border-bottom: 1px solid #e2e8f0;
-    width: 100%;
-    box-sizing: border-box;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    margin: 0 !important;
+    /* Fixed height and padding - never changes */
+    height: 88px !important;
+    min-height: 88px !important;
+    max-height: 88px !important;
+    padding: 1.25rem 1.5rem !important; /* Fixed padding - never changes */
+    background: #f1f5f9 !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important; /* Prevent content overflow from changing height */
+    flex-wrap: nowrap !important; /* Prevent wrapping that could change height */
 }
 .hrdash-welcome__left {
     flex: 1;
+    min-width: 0; /* Allow shrinking if needed */
+    overflow: hidden; /* Prevent content overflow */
 }
 .hrdash-welcome__title {
     font-size: 2.25rem;
     font-weight: 700;
     letter-spacing: -0.04em;
-    margin: 0 0 0.5rem 0;
+    margin: 0 0 0.5rem 0 !important; /* Fixed margin - never changes */
     color: #0a0e27;
-    line-height: 1.1;
+    line-height: 1.1 !important; /* Fixed line-height to prevent height changes */
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    white-space: nowrap !important; /* Prevent text wrapping */
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
 }
 .hrdash-welcome__time {
     font-weight: 600;
     color: #64748b;
     font-size: 0.9375rem;
-    margin-right: 1rem;
+    margin: 0 !important; /* Fixed margin - never changes */
+    margin-right: 1rem !important;
     display: inline-flex;
     align-items: center;
-    padding: 0.5rem 0;
+    padding: 0 !important; /* Fixed padding - never changes */
     letter-spacing: 0.02em;
+    white-space: nowrap !important; /* Prevent text wrapping */
+    flex-shrink: 0 !important;
 }
 .hrdash-welcome__subtitle {
-    margin: 0;
+    margin: 0 !important; /* Fixed margin - never changes */
     color: #64748b;
     font-size: 0.9375rem;
+    line-height: 1.4 !important; /* Fixed line-height */
+    white-space: nowrap !important; /* Prevent text wrapping */
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
 }
 .hrdash-welcome__actions {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    flex-shrink: 0;
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.75rem !important;
+    flex-shrink: 0 !important;
+    min-width: 0 !important;
 }
 .hrdash-welcome__btn {
     display: inline-flex;
@@ -919,17 +938,24 @@ try {
 }
 @media (max-width: 768px) {
     .hrdash-welcome {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 1rem;
+        /* Maintain fixed height on mobile - never changes */
+        height: 88px !important;
+        min-height: 88px !important;
+        max-height: 88px !important;
+        flex-direction: row !important; /* Keep horizontal to maintain height */
+        align-items: center !important;
+        gap: 0.75rem !important;
+        padding: 1.25rem 1rem !important; /* Fixed padding - reduced horizontal on mobile */
+        flex-wrap: nowrap !important; /* Prevent wrapping */
+        overflow: hidden !important; /* Prevent content overflow */
     }
     .hrdash-welcome__actions {
-        width: 100%;
-        flex-wrap: wrap;
+        flex-shrink: 0 !important;
+        flex-wrap: nowrap !important;
     }
     .hrdash-welcome__btn {
-        flex: 1;
-        min-width: 120px;
+        flex: 0 0 auto !important;
+        min-width: auto !important;
     }
 }
 .hrdash-stat {
@@ -951,9 +977,9 @@ try {
     box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(15, 23, 42, 0.04);
     border-color: #d1d9e6;
 }
-/* Primary card with blue gradient */
+/* Primary card with black gradient */
 .hrdash-stat--primary {
-    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1e293b 100%);
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
     border: none;
     color: #ffffff;
 }
@@ -1027,7 +1053,7 @@ try {
     font-weight: 700;
     line-height: 1;
     letter-spacing: -0.05em;
-    color: #0a0e27;
+    color: #000000;
     margin: 0;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
 }
@@ -2296,7 +2322,7 @@ body.portal-hr-admin .dashboard-modern {
 }
 
 .btn-primary-modern {
-    background: linear-gradient(135deg, #1fb2d5 0%, #0ea5e9 100%);
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
     color: #ffffff;
     border: none;
     padding: 0.5rem 1rem;
@@ -2304,13 +2330,13 @@ body.portal-hr-admin .dashboard-modern {
     font-weight: 600;
     font-size: 0.875rem;
     transition: all 0.2s ease;
-    box-shadow: 0 2px 8px rgba(31, 178, 213, 0.25);
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.25);
 }
 
 .btn-primary-modern:hover {
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(31, 178, 213, 0.35);
-    background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.35);
+    background: linear-gradient(135deg, #1e293b 0%, #334155 50%, #475569 100%);
 }
 
 .btn-link-modern {
@@ -2378,7 +2404,7 @@ body.portal-hr-admin .dashboard-modern {
 .stat-number {
     font-size: 2.25rem;
     font-weight: 700;
-    color: #1e293b;
+    color: #000000;
     margin: 0;
     line-height: 1;
     letter-spacing: -0.02em;
