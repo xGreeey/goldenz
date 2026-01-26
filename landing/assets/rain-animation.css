@@ -1,0 +1,368 @@
+/**
+ * Realistic Rain Animation with Lightning & Thunderstorm
+ * Golden Z-5 HR System - Login Page
+ * 
+ * Features:
+ * - Multiple layers for depth perception
+ * - Realistic physics (gravity, wind, speed variation)
+ * - Splash effects on impact
+ * - Lightning flashes
+ * - Thunder sound effects
+ * - Custom umbrella cursor
+ * - Performance optimized with CSS transforms
+ * - Reduced motion support
+ */
+
+/* Rain Container */
+.rain-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 2;
+    overflow: hidden;
+}
+
+/* Rain Layers - Different depths for realism */
+.rain-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+/* Far Layer - Background rain (slower, smaller, more transparent) */
+.rain-layer.far {
+    opacity: 0.3;
+    filter: blur(1px);
+}
+
+/* Middle Layer - Mid-ground rain */
+.rain-layer.middle {
+    opacity: 0.5;
+    filter: blur(0.5px);
+}
+
+/* Near Layer - Foreground rain (faster, larger, more visible) */
+.rain-layer.near {
+    opacity: 0.7;
+    filter: blur(0px);
+}
+
+/* Individual Rain Drop - Realistic teardrop shape */
+.rain-drop {
+    position: absolute;
+    width: 2px;
+    height: 20px;
+    background: linear-gradient(
+        to bottom,
+        rgba(255, 255, 255, 0.9) 0%,
+        rgba(200, 220, 255, 0.7) 30%,
+        rgba(150, 180, 255, 0.5) 60%,
+        rgba(100, 140, 255, 0.3) 100%
+    );
+    border-radius: 0 0 50% 50%;
+    box-shadow: 
+        0 0 3px rgba(255, 255, 255, 0.6),
+        0 0 6px rgba(200, 220, 255, 0.4),
+        inset 0 0 2px rgba(255, 255, 255, 0.3);
+    transform-origin: top center;
+    will-change: transform, opacity;
+    /* Realistic droplet shape with slight bulge */
+    clip-path: polygon(
+        0% 0%,
+        50% 0%,
+        100% 0%,
+        100% 85%,
+        50% 100%,
+        0% 85%
+    );
+}
+
+/* Far layer drops - smaller and slower */
+.rain-layer.far .rain-drop {
+    width: 1px;
+    height: 15px;
+    opacity: 0.4;
+}
+
+/* Middle layer drops */
+.rain-layer.middle .rain-drop {
+    width: 1.5px;
+    height: 18px;
+    opacity: 0.6;
+}
+
+/* Near layer drops - larger and faster */
+.rain-layer.near .rain-drop {
+    width: 2px;
+    height: 25px;
+    opacity: 0.8;
+}
+
+/* Rain Drop Animation - Falling with slight angle */
+@keyframes rain-fall-far {
+    0% {
+        transform: translateY(-100px) translateX(0) rotate(5deg);
+        opacity: 0;
+    }
+    10% {
+        opacity: 0.4;
+    }
+    90% {
+        opacity: 0.4;
+    }
+    100% {
+        transform: translateY(calc(100vh + 100px)) translateX(30px) rotate(5deg);
+        opacity: 0;
+    }
+}
+
+@keyframes rain-fall-middle {
+    0% {
+        transform: translateY(-100px) translateX(0) rotate(3deg);
+        opacity: 0;
+    }
+    10% {
+        opacity: 0.6;
+    }
+    90% {
+        opacity: 0.6;
+    }
+    100% {
+        transform: translateY(calc(100vh + 100px)) translateX(50px) rotate(3deg);
+        opacity: 0;
+    }
+}
+
+@keyframes rain-fall-near {
+    0% {
+        transform: translateY(-100px) translateX(0) rotate(2deg);
+        opacity: 0;
+    }
+    10% {
+        opacity: 0.8;
+    }
+    90% {
+        opacity: 0.8;
+    }
+    100% {
+        transform: translateY(calc(100vh + 100px)) translateX(80px) rotate(2deg);
+        opacity: 0;
+    }
+}
+
+/* Apply animations to layers */
+.rain-layer.far .rain-drop {
+    animation: rain-fall-far linear infinite;
+    animation-duration: 2s;
+}
+
+.rain-layer.middle .rain-drop {
+    animation: rain-fall-middle linear infinite;
+    animation-duration: 1.5s;
+}
+
+.rain-layer.near .rain-drop {
+    animation: rain-fall-near linear infinite;
+    animation-duration: 1s;
+}
+
+/* Splash Effect - When rain hits the ground */
+.rain-splash {
+    position: absolute;
+    bottom: 0;
+    width: 8px;
+    height: 4px;
+    background: radial-gradient(
+        ellipse at center,
+        rgba(255, 255, 255, 0.6) 0%,
+        rgba(255, 255, 255, 0.3) 50%,
+        transparent 100%
+    );
+    border-radius: 50%;
+    opacity: 0;
+    transform: scale(0);
+    animation: splash-effect 0.3s ease-out forwards;
+}
+
+@keyframes splash-effect {
+    0% {
+        opacity: 0.8;
+        transform: scale(0) translateY(0);
+    }
+    50% {
+        opacity: 0.6;
+        transform: scale(1.5) translateY(-2px);
+    }
+    100% {
+        opacity: 0;
+        transform: scale(2) translateY(-4px);
+    }
+}
+
+/* Lightning Flash Overlay */
+.lightning-flash {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0);
+    pointer-events: none;
+    z-index: 3;
+    opacity: 0;
+    transition: opacity 0.1s ease-out;
+}
+
+.lightning-flash.active {
+    opacity: 0.9;
+    background: rgba(255, 255, 255, 0.95);
+    transition: opacity 0.05s ease-out;
+}
+
+.lightning-flash.fade-out {
+    opacity: 0;
+    transition: opacity 0.2s ease-out;
+}
+
+/* Lightning Bolt SVG */
+.lightning-bolt {
+    position: fixed;
+    pointer-events: none;
+    z-index: 4;
+    opacity: 0;
+    transform: scale(0.5);
+    transition: opacity 0.1s ease-out, transform 0.1s ease-out;
+}
+
+.lightning-bolt.active {
+    opacity: 1;
+    transform: scale(1);
+    transition: opacity 0.05s ease-out, transform 0.05s ease-out;
+}
+
+.lightning-bolt.fade-out {
+    opacity: 0;
+    transform: scale(1.2);
+    transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+}
+
+/* Wind Effect - Slight horizontal movement */
+.rain-drop.wind-left {
+    animation-name: rain-fall-far, wind-left;
+}
+
+.rain-drop.wind-right {
+    animation-name: rain-fall-far, wind-right;
+}
+
+@keyframes wind-left {
+    0%, 100% {
+        transform: translateX(0);
+    }
+    50% {
+        transform: translateX(-10px);
+    }
+}
+
+@keyframes wind-right {
+    0%, 100% {
+        transform: translateX(0);
+    }
+    50% {
+        transform: translateX(10px);
+    }
+}
+
+/* Umbrella Cursor - Applied when rain is active */
+body.rain-active,
+body.rain-active * {
+    cursor: url('assets/umbrella.cur'), auto !important;
+}
+
+/* Ensure clickable elements show alternate umbrella cursor on hover */
+body.rain-active a:hover,
+body.rain-active button:hover,
+body.rain-active input[type="submit"]:hover,
+body.rain-active input[type="button"]:hover,
+body.rain-active .btn:hover,
+body.rain-active [role="button"]:hover {
+    cursor: url('assets/umbrella-alternate.cur'), pointer !important;
+}
+
+/* Text selection cursor */
+body.rain-active input[type="text"]:hover,
+body.rain-active input[type="password"]:hover,
+body.rain-active input[type="email"]:hover,
+body.rain-active textarea:hover {
+    cursor: url('assets/umbrella-text.cur'), text !important;
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+    .rain-drop,
+    .rain-splash,
+    .lightning-flash,
+    .lightning-bolt {
+        animation: none !important;
+        opacity: 0.2 !important;
+    }
+    
+    .rain-container {
+        display: none;
+    }
+    
+    body.rain-active,
+    body.rain-active * {
+        cursor: auto !important;
+    }
+}
+
+/* Performance Optimization */
+.rain-drop {
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    perspective: 1000px;
+    -webkit-perspective: 1000px;
+}
+
+/* Ensure rain doesn't interfere with form interactions */
+.rain-container {
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+/* Ensure login form stays above rain */
+.login-form-panel,
+.auth-form-card {
+    position: relative;
+    z-index: 10;
+}
+
+.login-branded-panel {
+    position: relative;
+    z-index: 5;
+}
+
+/* Rain visibility behind form but visible on background */
+.rain-container {
+    z-index: 2;
+}
+
+/* Add subtle blur effect to background during rain */
+.login-split-container::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.05);
+    pointer-events: none;
+    z-index: 1;
+}
