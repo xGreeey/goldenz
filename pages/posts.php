@@ -141,7 +141,7 @@ $posts = get_posts($filters);
                 </div>
                 <div class="col-auto">
                     <button class="btn btn-outline-modern" onclick="resetFilters()" title="Clear Filters" aria-label="Clear Filters">
-                        <i class="fas fa-times" aria-hidden="true"></i>
+                        <i class="fas fa-redo" aria-hidden="true"></i>
                     </button>
                 </div>
             </div>
