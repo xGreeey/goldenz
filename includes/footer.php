@@ -57,6 +57,7 @@
     <script src="<?php echo asset_url('js/sidebar-dropdown.js'); ?>"></script>
     <script src="<?php echo asset_url('js/page-transitions.js'); ?>"></script>
     <script src="<?php echo asset_url('js/comprehensive-functionality.js'); ?>"></script>
+    <script src="<?php echo asset_url('js/button-handler.js'); ?>"></script>
     <script src="<?php echo asset_url('js/notifications.js'); ?>"></script>
     <script src="<?php echo asset_url('js/notifications-handler.js'); ?>"></script>
     <script src="<?php echo asset_url('js/logout-animation.js'); ?>"></script>
