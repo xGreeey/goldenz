@@ -658,67 +658,48 @@ try {
     display: none;
 }
 .hrdash-welcome {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-    margin: 0 !important;
-    /* Fixed height and padding - never changes */
-    height: 88px !important;
-    min-height: 88px !important;
-    max-height: 88px !important;
-    padding: 1.25rem 1.5rem !important; /* Fixed padding - never changes */
-    background: #f1f5f9 !important;
-    border-bottom: 1px solid #e2e8f0 !important;
-    width: 100% !important;
-    box-sizing: border-box !important;
-    overflow: hidden !important; /* Prevent content overflow from changing height */
-    flex-wrap: nowrap !important; /* Prevent wrapping that could change height */
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0;
+    padding: 1.5rem var(--hr-page-px);
+    background: #f1f5f9;
+    border-bottom: 1px solid #e2e8f0;
+    width: 100%;
+    box-sizing: border-box;
 }
 .hrdash-welcome__left {
     flex: 1;
-    min-width: 0; /* Allow shrinking if needed */
-    overflow: hidden; /* Prevent content overflow */
 }
 .hrdash-welcome__title {
     font-size: 2.25rem;
     font-weight: 700;
     letter-spacing: -0.04em;
-    margin: 0 0 0.5rem 0 !important; /* Fixed margin - never changes */
+    margin: 0 0 0.5rem 0;
     color: #0a0e27;
-    line-height: 1.1 !important; /* Fixed line-height to prevent height changes */
+    line-height: 1.1;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-    white-space: nowrap !important; /* Prevent text wrapping */
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
 }
 .hrdash-welcome__time {
     font-weight: 600;
     color: #64748b;
     font-size: 0.9375rem;
-    margin: 0 !important; /* Fixed margin - never changes */
-    margin-right: 1rem !important;
+    margin-right: 1rem;
     display: inline-flex;
     align-items: center;
-    padding: 0 !important; /* Fixed padding - never changes */
+    padding: 0.5rem 0;
     letter-spacing: 0.02em;
-    white-space: nowrap !important; /* Prevent text wrapping */
-    flex-shrink: 0 !important;
 }
 .hrdash-welcome__subtitle {
-    margin: 0 !important; /* Fixed margin - never changes */
+    margin: 0;
     color: #64748b;
     font-size: 0.9375rem;
-    line-height: 1.4 !important; /* Fixed line-height */
-    white-space: nowrap !important; /* Prevent text wrapping */
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
 }
 .hrdash-welcome__actions {
-    display: flex !important;
-    align-items: center !important;
-    gap: 0.75rem !important;
-    flex-shrink: 0 !important;
-    min-width: 0 !important;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-shrink: 0;
 }
 .hrdash-welcome__btn {
     display: inline-flex;
@@ -938,24 +919,17 @@ try {
 }
 @media (max-width: 768px) {
     .hrdash-welcome {
-        /* Maintain fixed height on mobile - never changes */
-        height: 88px !important;
-        min-height: 88px !important;
-        max-height: 88px !important;
-        flex-direction: row !important; /* Keep horizontal to maintain height */
-        align-items: center !important;
-        gap: 0.75rem !important;
-        padding: 1.25rem 1rem !important; /* Fixed padding - reduced horizontal on mobile */
-        flex-wrap: nowrap !important; /* Prevent wrapping */
-        overflow: hidden !important; /* Prevent content overflow */
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
     }
     .hrdash-welcome__actions {
-        flex-shrink: 0 !important;
-        flex-wrap: nowrap !important;
+        width: 100%;
+        flex-wrap: wrap;
     }
     .hrdash-welcome__btn {
-        flex: 0 0 auto !important;
-        min-width: auto !important;
+        flex: 1;
+        min-width: 120px;
     }
 }
 .hrdash-stat {
@@ -1053,7 +1027,7 @@ try {
     font-weight: 700;
     line-height: 1;
     letter-spacing: -0.05em;
-    color: #000000;
+    color: #0a0e27;
     margin: 0;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
 }
@@ -2404,7 +2378,7 @@ body.portal-hr-admin .dashboard-modern {
 .stat-number {
     font-size: 2.25rem;
     font-weight: 700;
-    color: #000000;
+    color: #0f172a;
     margin: 0;
     line-height: 1;
     letter-spacing: -0.02em;
