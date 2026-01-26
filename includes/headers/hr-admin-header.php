@@ -20,6 +20,7 @@ function getPageTitle($page) {
         'handbook' => 'Hiring Handbook',
         'alerts' => 'Employee Alerts',
         'add_alert' => 'Add New Alert',
+        'events' => 'Events',
         'posts' => 'Posts & Locations',
         'add_post' => 'Add New Post',
         'edit_post' => 'Edit Post',
@@ -221,6 +222,15 @@ function isNavLinkActive($linkPage, $currentPage, $fromHeader = false) {
                    data-page="dashboard">
                     <i class="fas fa-home" aria-hidden="true"></i>
                     <span>Dashboard</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a href="?page=events"
+                   class="nav-link <?php echo ($page === 'events') ? 'active' : ''; ?>"
+                   data-page="events">
+                    <i class="fas fa-calendar-alt" aria-hidden="true"></i>
+                    <span>Events</span>
                 </a>
             </li>
 
@@ -444,6 +454,9 @@ function isNavLinkActive($linkPage, $currentPage, $fromHeader = false) {
                     break;
                 case 'add_alert':
                     include $pages_path . 'add_alert.php';
+                    break;
+                case 'events':
+                    include $pages_path . 'events.php';
                     break;
                 case 'dtr':
                     if (isset($_POST['action']) && $_POST['action'] === 'save') {

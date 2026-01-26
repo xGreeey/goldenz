@@ -486,7 +486,7 @@ function formatBirthdayDate($date) {
                                 </div>
                                 <div class="ms-auto">
                                     <button class="btn btn-link feed-post-menu-btn" type="button" title="More options">
-                                        <i class="fas fa-ellipsis-h"></i>
+                                        <i class="fas fa-ellipsis-v"></i>
                                     </button>
                                 </div>
                             </div>
@@ -541,52 +541,74 @@ function formatBirthdayDate($date) {
 
                         <!-- Post Footer -->
                         <div class="card-footer feed-post-footer">
-                            <!-- Action Buttons -->
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <div class="feed-post-actions-left">
-                                    <button class="btn btn-link feed-action-btn <?php echo $post['is_liked'] ? 'text-danger' : ''; ?>" 
-                                            type="button" 
-                                            data-action="like"
-                                            data-post-id="<?php echo $post['id']; ?>">
-                                        <i class="<?php echo $post['is_liked'] ? 'fas' : 'far'; ?> fa-heart"></i>
-                                    </button>
-                                    <button class="btn btn-link feed-action-btn" type="button" data-action="comment">
-                                        <i class="far fa-comment"></i>
-                                    </button>
-                                    <button class="btn btn-link feed-action-btn" type="button" data-action="share">
-                                        <i class="far fa-paper-plane"></i>
-                                    </button>
-                                </div>
-                                <div class="feed-post-actions-right">
-                                    <button class="btn btn-link feed-action-btn" type="button" data-action="repost">
-                                        <i class="fas fa-retweet"></i>
-                                    </button>
-                                    <button class="btn btn-link feed-action-btn" type="button" data-action="save">
-                                        <i class="far fa-bookmark"></i>
-                                    </button>
-                                </div>
+                            <!-- Reactions and Replies -->
+                            <div class="feed-post-reactions">
+                                <button class="feed-reaction-btn" type="button" title="React">
+                                    <i class="far fa-smile"></i>
+                                </button>
+                                <span class="feed-reply-count"><?php echo $post['comments']; ?> reply<?php echo $post['comments'] != 1 ? 'ies' : ''; ?></span>
                             </div>
 
-                            <!-- Engagement Stats -->
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <div class="feed-post-likes">
-                                    <?php echo number_format($post['likes']); ?> likes
-                                </div>
-                                <div class="feed-post-engagement">
-                                    <?php echo $post['comments']; ?> Comments ΓÇó <?php echo $post['shares']; ?> Reposts
-                                </div>
+                            <!-- Comments/Replies Section -->
+                            <div class="feed-post-comments" data-post-id="<?php echo $post['id']; ?>">
+                                <!-- Sample Reply/Comment -->
+                                <?php if ($post['comments'] > 0): ?>
+                                    <div class="feed-comment">
+                                        <div class="feed-comment__avatar">
+                                            <?php 
+                                            $comment_user_initials = 'EC'; // Example: Elizabeth Cooper
+                                            ?>
+                                            <div class="feed-comment__avatar-placeholder">
+                                                <?php echo $comment_user_initials; ?>
+                                            </div>
+                                        </div>
+                                        <div class="feed-comment__content">
+                                            <div class="feed-comment__header">
+                                                <span class="feed-comment__author">Elizabeth Cooper</span>
+                                                <span class="feed-comment__time"><?php echo htmlspecialchars($post['time_ago']); ?></span>
+                                                <span class="feed-comment__badge feed-comment__badge--you">You</span>
+                                                <div class="ms-auto">
+                                                    <button class="btn btn-link feed-comment__menu" type="button" title="More options">
+                                                        <i class="fas fa-ellipsis-v"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div class="feed-comment__text">
+                                                Okay great thats all the information I needed to know!
+                                            </div>
+                                            <div class="feed-comment__reactions">
+                                                <button class="feed-reaction-btn feed-reaction-btn--small" type="button" title="React">
+                                                    <i class="far fa-smile"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <?php endif; ?>
                             </div>
 
-                            <!-- Comment Input -->
-                            <div class="feed-post-comment-input">
-                                <div class="input-group">
+                            <!-- Reply Input -->
+                            <div class="feed-post-reply-input">
+                                <div class="feed-reply-avatar">
+                                    <?php 
+                                    $current_user_initials = strtoupper(substr(($_SESSION['name'] ?? 'User'), 0, 2));
+                                    ?>
+                                    <div class="feed-reply-avatar-placeholder">
+                                        <?php echo $current_user_initials; ?>
+                                    </div>
+                                </div>
+                                <div class="feed-reply-input-wrapper">
                                     <input type="text" 
-                                           class="form-control" 
-                                           placeholder="Add a comment..."
+                                           class="feed-reply-input" 
+                                           placeholder="Enter reply"
                                            data-post-id="<?php echo $post['id']; ?>">
-                                    <button class="btn btn-link feed-comment-emoji" type="button" aria-label="Add emoji">
-                                        <i class="far fa-smile" aria-hidden="true"></i>
-                                    </button>
+                                    <div class="feed-reply-input-actions">
+                                        <button class="feed-reply-action-btn" type="button" title="Add emoji">
+                                            <i class="far fa-smile"></i>
+                                        </button>
+                                        <button class="feed-reply-action-btn" type="button" title="Attach file">
+                                            <i class="fas fa-paperclip"></i>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -1005,15 +1027,24 @@ function formatBirthdayDate($date) {
 
 .feed-post-time {
     font-weight: 500;
-}
-
-.feed-post-location {
-    color: #94a3b8;
+    color: #64748b;
 }
 
 .feed-post-menu-btn {
     color: #64748b;
     padding: 0.25rem 0.5rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.feed-post-menu-btn:hover {
+    color: #334155;
+}
+
+.feed-post-body {
+    padding: 1rem 1.25rem;
 }
 
 .feed-post-menu-btn i,
@@ -1029,7 +1060,7 @@ function formatBirthdayDate($date) {
 }
 
 .feed-post-content {
-    color: #0f172a;
+    color: #334155;
     font-size: 0.9375rem;
     line-height: 1.6;
     padding: 0;
