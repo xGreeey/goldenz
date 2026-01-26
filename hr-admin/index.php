@@ -1016,6 +1016,112 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         exit;
     }
     
+    // Handle feed page create_event action directly here to avoid HTML output
+    if ($page === 'feed' && $action === 'create_event' && $isAjax) {
+        // Include necessary files
+        require_once __DIR__ . '/../includes/database.php';
+        
+        // Handle the create_event action
+        try {
+            // Validate and sanitize input data
+            $title = trim($_POST['title'] ?? '');
+            $description = !empty($_POST['description']) ? trim($_POST['description']) : null;
+            $start_date = trim($_POST['start_date'] ?? '');
+            $start_time = !empty($_POST['start_time']) ? trim($_POST['start_time']) : null;
+            $end_date = !empty($_POST['end_date']) ? trim($_POST['end_date']) : null;
+            $end_time = !empty($_POST['end_time']) ? trim($_POST['end_time']) : null;
+            $event_type = $_POST['event_type'] ?? 'Other';
+            $holiday_type = $_POST['holiday_type'] ?? 'N/A';
+            $category = !empty($_POST['category']) ? trim($_POST['category']) : null;
+            $notes = !empty($_POST['notes']) ? trim($_POST['notes']) : null;
+            
+            // Validate required fields
+            if (empty($title)) {
+                throw new InvalidArgumentException('Event title is required.');
+            }
+            
+            if (empty($start_date)) {
+                throw new InvalidArgumentException('Start date is required.');
+            }
+            
+            // Validate date format
+            $date_format = 'Y-m-d';
+            $start_date_obj = DateTime::createFromFormat($date_format, $start_date);
+            if (!$start_date_obj || $start_date_obj->format($date_format) !== $start_date) {
+                throw new InvalidArgumentException('Invalid start date format.');
+            }
+            
+            // Validate end_date if provided
+            if (!empty($end_date)) {
+                $end_date_obj = DateTime::createFromFormat($date_format, $end_date);
+                if (!$end_date_obj || $end_date_obj->format($date_format) !== $end_date) {
+                    throw new InvalidArgumentException('Invalid end date format.');
+                }
+                
+                // Ensure end_date is not before start_date
+                if ($end_date_obj < $start_date_obj) {
+                    throw new InvalidArgumentException('End date cannot be before start date.');
+                }
+            }
+            
+            // Validate event_type enum
+            $valid_event_types = ['Holiday', 'Examination', 'Academic', 'Special Event', 'Other'];
+            if (!in_array($event_type, $valid_event_types, true)) {
+                $event_type = 'Other';
+            }
+            
+            // Validate holiday_type enum
+            $valid_holiday_types = ['Regular Holiday', 'Special Non-Working Holiday', 'Local Special Non-Working Holiday', 'N/A'];
+            if (!in_array($holiday_type, $valid_holiday_types, true)) {
+                $holiday_type = 'N/A';
+            }
+            
+            // Prepare event data array
+            $event_data = [
+                'title' => $title,
+                'description' => $description,
+                'start_date' => $start_date,
+                'start_time' => $start_time,
+                'end_date' => $end_date,
+                'end_time' => $end_time,
+                'event_type' => $event_type,
+                'holiday_type' => $holiday_type,
+                'category' => $category,
+                'notes' => $notes
+            ];
+            
+            // Create event using database function
+            $event_id = create_event($event_data);
+            
+            if ($event_id !== false && $event_id > 0) {
+                echo json_encode([
+                    'success' => true,
+                    'message' => 'Event created successfully!',
+                    'event_id' => (int)$event_id
+                ], JSON_THROW_ON_ERROR);
+            } else {
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Failed to create event. Please try again.'
+                ], JSON_THROW_ON_ERROR);
+            }
+        } catch (InvalidArgumentException $e) {
+            error_log('Event validation error: ' . $e->getMessage());
+            echo json_encode([
+                'success' => false,
+                'message' => 'Validation error: ' . $e->getMessage()
+            ], JSON_THROW_ON_ERROR);
+        } catch (Exception $e) {
+            error_log('Error creating event: ' . $e->getMessage());
+            error_log('Stack trace: ' . $e->getTraceAsString());
+            echo json_encode([
+                'success' => false,
+                'message' => 'An unexpected error occurred. Please try again.'
+            ], JSON_THROW_ON_ERROR);
+        }
+        exit;
+    }
+    
     // Other POST handlers can be added here
     // Skip JSON response and "Invalid action" for page-handled actions
     $allowPageToHandle = !$isAjax && 

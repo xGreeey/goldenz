@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: db:3306
--- Generation Time: Jan 23, 2026 at 05:01 AM
+-- Generation Time: Jan 26, 2026 at 05:00 AM
 -- Server version: 8.0.44
 -- PHP Version: 8.3.26
 
@@ -181,7 +181,26 @@ INSERT INTO `audit_logs` (`id`, `user_id`, `action`, `table_name`, `record_id`, 
 (134, 25, 'LOGIN_ATTEMPT', 'users', 25, NULL, '{\"login_time\":\"2026-01-23 11:00:44\"}', '172.18.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-01-23 03:00:44'),
 (135, 25, 'LOGIN_ATTEMPT', 'users', 25, NULL, '{\"login_time\":\"2026-01-23 11:01:00\"}', '172.18.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-01-23 03:01:00'),
 (136, 25, 'LOGIN_ATTEMPT', 'users', 25, NULL, '{\"login_time\":\"2026-01-23 12:03:55\"}', '172.18.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-01-23 04:03:55'),
-(137, 30, 'LOGIN_ATTEMPT', 'users', 30, NULL, '{\"login_time\":\"2026-01-23 12:35:37\"}', '172.18.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-01-23 04:35:37');
+(137, 30, 'LOGIN_ATTEMPT', 'users', 30, NULL, '{\"login_time\":\"2026-01-23 12:35:37\"}', '172.18.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-01-23 04:35:37'),
+(138, 25, 'LOGIN_ATTEMPT', 'users', 25, NULL, '{\"login_time\":\"2026-01-23 13:40:30\"}', '172.18.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-01-23 05:40:30'),
+(139, 25, 'LOGIN_ATTEMPT', 'users', 25, NULL, '{\"login_time\":\"2026-01-23 13:41:30\"}', '172.18.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-01-23 05:41:30'),
+(140, 30, 'LOGIN_ATTEMPT', 'users', 30, NULL, '{\"login_time\":\"2026-01-23 13:44:55\"}', '172.18.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-01-23 05:44:55'),
+(141, 25, 'LOGIN_ATTEMPT', 'users', 25, NULL, '{\"login_time\":\"2026-01-23 14:06:44\"}', '172.18.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-01-23 06:06:44'),
+(142, 25, 'LOGIN_ATTEMPT', 'users', 25, NULL, '{\"login_time\":\"2026-01-23 14:57:49\",\"login_type\":\"auto\"}', '172.18.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-01-23 06:57:49'),
+(143, 30, 'LOGIN_ATTEMPT', 'users', 30, NULL, '{\"login_time\":\"2026-01-23 14:58:13\",\"login_type\":\"auto\"}', '172.18.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-01-23 06:58:13'),
+(144, 30, 'LOGIN_ATTEMPT', 'users', 30, NULL, '{\"login_time\":\"2026-01-23 15:31:56\"}', '172.18.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-01-23 07:31:56'),
+(145, 25, 'LOGIN_ATTEMPT', 'users', 25, NULL, '{\"login_time\":\"2026-01-23 15:32:09\"}', '172.18.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-01-23 07:32:09'),
+(146, 25, 'LOGIN_ATTEMPT', 'users', 25, NULL, '{\"login_time\":\"2026-01-23 15:33:07\"}', '172.18.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-01-23 07:33:07'),
+(147, 25, 'LOGIN_ATTEMPT', 'users', 25, NULL, '{\"login_time\":\"2026-01-23 15:54:40\"}', '172.18.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-01-23 07:54:40'),
+(148, 25, 'LOGIN_ATTEMPT', 'users', 25, NULL, '{\"login_time\":\"2026-01-26 07:35:41\"}', '172.18.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-01-25 23:35:41'),
+(149, 25, 'LOGIN_ATTEMPT', 'users', 25, NULL, '{\"login_time\":\"2026-01-26 08:01:06\"}', '172.18.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-01-26 00:01:06'),
+(150, 30, 'LOGIN_ATTEMPT', 'users', 30, NULL, '{\"login_time\":\"2026-01-26 09:33:59\"}', '172.18.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-01-26 01:33:59'),
+(151, 25, 'LOGIN_ATTEMPT', 'users', 25, NULL, '{\"login_time\":\"2026-01-26 09:34:40\"}', '172.18.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-01-26 01:34:40');
+INSERT INTO `audit_logs` (`id`, `user_id`, `action`, `table_name`, `record_id`, `old_values`, `new_values`, `ip_address`, `user_agent`, `created_at`) VALUES
+(152, 25, 'LOGIN_ATTEMPT', 'users', 25, NULL, '{\"login_time\":\"2026-01-26 10:05:50\"}', '172.18.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-01-26 02:05:50'),
+(153, 25, 'LOGIN_ATTEMPT', 'users', 25, NULL, '{\"login_time\":\"2026-01-26 10:53:49\"}', '172.18.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-01-26 02:53:49'),
+(154, 30, 'LOGIN_ATTEMPT', 'users', 30, NULL, '{\"login_time\":\"2026-01-26 11:32:47\"}', '172.18.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-01-26 03:32:47'),
+(155, 25, 'LOGIN_ATTEMPT', 'users', 25, NULL, '{\"login_time\":\"2026-01-26 11:41:06\"}', '172.18.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-01-26 03:41:06');
 
 -- --------------------------------------------------------
 
@@ -281,7 +300,24 @@ INSERT INTO `backup_history` (`id`, `filename`, `filepath`, `file_size`, `create
 (77, 'backup_goldenz_hr_2026-01-23_113001.sql', 'minio://db-backups/backup_goldenz_hr_2026-01-23_113001.sql.gz', 24393, '2026-01-23 03:30:01'),
 (78, 'backup_goldenz_hr_2026-01-23_120001.sql', 'minio://db-backups/backup_goldenz_hr_2026-01-23_120001.sql.gz', 24260, '2026-01-23 04:00:02'),
 (79, 'backup_goldenz_hr_2026-01-23_123001.sql', 'minio://db-backups/backup_goldenz_hr_2026-01-23_123001.sql.gz', 24514, '2026-01-23 04:30:02'),
-(80, 'backup_goldenz_hr_2026-01-23_130001.sql', 'minio://db-backups/backup_goldenz_hr_2026-01-23_130001.sql.gz', 24591, '2026-01-23 05:00:02');
+(80, 'backup_goldenz_hr_2026-01-23_130001.sql', 'minio://db-backups/backup_goldenz_hr_2026-01-23_130001.sql.gz', 24591, '2026-01-23 05:00:02'),
+(81, 'backup_goldenz_hr_2026-01-23_133001.sql', 'minio://db-backups/backup_goldenz_hr_2026-01-23_133001.sql.gz', 24612, '2026-01-23 05:30:02'),
+(82, 'backup_goldenz_hr_2026-01-23_140001.sql', 'minio://db-backups/backup_goldenz_hr_2026-01-23_140001.sql.gz', 24783, '2026-01-23 06:00:02'),
+(83, 'backup_goldenz_hr_2026-01-23_143001.sql', 'minio://db-backups/backup_goldenz_hr_2026-01-23_143001.sql.gz', 24871, '2026-01-23 06:30:01'),
+(84, 'backup_goldenz_hr_2026-01-23_150001.sql', 'minio://db-backups/backup_goldenz_hr_2026-01-23_150001.sql.gz', 24917, '2026-01-23 07:00:02'),
+(85, 'backup_goldenz_hr_2026-01-23_153001.sql', 'minio://db-backups/backup_goldenz_hr_2026-01-23_153001.sql.gz', 24935, '2026-01-23 07:30:01'),
+(86, 'backup_goldenz_hr_2026-01-23_160002.sql', 'minio://db-backups/backup_goldenz_hr_2026-01-23_160002.sql.gz', 25093, '2026-01-23 08:00:02'),
+(87, 'backup_goldenz_hr_2026-01-26_080001.sql', 'minio://db-backups/backup_goldenz_hr_2026-01-26_080001.sql.gz', 25299, '2026-01-26 00:00:02'),
+(88, 'backup_goldenz_hr_2026-01-26_083002.sql', 'minio://db-backups/backup_goldenz_hr_2026-01-26_083002.sql.gz', 25367, '2026-01-26 00:30:03'),
+(89, 'backup_goldenz_hr_2026-01-26_090001.sql', 'minio://db-backups/backup_goldenz_hr_2026-01-26_090001.sql.gz', 25384, '2026-01-26 01:00:01'),
+(90, 'backup_goldenz_hr_2026-01-26_093001.sql', 'minio://db-backups/backup_goldenz_hr_2026-01-26_093001.sql.gz', 25404, '2026-01-26 01:30:02'),
+(91, 'backup_goldenz_hr_2026-01-26_100001.sql', 'minio://db-backups/backup_goldenz_hr_2026-01-26_100001.sql.gz', 25458, '2026-01-26 02:00:02'),
+(92, 'backup_goldenz_hr_2026-01-26_103001.sql', 'minio://db-backups/backup_goldenz_hr_2026-01-26_103001.sql.gz', 25497, '2026-01-26 02:30:01'),
+(93, 'backup_goldenz_hr_2026-01-26_110001.sql', 'minio://db-backups/backup_goldenz_hr_2026-01-26_110001.sql.gz', 25529, '2026-01-26 03:00:02'),
+(94, 'backup_goldenz_hr_2026-01-26_113001.sql', 'minio://db-backups/backup_goldenz_hr_2026-01-26_113001.sql.gz', 25542, '2026-01-26 03:30:02'),
+(95, 'backup_goldenz_hr_2026-01-26_120001.sql', 'minio://db-backups/backup_goldenz_hr_2026-01-26_120001.sql.gz', 25616, '2026-01-26 04:00:02'),
+(96, 'backup_goldenz_hr_2026-01-26_123001.sql', 'minio://db-backups/backup_goldenz_hr_2026-01-26_123001.sql.gz', 25688, '2026-01-26 04:30:01'),
+(97, 'backup_goldenz_hr_2026-01-26_130001.sql', 'minio://db-backups/backup_goldenz_hr_2026-01-26_130001.sql.gz', 25730, '2026-01-26 05:00:02');
 
 -- --------------------------------------------------------
 
@@ -335,7 +371,15 @@ INSERT INTO `chat_messages` (`id`, `sender_id`, `receiver_id`, `message`, `attac
 (33, 30, 25, 'asdfasd', NULL, NULL, NULL, NULL, 1, 1, 0, '2026-01-23 04:45:43', '2026-01-23 04:45:33', '2026-01-23 04:45:50'),
 (34, 25, 30, 'sdaf', NULL, NULL, NULL, NULL, 1, 0, 0, '2026-01-23 04:49:48', '2026-01-23 04:49:44', '2026-01-23 04:49:48'),
 (35, 30, 25, '[Photo]', 'image', 'uploads/chat_attachments/chat_30_1769143803_f74ab0c82b80b71c.jpg', 78201, 'christian.jpg', 1, 0, 0, '2026-01-23 04:50:04', '2026-01-23 04:50:03', '2026-01-23 04:50:04'),
-(36, 30, 25, '[Photo]', 'image', 'uploads/chat_attachments/chat_30_1769143817_10b5cb74e54763cc.jpg', 271075, '20c9a4a5-cdfe-45fc-a5e7-fc6c2c837147.jpg', 1, 0, 0, '2026-01-23 04:50:19', '2026-01-23 04:50:17', '2026-01-23 04:50:19');
+(36, 30, 25, '[Photo]', 'image', 'uploads/chat_attachments/chat_30_1769143817_10b5cb74e54763cc.jpg', 271075, '20c9a4a5-cdfe-45fc-a5e7-fc6c2c837147.jpg', 1, 0, 0, '2026-01-23 04:50:19', '2026-01-23 04:50:17', '2026-01-23 04:50:19'),
+(37, 25, 30, 'asdfsadf', NULL, NULL, NULL, NULL, 1, 0, 0, '2026-01-23 05:44:59', '2026-01-23 05:44:35', '2026-01-23 05:44:59'),
+(38, 30, 25, 'waddap', NULL, NULL, NULL, NULL, 1, 0, 0, '2026-01-23 05:45:05', '2026-01-23 05:45:04', '2026-01-23 05:45:05'),
+(39, 25, 30, 'sdfasfd', NULL, NULL, NULL, NULL, 1, 0, 0, '2026-01-23 05:51:05', '2026-01-23 05:51:02', '2026-01-23 05:51:05'),
+(40, 30, 25, 'fds', NULL, NULL, NULL, NULL, 1, 0, 0, '2026-01-23 05:51:17', '2026-01-23 05:51:16', '2026-01-23 05:51:17'),
+(41, 25, 30, '💬😫💚', NULL, NULL, NULL, NULL, 1, 0, 0, '2026-01-26 01:34:07', '2026-01-23 06:07:00', '2026-01-26 01:34:07'),
+(42, 25, 30, 'sdf', NULL, NULL, NULL, NULL, 1, 0, 0, '2026-01-26 01:34:07', '2026-01-26 00:01:34', '2026-01-26 01:34:07'),
+(43, 25, 30, 'dfsds', NULL, NULL, NULL, NULL, 1, 0, 0, '2026-01-26 01:34:07', '2026-01-26 00:01:59', '2026-01-26 01:34:07'),
+(44, 30, 25, 'hi', NULL, NULL, NULL, NULL, 0, 0, 0, NULL, '2026-01-26 03:35:13', '2026-01-26 03:35:13');
 
 -- --------------------------------------------------------
 
@@ -356,8 +400,8 @@ CREATE TABLE `chat_typing_status` (
 --
 
 INSERT INTO `chat_typing_status` (`id`, `user_id`, `recipient_id`, `is_typing`, `updated_at`) VALUES
-(1, 25, 30, 0, '2026-01-23 04:49:49'),
-(3, 30, 25, 0, '2026-01-23 04:50:17');
+(1, 25, 30, 0, '2026-01-26 00:01:59'),
+(3, 30, 25, 0, '2026-01-26 03:35:18');
 
 -- --------------------------------------------------------
 
@@ -386,12 +430,12 @@ CREATE TABLE `dtr_entries` (
 CREATE TABLE `dtr_summary` (
 `employee_id` int
 ,`employee_name` varchar(102)
-,`post` varchar(100)
 ,`entry_date` date
-,`time_in` time
-,`time_out` time
 ,`entry_type` enum('time-in','time-out','break','overtime')
 ,`hours_worked` bigint
+,`post` varchar(100)
+,`time_in` time
+,`time_out` time
 );
 
 -- --------------------------------------------------------
@@ -643,18 +687,18 @@ CREATE TABLE `employee_checklist` (
 -- (See below for the actual view)
 --
 CREATE TABLE `employee_details` (
-`id` int
+`created_at` timestamp
+,`date_hired` date
 ,`employee_no` int
 ,`employee_type` enum('SG','LG','SO')
 ,`full_name` varchar(153)
-,`post` varchar(100)
-,`license_no` varchar(50)
+,`id` int
 ,`license_exp_date` date
-,`date_hired` date
-,`status` enum('Active','Inactive','Terminated','Suspended')
-,`created_at` timestamp
-,`updated_at` timestamp
+,`license_no` varchar(50)
 ,`license_status` varchar(13)
+,`post` varchar(100)
+,`status` enum('Active','Inactive','Terminated','Suspended')
+,`updated_at` timestamp
 );
 
 -- --------------------------------------------------------
@@ -688,6 +732,36 @@ INSERT INTO `employee_violations` (`id`, `employee_id`, `violation_type_id`, `vi
 (2, 10, 178, '2026-01-22', 'asfdsadf', 'Major', 2, 'asfdsdf', '2026-01-22', 'asdfasdfasd', 'Under Review', '2026-01-22 08:15:57', '2026-01-22 08:15:57'),
 (3, 9, 174, '2026-01-22', 'sadfdsafsdfasd', 'Major', 1, '7 days suspension', '2026-01-20', 'fsdfdsfsdafdsfasdfdsa', 'Pending', '2026-01-22 08:19:41', '2026-01-22 08:19:41'),
 (4, 8, 182, '2026-01-22', 'asdfas', 'Major', 1, 'fsadfsadf', '2026-01-22', 'safasffdaff', 'Pending', '2026-01-22 08:41:22', '2026-01-22 08:41:22');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `events`
+--
+
+CREATE TABLE `events` (
+  `id` int NOT NULL,
+  `title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` text COLLATE utf8mb4_unicode_ci,
+  `start_date` date NOT NULL,
+  `start_time` time DEFAULT NULL,
+  `end_date` date DEFAULT NULL,
+  `end_time` time DEFAULT NULL,
+  `event_type` enum('Holiday','Examination','Academic','Special Event','Other') COLLATE utf8mb4_unicode_ci DEFAULT 'Other',
+  `holiday_type` enum('Regular Holiday','Special Non-Working Holiday','Local Special Non-Working Holiday','N/A') COLLATE utf8mb4_unicode_ci DEFAULT 'N/A',
+  `category` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `notes` text COLLATE utf8mb4_unicode_ci,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `events`
+--
+
+INSERT INTO `events` (`id`, `title`, `description`, `start_date`, `start_time`, `end_date`, `end_time`, `event_type`, `holiday_type`, `category`, `notes`, `created_at`, `updated_at`) VALUES
+(1, 'asdfafsd', NULL, '2026-01-21', NULL, NULL, NULL, 'Academic', 'N/A', NULL, NULL, '2026-01-26 04:07:34', '2026-01-26 04:07:34'),
+(2, 'sdafsd', NULL, '2026-01-26', NULL, NULL, NULL, 'Examination', 'N/A', NULL, NULL, '2026-01-26 04:46:59', '2026-01-26 04:46:59');
 
 -- --------------------------------------------------------
 
@@ -750,12 +824,12 @@ CREATE TABLE `leave_balance_summary` (
 `employee_id` int
 ,`employee_name` varchar(102)
 ,`employee_type` enum('SG','LG','SO')
-,`post` varchar(100)
 ,`leave_type` enum('vacation','sick','personal','emergency','maternity','paternity','bereavement')
-,`year` int
+,`post` varchar(100)
+,`remaining_days` bigint
 ,`total_entitlement` int
 ,`used_days` int
-,`remaining_days` bigint
+,`year` int
 );
 
 -- --------------------------------------------------------
@@ -828,16 +902,16 @@ INSERT INTO `posts` (`id`, `post_title`, `post_code`, `department`, `employee_ty
 -- (See below for the actual view)
 --
 CREATE TABLE `post_statistics` (
-`id` int
-,`post_title` int
-,`location` int
-,`employee_type` int
-,`required_count` int
-,`filled_count` int
-,`available_positions` int
-,`priority` int
-,`status` int
+`available_positions` int
 ,`created_at` int
+,`employee_type` int
+,`filled_count` int
+,`id` int
+,`location` int
+,`post_title` int
+,`priority` int
+,`required_count` int
+,`status` int
 );
 
 -- --------------------------------------------------------
@@ -978,15 +1052,15 @@ INSERT INTO `users` (`id`, `username`, `email`, `password_hash`, `name`, `role`,
 (4, 'dev.lead', 'dev.lead@goldenz5.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Jacob R. Villanueva', 'developer', 'active', NULL, 'IT/Development', '0917-200-0001', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, 0, NULL, 1, '2025-12-01 02:11:35', '2025-12-01 02:11:35'),
 (5, 'dev.engineer', 'dev.engineer@goldenz5.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Lara S. Mendoza', 'developer', 'active', NULL, 'IT/Development', '0917-200-0002', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, 0, NULL, 1, '2025-12-01 02:11:35', '2025-12-01 02:11:35'),
 (6, 'dev.ops', 'dev.ops@goldenz5.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Noel T. Cruz', 'developer', 'active', NULL, 'IT/Development', '0917-200-0003', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, 0, NULL, 1, '2025-12-01 02:11:35', '2025-12-01 02:11:35'),
-(25, 'hradmin', 'hradmin@goldenz5.com', '$2y$10$2Fp4cu96Oey7AQ87V/fWd.EVqmVzV5chLxspeoyzzSPooNUOXxYDq', 'HR Administrator', 'hr_admin', 'active', NULL, NULL, NULL, 'uploads/users/user_25_1769064960.jpg', '2026-01-23 04:03:55', '172.18.0.1', 0, NULL, '2026-01-13 05:22:28', NULL, NULL, 0, NULL, NULL, '2025-12-11 17:49:50', '2026-01-23 04:03:55'),
-(30, 'grey', 'greycruz00000000@gmail.com', '$2y$10$7qyDoZ3GUP4okfOd0TGQpeDWUkPAdvBJTXDnTVqOXCoOxOu.z/Vui', 'aldrin', 'super_admin', 'active', NULL, 'dikoalam', '09563211331', 'uploads/users/user_30_1769142679.jpg', '2026-01-23 04:35:37', '172.18.0.1', 0, NULL, '2026-01-15 05:31:24', NULL, NULL, 0, NULL, 25, '2026-01-13 08:36:54', '2026-01-23 04:35:37'),
+(25, 'hradmin', 'hradmin@goldenz5.com', '$2y$10$2Fp4cu96Oey7AQ87V/fWd.EVqmVzV5chLxspeoyzzSPooNUOXxYDq', 'HR Administrator', 'hr_admin', 'active', NULL, NULL, NULL, 'uploads/users/user_25_1769064960.jpg', '2026-01-26 03:41:06', '172.18.0.1', 0, NULL, '2026-01-13 05:22:28', NULL, NULL, 0, NULL, NULL, '2025-12-11 17:49:50', '2026-01-26 03:41:06'),
+(30, 'grey', 'greycruz00000000@gmail.com', '$2y$10$7qyDoZ3GUP4okfOd0TGQpeDWUkPAdvBJTXDnTVqOXCoOxOu.z/Vui', 'aldrin', 'super_admin', 'active', NULL, 'dikoalam', '09563211331', 'uploads/users/user_30_1769142679.jpg', '2026-01-26 03:32:47', '172.18.0.1', 0, NULL, '2026-01-15 05:31:24', NULL, NULL, 0, NULL, 25, '2026-01-13 08:36:54', '2026-01-26 03:32:47'),
 (31, 'amor', 'amor@gmail.com', '$2y$10$evvPUIl.aoXr/icZ85PNH.zTj4wnx.TEzKxHqijLpO0NgoAw7OyAa', 'amor', 'hr_admin', 'active', NULL, 'asdfjh', '09562312321', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, 0, NULL, 30, '2026-01-13 09:58:43', '2026-01-13 09:58:43'),
 (32, 'ChristianAmor', 'christian5787264@gmail.com', '$2y$10$4jtmtLYPqQBDYvKq3D9AouI3kPDYDJObT7mtYZ.PHY2j5rx64rqj.', 'christian amor', 'super_admin', 'active', NULL, 'it', '09613014462', NULL, '2026-01-22 05:24:55', '172.18.0.1', 0, NULL, '2026-01-15 08:18:54', NULL, 'ZHLMOAXVWIX2DK4A', 1, NULL, 30, '2026-01-13 10:01:09', '2026-01-22 05:24:55'),
 (33, 'aaaaa', 'aa@gmail.com', '$2y$10$qQKlgAavsZ6C7QHcXYq2TeSoJeGi7jZs0VXQZMjAvdgFN1eSSkR.6', 'alskdjfjklfdsa', 'hr_admin', 'active', NULL, 'askldjf', '2980374234', NULL, '2026-01-15 05:28:23', '192.168.1.7', 0, NULL, '2026-01-15 06:29:12', 'd95a49d4bb7ba0a9c1a277b9fe776d20bbc3c7fd633877cba5b9f4198b03245d|1768458552', NULL, 0, NULL, 30, '2026-01-15 03:07:15', '2026-01-16 04:54:16'),
 (34, 'zzzzz', 'zzz@gmail.com', '$2y$10$qQKlgAavsZ6C7QHcXYq2TeSoJeGi7jZs0VXQZMjAvdgFN1eSSkR.6', 'salkjfksldaj', 'hr_admin', 'active', NULL, 'salkjfdklsajd', '213849089234', NULL, '2026-01-15 05:28:23', '192.168.1.7', 0, NULL, '2026-01-15 06:29:12', 'd95a49d4bb7ba0a9c1a277b9fe776d20bbc3c7fd633877cba5b9f4198b03245d|1768458552', NULL, 0, NULL, 30, '2026-01-15 03:08:25', '2026-01-16 04:54:16'),
 (35, 'bbbbaaa', 'bb@gmail.com', '$2y$10$qQKlgAavsZ6C7QHcXYq2TeSoJeGi7jZs0VXQZMjAvdgFN1eSSkR.6', 'sadfsdfa', 'hr_admin', 'active', NULL, 'sadfasfd', '2893749823', NULL, '2026-01-15 05:28:23', '192.168.1.7', 0, NULL, '2026-01-15 06:29:12', 'd95a49d4bb7ba0a9c1a277b9fe776d20bbc3c7fd633877cba5b9f4198b03245d|1768458552', NULL, 0, NULL, 30, '2026-01-15 03:21:17', '2026-01-16 04:54:16'),
 (36, 'zazaza', 'zz@gmail.com', '$2y$10$qQKlgAavsZ6C7QHcXYq2TeSoJeGi7jZs0VXQZMjAvdgFN1eSSkR.6', 'saddfsafdas', 'hr_admin', 'active', NULL, 'asfsadf', '12312321', NULL, '2026-01-15 05:28:23', '192.168.1.7', 0, NULL, '2026-01-15 06:29:12', 'd95a49d4bb7ba0a9c1a277b9fe776d20bbc3c7fd633877cba5b9f4198b03245d|1768458552', NULL, 0, NULL, 30, '2026-01-15 03:23:16', '2026-01-16 04:54:16'),
-(37, 'aldrin', 'aldrininocencio212527@gmail.com', '$2y$10$qQKlgAavsZ6C7QHcXYq2TeSoJeGi7jZs0VXQZMjAvdgFN1eSSkR.6', 'aldrin', 'hr_admin', 'active', NULL, 'IT', '09563211331', NULL, '2026-01-15 05:28:23', '192.168.1.7', 0, NULL, '2026-01-15 06:29:12', 'd95a49d4bb7ba0a9c1a277b9fe776d20bbc3c7fd633877cba5b9f4198b03245d|1768458552', NULL, 0, NULL, 30, '2026-01-15 05:23:05', '2026-01-16 04:54:16'),
+(37, 'aldrin', 'aldrininocencio212527@gmail.com', '$2y$10$qQKlgAavsZ6C7QHcXYq2TeSoJeGi7jZs0VXQZMjAvdgFN1eSSkR.6', 'aldrin', 'hr_admin', 'active', NULL, 'IT', '09563211331', NULL, '2026-01-15 05:28:23', '192.168.1.7', 0, NULL, '2026-01-26 12:28:00', 'd0930db60d6841a304e53bb6e41a45e8bbfbb6ee5725360106e87b6d504eaf82|1769401680', NULL, 0, NULL, 30, '2026-01-15 05:23:05', '2026-01-26 03:28:00'),
 (38, 'sssss', 'sss@gmail.com', '$2y$10$V.Tmj4tp3ANqZvMY77yJBurZ1kBuJGCwf5hMdu.vXR1uJbkxioxXi', 'ssssss', 'hr_admin', 'active', NULL, 'sss', '23432432', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, 0, NULL, 30, '2026-01-16 04:34:07', '2026-01-16 04:54:16');
 
 -- --------------------------------------------------------
@@ -1235,6 +1309,15 @@ ALTER TABLE `employee_violations`
   ADD KEY `idx_employee_violation_type` (`employee_id`,`violation_type_id`);
 
 --
+-- Indexes for table `events`
+--
+ALTER TABLE `events`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_start_date` (`start_date`),
+  ADD KEY `idx_end_date` (`end_date`),
+  ADD KEY `idx_event_type` (`event_type`);
+
+--
 -- Indexes for table `hr_tasks`
 --
 ALTER TABLE `hr_tasks`
@@ -1327,13 +1410,13 @@ ALTER TABLE `violation_types`
 -- AUTO_INCREMENT for table `audit_logs`
 --
 ALTER TABLE `audit_logs`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=138;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=156;
 
 --
 -- AUTO_INCREMENT for table `backup_history`
 --
 ALTER TABLE `backup_history`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=81;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=98;
 
 --
 -- AUTO_INCREMENT for table `chat_conversations`
@@ -1345,13 +1428,13 @@ ALTER TABLE `chat_conversations`
 -- AUTO_INCREMENT for table `chat_messages`
 --
 ALTER TABLE `chat_messages`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=45;
 
 --
 -- AUTO_INCREMENT for table `chat_typing_status`
 --
 ALTER TABLE `chat_typing_status`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=139;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=190;
 
 --
 -- AUTO_INCREMENT for table `dtr_entries`
@@ -1370,6 +1453,12 @@ ALTER TABLE `employees`
 --
 ALTER TABLE `employee_violations`
   MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
+-- AUTO_INCREMENT for table `events`
+--
+ALTER TABLE `events`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `hr_tasks`
@@ -1405,7 +1494,7 @@ ALTER TABLE `ticket_replies`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=49;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=39;
 
 --
 -- AUTO_INCREMENT for table `violation_types`

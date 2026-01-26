@@ -178,7 +178,12 @@ if ($userRole === 'hr_admin') {
                     include $pagesPath . 'add_post.php';
                     break;
                 case 'edit_post':
-                    include $pagesPath . 'edit_post.php';
+                    $editPostFile = $pagesPath . 'edit_post.php';
+                    if (file_exists($editPostFile)) {
+                        include $editPostFile;
+                    } else {
+                        echo '<div class="alert alert-danger">Edit post page is not available. Please contact the administrator.</div>';
+                    }
                     break;
                 case 'post_assignments':
                     include $pagesPath . 'post_assignments.php';
