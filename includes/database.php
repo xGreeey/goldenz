@@ -786,6 +786,54 @@ if (!function_exists('fix_employee_auto_increment')) {
 }
 
 // Get dashboard statistics
+// Helper function to parse license expiration date (handles various formats)
+if (!function_exists('parse_license_exp_date')) {
+    function parse_license_exp_date($dateValue) {
+        if (empty($dateValue) || $dateValue === '0000-00-00' || $dateValue === null) {
+            return null;
+        }
+        
+        // Convert to string and trim
+        $dateStr = trim((string)$dateValue);
+        
+        // Remove any time portion if present (e.g., "2025-01-15 00:00:00")
+        if (strpos($dateStr, ' ') !== false) {
+            $dateStr = substr($dateStr, 0, strpos($dateStr, ' '));
+        }
+        
+        // Handle year-only format (e.g., "2025")
+        if (preg_match('/^\d{4}$/', $dateStr)) {
+            // Treat year-only as December 31 of that year
+            return $dateStr . '-12-31';
+        }
+        
+        // Handle various date formats
+        // Try MySQL date format first (YYYY-MM-DD)
+        if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $dateStr)) {
+            $timestamp = strtotime($dateStr);
+            if ($timestamp !== false) {
+                return date('Y-m-d', $timestamp);
+            }
+        }
+        
+        // Try with slashes (YYYY/MM/DD)
+        if (preg_match('/^\d{4}\/\d{2}\/\d{2}$/', $dateStr)) {
+            $timestamp = strtotime(str_replace('/', '-', $dateStr));
+            if ($timestamp !== false) {
+                return date('Y-m-d', $timestamp);
+            }
+        }
+        
+        // Try general date parsing
+        $timestamp = strtotime($dateStr);
+        if ($timestamp !== false) {
+            return date('Y-m-d', $timestamp);
+        }
+        
+        return null;
+    }
+}
+
 if (!function_exists('get_dashboard_stats')) {
     function get_dashboard_stats() {
         $stats = [];
@@ -826,103 +874,74 @@ if (!function_exists('get_dashboard_stats')) {
         $result = $stmt->fetch();
         $stats['licensed_guards'] = (int)($result['licensed'] ?? 0);
         
-        // Expired licenses - MySQL 8 strict mode can throw on DATE('') so validate in PHP instead
-        // Fetch license dates and validate/count in PHP to avoid MySQL strict mode issues
+        // New Hires (employees hired in current month)
         try {
-            $sql = "SELECT license_exp_date
-                FROM employees 
-                WHERE license_no IS NOT NULL 
-                AND license_no != '' 
-                AND license_exp_date IS NOT NULL 
-                AND license_exp_date != '' 
-                    AND license_exp_date != '0000-00-00'";
-        $stmt = execute_query($sql);
+            $sql = "SELECT COUNT(*) as total
+                    FROM employees
+                    WHERE date_hired IS NOT NULL
+                      AND date_hired != ''
+                      AND date_hired != '0000-00-00'
+                      AND LENGTH(TRIM(COALESCE(date_hired, ''))) > 0
+                      AND TRIM(date_hired) REGEXP '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'
+                      AND STR_TO_DATE(TRIM(date_hired), '%Y-%m-%d') IS NOT NULL
+                      AND MONTH(STR_TO_DATE(TRIM(date_hired), '%Y-%m-%d')) = MONTH(CURDATE())
+                      AND YEAR(STR_TO_DATE(TRIM(date_hired), '%Y-%m-%d')) = YEAR(CURDATE())";
+            $stmt = execute_query($sql);
+            $result = $stmt->fetch();
+            $stats['new_hires'] = (int)($result['total'] ?? 0);
+        } catch (Exception $e) {
+            error_log("Error counting new hires: " . $e->getMessage());
+            $stats['new_hires'] = 0;
+        }
+        
+        // Expired and expiring licenses - use improved date parsing to handle various formats
+        // Match the exact logic used in dashboard.php watchlist for consistency
+        try {
+            // Fetch ALL employees - we'll filter in PHP to catch all date formats (same as watchlist)
+            $sql = "SELECT license_exp_date FROM employees";
+            $stmt = execute_query($sql);
             $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
             
             $expired_count = 0;
-            $today = date('Y-m-d');
-            
-            foreach ($rows as $row) {
-                $date_str = trim($row['license_exp_date'] ?? '');
-                
-                // Validate date format
-                if (empty($date_str) || strlen($date_str) != 10 || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $date_str)) {
-                    continue;
-                }
-                
-                // Parse and validate date
-                $date_parts = explode('-', $date_str);
-                if (count($date_parts) != 3) {
-                    continue;
-                }
-                
-                $year = (int)$date_parts[0];
-                $month = (int)$date_parts[1];
-                $day = (int)$date_parts[2];
-                
-                if (!checkdate($month, $day, $year)) {
-                    continue;
-                }
-                
-                // Compare dates
-                if ($date_str < $today) {
-                    $expired_count++;
-                }
-            }
-            
-            $stats['expired_licenses'] = $expired_count;
-        } catch (Exception $e) {
-            error_log("Error counting expired licenses: " . $e->getMessage());
-            $stats['expired_licenses'] = 0;
-        }
-
-        // Expiring licenses (next 30 days) - validate in PHP
-        try {
-            $sql = "SELECT license_exp_date
-                FROM employees 
-                WHERE license_no IS NOT NULL 
-                AND license_no != '' 
-                AND license_exp_date IS NOT NULL 
-                AND license_exp_date != '' 
-                    AND license_exp_date != '0000-00-00'";
-        $stmt = execute_query($sql);
-            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            
             $expiring_count = 0;
             $today = date('Y-m-d');
             $future_date = date('Y-m-d', strtotime('+30 days'));
             
             foreach ($rows as $row) {
-                $date_str = trim($row['license_exp_date'] ?? '');
+                // Get the raw license expiration date
+                $rawDate = $row['license_exp_date'] ?? null;
                 
-                // Validate date format
-                if (empty($date_str) || strlen($date_str) != 10 || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $date_str)) {
+                // Skip if no license expiration date at all (same logic as watchlist)
+                if (empty($rawDate) || 
+                    $rawDate === '0000-00-00' || 
+                    $rawDate === null ||
+                    trim((string)$rawDate) === '') {
                     continue;
                 }
                 
-                // Parse and validate date
-                $date_parts = explode('-', $date_str);
-                if (count($date_parts) != 3) {
+                // Parse the date using the helper function (same as watchlist)
+                $parsedDate = parse_license_exp_date($rawDate);
+                
+                // If we couldn't parse it, skip (same as watchlist)
+                if (!$parsedDate) {
                     continue;
                 }
                 
-                $year = (int)$date_parts[0];
-                $month = (int)$date_parts[1];
-                $day = (int)$date_parts[2];
-                
-                if (!checkdate($month, $day, $year)) {
-                    continue;
-                }
-                
-                // Check if expiring within 30 days
-                if ($date_str >= $today && $date_str <= $future_date) {
+                // Categorize as expired or expiring (same logic as watchlist)
+                if ($parsedDate < $today) {
+                    // Expired
+                    $expired_count++;
+                } elseif ($parsedDate >= $today && $parsedDate <= $future_date) {
+                    // Expiring (within 30 days)
                     $expiring_count++;
                 }
             }
             
+            $stats['expired_licenses'] = $expired_count;
             $stats['expiring_licenses'] = $expiring_count;
         } catch (Exception $e) {
-            error_log("Error counting expiring licenses: " . $e->getMessage());
+            error_log("Error counting license statistics: " . $e->getMessage());
+            $stats['expired_licenses'] = 0;
             $stats['expiring_licenses'] = 0;
         }
         
@@ -5676,5 +5695,73 @@ if (!function_exists('get_employee_documents')) {
         
         $stmt = execute_query($sql, $params);
         return $stmt->fetchAll();
+    }
+}
+
+// Create event function with strict typing and validation
+if (!function_exists('create_event')) {
+    /**
+     * Create a new event in the events table
+     * 
+     * @param array<string, mixed> $data Event data
+     * @return int|false Event ID on success, false on failure
+     */
+    function create_event(array $data): int|false {
+        try {
+            // Validate required fields
+            if (empty($data['title']) || empty($data['start_date'])) {
+                error_log('create_event: Missing required fields (title or start_date)');
+                return false;
+            }
+            
+            // Prepare SQL with all fields from events table
+            $sql = "INSERT INTO events (
+                title, 
+                description, 
+                start_date, 
+                start_time, 
+                end_date, 
+                end_time, 
+                event_type, 
+                holiday_type, 
+                category, 
+                notes
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            
+            // Prepare parameters with proper type handling
+            $params = [
+                trim((string)($data['title'] ?? '')),
+                !empty($data['description']) ? trim((string)$data['description']) : null,
+                (string)($data['start_date'] ?? ''),
+                !empty($data['start_time']) ? trim((string)$data['start_time']) : null,
+                !empty($data['end_date']) ? trim((string)$data['end_date']) : null,
+                !empty($data['end_time']) ? trim((string)$data['end_time']) : null,
+                in_array($data['event_type'] ?? 'Other', ['Holiday', 'Examination', 'Academic', 'Special Event', 'Other']) 
+                    ? (string)$data['event_type'] 
+                    : 'Other',
+                in_array($data['holiday_type'] ?? 'N/A', ['Regular Holiday', 'Special Non-Working Holiday', 'Local Special Non-Working Holiday', 'N/A']) 
+                    ? (string)$data['holiday_type'] 
+                    : 'N/A',
+                !empty($data['category']) ? trim((string)$data['category']) : null,
+                !empty($data['notes']) ? trim((string)$data['notes']) : null
+            ];
+            
+            // Execute query
+            $stmt = execute_query($sql, $params);
+            
+            // Get the inserted event ID
+            $pdo = get_db_connection();
+            $event_id = (int)$pdo->lastInsertId();
+            
+            if ($event_id > 0) {
+                error_log("create_event: Event created successfully with ID: {$event_id}");
+                return $event_id;
+            }
+            
+            return false;
+        } catch (Exception $e) {
+            error_log("create_event: Exception - " . $e->getMessage());
+            return false;
+        }
     }
 }

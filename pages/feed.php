@@ -4,6 +4,141 @@
  * Facebook-style feed for announcements and status updates
  */
 
+/**
+ * Handle POST request for creating events
+ * Follows php-pro skill guidelines: strict validation, error handling, type safety
+ */
+$event_created = false;
+$event_error = null;
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'create_event') {
+    // Check if this is an AJAX request
+    $is_ajax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && 
+               strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
+    
+    try {
+        // Validate and sanitize input data
+        $title = trim($_POST['title'] ?? '');
+        $description = !empty($_POST['description']) ? trim($_POST['description']) : null;
+        $start_date = trim($_POST['start_date'] ?? '');
+        $start_time = !empty($_POST['start_time']) ? trim($_POST['start_time']) : null;
+        $end_date = !empty($_POST['end_date']) ? trim($_POST['end_date']) : null;
+        $end_time = !empty($_POST['end_time']) ? trim($_POST['end_time']) : null;
+        $event_type = $_POST['event_type'] ?? 'Other';
+        $holiday_type = $_POST['holiday_type'] ?? 'N/A';
+        $category = !empty($_POST['category']) ? trim($_POST['category']) : null;
+        $notes = !empty($_POST['notes']) ? trim($_POST['notes']) : null;
+        
+        // Validate required fields
+        if (empty($title)) {
+            throw new InvalidArgumentException('Event title is required.');
+        }
+        
+        if (empty($start_date)) {
+            throw new InvalidArgumentException('Start date is required.');
+        }
+        
+        // Validate date format
+        $date_format = 'Y-m-d';
+        $start_date_obj = DateTime::createFromFormat($date_format, $start_date);
+        if (!$start_date_obj || $start_date_obj->format($date_format) !== $start_date) {
+            throw new InvalidArgumentException('Invalid start date format.');
+        }
+        
+        // Validate end_date if provided
+        if (!empty($end_date)) {
+            $end_date_obj = DateTime::createFromFormat($date_format, $end_date);
+            if (!$end_date_obj || $end_date_obj->format($date_format) !== $end_date) {
+                throw new InvalidArgumentException('Invalid end date format.');
+            }
+            
+            // Ensure end_date is not before start_date
+            if ($end_date_obj < $start_date_obj) {
+                throw new InvalidArgumentException('End date cannot be before start date.');
+            }
+        }
+        
+        // Validate event_type enum
+        $valid_event_types = ['Holiday', 'Examination', 'Academic', 'Special Event', 'Other'];
+        if (!in_array($event_type, $valid_event_types, true)) {
+            $event_type = 'Other';
+        }
+        
+        // Validate holiday_type enum
+        $valid_holiday_types = ['Regular Holiday', 'Special Non-Working Holiday', 'Local Special Non-Working Holiday', 'N/A'];
+        if (!in_array($holiday_type, $valid_holiday_types, true)) {
+            $holiday_type = 'N/A';
+        }
+        
+        // Prepare event data array
+        $event_data = [
+            'title' => $title,
+            'description' => $description,
+            'start_date' => $start_date,
+            'start_time' => $start_time,
+            'end_date' => $end_date,
+            'end_time' => $end_time,
+            'event_type' => $event_type,
+            'holiday_type' => $holiday_type,
+            'category' => $category,
+            'notes' => $notes
+        ];
+        
+        // Create event using database function
+        $event_id = create_event($event_data);
+        
+        if ($event_id !== false && $event_id > 0) {
+            $event_created = true;
+            
+            if ($is_ajax) {
+                header('Content-Type: application/json');
+                echo json_encode([
+                    'success' => true,
+                    'message' => 'Event created successfully!',
+                    'event_id' => (int)$event_id
+                ], JSON_THROW_ON_ERROR);
+                exit;
+            }
+        } else {
+            $event_error = 'Failed to create event. Please try again.';
+            
+            if ($is_ajax) {
+                header('Content-Type: application/json');
+                echo json_encode([
+                    'success' => false,
+                    'message' => $event_error
+                ], JSON_THROW_ON_ERROR);
+                exit;
+            }
+        }
+    } catch (InvalidArgumentException $e) {
+        $event_error = 'Validation error: ' . $e->getMessage();
+        error_log('Event validation error: ' . $e->getMessage());
+        
+        if ($is_ajax) {
+            header('Content-Type: application/json');
+            echo json_encode([
+                'success' => false,
+                'message' => $event_error
+            ], JSON_THROW_ON_ERROR);
+            exit;
+        }
+    } catch (Exception $e) {
+        $event_error = 'Error: ' . $e->getMessage();
+        error_log('Error creating event: ' . $e->getMessage());
+        error_log('Stack trace: ' . $e->getTraceAsString());
+        
+        if ($is_ajax) {
+            header('Content-Type: application/json');
+            echo json_encode([
+                'success' => false,
+                'message' => 'An unexpected error occurred. Please try again.'
+            ], JSON_THROW_ON_ERROR);
+            exit;
+        }
+    }
+}
+
 // Get current user info
 $current_user_id = $_SESSION['user_id'] ?? null;
 $current_user_name = $_SESSION['name'] ?? 'User';
@@ -112,39 +247,200 @@ function formatBirthdayDate($date) {
     <div class="row g-4">
         <!-- Main Feed Column -->
         <div class="col-lg-8">
-            <!-- Top Bar: Create Post -->
-            <div class="card feed-create-post mb-4">
-                <div class="card-body">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="feed-avatar">
-                            <?php if ($current_user_avatar): ?>
-                                <img src="<?php echo htmlspecialchars($current_user_avatar); ?>" 
-                                     alt="<?php echo htmlspecialchars($current_user_name); ?>"
-                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                                <div class="feed-avatar-placeholder" style="display: none;">
-                                    <?php echo htmlspecialchars($initials); ?>
+            <!-- Expandable Event Form -->
+            <div class="feed-expandable-form-container mb-4" id="feedExpandableForm">
+                <!-- Backdrop Overlay -->
+                <div class="feed-form-backdrop" id="feedFormBackdrop" style="display: none;"></div>
+                
+                <!-- Collapsed State: Input Field -->
+                <div class="feed-form-collapsed" id="feedFormCollapsed">
+                    <div class="card feed-create-post">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="feed-avatar">
+                                    <?php if ($current_user_avatar): ?>
+                                        <img src="<?php echo htmlspecialchars($current_user_avatar); ?>" 
+                                             alt="<?php echo htmlspecialchars($current_user_name); ?>"
+                                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                        <div class="feed-avatar-placeholder" style="display: none;">
+                                            <?php echo htmlspecialchars($initials); ?>
+                                        </div>
+                                    <?php else: ?>
+                                        <div class="feed-avatar-placeholder">
+                                            <?php echo htmlspecialchars($initials); ?>
+                                        </div>
+                                    <?php endif; ?>
                                 </div>
-                            <?php else: ?>
-                                <div class="feed-avatar-placeholder">
-                                    <?php echo htmlspecialchars($initials); ?>
+                                <input type="text" 
+                                       class="form-control feed-whats-new" 
+                                       placeholder="What's New? Share an event or announcement..."
+                                       id="feedPostInput"
+                                       readonly>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Expanded State: Full Form -->
+                <div class="feed-form-expanded" id="feedFormExpanded" style="display: none;">
+                    <div class="card feed-expanded-form-card">
+                        <div class="feed-expanded-form-header">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <h5 class="feed-expanded-form-title">
+                                    <i class="fas fa-calendar-plus me-2"></i>Create New Event
+                                </h5>
+                                <button type="button" class="btn feed-close-expanded-form" id="closeExpandedForm" aria-label="Close">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <form id="createEventForm" method="POST">
+                            <input type="hidden" name="action" value="create_event">
+                            <div class="feed-expanded-form-body">
+                                <div id="eventFormErrors" class="alert alert-danger d-none" role="alert"></div>
+                                
+                                <!-- Title -->
+                                <div class="event-form-group">
+                                    <label for="eventTitle" class="event-form-label">
+                                        <i class="fas fa-heading me-2"></i>Event Title <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="text" 
+                                           class="form-control event-form-input" 
+                                           id="eventTitle" 
+                                           name="title" 
+                                           required 
+                                           placeholder="Enter event title">
                                 </div>
-                            <?php endif; ?>
-                        </div>
-                        <input type="text" 
-                               class="form-control feed-whats-new" 
-                               placeholder="What's New?"
-                               id="feedPostInput">
-                        <div class="feed-create-actions">
-                            <button class="btn btn-link feed-action-btn" type="button" title="Emoji">
-                                <i class="far fa-smile"></i>
-                            </button>
-                            <button class="btn btn-link feed-action-btn" type="button" title="Photo">
-                                <i class="far fa-image"></i>
-                            </button>
-                            <button class="btn btn-link feed-action-btn" type="button" title="More">
-                                <i class="fas fa-ellipsis-h"></i>
-                            </button>
-                        </div>
+
+                                <!-- Description -->
+                                <div class="event-form-group">
+                                    <label for="eventDescription" class="event-form-label">
+                                        <i class="fas fa-align-left me-2"></i>Description
+                                    </label>
+                                    <textarea class="form-control event-form-input event-form-textarea" 
+                                              id="eventDescription" 
+                                              name="description" 
+                                              rows="2" 
+                                              placeholder="Enter event description (optional)"></textarea>
+                                </div>
+
+                                <!-- Event Type and Category Row -->
+                                <div class="row g-2">
+                                    <div class="col-md-6">
+                                        <div class="event-form-group">
+                                            <label for="eventType" class="event-form-label">
+                                                <i class="fas fa-tag me-2"></i>Event Type
+                                            </label>
+                                            <select class="form-select event-form-input" id="eventType" name="event_type">
+                                                <option value="Other">Other</option>
+                                                <option value="Holiday">Holiday</option>
+                                                <option value="Examination">Examination</option>
+                                                <option value="Academic">Academic</option>
+                                                <option value="Special Event">Special Event</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="event-form-group">
+                                            <label for="eventCategory" class="event-form-label">
+                                                <i class="fas fa-folder me-2"></i>Category
+                                            </label>
+                                            <input type="text" 
+                                                   class="form-control event-form-input" 
+                                                   id="eventCategory" 
+                                                   name="category" 
+                                                   placeholder="e.g., Semester Start, Conference">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Holiday Type (shown when Event Type is Holiday) -->
+                                <div class="event-form-group" id="holidayTypeGroup" style="display: none;">
+                                    <label for="holidayType" class="event-form-label">
+                                        <i class="fas fa-calendar-check me-2"></i>Holiday Type
+                                    </label>
+                                    <select class="form-select event-form-input" id="holidayType" name="holiday_type">
+                                        <option value="N/A">N/A</option>
+                                        <option value="Regular Holiday">Regular Holiday</option>
+                                        <option value="Special Non-Working Holiday">Special Non-Working Holiday</option>
+                                        <option value="Local Special Non-Working Holiday">Local Special Non-Working Holiday</option>
+                                    </select>
+                                </div>
+
+                                <!-- Start Date and Time Row -->
+                                <div class="row g-2">
+                                    <div class="col-md-6">
+                                        <div class="event-form-group">
+                                            <label for="eventStartDate" class="event-form-label">
+                                                <i class="fas fa-calendar-day me-2"></i>Start Date <span class="text-danger">*</span>
+                                            </label>
+                                            <input type="date" 
+                                                   class="form-control event-form-input" 
+                                                   id="eventStartDate" 
+                                                   name="start_date" 
+                                                   required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="event-form-group">
+                                            <label for="eventStartTime" class="event-form-label">
+                                                <i class="fas fa-clock me-2"></i>Start Time
+                                            </label>
+                                            <input type="time" 
+                                                   class="form-control event-form-input" 
+                                                   id="eventStartTime" 
+                                                   name="start_time">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- End Date and Time Row -->
+                                <div class="row g-2">
+                                    <div class="col-md-6">
+                                        <div class="event-form-group">
+                                            <label for="eventEndDate" class="event-form-label">
+                                                <i class="fas fa-calendar-times me-2"></i>End Date
+                                            </label>
+                                            <input type="date" 
+                                                   class="form-control event-form-input" 
+                                                   id="eventEndDate" 
+                                                   name="end_date">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="event-form-group">
+                                            <label for="eventEndTime" class="event-form-label">
+                                                <i class="fas fa-clock me-2"></i>End Time
+                                            </label>
+                                            <input type="time" 
+                                                   class="form-control event-form-input" 
+                                                   id="eventEndTime" 
+                                                   name="end_time">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Notes -->
+                                <div class="event-form-group">
+                                    <label for="eventNotes" class="event-form-label">
+                                        <i class="fas fa-sticky-note me-2"></i>Additional Notes
+                                    </label>
+                                    <textarea class="form-control event-form-input event-form-textarea" 
+                                              id="eventNotes" 
+                                              name="notes" 
+                                              rows="2" 
+                                              placeholder="Any additional information about the event"></textarea>
+                                </div>
+                            </div>
+                            <div class="feed-expanded-form-footer">
+                                <button type="button" class="btn event-btn-secondary" id="cancelExpandedForm">
+                                    <i class="fas fa-times me-2"></i>Cancel
+                                </button>
+                                <button type="submit" class="btn event-btn-primary" id="submitEventBtn">
+                                    <i class="fas fa-check me-2"></i>Create Event
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -299,7 +595,7 @@ function formatBirthdayDate($date) {
             <div class="card feed-sidebar-card mb-4">
                 <div class="card-header feed-sidebar-header">
                     <h6 class="mb-0">Upcoming Events</h6>
-                    <button class="btn btn-link feed-sidebar-action" type="button" title="Add event">
+                    <button class="btn btn-link feed-sidebar-action" type="button" title="Add event" id="sidebarAddEventBtn">
                         <i class="fas fa-plus"></i>
                     </button>
                 </div>
@@ -406,6 +702,7 @@ function formatBirthdayDate($date) {
     </div>
 </div>
 
+
 <style>
 /* Feed Page Styles */
 .feed-page {
@@ -413,10 +710,70 @@ function formatBirthdayDate($date) {
     margin: 0 auto;
 }
 
+/* Expandable Form Container */
+.feed-expandable-form-container {
+    position: relative;
+    z-index: 10;
+}
+
+.feed-form-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.feed-form-collapsed {
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.feed-form-expanded {
+    position: fixed;
+    top: 5vh;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1001;
+    width: 90%;
+    max-width: 500px;
+    max-height: 80vh;
+    animation: zoomInExpand 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes zoomInExpand {
+    0% {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-20px) scale(0.9);
+    }
+    50% {
+        transform: translateX(-50%) translateY(0) scale(1.01);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0) scale(1);
+    }
+}
+
+.feed-form-collapsed.hide {
+    opacity: 0;
+    transform: scale(0.95);
+    pointer-events: none;
+}
+
 /* Create Post Bar */
 .feed-create-post {
     border-radius: 12px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .feed-avatar {
@@ -445,14 +802,58 @@ function formatBirthdayDate($date) {
 .feed-whats-new {
     flex: 1;
     border-radius: 24px;
-    border: 1px solid #e2e8f0;
-    padding: 0.75rem 1.25rem;
+    border: 2px solid #e2e8f0;
+    padding: 0.875rem 1.5rem;
     font-size: 0.9375rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+}
+
+.feed-whats-new:hover {
+    border-color: #667eea;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+    transform: translateY(-1px);
+    background: #ffffff;
 }
 
 .feed-whats-new:focus {
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    border-color: #667eea;
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    outline: none;
+    background: #ffffff;
+}
+
+.feed-post-event-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    color: white;
+    font-weight: 600;
+    padding: 0.875rem 1.75rem;
+    border-radius: 24px;
+    font-size: 0.9375rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.feed-post-event-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+    color: white;
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+}
+
+.feed-post-event-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.feed-post-event-btn i {
+    font-size: 1rem;
 }
 
 .feed-create-actions {
@@ -733,7 +1134,296 @@ function formatBirthdayDate($date) {
     .feed-page .col-lg-4 {
         margin-top: 2rem;
     }
+    
+    .feed-post-event-btn span {
+        display: none;
+    }
+    
+    .feed-post-event-btn {
+        padding: 0.875rem 1.25rem;
+    }
 }
+
+@media (max-width: 576px) {
+    .feed-create-post .card-body {
+        padding: 1rem;
+    }
+    
+    .feed-whats-new {
+        font-size: 0.875rem;
+        padding: 0.75rem 1rem;
+    }
+    
+    .feed-post-event-btn {
+        padding: 0.75rem 1rem;
+        font-size: 0.875rem;
+    }
+    
+    .feed-expanded-form-header {
+        padding: 0.875rem 1.25rem;
+    }
+    
+    .feed-expanded-form-title {
+        font-size: 1.125rem;
+    }
+    
+    .feed-expanded-form-body {
+        padding: 1rem 1.25rem;
+    }
+    
+    .feed-form-expanded {
+        width: 95%;
+        max-width: 95%;
+        top: 2vh;
+        max-height: 90vh;
+    }
+    
+    .feed-expanded-form-footer {
+        padding: 0.875rem 1.25rem;
+        flex-direction: column-reverse;
+    }
+    
+    .feed-expanded-form-footer .btn {
+        width: 100%;
+        padding: 0.5rem 1rem;
+        font-size: 0.8125rem;
+    }
+    
+    .event-form-group {
+        margin-bottom: 0.875rem;
+    }
+}
+
+/* Expanded Form Styles - Beautiful, modern design with distinctive aesthetics */
+.feed-expanded-form-card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 25px 70px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(102, 126, 234, 0.1);
+    overflow: hidden;
+    background: #ffffff;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    max-height: 80vh;
+}
+
+.feed-expanded-form-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 1rem 1.5rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.feed-expanded-form-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+    animation: pulse 3s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 0.5; }
+    50% { transform: scale(1.1); opacity: 0.8; }
+}
+
+.feed-expanded-form-title {
+    font-weight: 700;
+    font-size: 1.25rem;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+    letter-spacing: -0.5px;
+    color: white;
+}
+
+.feed-close-expanded-form {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    z-index: 1;
+    font-size: 0.875rem;
+    padding: 0;
+}
+
+.feed-close-expanded-form:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: rotate(90deg);
+    color: white;
+}
+
+.feed-expanded-form-body {
+    padding: 1.25rem 1.5rem;
+    background: linear-gradient(to bottom, #ffffff 0%, #f8fafc 100%);
+    overflow-y: auto;
+    flex: 1;
+    min-height: 0;
+}
+
+.feed-expanded-form-body::-webkit-scrollbar {
+    width: 8px;
+}
+
+.feed-expanded-form-body::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 4px;
+}
+
+.feed-expanded-form-body::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 4px;
+}
+
+.feed-expanded-form-body::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+}
+
+.feed-expanded-form-footer {
+    border: none;
+    padding: 1rem 1.5rem;
+    background: white;
+    border-top: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+}
+
+.event-form-group {
+    margin-bottom: 1rem;
+}
+
+.event-form-label {
+    font-weight: 600;
+    color: #1e293b;
+    font-size: 0.75rem;
+    margin-bottom: 0.375rem;
+    display: block;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.event-form-input,
+.event-form-textarea {
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 0.5rem 0.875rem;
+    font-size: 0.875rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: white;
+    color: #1e293b;
+}
+
+.event-form-input:hover,
+.event-form-textarea:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.08);
+}
+
+.event-form-input:focus,
+.event-form-textarea:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.12), 0 4px 12px rgba(102, 126, 234, 0.15);
+    outline: none;
+    transform: translateY(-1px);
+}
+
+.event-form-textarea {
+    resize: vertical;
+    min-height: 60px;
+}
+
+
+.event-btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    color: white;
+    font-weight: 600;
+    padding: 0.5rem 1.5rem;
+    border-radius: 8px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    position: relative;
+    overflow: hidden;
+    font-size: 0.875rem;
+}
+
+.event-btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.event-btn-primary:hover::before {
+    left: 100%;
+}
+
+.event-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+    color: white;
+}
+
+.event-btn-primary:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.event-btn-primary:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.event-btn-secondary {
+    background: #f1f5f9;
+    border: 2px solid #e2e8f0;
+    color: #64748b;
+    font-weight: 600;
+    padding: 0.5rem 1.5rem;
+    border-radius: 8px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-size: 0.875rem;
+}
+
+.event-btn-secondary:hover {
+    background: #e2e8f0;
+    border-color: #cbd5e1;
+    color: #475569;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.event-btn-secondary:active {
+    transform: translateY(0);
+}
+
+#eventFormErrors {
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+}
+
 </style>
 
 <script>
@@ -775,18 +1465,256 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Create post input
+    // Expandable form functionality
     const feedPostInput = document.getElementById('feedPostInput');
-    if (feedPostInput) {
-        feedPostInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                const content = this.value.trim();
-                if (content) {
-                    // TODO: Send AJAX request to create post
-                    this.value = '';
+    const feedFormCollapsed = document.getElementById('feedFormCollapsed');
+    const feedFormExpanded = document.getElementById('feedFormExpanded');
+    const feedFormBackdrop = document.getElementById('feedFormBackdrop');
+    const closeExpandedForm = document.getElementById('closeExpandedForm');
+    const cancelExpandedForm = document.getElementById('cancelExpandedForm');
+    
+    // Function to expand form
+    function expandForm() {
+        if (feedFormCollapsed && feedFormExpanded && feedFormBackdrop) {
+            // Prevent body scroll
+            document.body.style.overflow = 'hidden';
+            
+            // Show backdrop
+            feedFormBackdrop.style.display = 'block';
+            
+            // Hide collapsed form with animation
+            feedFormCollapsed.classList.add('hide');
+            
+            // Show expanded form with zoom animation
+            setTimeout(() => {
+                feedFormExpanded.style.display = 'block';
+                
+                // Focus on first input
+                const firstInput = feedFormExpanded.querySelector('input[type="text"]');
+                if (firstInput) {
+                    setTimeout(() => firstInput.focus(), 300);
+                }
+            }, 200);
+        }
+    }
+    
+    // Function to collapse form
+    function collapseForm() {
+        if (feedFormCollapsed && feedFormExpanded && feedFormBackdrop) {
+            // Re-enable body scroll
+            document.body.style.overflow = '';
+            
+            feedFormExpanded.style.display = 'none';
+            feedFormBackdrop.style.display = 'none';
+            feedFormCollapsed.classList.remove('hide');
+            
+            // Reset form
+            const form = document.getElementById('createEventForm');
+            if (form) {
+                form.reset();
+                const errorsDiv = document.getElementById('eventFormErrors');
+                if (errorsDiv) {
+                    errorsDiv.classList.add('d-none');
+                    errorsDiv.innerHTML = '';
+                }
+                // Reset holiday type group
+                const holidayTypeGroup = document.getElementById('holidayTypeGroup');
+                if (holidayTypeGroup) {
+                    holidayTypeGroup.style.display = 'none';
+                    document.getElementById('holidayType').value = 'N/A';
                 }
             }
+        }
+    }
+    
+    // Close on backdrop click (but not when clicking the form itself)
+    if (feedFormBackdrop) {
+        feedFormBackdrop.addEventListener('click', function(e) {
+            if (e.target === feedFormBackdrop) {
+                collapseForm();
+            }
         });
+    }
+    
+    // Prevent form clicks from closing
+    if (feedFormExpanded) {
+        feedFormExpanded.addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+    }
+    
+    // Open form on input click
+    if (feedPostInput) {
+        feedPostInput.addEventListener('click', expandForm);
+    }
+    
+    // Close form buttons
+    if (closeExpandedForm) {
+        closeExpandedForm.addEventListener('click', collapseForm);
+    }
+    
+    if (cancelExpandedForm) {
+        cancelExpandedForm.addEventListener('click', collapseForm);
+    }
+    
+    // Close on Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && feedFormExpanded && feedFormExpanded.style.display !== 'none') {
+            collapseForm();
+        }
+    });
+    
+    // Sidebar add event button
+    const sidebarAddEventBtn = document.getElementById('sidebarAddEventBtn');
+    if (sidebarAddEventBtn) {
+        sidebarAddEventBtn.addEventListener('click', function() {
+            expandForm();
+        });
+    }
+
+    // Event Form Handling
+    const eventForm = document.getElementById('createEventForm');
+    const eventTypeSelect = document.getElementById('eventType');
+    const holidayTypeGroup = document.getElementById('holidayTypeGroup');
+    const submitBtn = document.getElementById('submitEventBtn');
+    const errorsDiv = document.getElementById('eventFormErrors');
+
+    // Show/hide holiday type based on event type
+    if (eventTypeSelect && holidayTypeGroup) {
+        eventTypeSelect.addEventListener('change', function() {
+            if (this.value === 'Holiday') {
+                holidayTypeGroup.style.display = 'block';
+            } else {
+                holidayTypeGroup.style.display = 'none';
+                document.getElementById('holidayType').value = 'N/A';
+            }
+        });
+    }
+
+    // Handle form submission
+    if (eventForm) {
+        eventForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Hide previous errors
+            errorsDiv.classList.add('d-none');
+            errorsDiv.innerHTML = '';
+            
+            // Disable submit button
+            const originalBtnText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Creating...';
+            
+            try {
+                const formData = new FormData(this);
+                
+                const response = await fetch(window.location.href, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Collapse form
+                    collapseForm();
+                    
+                    // Show success notification
+                    showNotification('Event created successfully!', 'success');
+                    
+                    // Reload page to refresh events list
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                } else {
+                    // Show error
+                    errorsDiv.innerHTML = '<i class="fas fa-exclamation-circle me-2"></i>' + (data.message || 'Failed to create event. Please try again.');
+                    errorsDiv.classList.remove('d-none');
+                }
+            } catch (error) {
+                console.error('Error creating event:', error);
+                errorsDiv.innerHTML = '<i class="fas fa-exclamation-circle me-2"></i>An error occurred. Please try again.';
+                errorsDiv.classList.remove('d-none');
+            } finally {
+                // Re-enable submit button
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnText;
+            }
+        });
+    }
+
+    // Notification function with beautiful styling
+    function showNotification(message, type = 'success') {
+        // Create notification element
+        const notification = document.createElement('div');
+        const isSuccess = type === 'success';
+        const bgColor = isSuccess 
+            ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)' 
+            : 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)';
+        const icon = isSuccess ? 'fa-check-circle' : 'fa-exclamation-circle';
+        
+        notification.className = 'alert alert-dismissible fade show position-fixed feed-notification';
+        notification.style.cssText = `
+            top: 20px; 
+            right: 20px; 
+            z-index: 9999; 
+            min-width: 320px; 
+            max-width: 400px;
+            background: ${bgColor};
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+            animation: slideInRight 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        `;
+        notification.innerHTML = `
+            <div class="d-flex align-items-center">
+                <i class="fas ${icon} me-2" style="font-size: 1.25rem;"></i>
+                <span style="flex: 1; font-weight: 500;">${message}</span>
+                <button type="button" class="btn-close btn-close-white ms-2" data-bs-dismiss="alert" aria-label="Close" style="opacity: 0.8;"></button>
+            </div>
+        `;
+        
+        // Add animation keyframes if not already added
+        if (!document.getElementById('feedNotificationStyles')) {
+            const style = document.createElement('style');
+            style.id = 'feedNotificationStyles';
+            style.textContent = `
+                @keyframes slideInRight {
+                    from {
+                        transform: translateX(100%);
+                        opacity: 0;
+                    }
+                    to {
+                        transform: translateX(0);
+                        opacity: 1;
+                    }
+                }
+                .feed-notification {
+                    backdrop-filter: blur(10px);
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        document.body.appendChild(notification);
+        
+        // Auto remove after 5 seconds with fade out
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.style.animation = 'slideInRight 0.3s cubic-bezier(0.4, 0, 0.2, 1) reverse';
+                notification.style.opacity = '0';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.remove();
+                    }
+                }, 300);
+            }
+        }, 5000);
     }
 });
 </script>

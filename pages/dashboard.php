@@ -384,27 +384,7 @@ try {
                     <div class="hrdash-stat__label">New Hires</div>
                 </div>
                 <div class="hrdash-stat__content">
-                    <div class="hrdash-stat__value"><?php 
-                        // Calculate new hires (employees hired in current month)
-                        $newHires = 0;
-                        try {
-                            $newHiresStmt = $pdo->query("SELECT COUNT(*) as total
-                                                         FROM employees
-                                                         WHERE date_hired IS NOT NULL
-                                                           AND date_hired != ''
-                                                           AND date_hired != '0000-00-00'
-                                                           AND LENGTH(TRIM(COALESCE(date_hired, ''))) > 0
-                                                           AND TRIM(date_hired) REGEXP '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'
-                                                           AND STR_TO_DATE(TRIM(date_hired), '%Y-%m-%d') IS NOT NULL
-                                                           AND MONTH(STR_TO_DATE(TRIM(date_hired), '%Y-%m-%d')) = MONTH(CURDATE())
-                                                           AND YEAR(STR_TO_DATE(TRIM(date_hired), '%Y-%m-%d')) = YEAR(CURDATE())");
-                            $newHiresRow = $newHiresStmt->fetch(PDO::FETCH_ASSOC);
-                            $newHires = (int)($newHiresRow['total'] ?? 0);
-                        } catch (Exception $e) {
-                            $newHires = 0;
-                        }
-                        echo number_format($newHires);
-                    ?></div>
+                    <div class="hrdash-stat__value"><?php echo number_format($stats['new_hires'] ?? 0); ?></div>
                     <div class="hrdash-stat__trend hrdash-stat__trend--positive">
                         <i class="fas fa-user-plus"></i>
                         <span>This Month</span>
