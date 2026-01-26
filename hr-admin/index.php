@@ -137,6 +137,324 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         exit;
     }
     
+    // Handle schedule events fetch (AJAX)
+    if ($action === 'get_schedule_events' && $isAjax) {
+        require_once __DIR__ . '/../includes/database.php';
+        $pdo = get_db_connection();
+        
+        // Function to get schedule events for a specific date
+        function get_schedule_events_ajax($pdo, $date) {
+            $events = [];
+            
+            try {
+                $dateStr = date('Y-m-d', strtotime($date));
+                
+                // Get events from employee_alerts table
+                $alertsStmt = $pdo->prepare("SELECT 
+                        ea.id,
+                        ea.title,
+                        ea.description,
+                        ea.priority,
+                        ea.status,
+                        ea.created_at,
+                        ea.alert_date as event_date,
+                        TIME(ea.created_at) as event_time,
+                        e.first_name,
+                        e.surname,
+                        e.post,
+                        'alert' as event_source
+                    FROM employee_alerts ea
+                    LEFT JOIN employees e ON ea.employee_id = e.id
+                    WHERE (ea.alert_date = ? OR DATE(ea.created_at) = ?)
+                        AND (ea.status = 'active' OR ea.status IS NULL)
+                    ORDER BY 
+                        FIELD(ea.priority, 'Urgent', 'High', 'Medium', 'Low'),
+                        TIME(ea.created_at) ASC,
+                        ea.created_at ASC");
+                $alertsStmt->execute([$dateStr, $dateStr]);
+                $alerts = $alertsStmt->fetchAll(PDO::FETCH_ASSOC);
+                
+                // Get events from events table
+                $eventsStmt = $pdo->prepare("SELECT 
+                        e.id,
+                        e.title,
+                        e.description,
+                        CASE 
+                            WHEN e.event_type = 'Holiday' THEN 'Urgent'
+                            WHEN e.event_type = 'Examination' THEN 'High'
+                            WHEN e.event_type = 'Academic' THEN 'Medium'
+                            ELSE 'Low'
+                        END as priority,
+                        'active' as status,
+                        CONCAT(e.start_date, ' ', COALESCE(e.start_time, '00:00:00')) as created_at,
+                        e.start_date as event_date,
+                        COALESCE(e.start_time, '00:00:00') as event_time,
+                        NULL as first_name,
+                        NULL as surname,
+                        NULL as post,
+                        'event' as event_source
+                    FROM events e
+                    WHERE e.start_date = ?
+                    ORDER BY 
+                        COALESCE(e.start_time, '00:00:00') ASC,
+                        e.start_date ASC");
+                $eventsStmt->execute([$dateStr]);
+                $calendarEvents = $eventsStmt->fetchAll(PDO::FETCH_ASSOC);
+                
+                // Merge and format events
+                $allEvents = array_merge($alerts, $calendarEvents);
+                
+                // Sort by time
+                usort($allEvents, function($a, $b) {
+                    $timeA = $a['event_time'] ?? '00:00:00';
+                    $timeB = $b['event_time'] ?? '00:00:00';
+                    return strcmp($timeA, $timeB);
+                });
+                
+                // Return all events (no limit)
+                return $allEvents;
+                
+            } catch (Exception $e) {
+                error_log("Error fetching schedule events: " . $e->getMessage());
+                return [];
+            }
+        }
+        
+        $requestedDate = $_POST['date'] ?? date('Y-m-d');
+        $events = get_schedule_events_ajax($pdo, $requestedDate);
+        
+        // Format events for JSON response
+        $formattedEvents = [];
+        foreach ($events as $event) {
+            // Format time
+            $eventTime = '12:00 AM';
+            if (!empty($event['event_time']) && $event['event_time'] !== '00:00:00') {
+                $timeParts = explode(':', $event['event_time']);
+                $hour = (int)$timeParts[0];
+                $minute = (int)$timeParts[1];
+                $ampm = $hour >= 12 ? 'PM' : 'AM';
+                $hour = $hour % 12;
+                $hour = $hour ? $hour : 12;
+                $eventTime = sprintf('%d:%02d %s', $hour, $minute, $ampm);
+            } elseif (!empty($event['created_at'])) {
+                $eventTime = date('g:i A', strtotime($event['created_at']));
+            }
+            
+            // Determine priority class
+            $priority = strtolower($event['priority'] ?? 'low');
+            $priorityClass = 'event--low';
+            $priorityIcon = 'fa-circle-info';
+            switch($priority) {
+                case 'urgent':
+                    $priorityClass = 'event--urgent';
+                    $priorityIcon = 'fa-exclamation-triangle';
+                    break;
+                case 'high':
+                    $priorityClass = 'event--high';
+                    $priorityIcon = 'fa-exclamation-circle';
+                    break;
+                case 'medium':
+                    $priorityClass = 'event--medium';
+                    $priorityIcon = 'fa-circle-exclamation';
+                    break;
+            }
+            
+            $employeeName = trim(($event['first_name'] ?? '') . ' ' . ($event['surname'] ?? ''));
+            
+            $formattedEvents[] = [
+                'id' => $event['id'],
+                'title' => $event['title'],
+                'description' => $event['description'] ?? '',
+                'time' => $eventTime,
+                'priority' => $priority,
+                'priorityClass' => $priorityClass,
+                'priorityIcon' => $priorityIcon,
+                'employeeName' => $employeeName,
+                'post' => $event['post'] ?? '',
+                'source' => $event['event_source'] ?? 'alert'
+            ];
+        }
+        
+        echo json_encode([
+            'success' => true,
+            'events' => $formattedEvents,
+            'count' => count($formattedEvents)
+        ]);
+        exit;
+    }
+    
+    // Handle event creation
+    if ($action === 'create_event' && $isAjax) {
+        require_once __DIR__ . '/../includes/database.php';
+        
+        try {
+            // Validate and sanitize input data
+            $title = trim($_POST['title'] ?? '');
+            $description = !empty($_POST['description']) ? trim($_POST['description']) : null;
+            $start_date = trim($_POST['start_date'] ?? '');
+            $start_time = !empty($_POST['start_time']) ? trim($_POST['start_time']) : null;
+            $end_date = !empty($_POST['end_date']) ? trim($_POST['end_date']) : null;
+            $end_time = !empty($_POST['end_time']) ? trim($_POST['end_time']) : null;
+            $event_type = $_POST['event_type'] ?? 'Other';
+            $holiday_type = $_POST['holiday_type'] ?? 'N/A';
+            $category = !empty($_POST['category']) ? trim($_POST['category']) : null;
+            $notes = !empty($_POST['notes']) ? trim($_POST['notes']) : null;
+            
+            // Validate required fields
+            if (empty($title)) {
+                throw new InvalidArgumentException('Event title is required.');
+            }
+            
+            if (empty($start_date)) {
+                throw new InvalidArgumentException('Start date is required.');
+            }
+            
+            // Validate date format
+            $date_format = 'Y-m-d';
+            $start_date_obj = DateTime::createFromFormat($date_format, $start_date);
+            if (!$start_date_obj || $start_date_obj->format($date_format) !== $start_date) {
+                throw new InvalidArgumentException('Invalid start date format.');
+            }
+            
+            // Validate end_date if provided
+            if (!empty($end_date)) {
+                $end_date_obj = DateTime::createFromFormat($date_format, $end_date);
+                if (!$end_date_obj || $end_date_obj->format($date_format) !== $end_date) {
+                    throw new InvalidArgumentException('Invalid end date format.');
+                }
+                
+                // Ensure end_date is not before start_date
+                if ($end_date_obj < $start_date_obj) {
+                    throw new InvalidArgumentException('End date cannot be before start date.');
+                }
+            }
+            
+            // Validate event_type enum
+            $valid_event_types = ['Holiday', 'Examination', 'Academic', 'Special Event', 'Other'];
+            if (!in_array($event_type, $valid_event_types, true)) {
+                $event_type = 'Other';
+            }
+            
+            // Validate holiday_type enum
+            $valid_holiday_types = ['Regular Holiday', 'Special Non-Working Holiday', 'Local Special Non-Working Holiday', 'N/A'];
+            if (!in_array($holiday_type, $valid_holiday_types, true)) {
+                $holiday_type = 'N/A';
+            }
+            
+            // Prepare event data array
+            $event_data = [
+                'title' => $title,
+                'description' => $description,
+                'start_date' => $start_date,
+                'start_time' => $start_time,
+                'end_date' => $end_date,
+                'end_time' => $end_time,
+                'event_type' => $event_type,
+                'holiday_type' => $holiday_type,
+                'category' => $category,
+                'notes' => $notes
+            ];
+            
+            // Create event using database function
+            $event_id = create_event($event_data);
+            
+            if ($event_id !== false && $event_id > 0) {
+                echo json_encode([
+                    'success' => true,
+                    'message' => 'Event created successfully!',
+                    'event_id' => (int)$event_id
+                ]);
+            } else {
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Failed to create event. Please try again.'
+                ]);
+            }
+        } catch (Exception $e) {
+            error_log("Error creating event: " . $e->getMessage());
+            echo json_encode([
+                'success' => false,
+                'message' => $e->getMessage()
+            ]);
+        }
+        exit;
+    }
+    
+    // Handle event counts for date range (for day button indicators)
+    if ($action === 'get_event_counts' && $isAjax) {
+        require_once __DIR__ . '/../includes/database.php';
+        $pdo = get_db_connection();
+        
+        // Handle dates array - can come as 'dates[]' or 'dates'
+        $dates = [];
+        if (isset($_POST['dates']) && is_array($_POST['dates'])) {
+            $dates = $_POST['dates'];
+        } elseif (isset($_POST['dates'])) {
+            $dates = [$_POST['dates']];
+        }
+        
+        $counts = [];
+        
+        try {
+            foreach ($dates as $dateStr) {
+                if (empty($dateStr)) continue;
+                $dateStr = date('Y-m-d', strtotime($dateStr));
+                
+                // Count alerts
+                $alertsStmt = $pdo->prepare("SELECT COUNT(*) as count
+                    FROM employee_alerts ea
+                    WHERE (ea.alert_date = ? OR DATE(ea.created_at) = ?)
+                        AND (ea.status = 'active' OR ea.status IS NULL)");
+                $alertsStmt->execute([$dateStr, $dateStr]);
+                $alertCount = (int)$alertsStmt->fetch(PDO::FETCH_ASSOC)['count'];
+                
+                // Count events
+                $eventsStmt = $pdo->prepare("SELECT COUNT(*) as count
+                    FROM events e
+                    WHERE e.start_date = ?");
+                $eventsStmt->execute([$dateStr]);
+                $eventCount = (int)$eventsStmt->fetch(PDO::FETCH_ASSOC)['count'];
+                
+                $totalCount = $alertCount + $eventCount;
+                
+                // Get priority breakdown for color coding
+                $priorityStmt = $pdo->prepare("SELECT 
+                    SUM(CASE WHEN ea.priority = 'urgent' THEN 1 ELSE 0 END) as urgent,
+                    SUM(CASE WHEN ea.priority = 'high' THEN 1 ELSE 0 END) as high
+                    FROM employee_alerts ea
+                    WHERE (ea.alert_date = ? OR DATE(ea.created_at) = ?)
+                        AND (ea.status = 'active' OR ea.status IS NULL)");
+                $priorityStmt->execute([$dateStr, $dateStr]);
+                $priorities = $priorityStmt->fetch(PDO::FETCH_ASSOC);
+                $urgentCount = (int)($priorities['urgent'] ?? 0);
+                $highCount = (int)($priorities['high'] ?? 0);
+                
+                // Determine color: red for urgent, gold for high, default for others
+                $color = 'default';
+                if ($urgentCount > 0) {
+                    $color = 'red';
+                } elseif ($highCount > 0) {
+                    $color = 'gold';
+                }
+                
+                $counts[$dateStr] = [
+                    'count' => $totalCount,
+                    'color' => $color,
+                    'urgent' => $urgentCount,
+                    'high' => $highCount
+                ];
+            }
+        } catch (Exception $e) {
+            error_log("Error fetching event counts: " . $e->getMessage());
+        }
+        
+        echo json_encode([
+            'success' => true,
+            'counts' => $counts
+        ]);
+        exit;
+    }
+    
     // Handle profile update (non-AJAX - process before header output)
     if ($action === 'update_profile' && !$isAjax) {
         // Process profile update before header output, then redirect
@@ -694,6 +1012,112 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             }
 
             fclose($output);
+        }
+        exit;
+    }
+    
+    // Handle feed page create_event action directly here to avoid HTML output
+    if ($page === 'feed' && $action === 'create_event' && $isAjax) {
+        // Include necessary files
+        require_once __DIR__ . '/../includes/database.php';
+        
+        // Handle the create_event action
+        try {
+            // Validate and sanitize input data
+            $title = trim($_POST['title'] ?? '');
+            $description = !empty($_POST['description']) ? trim($_POST['description']) : null;
+            $start_date = trim($_POST['start_date'] ?? '');
+            $start_time = !empty($_POST['start_time']) ? trim($_POST['start_time']) : null;
+            $end_date = !empty($_POST['end_date']) ? trim($_POST['end_date']) : null;
+            $end_time = !empty($_POST['end_time']) ? trim($_POST['end_time']) : null;
+            $event_type = $_POST['event_type'] ?? 'Other';
+            $holiday_type = $_POST['holiday_type'] ?? 'N/A';
+            $category = !empty($_POST['category']) ? trim($_POST['category']) : null;
+            $notes = !empty($_POST['notes']) ? trim($_POST['notes']) : null;
+            
+            // Validate required fields
+            if (empty($title)) {
+                throw new InvalidArgumentException('Event title is required.');
+            }
+            
+            if (empty($start_date)) {
+                throw new InvalidArgumentException('Start date is required.');
+            }
+            
+            // Validate date format
+            $date_format = 'Y-m-d';
+            $start_date_obj = DateTime::createFromFormat($date_format, $start_date);
+            if (!$start_date_obj || $start_date_obj->format($date_format) !== $start_date) {
+                throw new InvalidArgumentException('Invalid start date format.');
+            }
+            
+            // Validate end_date if provided
+            if (!empty($end_date)) {
+                $end_date_obj = DateTime::createFromFormat($date_format, $end_date);
+                if (!$end_date_obj || $end_date_obj->format($date_format) !== $end_date) {
+                    throw new InvalidArgumentException('Invalid end date format.');
+                }
+                
+                // Ensure end_date is not before start_date
+                if ($end_date_obj < $start_date_obj) {
+                    throw new InvalidArgumentException('End date cannot be before start date.');
+                }
+            }
+            
+            // Validate event_type enum
+            $valid_event_types = ['Holiday', 'Examination', 'Academic', 'Special Event', 'Other'];
+            if (!in_array($event_type, $valid_event_types, true)) {
+                $event_type = 'Other';
+            }
+            
+            // Validate holiday_type enum
+            $valid_holiday_types = ['Regular Holiday', 'Special Non-Working Holiday', 'Local Special Non-Working Holiday', 'N/A'];
+            if (!in_array($holiday_type, $valid_holiday_types, true)) {
+                $holiday_type = 'N/A';
+            }
+            
+            // Prepare event data array
+            $event_data = [
+                'title' => $title,
+                'description' => $description,
+                'start_date' => $start_date,
+                'start_time' => $start_time,
+                'end_date' => $end_date,
+                'end_time' => $end_time,
+                'event_type' => $event_type,
+                'holiday_type' => $holiday_type,
+                'category' => $category,
+                'notes' => $notes
+            ];
+            
+            // Create event using database function
+            $event_id = create_event($event_data);
+            
+            if ($event_id !== false && $event_id > 0) {
+                echo json_encode([
+                    'success' => true,
+                    'message' => 'Event created successfully!',
+                    'event_id' => (int)$event_id
+                ], JSON_THROW_ON_ERROR);
+            } else {
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Failed to create event. Please try again.'
+                ], JSON_THROW_ON_ERROR);
+            }
+        } catch (InvalidArgumentException $e) {
+            error_log('Event validation error: ' . $e->getMessage());
+            echo json_encode([
+                'success' => false,
+                'message' => 'Validation error: ' . $e->getMessage()
+            ], JSON_THROW_ON_ERROR);
+        } catch (Exception $e) {
+            error_log('Error creating event: ' . $e->getMessage());
+            error_log('Stack trace: ' . $e->getTraceAsString());
+            echo json_encode([
+                'success' => false,
+                'message' => 'An unexpected error occurred. Please try again.'
+            ], JSON_THROW_ON_ERROR);
         }
         exit;
     }

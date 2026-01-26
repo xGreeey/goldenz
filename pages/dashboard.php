@@ -299,26 +299,88 @@ function getEmployeeTypeLabel($type) {
 $all_employees = get_employees();
 $display_employees = array_slice($all_employees, 0, 10); // Show first 10 employees
 
-// Get today's schedule (alerts for today)
-$today_schedule = [];
-try {
-    $todayDate = date('Y-m-d');
-    $scheduleStmt = $pdo->prepare("SELECT ea.id, ea.title, ea.description, ea.priority, ea.status, 
-                                           ea.created_at, e.first_name, e.surname, e.post
-                                    FROM employee_alerts ea
-                                    LEFT JOIN employees e ON ea.employee_id = e.id
-                                    WHERE DATE(ea.created_at) = ?
-                                        OR (ea.status = 'active' AND ea.priority IN ('Urgent', 'High'))
-                                    ORDER BY 
-                                        FIELD(ea.priority, 'Urgent', 'High', 'Medium', 'Low'),
-                                        ea.created_at DESC
-                                    LIMIT 10");
-    $scheduleStmt->execute([$todayDate]);
-    $today_schedule = $scheduleStmt->fetchAll(PDO::FETCH_ASSOC);
-} catch (Exception $e) {
-    error_log("Error fetching today's schedule: " . $e->getMessage());
-    $today_schedule = [];
+// Function to get schedule events for a specific date
+function get_schedule_events($date) {
+    $pdo = get_db_connection();
+    $events = [];
+    
+    try {
+        $dateStr = date('Y-m-d', strtotime($date));
+        
+        // Get events from employee_alerts table
+        $alertsStmt = $pdo->prepare("SELECT 
+                ea.id,
+                ea.title,
+                ea.description,
+                ea.priority,
+                ea.status,
+                ea.created_at,
+                ea.alert_date as event_date,
+                TIME(ea.created_at) as event_time,
+                e.first_name,
+                e.surname,
+                e.post,
+                'alert' as event_source
+            FROM employee_alerts ea
+            LEFT JOIN employees e ON ea.employee_id = e.id
+            WHERE (ea.alert_date = ? OR DATE(ea.created_at) = ?)
+                AND (ea.status = 'active' OR ea.status IS NULL)
+            ORDER BY 
+                FIELD(ea.priority, 'Urgent', 'High', 'Medium', 'Low'),
+                TIME(ea.created_at) ASC,
+                ea.created_at ASC");
+        $alertsStmt->execute([$dateStr, $dateStr]);
+        $alerts = $alertsStmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Get events from events table
+        $eventsStmt = $pdo->prepare("SELECT 
+                e.id,
+                e.title,
+                e.description,
+                CASE 
+                    WHEN e.event_type = 'Holiday' THEN 'Urgent'
+                    WHEN e.event_type = 'Examination' THEN 'High'
+                    WHEN e.event_type = 'Academic' THEN 'Medium'
+                    ELSE 'Low'
+                END as priority,
+                'active' as status,
+                CONCAT(e.start_date, ' ', COALESCE(e.start_time, '00:00:00')) as created_at,
+                e.start_date as event_date,
+                COALESCE(e.start_time, '00:00:00') as event_time,
+                NULL as first_name,
+                NULL as surname,
+                NULL as post,
+                'event' as event_source
+            FROM events e
+            WHERE e.start_date = ?
+            ORDER BY 
+                COALESCE(e.start_time, '00:00:00') ASC,
+                e.start_date ASC");
+        $eventsStmt->execute([$dateStr]);
+        $calendarEvents = $eventsStmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Merge and format events
+        $allEvents = array_merge($alerts, $calendarEvents);
+        
+        // Sort by time
+        usort($allEvents, function($a, $b) {
+            $timeA = $a['event_time'] ?? '00:00:00';
+            $timeB = $b['event_time'] ?? '00:00:00';
+            return strcmp($timeA, $timeB);
+        });
+        
+        // Return all events (no limit)
+        return $allEvents;
+        
+    } catch (Exception $e) {
+        error_log("Error fetching schedule events: " . $e->getMessage());
+        return [];
+    }
 }
+
+// Get today's schedule
+$todayDate = date('Y-m-d');
+$today_schedule = get_schedule_events($todayDate);
 ?>
 
 <?php if (($_SESSION['user_role'] ?? '') === 'hr_admin'): ?>
@@ -494,30 +556,108 @@ try {
                     <div>
                         <h5 class="hrdash-card__title">Today's Schedule</h5>
                     </div>
+                    <div>
+                        <button type="button" class="btn btn-primary-modern btn-sm hrdash-schedule__add-event-btn" id="addEventBtn" title="Add Event" aria-label="Add Event">
+                            <i class="fas fa-plus me-1"></i>Add Event
+                        </button>
+                    </div>
                 </div>
                 <div class="hrdash-schedule__body flex-grow-1">
-                    <!-- Date selector -->
-                    <div class="hrdash-schedule__date-selector">
-                        <?php
-                        $today = new DateTime();
-                        $scheduleCount = 0; // Placeholder - will be calculated from events
-                        // Show 2 days before, today in center, and 2 days after (total 5 days)
-                        for ($i = -2; $i <= 2; $i++):
-                            $date = clone $today;
-                            $date->modify("$i days");
-                            $isToday = $i === 0;
-                            $dayNum = $date->format('j');
-                            $dayAbbr = $date->format('D');
-                            $dayFull = $date->format('l');
-                        ?>
-                            <button class="hrdash-schedule__day-btn <?php echo $isToday ? 'active' : ''; ?>" 
-                                    type="button" 
-                                    data-date="<?php echo $date->format('Y-m-d'); ?>"
-                                    title="<?php echo $dayFull . ', ' . $date->format('F j, Y'); ?>">
-                                <span class="hrdash-schedule__day-num"><?php echo $dayNum; ?></span>
-                                <span class="hrdash-schedule__day-abbr"><?php echo $dayAbbr; ?></span>
+                    <!-- Calendar Grid -->
+                    <div class="hrdash-schedule__calendar">
+                        <!-- Calendar Header with Navigation -->
+                        <div class="hrdash-schedule__calendar-header">
+                            <button type="button" class="hrdash-schedule__calendar-nav hrdash-schedule__calendar-nav--prev" title="Previous Month">
+                                <i class="fas fa-angle-left"></i>
                             </button>
-                        <?php endfor; ?>
+                            <div class="hrdash-schedule__calendar-month-year">
+                                <span class="hrdash-schedule__calendar-month"><?php echo date('F'); ?></span>
+                                <span class="hrdash-schedule__calendar-year"><?php echo date('Y'); ?></span>
+                            </div>
+                            <div class="hrdash-schedule__calendar-header-actions">
+                                <button type="button" class="hrdash-schedule__calendar-toggle" title="Toggle Calendar" aria-label="Toggle Calendar">
+                                    <i class="fas fa-chevron-up"></i>
+                                </button>
+                                <button type="button" class="hrdash-schedule__calendar-nav hrdash-schedule__calendar-nav--next" title="Next Month">
+                                    <i class="fas fa-angle-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Days of Week Header -->
+                        <div class="hrdash-schedule__calendar-weekdays">
+                            <div class="hrdash-schedule__calendar-weekday">SUN</div>
+                            <div class="hrdash-schedule__calendar-weekday">MON</div>
+                            <div class="hrdash-schedule__calendar-weekday">TUE</div>
+                            <div class="hrdash-schedule__calendar-weekday">WED</div>
+                            <div class="hrdash-schedule__calendar-weekday">THU</div>
+                            <div class="hrdash-schedule__calendar-weekday">FRI</div>
+                            <div class="hrdash-schedule__calendar-weekday">SAT</div>
+                        </div>
+                        
+                        <!-- Calendar Grid -->
+                        <div class="hrdash-schedule__calendar-grid" data-current-month="<?php echo date('Y-m'); ?>">
+                            <?php
+                            $today = new DateTime();
+                            $currentMonth = (int)$today->format('m');
+                            $currentYear = (int)$today->format('Y');
+                            $currentDay = (int)$today->format('j');
+                            
+                            // Get first day of month and number of days
+                            $firstDay = new DateTime("$currentYear-$currentMonth-01");
+                            $firstDayOfWeek = (int)$firstDay->format('w'); // 0 (Sunday) to 6 (Saturday)
+                            $daysInMonth = (int)$firstDay->format('t');
+                            
+                            // Show previous month's trailing days (starting from Sunday)
+                            $prevMonth = clone $firstDay;
+                            $prevMonth->modify('-1 month');
+                            $daysInPrevMonth = (int)$prevMonth->format('t');
+                            
+                            if ($firstDayOfWeek > 0) {
+                                for ($i = $firstDayOfWeek - 1; $i >= 0; $i--) {
+                                    $day = $daysInPrevMonth - $i;
+                                    $date = clone $prevMonth;
+                                    $date->setDate($currentYear, $currentMonth - 1, $day);
+                                    $dateStr = $date->format('Y-m-d');
+                                    echo '<div class="hrdash-schedule__calendar-day hrdash-schedule__calendar-day--other" data-date="' . $dateStr . '">';
+                                    echo '<span class="hrdash-schedule__calendar-day-num">' . $day . '</span>';
+                                    echo '<span class="hrdash-schedule__day-indicator" data-date="' . $dateStr . '"></span>';
+                                    echo '</div>';
+                                }
+                            }
+                            
+                            // Show current month days
+                            for ($day = 1; $day <= $daysInMonth; $day++) {
+                                $dateStr = sprintf('%04d-%02d-%02d', $currentYear, $currentMonth, $day);
+                                $isToday = ($day == $currentDay);
+                                $classes = 'hrdash-schedule__calendar-day';
+                                if ($isToday) {
+                                    $classes .= ' hrdash-schedule__calendar-day--today active';
+                                }
+                                echo '<div class="' . $classes . '" data-date="' . $dateStr . '">';
+                                echo '<span class="hrdash-schedule__calendar-day-num">' . $day . '</span>';
+                                echo '<span class="hrdash-schedule__day-indicator" data-date="' . $dateStr . '"></span>';
+                                echo '</div>';
+                            }
+                            
+                            // Show next month's leading days to fill the grid (6 weeks * 7 days = 42 cells)
+                            $totalCells = $firstDayOfWeek + $daysInMonth;
+                            $remainingCells = 42 - $totalCells;
+                            if ($remainingCells > 0) {
+                                $nextMonth = clone $firstDay;
+                                $nextMonth->modify('+1 month');
+                                for ($day = 1; $day <= $remainingCells; $day++) {
+                                    $date = clone $nextMonth;
+                                    $date->setDate($currentYear, $currentMonth + 1, $day);
+                                    $dateStr = $date->format('Y-m-d');
+                                    echo '<div class="hrdash-schedule__calendar-day hrdash-schedule__calendar-day--other" data-date="' . $dateStr . '">';
+                                    echo '<span class="hrdash-schedule__calendar-day-num">' . $day . '</span>';
+                                    echo '<span class="hrdash-schedule__day-indicator" data-date="' . $dateStr . '"></span>';
+                                    echo '</div>';
+                                }
+                            }
+                            ?>
+                        </div>
                     </div>
 
                     <!-- Date display and schedule count -->
@@ -556,8 +696,23 @@ try {
                                             $priorityClass = 'event--low';
                                             $priorityIcon = 'fa-circle-info';
                                     }
-                                    $eventTime = date('g:i A', strtotime($event['created_at']));
+                                    
+                                    // Format time - use event_time if available, otherwise use created_at
+                                    $eventTime = '12:00 AM';
+                                    if (!empty($event['event_time']) && $event['event_time'] !== '00:00:00') {
+                                        $timeParts = explode(':', $event['event_time']);
+                                        $hour = (int)$timeParts[0];
+                                        $minute = (int)$timeParts[1];
+                                        $ampm = $hour >= 12 ? 'PM' : 'AM';
+                                        $hour = $hour % 12;
+                                        $hour = $hour ? $hour : 12;
+                                        $eventTime = sprintf('%d:%02d %s', $hour, $minute, $ampm);
+                                    } elseif (!empty($event['created_at'])) {
+                                        $eventTime = date('g:i A', strtotime($event['created_at']));
+                                    }
+                                    
                                     $employeeName = trim(($event['first_name'] ?? '') . ' ' . ($event['surname'] ?? ''));
+                                    $eventDescription = $event['description'] ?? '';
                                 ?>
                                     <div class="hrdash-schedule__event <?php echo $priorityClass; ?>">
                                         <div class="event__time"><?php echo $eventTime; ?></div>
@@ -566,7 +721,11 @@ try {
                                                 <i class="fas <?php echo $priorityIcon; ?> event__icon"></i>
                                                 <span class="event__title"><?php echo htmlspecialchars($event['title']); ?></span>
                                             </div>
-                                            <?php if (!empty($employeeName)): ?>
+                                            <?php if (!empty($eventDescription)): ?>
+                                                <div class="event__meta">
+                                                    <?php echo htmlspecialchars($eventDescription); ?>
+                                                </div>
+                                            <?php elseif (!empty($employeeName)): ?>
                                                 <div class="event__meta">
                                                     <i class="fas fa-user"></i>
                                                     <?php echo htmlspecialchars($employeeName); ?>
@@ -658,67 +817,48 @@ try {
     display: none;
 }
 .hrdash-welcome {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-    margin: 0 !important;
-    /* Fixed height and padding - never changes */
-    height: 88px !important;
-    min-height: 88px !important;
-    max-height: 88px !important;
-    padding: 1.25rem 1.5rem !important; /* Fixed padding - never changes */
-    background: #f1f5f9 !important;
-    border-bottom: 1px solid #e2e8f0 !important;
-    width: 100% !important;
-    box-sizing: border-box !important;
-    overflow: hidden !important; /* Prevent content overflow from changing height */
-    flex-wrap: nowrap !important; /* Prevent wrapping that could change height */
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0;
+    padding: 1.5rem var(--hr-page-px);
+    background: #f1f5f9;
+    border-bottom: 1px solid #e2e8f0;
+    width: 100%;
+    box-sizing: border-box;
 }
 .hrdash-welcome__left {
     flex: 1;
-    min-width: 0; /* Allow shrinking if needed */
-    overflow: hidden; /* Prevent content overflow */
 }
 .hrdash-welcome__title {
     font-size: 2.25rem;
     font-weight: 700;
     letter-spacing: -0.04em;
-    margin: 0 0 0.5rem 0 !important; /* Fixed margin - never changes */
+    margin: 0 0 0.5rem 0;
     color: #0a0e27;
-    line-height: 1.1 !important; /* Fixed line-height to prevent height changes */
+    line-height: 1.1;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-    white-space: nowrap !important; /* Prevent text wrapping */
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
 }
 .hrdash-welcome__time {
     font-weight: 600;
     color: #64748b;
     font-size: 0.9375rem;
-    margin: 0 !important; /* Fixed margin - never changes */
-    margin-right: 1rem !important;
+    margin-right: 1rem;
     display: inline-flex;
     align-items: center;
-    padding: 0 !important; /* Fixed padding - never changes */
+    padding: 0.5rem 0;
     letter-spacing: 0.02em;
-    white-space: nowrap !important; /* Prevent text wrapping */
-    flex-shrink: 0 !important;
 }
 .hrdash-welcome__subtitle {
-    margin: 0 !important; /* Fixed margin - never changes */
+    margin: 0;
     color: #64748b;
     font-size: 0.9375rem;
-    line-height: 1.4 !important; /* Fixed line-height */
-    white-space: nowrap !important; /* Prevent text wrapping */
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
 }
 .hrdash-welcome__actions {
-    display: flex !important;
-    align-items: center !important;
-    gap: 0.75rem !important;
-    flex-shrink: 0 !important;
-    min-width: 0 !important;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-shrink: 0;
 }
 .hrdash-welcome__btn {
     display: inline-flex;
@@ -938,24 +1078,17 @@ try {
 }
 @media (max-width: 768px) {
     .hrdash-welcome {
-        /* Maintain fixed height on mobile - never changes */
-        height: 88px !important;
-        min-height: 88px !important;
-        max-height: 88px !important;
-        flex-direction: row !important; /* Keep horizontal to maintain height */
-        align-items: center !important;
-        gap: 0.75rem !important;
-        padding: 1.25rem 1rem !important; /* Fixed padding - reduced horizontal on mobile */
-        flex-wrap: nowrap !important; /* Prevent wrapping */
-        overflow: hidden !important; /* Prevent content overflow */
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
     }
     .hrdash-welcome__actions {
-        flex-shrink: 0 !important;
-        flex-wrap: nowrap !important;
+        width: 100%;
+        flex-wrap: wrap;
     }
     .hrdash-welcome__btn {
-        flex: 0 0 auto !important;
-        min-width: auto !important;
+        flex: 1;
+        min-width: 120px;
     }
 }
 .hrdash-stat {
@@ -1053,7 +1186,7 @@ try {
     font-weight: 700;
     line-height: 1;
     letter-spacing: -0.05em;
-    color: #000000;
+    color: #0a0e27;
     margin: 0;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
 }
@@ -1277,8 +1410,326 @@ try {
     flex-direction: column;
     gap: 0.875rem;
 }
+.hrdash-schedule__date-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.875rem;
+    padding-bottom: 0.875rem;
+    border-bottom: 1px solid #e8ecf1;
+}
+.hrdash-schedule__nav-buttons {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.hrdash-schedule__nav-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #e8ecf1;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.875rem;
+    font-weight: 500;
+    font-family: inherit;
+}
+.hrdash-schedule__nav-btn:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+    color: #334155;
+}
+.hrdash-schedule__nav-btn--today {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+    border-color: transparent;
+    color: #ffffff;
+}
+.hrdash-schedule__nav-btn--today:hover {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 50%, #475569 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.25);
+}
+.hrdash-schedule__nav-btn i {
+    font-size: 0.875rem;
+}
+.hrdash-schedule__nav-btn--inline {
+    flex-shrink: 0;
+    width: 40px;
+    padding: 0.875rem 0.5rem;
+    border-radius: 12px;
+    align-self: stretch;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8fafc;
+    border: 1px solid #e8ecf1;
+}
+.hrdash-schedule__nav-btn--inline:hover {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+    border-color: transparent;
+    color: #ffffff;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.15);
+}
+.hrdash-schedule__nav-btn--inline i {
+    font-size: 1rem;
+    font-weight: 600;
+}
+.hrdash-schedule__date-picker-wrapper {
+    position: relative;
+    flex: 1;
+    max-width: 200px;
+}
+.hrdash-schedule__date-picker {
+    width: 100%;
+    padding: 0.5rem 2.5rem 0.5rem 0.75rem;
+    border: 1px solid #e8ecf1;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #334155;
+    font-size: 0.875rem;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.hrdash-schedule__date-picker:hover {
+    border-color: #cbd5e1;
+    background: #f8fafc;
+}
+.hrdash-schedule__date-picker:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+.hrdash-schedule__date-picker-icon {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #64748b;
+    pointer-events: none;
+    font-size: 0.875rem;
+}
+/* Calendar Grid Styles */
+.hrdash-schedule__calendar {
+    background: #ffffff;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 0.75rem;
+}
+.hrdash-schedule__calendar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    background: #f8fafc;
+    border-bottom: 1px solid #e8ecf1;
+}
+.hrdash-schedule__calendar-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.hrdash-schedule__calendar-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: 1px solid #e8ecf1;
+    border-radius: 6px;
+    background: #ffffff;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.875rem;
+}
+.hrdash-schedule__calendar-toggle:hover {
+    background: #f1f4f8;
+    border-color: #cbd5e1;
+    color: #334155;
+}
+.hrdash-schedule__calendar-toggle i {
+    transition: transform 0.3s ease;
+}
+.hrdash-schedule__calendar.collapsed .hrdash-schedule__calendar-toggle i {
+    transform: rotate(180deg);
+}
+.hrdash-schedule__calendar-month-year {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    font-weight: 600;
+    color: #334155;
+}
+.hrdash-schedule__calendar-month {
+    font-size: 1rem;
+}
+.hrdash-schedule__calendar-year {
+    font-size: 0.875rem;
+    color: #64748b;
+    font-weight: 500;
+}
+.hrdash-schedule__calendar-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: 1px solid #e8ecf1;
+    border-radius: 6px;
+    background: #ffffff;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.875rem;
+}
+.hrdash-schedule__calendar-nav:hover {
+    background: #f1f4f8;
+    border-color: #cbd5e1;
+    color: #334155;
+}
+.hrdash-schedule__calendar-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    background: #ffffff;
+    border-bottom: 1px solid #e8ecf1;
+    transition: border-bottom 0.3s ease;
+}
+.hrdash-schedule__calendar.collapsed .hrdash-schedule__calendar-weekdays {
+    border-bottom: none;
+}
+.hrdash-schedule__calendar.collapsed .hrdash-schedule__calendar-grid {
+    max-height: 0;
+    opacity: 0;
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+}
+.hrdash-schedule__calendar.collapsed .hrdash-schedule__calendar-header {
+    border-bottom: 1px solid #e8ecf1;
+}
+/* Add Event Button Styles */
+.hrdash-schedule__add-event-btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.hrdash-card__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.hrdash-schedule__calendar-weekday {
+    padding: 0.625rem 0.5rem;
+    text-align: center;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+.hrdash-schedule__calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    background: #ffffff;
+    transition: max-height 0.3s ease, opacity 0.3s ease;
+    overflow: hidden;
+}
+.hrdash-schedule__calendar.collapsed .hrdash-schedule__calendar-grid {
+    max-height: 0;
+    opacity: 0;
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+}
+.hrdash-schedule__calendar-day {
+    aspect-ratio: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem;
+    border-right: 1px solid #f1f4f8;
+    border-bottom: 1px solid #f1f4f8;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    background: #ffffff;
+    min-height: 40px;
+}
+.hrdash-schedule__calendar-day:nth-child(7n) {
+    border-right: none;
+}
+.hrdash-schedule__calendar-day:hover {
+    background: #f8fafc;
+}
+.hrdash-schedule__calendar-day--other {
+    color: #cbd5e1;
+    background: #fafbfc;
+}
+.hrdash-schedule__calendar-day--today {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+    color: #ffffff;
+    font-weight: 700;
+}
+.hrdash-schedule__calendar-day.active {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+    color: #ffffff;
+    font-weight: 700;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.15);
+}
+.hrdash-schedule__calendar-day-num {
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.2;
+}
+.hrdash-schedule__calendar-day--today .hrdash-schedule__calendar-day-num,
+.hrdash-schedule__calendar-day.active .hrdash-schedule__calendar-day-num {
+    font-weight: 700;
+    color: #ffffff;
+}
+.hrdash-schedule__calendar-day--other .hrdash-schedule__calendar-day-num {
+    color: #cbd5e1;
+    font-weight: 400;
+}
+/* Update indicator positioning for calendar grid */
+.hrdash-schedule__calendar-day .hrdash-schedule__day-indicator {
+    position: absolute;
+    bottom: 0.25rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1;
+}
+.hrdash-schedule__calendar-day--today .hrdash-schedule__day-indicator.indicator-red,
+.hrdash-schedule__calendar-day.active .hrdash-schedule__day-indicator.indicator-red {
+    background: #fca5a5 !important;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
+}
+.hrdash-schedule__calendar-day--today .hrdash-schedule__day-indicator.indicator-gold,
+.hrdash-schedule__calendar-day.active .hrdash-schedule__day-indicator.indicator-gold {
+    background: #fcd34d !important;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
+}
+.hrdash-schedule__calendar-day--today .hrdash-schedule__day-indicator.indicator-default,
+.hrdash-schedule__calendar-day.active .hrdash-schedule__day-indicator.indicator-default {
+    background: #cbd5e1 !important;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
+}
+
 .hrdash-schedule__date-selector {
     display: flex;
+    align-items: center;
     gap: 0.5rem;
     margin-bottom: 0.5rem;
 }
@@ -1288,7 +1739,7 @@ try {
     flex-direction: column;
     align-items: center;
     gap: 0.375rem;
-    padding: 0.875rem 0.625rem;
+    padding: 0.875rem 0.625rem 1.25rem 0.625rem;
     border: 1px solid #e8ecf1;
     border-radius: 12px;
     background: #ffffff;
@@ -1296,6 +1747,7 @@ try {
     cursor: pointer;
     transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     font-family: inherit;
+    position: relative;
 }
 .hrdash-schedule__day-btn:hover {
     background: #fafbfc;
@@ -1318,6 +1770,50 @@ try {
     font-weight: 500;
     text-transform: uppercase;
     letter-spacing: 0.05em;
+}
+.hrdash-schedule__day-indicator {
+    position: absolute;
+    bottom: 0.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    display: none;
+    transition: all 0.2s ease;
+}
+.hrdash-schedule__day-indicator.has-events {
+    display: block;
+}
+.hrdash-schedule__day-indicator.indicator-red {
+    background: #dc2626 !important;
+    box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.2);
+    width: 8px !important;
+    height: 8px !important;
+}
+.hrdash-schedule__day-indicator.indicator-gold {
+    background: #f59e0b !important;
+    box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2);
+    width: 7px !important;
+    height: 7px !important;
+}
+.hrdash-schedule__day-indicator.indicator-default {
+    background: #64748b !important;
+    box-shadow: 0 0 0 2px rgba(100, 116, 139, 0.2);
+    width: 6px !important;
+    height: 6px !important;
+}
+.hrdash-schedule__day-btn.active .hrdash-schedule__day-indicator.indicator-red {
+    background: #fca5a5;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
+}
+.hrdash-schedule__day-btn.active .hrdash-schedule__day-indicator.indicator-gold {
+    background: #fcd34d;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
+}
+.hrdash-schedule__day-btn.active .hrdash-schedule__day-indicator.indicator-default {
+    background: #cbd5e1;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
 }
 .hrdash-schedule__date-info {
     display: flex;
@@ -1346,7 +1842,24 @@ try {
 .hrdash-schedule__timeline {
     flex: 1;
     overflow-y: auto;
+    overflow-x: hidden;
     min-height: 200px;
+    max-height: 600px;
+    padding-right: 0.5rem;
+}
+.hrdash-schedule__timeline::-webkit-scrollbar {
+    width: 6px;
+}
+.hrdash-schedule__timeline::-webkit-scrollbar-track {
+    background: #f1f4f8;
+    border-radius: 3px;
+}
+.hrdash-schedule__timeline::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+}
+.hrdash-schedule__timeline::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
 }
 .hrdash-schedule__empty {
     height: 100%;
@@ -1368,6 +1881,16 @@ try {
     display: flex;
     flex-direction: column;
     gap: 0.875rem;
+}
+.hrdash-schedule__events-footer {
+    margin-top: 0.5rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid #e8ecf1;
+    text-align: center;
+}
+.hrdash-schedule__events-footer i {
+    margin-right: 0.25rem;
+    color: #64748b;
 }
 .hrdash-schedule__event {
     display: flex;
@@ -1681,6 +2204,44 @@ try {
     .hrdash-shortcut-btn i {
         font-size: 0.875rem;
     }
+    .hrdash-schedule__date-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .hrdash-schedule__date-picker-wrapper {
+        max-width: 100%;
+    }
+    .hrdash-schedule__nav-btn--today span {
+        display: none;
+    }
+    .hrdash-schedule__calendar {
+        margin-bottom: 0.5rem;
+    }
+    .hrdash-schedule__calendar-day {
+        min-height: 35px;
+        padding: 0.375rem;
+    }
+    .hrdash-schedule__calendar-day-num {
+        font-size: 0.75rem;
+    }
+    .hrdash-schedule__calendar-weekday {
+        padding: 0.5rem 0.25rem;
+        font-size: 0.6875rem;
+    }
+    .hrdash-schedule__calendar-header {
+        padding: 0.5rem 0.75rem;
+    }
+    .hrdash-schedule__calendar-month {
+        font-size: 0.875rem;
+    }
+    .hrdash-schedule__calendar-year {
+        font-size: 0.75rem;
+    }
+    .hrdash-schedule__calendar-nav {
+        width: 28px;
+        height: 28px;
+        font-size: 0.75rem;
+    }
 }
 </style>
 
@@ -1729,38 +2290,487 @@ try {
             });
         }
         
-        // Schedule day selector
+        // Schedule calendar grid with AJAX event loading and date navigation
         function initScheduleSelector() {
-            const dayButtons = document.querySelectorAll('.hrdash-schedule__day-btn');
+            const calendarGrid = document.querySelector('.hrdash-schedule__calendar-grid');
+            const prevMonthBtn = document.querySelector('.hrdash-schedule__calendar-nav--prev');
+            const nextMonthBtn = document.querySelector('.hrdash-schedule__calendar-nav--next');
+            const monthEl = document.querySelector('.hrdash-schedule__calendar-month');
+            const yearEl = document.querySelector('.hrdash-schedule__calendar-year');
             const dateFullEl = document.querySelector('.hrdash-schedule__date-full');
+            const timelineEl = document.querySelector('.hrdash-schedule__timeline');
+            const countLink = document.querySelector('.hrdash-schedule__count-link');
+            const datePicker = document.querySelector('.hrdash-schedule__date-picker');
+            const dateSelector = document.querySelector('.hrdash-schedule__date-selector');
             
-            if (dayButtons.length > 0 && dateFullEl) {
-                dayButtons.forEach((btn) => {
-                    btn.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        e.stopPropagation();
+            if (!calendarGrid || !dateFullEl || !timelineEl) {
+                return;
+            }
+            
+            // Initialize calendar state - always start with today's date from system
+            const today = new Date();
+            let currentDate = new Date(today);
+            let currentMonth = today.getMonth();
+            let currentYear = today.getFullYear();
+            let selectedDate = new Date(today);
+            
+            // Auto-update date picker to today if it exists
+            if (datePicker) {
+                const todayStr = today.toISOString().split('T')[0];
+                datePicker.value = todayStr;
+            }
+            
+            // Function to update the UI with a new date
+            function updateScheduleDate(date, updatePicker = true) {
+                const dateStr = date.toISOString().split('T')[0];
+                
+                // Update date picker if it exists
+                if (updatePicker && datePicker) {
+                    datePicker.value = dateStr;
+                }
+                
+                // Update date display
+                const options = { year: 'numeric', month: 'long', day: 'numeric' };
+                if (dateFullEl) {
+                    dateFullEl.textContent = date.toLocaleDateString('en-US', options);
+                }
+                
+                // Update day buttons if date selector exists
+                if (dateSelector) {
+                    updateDayButtons(date);
+                }
+                
+                // Load events
+                loadScheduleEvents(dateStr, timelineEl, countLink);
+                
+                // Update current date
+                currentDate = new Date(date);
+                selectedDate = new Date(date);
+            }
+            
+            // Function to update day buttons based on selected date
+            function updateDayButtons(centerDate) {
+                if (!dateSelector) return;
+                
+                // Get the prev and next buttons (they should stay in place)
+                const prevBtnEl = dateSelector.querySelector('.hrdash-schedule__nav-btn--prev');
+                const nextBtnEl = dateSelector.querySelector('.hrdash-schedule__nav-btn--next');
+                
+                // Remove only the day buttons, keep nav buttons
+                const dayButtons = dateSelector.querySelectorAll('.hrdash-schedule__day-btn');
+                dayButtons.forEach(btn => btn.remove());
+                
+                // Collect dates for event count fetching
+                const datesToCheck = [];
+                
+                // Show 2 days before, center date, and 2 days after (total 5 days)
+                for (let i = -2; i <= 2; i++) {
+                    const date = new Date(centerDate);
+                    date.setDate(date.getDate() + i);
+                    const dateStr = date.toISOString().split('T')[0];
+                    datesToCheck.push(dateStr);
+                }
+                
+                // Fetch event counts for all dates
+                fetchEventCounts(datesToCheck).then(counts => {
+                    // Create day buttons with event indicators
+                    for (let i = -2; i <= 2; i++) {
+                        const date = new Date(centerDate);
+                        date.setDate(date.getDate() + i);
                         
-                        // Update active state
-                        dayButtons.forEach(b => b.classList.remove('active'));
-                        this.classList.add('active');
+                        const dayNum = date.getDate();
+                        const dayAbbr = date.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase();
+                        const dayFull = date.toLocaleDateString('en-US', { weekday: 'long' });
+                        const dateStr = date.toISOString().split('T')[0];
+                        const isSelected = i === 0;
                         
-                        // Update date display
-                        const dateStr = this.getAttribute('data-date');
-                        if (dateStr) {
-                            const date = new Date(dateStr + 'T00:00:00');
-                            const options = { year: 'numeric', month: 'long', day: 'numeric' };
-                            dateFullEl.textContent = date.toLocaleDateString('en-US', options);
-                            
-                            // Update schedule count link if needed
-                            const countLink = document.querySelector('.hrdash-schedule__count-link');
-                            if (countLink) {
-                                // You can add logic here to update schedule count based on selected date
-                                // For now, just keep the existing count
+                        const btn = document.createElement('button');
+                        btn.className = `hrdash-schedule__day-btn ${isSelected ? 'active' : ''}`;
+                        btn.type = 'button';
+                        btn.setAttribute('data-date', dateStr);
+                        btn.title = `${dayFull}, ${date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`;
+                        
+                        // Get event count for this date
+                        const eventData = counts[dateStr] || { count: 0, color: 'default' };
+                        const indicatorClass = eventData.count > 0 ? 
+                            `hrdash-schedule__day-indicator has-events indicator-${eventData.color}` : 
+                            'hrdash-schedule__day-indicator';
+                        
+                        btn.innerHTML = `
+                            <span class="hrdash-schedule__day-num">${dayNum}</span>
+                            <span class="hrdash-schedule__day-abbr">${dayAbbr}</span>
+                            <span class="${indicatorClass}" data-date="${dateStr}" data-count="${eventData.count}"></span>
+                        `;
+                        
+                        // Update title with event count if available
+                        if (eventData.count > 0) {
+                            btn.title += ` (${eventData.count} event${eventData.count !== 1 ? 's' : ''})`;
+                        }
+                        
+                        btn.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            updateScheduleDate(date, true);
+                        });
+                        
+                        // Insert before the next button, or append if next button doesn't exist
+                        if (nextBtnEl) {
+                            dateSelector.insertBefore(btn, nextBtnEl);
+                        } else {
+                            dateSelector.appendChild(btn);
+                        }
+                    }
+                });
+            }
+            
+            // Function to fetch event counts for multiple dates
+            async function fetchEventCounts(dates) {
+                try {
+                    const formData = new FormData();
+                    formData.append('action', 'get_event_counts');
+                    dates.forEach(date => {
+                        if (date) {
+                            formData.append('dates[]', date);
+                        }
+                    });
+                    
+                    const currentUrl = window.location.pathname + window.location.search;
+                    const response = await fetch(currentUrl, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success && result.counts) {
+                        return result.counts;
+                    } else {
+                        console.warn('Event counts response not successful:', result);
+                    }
+                } catch (error) {
+                    console.error('Error fetching event counts:', error);
+                }
+                
+                // Return empty counts if fetch fails
+                const emptyCounts = {};
+                dates.forEach(date => {
+                    emptyCounts[date] = { count: 0, color: 'default' };
+                });
+                return emptyCounts;
+            }
+            
+            // Function to render calendar grid
+            function renderCalendar(year, month, selectedDay = null) {
+                const firstDay = new Date(year, month, 1);
+                // Get first day of week (0 = Sunday, 1 = Monday, etc.)
+                // Start from Sunday (0) as the first column
+                const firstDayOfWeek = firstDay.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+                
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+                
+                const prevMonth = month === 0 ? 11 : month - 1;
+                const prevYear = month === 0 ? year - 1 : year;
+                const daysInPrevMonth = new Date(prevYear, prevMonth + 1, 0).getDate();
+                
+                const nextMonth = month === 11 ? 0 : month + 1;
+                const nextYear = month === 11 ? year + 1 : year;
+                
+                let html = '';
+                const datesToCheck = [];
+                
+                // Previous month trailing days (starting from Sunday)
+                const selectedStr = selectedDay ? selectedDay.toISOString().split('T')[0] : null;
+                if (firstDayOfWeek > 0) {
+                    for (let i = firstDayOfWeek - 1; i >= 0; i--) {
+                        const day = daysInPrevMonth - i;
+                        const date = new Date(prevYear, prevMonth, day);
+                        const dateStr = date.toISOString().split('T')[0];
+                        datesToCheck.push(dateStr);
+                        
+                        // Check if this date is selected (for dates from other months)
+                        const isSelected = selectedStr && dateStr === selectedStr;
+                        let classes = 'hrdash-schedule__calendar-day hrdash-schedule__calendar-day--other';
+                        if (isSelected) {
+                            classes += ' active';
+                        }
+                        
+                        html += `<div class="${classes}" data-date="${dateStr}">
+                            <span class="hrdash-schedule__calendar-day-num">${day}</span>
+                            <span class="hrdash-schedule__day-indicator" data-date="${dateStr}"></span>
+                        </div>`;
+                    }
+                }
+                
+                // Current month days
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const date = new Date(year, month, day);
+                    const dateStr = date.toISOString().split('T')[0];
+                    datesToCheck.push(dateStr);
+                    
+                    // Compare dates using date strings (YYYY-MM-DD) to avoid timezone issues
+                    const todayStr = new Date().toISOString().split('T')[0];
+                    const selectedStr = selectedDay ? selectedDay.toISOString().split('T')[0] : null;
+                    
+                    const isToday = dateStr === todayStr;
+                    const isSelected = selectedStr && dateStr === selectedStr;
+                    
+                    let classes = 'hrdash-schedule__calendar-day';
+                    if (isToday) {
+                        classes += ' hrdash-schedule__calendar-day--today';
+                    }
+                    if (isSelected) {
+                        classes += ' active';
+                    }
+                    
+                    html += `<div class="${classes}" data-date="${dateStr}">
+                        <span class="hrdash-schedule__calendar-day-num">${day}</span>
+                        <span class="hrdash-schedule__day-indicator" data-date="${dateStr}"></span>
+                    </div>`;
+                }
+                
+                // Next month leading days to fill the grid (6 weeks * 7 days = 42 cells)
+                const totalCells = firstDayOfWeek + daysInMonth;
+                const remainingCells = 42 - totalCells;
+                for (let day = 1; day <= remainingCells; day++) {
+                    const date = new Date(nextYear, nextMonth, day);
+                    const dateStr = date.toISOString().split('T')[0];
+                    datesToCheck.push(dateStr);
+                    html += `<div class="hrdash-schedule__calendar-day hrdash-schedule__calendar-day--other" data-date="${dateStr}">
+                        <span class="hrdash-schedule__calendar-day-num">${day}</span>
+                        <span class="hrdash-schedule__day-indicator" data-date="${dateStr}"></span>
+                    </div>`;
+                }
+                
+                calendarGrid.innerHTML = html;
+                calendarGrid.setAttribute('data-current-month', `${year}-${String(month + 1).padStart(2, '0')}`);
+                
+                // Update month and year display
+                if (monthEl) {
+                    monthEl.textContent = firstDay.toLocaleDateString('en-US', { month: 'long' });
+                }
+                if (yearEl) {
+                    yearEl.textContent = year;
+                }
+                
+                // Fetch and display event indicators, then add click handlers
+                fetchEventCounts(datesToCheck).then(counts => {
+                    // Get day elements after they're in the DOM
+                    const dayElements = calendarGrid.querySelectorAll('.hrdash-schedule__calendar-day');
+                    
+                    dayElements.forEach(dayEl => {
+                        const dateStr = dayEl.getAttribute('data-date');
+                        const eventData = counts[dateStr] || { count: 0, color: 'default' };
+                        const indicator = dayEl.querySelector('.hrdash-schedule__day-indicator');
+                        
+                        if (indicator) {
+                            if (eventData.count > 0) {
+                                indicator.classList.add('has-events', `indicator-${eventData.color}`);
+                                indicator.setAttribute('data-count', eventData.count);
+                                
+                                const dayNum = dayEl.querySelector('.hrdash-schedule__calendar-day-num').textContent;
+                                const currentTitle = dayEl.getAttribute('title') || '';
+                                dayEl.setAttribute('title', `${currentTitle} (${eventData.count} event${eventData.count !== 1 ? 's' : ''})`.trim());
+                            } else {
+                                indicator.classList.remove('has-events', 'indicator-red', 'indicator-gold', 'indicator-default');
+                                indicator.removeAttribute('data-count');
                             }
+                        }
+                        
+                        // Add click handler to each day (only if not already attached)
+                        if (!dayEl.hasAttribute('data-day-handler-attached')) {
+                            dayEl.setAttribute('data-day-handler-attached', 'true');
+                            dayEl.addEventListener('click', function(e) {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                const dateStr = this.getAttribute('data-date');
+                                if (dateStr) {
+                                    const date = new Date(dateStr + 'T00:00:00');
+                                    if (!isNaN(date.getTime())) {
+                                        // Update selected date
+                                        selectedDate = new Date(date);
+                                        currentDate = new Date(date);
+                                        
+                                        // Only update month/year if clicking on a different month
+                                        const clickedMonth = date.getMonth();
+                                        const clickedYear = date.getFullYear();
+                                        if (clickedMonth !== currentMonth || clickedYear !== currentYear) {
+                                            currentMonth = clickedMonth;
+                                            currentYear = clickedYear;
+                                        }
+                                        
+                                        // Update schedule and re-render calendar with selected date highlighted
+                                        updateScheduleDate(date, true);
+                                        renderCalendar(currentYear, currentMonth, date);
+                                    }
+                                }
+                            });
                         }
                     });
                 });
             }
+            
+            // Previous month button
+            if (prevMonthBtn) {
+                prevMonthBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    currentMonth--;
+                    if (currentMonth < 0) {
+                        currentMonth = 11;
+                        currentYear--;
+                    }
+                    renderCalendar(currentYear, currentMonth, selectedDate);
+                });
+            }
+            
+            // Next month button
+            if (nextMonthBtn) {
+                nextMonthBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    currentMonth++;
+                    if (currentMonth > 11) {
+                        currentMonth = 0;
+                        currentYear++;
+                    }
+                    renderCalendar(currentYear, currentMonth, selectedDate);
+                });
+            }
+            
+            // Date picker change handler (only attach once)
+            if (datePicker && !datePicker.hasAttribute('data-picker-handler-attached')) {
+                datePicker.setAttribute('data-picker-handler-attached', 'true');
+                datePicker.addEventListener('change', function() {
+                    if (this.value) {
+                        const date = new Date(this.value + 'T00:00:00');
+                        if (!isNaN(date.getTime())) {
+                            // Update all date state
+                            selectedDate = new Date(date);
+                            currentDate = new Date(date);
+                            currentMonth = date.getMonth();
+                            currentYear = date.getFullYear();
+                            
+                            // Update schedule and re-render calendar with selected date highlighted
+                            updateScheduleDate(date, false);
+                            renderCalendar(currentYear, currentMonth, date);
+                        }
+                    }
+                });
+            }
+            
+            // Initialize calendar with today's date
+            // This ensures the calendar always shows the current system date on load
+            renderCalendar(currentYear, currentMonth, currentDate);
+            updateScheduleDate(currentDate, false);
+        }
+        
+        // Load schedule events via AJAX
+        async function loadScheduleEvents(date, timelineEl, countLink) {
+            try {
+                // Show loading state
+                timelineEl.innerHTML = '<div class="hrdash-schedule__empty"><i class="fas fa-spinner fa-spin"></i><div>Loading events...</div></div>';
+                
+                const formData = new FormData();
+                formData.append('action', 'get_schedule_events');
+                formData.append('date', date);
+                
+                // Get current page URL to maintain context
+                const currentUrl = window.location.pathname + window.location.search;
+                const response = await fetch(currentUrl, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success && result.events !== undefined) {
+                    // Update count
+                    if (countLink) {
+                        const count = result.count !== undefined ? result.count : result.events.length;
+                        const text = count + ' Schedule' + (count !== 1 ? 's' : '');
+                        countLink.textContent = text;
+                        countLink.innerHTML = text; // Ensure it's updated
+                    }
+                    
+                    // Render events
+                    if (result.events.length === 0) {
+                        timelineEl.innerHTML = `
+                            <div class="hrdash-schedule__empty">
+                                <i class="fas fa-calendar-check"></i>
+                                <div>No events for this date</div>
+                                <small class="text-muted">All clear! No items require attention.</small>
+                            </div>
+                        `;
+                    } else {
+                        let eventsHTML = '<div class="hrdash-schedule__events">';
+                        result.events.forEach(event => {
+                            const employeeInfo = event.employeeName ? 
+                                `<div class="event__meta">
+                                    <i class="fas fa-user"></i>
+                                    ${escapeHtml(event.employeeName)}
+                                    ${event.post ? `<span class="text-muted">· ${escapeHtml(event.post)}</span>` : ''}
+                                </div>` : 
+                                (event.description ? `<div class="event__meta">${escapeHtml(event.description)}</div>` : '');
+                            
+                            eventsHTML += `
+                                <div class="hrdash-schedule__event ${event.priorityClass}">
+                                    <div class="event__time">${escapeHtml(event.time)}</div>
+                                    <div class="event__content">
+                                        <div class="event__header">
+                                            <i class="fas ${event.priorityIcon} event__icon"></i>
+                                            <span class="event__title">${escapeHtml(event.title)}</span>
+                                        </div>
+                                        ${employeeInfo}
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        eventsHTML += '</div>';
+                        
+                        // Add indicator if there are many events
+                        if (result.events.length >= 5) {
+                            eventsHTML += `<div class="hrdash-schedule__events-footer">
+                                <small class="text-muted">
+                                    <i class="fas fa-info-circle"></i>
+                                    Showing all ${result.events.length} event${result.events.length !== 1 ? 's' : ''} for this date
+                                </small>
+                            </div>`;
+                        }
+                        
+                        timelineEl.innerHTML = eventsHTML;
+                    }
+                } else {
+                    timelineEl.innerHTML = `
+                        <div class="hrdash-schedule__empty">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <div>Error loading events</div>
+                            <small class="text-muted">Please try again later.</small>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error loading schedule events:', error);
+                timelineEl.innerHTML = `
+                    <div class="hrdash-schedule__empty">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <div>Error loading events</div>
+                        <small class="text-muted">Please refresh the page.</small>
+                    </div>
+                `;
+            }
+        }
+        
+        // Helper function to escape HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         }
         
         // Update current time display
@@ -1814,9 +2824,35 @@ try {
             }
         }
         
+        // Calendar collapse/expand functionality
+        function initCalendarToggle() {
+            const calendar = document.querySelector('.hrdash-schedule__calendar');
+            const toggleBtn = document.querySelector('.hrdash-schedule__calendar-toggle');
+            
+            if (!calendar || !toggleBtn) return;
+            
+            // Check localStorage for saved state
+            const savedState = localStorage.getItem('dashboard_calendar_collapsed');
+            if (savedState === 'true') {
+                calendar.classList.add('collapsed');
+            }
+            
+            toggleBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                calendar.classList.toggle('collapsed');
+                const isCollapsed = calendar.classList.contains('collapsed');
+                
+                // Save state to localStorage
+                localStorage.setItem('dashboard_calendar_collapsed', isCollapsed ? 'true' : 'false');
+            });
+        }
+        
         // Initialize all features
         initLicenseWatchlist();
         initScheduleSelector();
+        initCalendarToggle();
         initTimeDisplay();
         initShortcuts();
         initProfileDropdown();
@@ -2404,7 +3440,7 @@ body.portal-hr-admin .dashboard-modern {
 .stat-number {
     font-size: 2.25rem;
     font-weight: 700;
-    color: #000000;
+    color: #0f172a;
     margin: 0;
     line-height: 1;
     letter-spacing: -0.02em;

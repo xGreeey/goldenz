@@ -887,15 +887,15 @@ foreach ($violation_history as $history) {
 </div>
 
 <style>
-/* Tab Segment Styles - Exact Match from Dashboard */
+/* Tab Segment Styles - Exact Match from License Watchlist */
 .hrdash-segment {
     display: inline-flex;
     border: none;
-    border-radius: 999px;
+    border-radius: 12px;
     overflow: hidden;
-    background: #f1f5f9;
-    padding: 0.25rem;
-    gap: 0.25rem;
+    background: #f1f4f8;
+    padding: 0.375rem;
+    gap: 0.375rem;
     flex-wrap: wrap;
 }
 
@@ -921,24 +921,25 @@ foreach ($violation_history as $history) {
 .hrdash-segment__btn {
     border: 0;
     background: transparent;
-    padding: 0.5rem 1rem;
+    padding: 0.625rem 1.25rem;
     font-weight: 600;
-    font-size: 0.875rem;
+    font-size: 0.8125rem;
     color: #64748b;
-    border-radius: 999px;
-    transition: all 0.2s ease;
+    border-radius: 8px;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     white-space: nowrap;
     cursor: pointer;
 }
 
 .hrdash-segment__btn:hover {
-    color: #475569;
+    color: #334155;
+    background: rgba(255, 255, 255, 0.5);
 }
 
 .hrdash-segment__btn.active {
     background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
     color: #ffffff;
-    box-shadow: 0 2px 4px rgba(15, 23, 42, 0.2);
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.15);
 }
 
 /* Add Violation Button - Using btn-primary-modern class (matching Add Employee button) */
@@ -1701,7 +1702,14 @@ document.addEventListener('DOMContentLoaded', function() {
     const tabContents = document.querySelectorAll('.violation-tab-content');
     
     tabButtons.forEach(button => {
-        button.addEventListener('click', function() {
+        // Prevent duplicate handlers
+        if (button.hasAttribute('data-violation-tab-handler-attached')) return;
+        button.setAttribute('data-violation-tab-handler-attached', 'true');
+        
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
             const targetTab = this.getAttribute('data-tab');
             
             // Remove active class from all buttons
@@ -2127,7 +2135,7 @@ document.addEventListener('DOMContentLoaded', function() {
 }
 
 .add-violation-modal-header {
-    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1e293b 100%);
     color: #ffffff;
     border-bottom: none;
     padding: 1rem 1.5rem;
