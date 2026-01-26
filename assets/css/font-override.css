@@ -1354,6 +1354,45 @@ body.portal-hr-admin .btn-outline-modern:hover {
     color: #0f172a;
 }
 
+/* Ensure icons in outline buttons are always visible */
+body.portal-hr-admin .btn-outline-modern i,
+body.portal-hr-admin .btn-outline-modern .fas,
+body.portal-hr-admin .btn-outline-modern .far,
+body.portal-hr-admin .btn-outline-modern .fal {
+    font-family: 'Font Awesome 6 Free', 'Font Awesome 5 Free' !important;
+    font-weight: 900 !important;
+    font-style: normal !important;
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    color: inherit !important;
+    font-size: 0.875rem !important;
+    line-height: 1 !important;
+    width: auto !important;
+    height: auto !important;
+}
+
+body.portal-hr-admin .btn-outline-modern.btn-sm i,
+body.portal-hr-admin .btn-outline-modern.btn-sm .fas {
+    font-size: 0.8125rem !important;
+}
+
+body.portal-hr-admin .btn-outline-modern:hover i,
+body.portal-hr-admin .btn-outline-modern:hover .fas {
+    color: inherit !important;
+    opacity: 1 !important;
+}
+
+body.portal-hr-admin .btn-outline-modern:active i,
+body.portal-hr-admin .btn-outline-modern:focus i {
+    color: inherit !important;
+    opacity: 1 !important;
+}
+
+body.portal-hr-admin .btn-outline-modern:disabled i {
+    opacity: 0.6 !important;
+}
+
 /* Make sidebar extend to top and connect with welcome section */
 body.portal-hr-admin .sidebar {
     top: 0 !important;
