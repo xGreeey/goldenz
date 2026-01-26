@@ -325,7 +325,7 @@ try {
 <div class="container-fluid hrdash">
 
     <!-- HR Admin Stats Bar - Priority Metrics -->
-    <div class="row g-4 mb-4" id="hr-dashboard-stats">
+    <div class="row g-5 mb-5" id="hr-dashboard-stats">
         <!-- Active Employees - Most Important for HR -->
         <div class="col-xl-3 col-md-6">
             <div class="card hrdash-stat hrdash-stat--primary">
@@ -415,7 +415,7 @@ try {
         </div>
     </div>
 
-    <div class="row g-4">
+    <div class="row g-5">
         <!-- License table (moved to main left position) -->
         <div class="col-xl-8 d-flex">
             <div class="card hrdash-card hrdash-license h-100 d-flex flex-column">
@@ -662,41 +662,20 @@ try {
 <style>
 /* HR-Admin dashboard inspired layout (scoped by container class) */
 .hrdash {
-    background: #f8fafc;
+    background: #fafbfc;
     min-height: 100vh;
     margin-left: 0;
     margin-right: 0;
-    padding-left: 0;
-    padding-right: 0;
+    padding: 2rem 0;
     width: 100%;
     max-width: 100%;
     overflow-x: hidden;
     position: relative;
 }
 
-/* Logo Watermark - Subtle Brand Presence */
+/* Remove watermark for cleaner look */
 .hrdash::before {
-    content: '';
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: min(60vw, 800px);
-    height: min(60vh, 800px);
-    background-image: url('https://goldenz.local/public/logo.svg');
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: contain;
-    opacity: 0.03;
-    pointer-events: none;
-    z-index: 0;
-    filter: grayscale(0.2);
-}
-
-/* Ensure all dashboard content stays above watermark */
-.hrdash > *:not(::before) {
-    position: relative;
-    z-index: 1;
+    display: none;
 }
 .hrdash-welcome {
     display: flex;
@@ -713,21 +692,23 @@ try {
     flex: 1;
 }
 .hrdash-welcome__title {
-    font-size: 1.75rem;
-    font-weight: 800;
-    letter-spacing: -0.03em;
-    margin: 0 0 0.25rem 0;
-    color: #0f172a;
-    line-height: 1.2;
+    font-size: 2.25rem;
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    margin: 0 0 0.5rem 0;
+    color: #0a0e27;
+    line-height: 1.1;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
 }
 .hrdash-welcome__time {
-    font-weight: 800;
-    color: #0f172a;
-    font-size: 1rem;
-    margin-right: 0.75rem;
+    font-weight: 600;
+    color: #64748b;
+    font-size: 0.9375rem;
+    margin-right: 1rem;
     display: inline-flex;
     align-items: center;
     padding: 0.5rem 0;
+    letter-spacing: 0.02em;
 }
 .hrdash-welcome__subtitle {
     margin: 0;
@@ -772,22 +753,25 @@ try {
     font-size: 0.875rem;
 }
 .hrdash-welcome__icon-btn {
-    width: 40px;
-    height: 40px;
-    border-radius: 8px;
-    border: none;
-    background: #f0f2f5;
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    border: 1px solid #e8ecf1;
+    background: #ffffff;
     color: #64748b;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     text-decoration: none;
     position: relative;
-    transition: all 0.2s ease;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .hrdash-welcome__icon-btn:hover {
-    background: #e4e6eb;
-    color: #1e293b;
+    background: #fafbfc;
+    border-color: #d1d9e6;
+    color: #0a0e27;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
 }
 .hrdash-welcome__icon-btn:focus,
 .hrdash-welcome__icon-btn:active,
@@ -838,16 +822,22 @@ try {
     opacity: 0.8;
 }
 .hrdash-welcome__avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 8px;
-    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
     color: #ffffff;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-weight: 700;
+    font-weight: 600;
     font-size: 0.875rem;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.25s ease;
+}
+.hrdash-welcome__profile-btn:hover .hrdash-welcome__avatar {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
 }
 .hrdash-welcome__avatar-img {
     width: 40px;
@@ -866,9 +856,10 @@ try {
 .hrdash-welcome__user-name {
     font-size: 0.875rem;
     font-weight: 600;
-    color: #1e293b;
-    margin-right: 0.5rem;
+    color: #0a0e27;
+    margin-right: 0.75rem;
     white-space: nowrap;
+    letter-spacing: -0.01em;
 }
 
 /* Profile & Settings Modal Styles */
@@ -962,18 +953,23 @@ try {
     }
 }
 .hrdash-stat {
-    border: 1px solid #e2e8f0;
-    border-radius: 14px;
-    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
-    padding: 1.5rem;
+    border: 1px solid #e8ecf1;
+    border-radius: 20px;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 0 0 1px rgba(15, 23, 42, 0.02);
+    padding: 2rem 1.75rem;
     background: #ffffff;
     position: relative;
     overflow: hidden;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    min-height: 160px;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
 }
 .hrdash-stat:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.1);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(15, 23, 42, 0.04);
+    border-color: #d1d9e6;
 }
 /* Primary card with blue gradient */
 .hrdash-stat--primary {
@@ -1002,13 +998,20 @@ try {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    margin-bottom: 1rem;
+    margin-bottom: 0;
 }
 .hrdash-stat__label {
-    font-size: 0.875rem;
+    font-size: 0.8125rem;
     font-weight: 600;
     color: #64748b;
     margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    opacity: 0.85;
+}
+.hrdash-stat--primary .hrdash-stat__label {
+    color: rgba(255, 255, 255, 0.9);
+    opacity: 1;
 }
 .hrdash-stat__action {
     width: 28px;
@@ -1035,43 +1038,60 @@ try {
 .hrdash-stat__content {
     display: flex;
     align-items: baseline;
-    gap: 0.75rem;
-    margin-bottom: 0.75rem;
+    gap: 1rem;
+    margin-bottom: 0;
+    flex: 1;
 }
 .hrdash-stat__value {
-    font-size: 2.5rem;
-    font-weight: 800;
+    font-size: 3rem;
+    font-weight: 700;
     line-height: 1;
-    letter-spacing: -0.03em;
-    color: #0f172a;
+    letter-spacing: -0.05em;
+    color: #0a0e27;
     margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+}
+.hrdash-stat--primary .hrdash-stat__value {
+    color: #ffffff;
 }
 .hrdash-stat__trend {
     display: inline-flex;
     align-items: center;
-    gap: 0.25rem;
-    padding: 0.25rem 0.5rem;
-    border-radius: 6px;
+    gap: 0.375rem;
+    padding: 0.375rem 0.75rem;
+    border-radius: 8px;
     font-size: 0.75rem;
-    font-weight: 700;
+    font-weight: 600;
     white-space: nowrap;
 }
 .hrdash-stat__trend i {
     font-size: 0.625rem;
 }
 .hrdash-stat__trend--positive {
-    background: #dcfce7;
-    color: #16a34a;
+    background: #d1fae5;
+    color: #059669;
 }
 .hrdash-stat__trend--negative {
     background: #fee2e2;
     color: #dc2626;
 }
+.hrdash-stat--primary .hrdash-stat__trend {
+    background: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    backdrop-filter: blur(8px);
+}
 .hrdash-stat__meta {
     margin: 0;
     color: #64748b;
     font-size: 0.8125rem;
-    line-height: 1.5;
+    line-height: 1.6;
+    opacity: 0.8;
+    margin-top: auto;
+    padding-top: 0.5rem;
+}
+.hrdash-stat--primary .hrdash-stat__meta {
+    color: rgba(255, 255, 255, 0.85);
+    opacity: 1;
 }
 
 .hrdash-card {
@@ -1083,15 +1103,15 @@ try {
     flex-direction: column;
 }
 .hrdash-card__header {
-    padding: 1rem 1.25rem;
+    padding: 1.75rem 2rem;
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    gap: 1rem;
-    border-bottom: 1px solid #e2e8f0;
+    gap: 1.5rem;
+    border-bottom: 1px solid #f1f4f8;
     background: #ffffff;
     flex-shrink: 0;
-    min-height: 72px;
+    min-height: auto;
 }
 .hrdash-card__header > div:first-child {
     flex: 1;
@@ -1154,6 +1174,18 @@ try {
     border: none;
     border-radius: 0;
     background: transparent;
+    padding: 0;
+}
+
+/* License code styling */
+.license-code {
+    background: #f1f4f8;
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: #334155;
+    font-family: 'Courier New', monospace;
 }
 /* Profile & Settings Modal Styles */
 .profile-avatar-large {
@@ -1249,25 +1281,26 @@ try {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.25rem;
-    padding: 0.625rem 0.5rem;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
+    gap: 0.375rem;
+    padding: 0.875rem 0.625rem;
+    border: 1px solid #e8ecf1;
+    border-radius: 12px;
     background: #ffffff;
     color: #64748b;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     font-family: inherit;
 }
 .hrdash-schedule__day-btn:hover {
-    background: #f8fafc;
-    border-color: #cbd5e1;
+    background: #fafbfc;
+    border-color: #d1d9e6;
+    color: #334155;
 }
 .hrdash-schedule__day-btn.active {
-    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1e293b 100%);
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
     border-color: transparent;
     color: #ffffff;
-    box-shadow: 0 2px 4px rgba(30, 58, 138, 0.2);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
 }
 .hrdash-schedule__day-num {
     font-size: 1rem;
@@ -1288,9 +1321,10 @@ try {
     border-bottom: 1px solid #e2e8f0;
 }
 .hrdash-schedule__date-full {
-    font-size: 0.9375rem;
+    font-size: 1rem;
     font-weight: 600;
-    color: #0f172a;
+    color: #0a0e27;
+    letter-spacing: -0.01em;
 }
 .hrdash-schedule__count-link {
     font-size: 0.8125rem;
@@ -1327,20 +1361,21 @@ try {
 .hrdash-schedule__events {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: 0.875rem;
 }
 .hrdash-schedule__event {
     display: flex;
-    gap: 0.75rem;
-    padding: 0.875rem;
-    border-radius: 8px;
+    gap: 1rem;
+    padding: 1rem 1.125rem;
+    border-radius: 12px;
     border-left: 3px solid #cbd5e1;
-    background: #f8fafc;
-    transition: all 0.2s ease;
+    background: #fafbfc;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .hrdash-schedule__event:hover {
-    background: #f1f5f9;
-    transform: translateX(2px);
+    background: #f1f4f8;
+    transform: translateX(3px);
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
 }
 .hrdash-schedule__event.event--urgent {
     border-left-color: #dc2626;
@@ -1394,8 +1429,9 @@ try {
 .event__title {
     font-size: 0.875rem;
     font-weight: 600;
-    color: #0f172a;
-    line-height: 1.4;
+    color: #0a0e27;
+    line-height: 1.5;
+    letter-spacing: -0.01em;
 }
 .event__meta {
     font-size: 0.75rem;
@@ -1410,38 +1446,53 @@ try {
 .hrdash-segment {
     display: inline-flex;
     border: none;
-    border-radius: 999px;
+    border-radius: 12px;
     overflow: hidden;
-    background: #f1f5f9;
-    padding: 0.25rem;
-    gap: 0.25rem;
+    background: #f1f4f8;
+    padding: 0.375rem;
+    gap: 0.375rem;
 }
 .hrdash-segment__btn {
     border: 0;
     background: transparent;
-    padding: 0.5rem 1rem;
+    padding: 0.625rem 1.25rem;
     font-weight: 600;
-    font-size: 0.875rem;
+    font-size: 0.8125rem;
     color: #64748b;
-    border-radius: 999px;
-    transition: all 0.2s ease;
+    border-radius: 8px;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     white-space: nowrap;
 }
 .hrdash-segment__btn:hover {
-    color: #475569;
+    color: #334155;
+    background: rgba(255, 255, 255, 0.5);
 }
 .hrdash-segment__btn.active {
-    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1e293b 100%);
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
     color: #ffffff;
-    box-shadow: 0 2px 4px rgba(30, 58, 138, 0.2);
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.15);
 }
 .hrdash-table thead th {
-    background: #f8fafc;
+    background: #fafbfc;
     color: #64748b;
     font-size: 0.75rem;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
-    border-bottom: 1px solid #e2e8f0;
+    letter-spacing: 0.1em;
+    border-bottom: 1px solid #f1f4f8;
+    padding: 1rem 1.5rem;
+    font-weight: 600;
+}
+.hrdash-table tbody td {
+    padding: 1.125rem 1.5rem;
+    border-bottom: 1px solid #f8fafc;
+    color: #334155;
+    font-size: 0.875rem;
+}
+.hrdash-table tbody tr:last-child td {
+    border-bottom: none;
+}
+.hrdash-table tbody tr:hover {
+    background: #fafbfc;
 }
 /* Shortcuts Grid */
 .hrdash-shortcuts-card .hrdash-card__header {
@@ -1450,42 +1501,44 @@ try {
 .hrdash-shortcuts-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 0.75rem;
-    padding: 1.25rem;
+    gap: 0.875rem;
+    padding: 1.75rem 2rem;
     background: #ffffff;
 }
 .hrdash-shortcut-btn {
     display: flex;
     align-items: center;
     justify-content: flex-start;
-    gap: 0.625rem;
-    padding: 0.875rem 1rem;
-    border-radius: 8px;
-    border: 1px solid #e2e8f0;
+    gap: 0.75rem;
+    padding: 1rem 1.125rem;
+    border-radius: 12px;
+    border: 1px solid #e8ecf1;
     background: #ffffff;
-    color: #0f172a;
+    color: #0a0e27;
     text-decoration: none;
     font-weight: 500;
     font-size: 0.875rem;
-    transition: all 0.2s ease;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     cursor: pointer;
-    min-height: 44px;
+    min-height: 48px;
 }
 .hrdash-shortcut-btn:hover {
-    background: #f8fafc;
-    border-color: #cbd5e1;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    background: #fafbfc;
+    border-color: #d1d9e6;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+    color: #0a0e27;
 }
 .hrdash-shortcut-btn i {
-    font-size: 1rem;
+    font-size: 1.125rem;
     color: #475569;
-    width: 20px;
+    width: 22px;
     text-align: center;
     flex-shrink: 0;
+    transition: color 0.25s ease;
 }
 .hrdash-shortcut-btn:hover i {
-    color: #1e293b;
+    color: #0a0e27;
 }
 .hrdash-shortcut-btn span {
     flex: 1;
@@ -1494,23 +1547,123 @@ try {
     text-overflow: ellipsis;
 }
 /* Ensure consistent card alignment */
-.row.g-4 > [class*="col-"] {
+.row.g-5 > [class*="col-"] {
     display: flex;
 }
-.row.g-4 > [class*="col-"] > .card {
+.row.g-5 > [class*="col-"] > .card {
     width: 100%;
 }
 
+/* Additional spacing utilities for dashboard */
+.hrdash .row {
+    margin-left: 0;
+    margin-right: 0;
+}
+
+.hrdash .row > [class*="col-"] {
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+}
+
+/* Container max-width for better readability on large screens */
+@media (min-width: 1400px) {
+    .hrdash {
+        max-width: 1600px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+}
+
+/* Smooth scroll behavior */
+.hrdash-schedule__timeline,
+.hrdash-license__body .table-responsive {
+    scroll-behavior: smooth;
+}
+
+/* Improved focus states for accessibility */
+.hrdash-shortcut-btn:focus,
+.hrdash-schedule__day-btn:focus,
+.hrdash-segment__btn:focus {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+}
+
+/* Subtle entrance animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.hrdash-stat,
+.hrdash-card {
+    animation: fadeInUp 0.4s ease-out backwards;
+}
+
+.hrdash-stat:nth-child(1) { animation-delay: 0.05s; }
+.hrdash-stat:nth-child(2) { animation-delay: 0.1s; }
+.hrdash-stat:nth-child(3) { animation-delay: 0.15s; }
+.hrdash-stat:nth-child(4) { animation-delay: 0.2s; }
+
+/* Improved table spacing */
+.hrdash-license__body .table-responsive {
+    padding: 0;
+}
+
+/* Better visual hierarchy for empty states */
+.hrdash-schedule__empty i {
+    font-size: 2rem;
+    opacity: 0.4;
+    margin-bottom: 0.5rem;
+}
+
+.hrdash-schedule__empty div {
+    font-weight: 500;
+    color: #475569;
+}
+
+.hrdash-schedule__empty small {
+    font-size: 0.8125rem;
+    opacity: 0.7;
+}
+
+/* Responsive adjustments */
 @media (max-width: 992px) {
+    .hrdash {
+        padding: 1.5rem 0;
+    }
+    .hrdash-welcome {
+        margin-bottom: 2rem;
+        padding: 2rem 0;
+    }
+    .hrdash-welcome__title {
+        font-size: 1.875rem;
+    }
+    .hrdash-stat {
+        padding: 1.5rem 1.5rem;
+        min-height: 140px;
+    }
+    .hrdash-stat__value {
+        font-size: 2.5rem;
+    }
     .hrdash-schedule__body,
     .hrdash-license__body {
-        min-height: 220px;
+        min-height: 300px;
     }
     .hrdash-shortcuts-grid {
         grid-template-columns: 1fr;
+        padding: 1.5rem 1.5rem;
+    }
+    .row.g-5 {
+        --bs-gutter-y: 1.5rem;
     }
     /* Stack cards on mobile */
-    .row.g-4 > [class*="col-"] {
+    .row.g-5 > [class*="col-"] {
         display: block;
     }
 }
