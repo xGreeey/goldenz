@@ -1071,12 +1071,23 @@ body {
 
 .btn-primary:disabled .btn-text,
 .btn-primary[aria-busy="true"] .btn-text {
-    opacity: 0;
+    display: none !important;
 }
 
 .btn-primary:disabled .btn-spinner,
 .btn-primary[aria-busy="true"] .btn-spinner {
     display: flex !important;
+}
+
+/* Center spinner when button is disabled/loading */
+.btn-primary:disabled .spinner-border,
+.btn-primary:disabled .spinner-border-sm {
+    display: inline-block !important;
+    margin: 0 auto;
+}
+
+.btn-primary:disabled .btn-text {
+    display: none !important;
 }
 
 /* Form Footer */

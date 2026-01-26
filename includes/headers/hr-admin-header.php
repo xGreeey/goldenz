@@ -75,6 +75,7 @@ $activeSection = getActiveSection($page);
     <link href="<?php echo asset_url('css/style.css'); ?>" rel="stylesheet">
     <link href="<?php echo asset_url('css/font-override.css'); ?>" rel="stylesheet">
     <link href="<?php echo asset_url('css/custom-icons.css'); ?>" rel="stylesheet">
+    <link href="<?php echo asset_url('css/header-fixed.css'); ?>" rel="stylesheet">
     <!-- number-rendering-fix.css merged into font-override.css -->
     <style>
     /* Override icon paths with absolute URLs for SVG icons */
