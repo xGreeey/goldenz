@@ -122,6 +122,62 @@ $days_pending = array_sum(array_map(fn($r) => $r['status'] === 'pending' ? $r['d
 .badge-leave-pending { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; font-weight: 600; }
 .badge-leave-approved { background: #dcfce7; color: #166534; border: 1px solid #86efac; font-weight: 600; }
 .badge-leave-rejected { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; font-weight: 600; }
+
+/* Fix View button icon visibility - Enterprise Theme */
+.view-details-btn {
+    min-width: 36px;
+    height: 36px;
+    padding: 0.5rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    overflow: visible !important;
+    position: relative;
+}
+
+.view-details-btn i,
+.view-details-btn .fas,
+.view-details-btn .fa-eye {
+    font-family: 'Font Awesome 6 Free', 'Font Awesome 5 Free' !important;
+    font-weight: 900 !important;
+    font-style: normal !important;
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    color: #0f172a !important;
+    font-size: 0.875rem !important;
+    line-height: 1 !important;
+    width: auto !important;
+    height: auto !important;
+    margin: 0 !important;
+    text-rendering: auto !important;
+    -webkit-font-smoothing: antialiased !important;
+    -moz-osx-font-smoothing: grayscale !important;
+}
+
+.view-details-btn:hover i,
+.view-details-btn:hover .fas,
+.view-details-btn:hover .fa-eye {
+    color: #0f172a !important;
+    opacity: 1 !important;
+}
+
+.view-details-btn:active i,
+.view-details-btn:active .fas,
+.view-details-btn:active .fa-eye,
+.view-details-btn:focus i,
+.view-details-btn:focus .fas,
+.view-details-btn:focus .fa-eye {
+    color: #0f172a !important;
+    opacity: 1 !important;
+}
+
+.view-details-btn:disabled i,
+.view-details-btn:disabled .fas,
+.view-details-btn:disabled .fa-eye {
+    color: #94a3b8 !important;
+    opacity: 0.6 !important;
+}
 </style>
 
 <div class="container-fluid hrdash">
