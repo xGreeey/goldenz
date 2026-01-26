@@ -1031,8 +1031,8 @@ ob_end_flush();
                 </p>
                 
                 <!-- See More Button -->
-                <button type="button" class="see-more-btn" id="seeMoreBtn">
-                    <i class="fas fa-info-circle"></i> System Information
+                <button type="button" class="see-more-btn" id="seeMoreBtn" aria-label="View system information and features">
+                    <i class="fas fa-info-circle" aria-hidden="true"></i> System Information
                 </button>
                 
                 <!-- Social Links -->
@@ -1277,17 +1277,17 @@ ob_end_flush();
     </section>
     
     <!-- System Information Modal -->
-    <div class="system-info-modal" id="systemInfoModal">
-        <div class="system-info-overlay" id="systemInfoOverlay"></div>
+    <div class="system-info-modal" id="systemInfoModal" role="dialog" aria-modal="true" aria-labelledby="systemInfoTitle" aria-describedby="systemInfoDescription">
+        <div class="system-info-overlay" id="systemInfoOverlay" aria-hidden="true"></div>
         <div class="system-info-content">
-            <button type="button" class="system-info-close" id="closeModalBtn" aria-label="Close">
-                <i class="fas fa-times"></i>
+            <button type="button" class="system-info-close" id="closeModalBtn" aria-label="Close system information modal">
+                <i class="fas fa-times" aria-hidden="true"></i>
             </button>
             
             <div class="system-info-header">
-                <img src="../public/logo.svg" alt="Golden Z-5 Logo" class="modal-logo" onerror="this.style.display='none'">
-                <h2>Golden Z-5 HR Management System</h2>
-                <p class="modal-subtitle">Comprehensive Workforce Management Solution</p>
+                <img src="../public/logo.svg" alt="Golden Z-5 Logo" class="modal-logo" onerror="this.style.display='none'" width="80" height="80">
+                <h2 id="systemInfoTitle">Golden Z-5 HR Management System</h2>
+                <p class="modal-subtitle" id="systemInfoDescription">Comprehensive Workforce Management Solution</p>
             </div>
             
             <div class="system-info-body">
@@ -1524,29 +1524,65 @@ ob_end_flush();
             document.documentElement.scrollTop = 0;
         });
         
-        // System Information Modal
+        // System Information Modal - Enhanced with Basketball Animation
         const seeMoreBtn = document.getElementById('seeMoreBtn');
         const systemInfoModal = document.getElementById('systemInfoModal');
         const systemInfoOverlay = document.getElementById('systemInfoOverlay');
         const closeModalBtn = document.getElementById('closeModalBtn');
         
-        // Open modal
+        // Open modal with extraordinary animation
         if (seeMoreBtn) {
-            seeMoreBtn.addEventListener('click', function() {
-                systemInfoModal.classList.add('active');
-                document.body.style.overflow = 'hidden'; // Prevent background scrolling
+            seeMoreBtn.addEventListener('click', function(e) {
+                // Trigger button bounce animation
+                seeMoreBtn.classList.add('animating');
+                
+                // Remove animation class after animation completes
+                setTimeout(() => {
+                    seeMoreBtn.classList.remove('animating');
+                }, 800);
+                
+                // Small delay before opening modal for button animation
+                setTimeout(() => {
+                    systemInfoModal.classList.add('active');
+                    document.body.style.overflow = 'hidden'; // Prevent background scrolling
+                    
+                    // Focus trap: focus the close button for accessibility
+                    if (closeModalBtn) {
+                        closeModalBtn.focus();
+                    }
+                }, 200);
+            });
+            
+            // Keyboard support for button
+            seeMoreBtn.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    seeMoreBtn.click();
+                }
             });
         }
         
-        // Close modal function
+        // Close modal function with smooth exit
         function closeModal() {
             systemInfoModal.classList.remove('active');
-            document.body.style.overflow = ''; // Restore scrolling
+            
+            // Small delay before restoring scroll to allow exit animation
+            setTimeout(() => {
+                document.body.style.overflow = ''; // Restore scrolling
+            }, 400);
         }
         
         // Close on X button
         if (closeModalBtn) {
             closeModalBtn.addEventListener('click', closeModal);
+            
+            // Keyboard support
+            closeModalBtn.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    closeModal();
+                }
+            });
         }
         
         // Close on overlay click
@@ -1560,6 +1596,31 @@ ob_end_flush();
                 closeModal();
             }
         });
+        
+        // Focus trap: keep focus within modal when open
+        if (systemInfoModal) {
+            const focusableElements = systemInfoModal.querySelectorAll(
+                'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+            );
+            const firstFocusable = focusableElements[0];
+            const lastFocusable = focusableElements[focusableElements.length - 1];
+            
+            systemInfoModal.addEventListener('keydown', function(e) {
+                if (e.key === 'Tab') {
+                    if (e.shiftKey) {
+                        if (document.activeElement === firstFocusable) {
+                            e.preventDefault();
+                            lastFocusable.focus();
+                        }
+                    } else {
+                        if (document.activeElement === lastFocusable) {
+                            e.preventDefault();
+                            firstFocusable.focus();
+                        }
+                    }
+                }
+            });
+        }
         
         // Toggle Password Visibility for login form
         const togglePassword = document.getElementById('togglePassword');

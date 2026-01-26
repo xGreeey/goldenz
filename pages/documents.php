@@ -68,19 +68,39 @@ $available_tags = [
     ['name' => 'Medical', 'color' => '#ec4899'],
 ];
 
-// Temporary: Mock data for documents
+// Temporary: Mock data for documents - Frontend-only mock structure
+// Grouped by employee to represent one-folder-per-employee structure
 $documents = [
-    ['id' => 1, 'name' => 'John_Doe_NBI.pdf', 'tag' => 'NBI Clearance', 'tag_color' => '#8b5cf6', 'size' => '1.23 mb', 'modified' => '24.02.2022', 'employee' => 'John Doe'],
-    ['id' => 2, 'name' => 'Maria_Santos_Birth_Cert.pdf', 'tag' => 'Birth Certificate', 'tag_color' => '#06b6d4', 'size' => '890 kb', 'modified' => '23.02.2022', 'employee' => 'Maria Santos'],
-    ['id' => 3, 'name' => 'Pedro_Cruz_Contract_2024.pdf', 'tag' => 'Contract', 'tag_color' => '#f59e0b', 'size' => '2.45 mb', 'modified' => '22.02.2022', 'employee' => 'Pedro Cruz'],
-    ['id' => 4, 'name' => 'Ana_Reyes_Medical_Cert.pdf', 'tag' => 'Medical', 'tag_color' => '#ec4899', 'size' => '567 kb', 'modified' => '21.02.2022', 'employee' => 'Ana Reyes'],
-    ['id' => 5, 'name' => 'Luis_Bautista_TOR.pdf', 'tag' => 'TOR', 'tag_color' => '#10b981', 'size' => '3.12 mb', 'modified' => '20.02.2022', 'employee' => 'Luis Bautista'],
-    ['id' => 6, 'name' => 'Elena_Garcia_NBI.pdf', 'tag' => 'NBI Clearance', 'tag_color' => '#8b5cf6', 'size' => '1.05 mb', 'modified' => '19.02.2022', 'employee' => 'Elena Garcia'],
-    ['id' => 7, 'name' => 'Carlos_Mendoza_Contract.pdf', 'tag' => 'Contract', 'tag_color' => '#f59e0b', 'size' => '1.89 mb', 'modified' => '18.02.2022', 'employee' => 'Carlos Mendoza'],
-    ['id' => 8, 'name' => 'Sofia_Torres_Birth_Cert.pdf', 'tag' => 'Birth Certificate', 'tag_color' => '#06b6d4', 'size' => '756 kb', 'modified' => '17.02.2022', 'employee' => 'Sofia Torres'],
-    ['id' => 9, 'name' => 'Miguel_Ramos_Medical.pdf', 'tag' => 'Medical', 'tag_color' => '#ec4899', 'size' => '425 kb', 'modified' => '16.02.2022', 'employee' => 'Miguel Ramos'],
-    ['id' => 10, 'name' => 'Isabel_Flores_TOR.pdf', 'tag' => 'TOR', 'tag_color' => '#10b981', 'size' => '2.67 mb', 'modified' => '15.02.2022', 'employee' => 'Isabel Flores'],
+    ['id' => 1, 'name' => 'John_Doe_NBI.pdf', 'tag' => 'NBI Clearance', 'tag_color' => '#8b5cf6', 'size' => '1.23 mb', 'modified' => '24.02.2022', 'employee' => 'John Doe', 'employee_id' => 1],
+    ['id' => 2, 'name' => 'Maria_Santos_Birth_Cert.pdf', 'tag' => 'Birth Certificate', 'tag_color' => '#06b6d4', 'size' => '890 kb', 'modified' => '23.02.2022', 'employee' => 'Maria Santos', 'employee_id' => 2],
+    ['id' => 3, 'name' => 'Pedro_Cruz_Contract_2024.pdf', 'tag' => 'Contract', 'tag_color' => '#f59e0b', 'size' => '2.45 mb', 'modified' => '22.02.2022', 'employee' => 'Pedro Cruz', 'employee_id' => 3],
+    ['id' => 4, 'name' => 'Ana_Reyes_Medical_Cert.pdf', 'tag' => 'Medical', 'tag_color' => '#ec4899', 'size' => '567 kb', 'modified' => '21.02.2022', 'employee' => 'Ana Reyes', 'employee_id' => 4],
+    ['id' => 5, 'name' => 'Luis_Bautista_TOR.pdf', 'tag' => 'TOR', 'tag_color' => '#10b981', 'size' => '3.12 mb', 'modified' => '20.02.2022', 'employee' => 'Luis Bautista', 'employee_id' => 5],
+    ['id' => 6, 'name' => 'Elena_Garcia_NBI.pdf', 'tag' => 'NBI Clearance', 'tag_color' => '#8b5cf6', 'size' => '1.05 mb', 'modified' => '19.02.2022', 'employee' => 'Elena Garcia', 'employee_id' => 6],
+    ['id' => 7, 'name' => 'Carlos_Mendoza_Contract.pdf', 'tag' => 'Contract', 'tag_color' => '#f59e0b', 'size' => '1.89 mb', 'modified' => '18.02.2022', 'employee' => 'Carlos Mendoza', 'employee_id' => 7],
+    ['id' => 8, 'name' => 'Sofia_Torres_Birth_Cert.pdf', 'tag' => 'Birth Certificate', 'tag_color' => '#06b6d4', 'size' => '756 kb', 'modified' => '17.02.2022', 'employee' => 'Sofia Torres', 'employee_id' => 8],
+    ['id' => 9, 'name' => 'Miguel_Ramos_Medical.pdf', 'tag' => 'Medical', 'tag_color' => '#ec4899', 'size' => '425 kb', 'modified' => '16.02.2022', 'employee' => 'Miguel Ramos', 'employee_id' => 9],
+    ['id' => 10, 'name' => 'Isabel_Flores_TOR.pdf', 'tag' => 'TOR', 'tag_color' => '#10b981', 'size' => '2.67 mb', 'modified' => '15.02.2022', 'employee' => 'Isabel Flores', 'employee_id' => 10],
 ];
+
+// Group documents by employee for folder structure (frontend-only grouping)
+$employee_folders = [];
+foreach ($documents as $doc) {
+    $emp_name = $doc['employee'];
+    $emp_id = $doc['employee_id'] ?? null;
+    
+    if (!isset($employee_folders[$emp_name])) {
+        $employee_folders[$emp_name] = [
+            'employee_name' => $emp_name,
+            'employee_id' => $emp_id,
+            'documents' => []
+        ];
+    }
+    $employee_folders[$emp_name]['documents'][] = $doc;
+}
+
+// Sort folders alphabetically
+ksort($employee_folders);
 
 // Storage breakdown
 $storage_breakdown = [
@@ -125,8 +145,8 @@ $percentage_used = ($total_used / $total_space) * 100;
                     <!-- Header with actions -->
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <div>
-                            <h5 class="card-title-modern mb-1">All Documents</h5>
-                            <div class="card-subtitle">201 Files Management</div>
+                            <h5 class="card-title-modern mb-1">Employee Document Folders</h5>
+                            <div class="card-subtitle">201 Files Management - One folder per employee</div>
                         </div>
                         <div class="d-flex gap-2 align-items-center">
                             <button type="button" class="btn btn-outline-modern" onclick="exportDocuments()" title="Export document list">
@@ -138,74 +158,140 @@ $percentage_used = ($total_used / $total_space) * 100;
                         </div>
                     </div>
 
-                    <!-- Documents Table -->
-                    <div class="table-responsive">
-                        <table class="table table-borderless documents-table">
-                            <thead>
-                                <tr>
-                                    <th style="width: 40px;">
-                                        <input type="checkbox" class="form-check-input" id="selectAll">
-                                    </th>
-                                    <th>Name</th>
-                                    <th>Tag</th>
-                                    <th>Size</th>
-                                    <th>Last Modified</th>
-                                    <th style="width: 50px;"></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php if (empty($documents)): ?>
-                                    <tr>
-                                        <td colspan="6" class="text-center py-5">
-                                            <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
-                                            <p class="text-muted mb-0">No documents found</p>
-                                        </td>
-                                    </tr>
-                                <?php else: ?>
-                                    <?php foreach ($documents as $doc): ?>
-                                        <tr class="document-row">
-                                            <td>
-                                                <input type="checkbox" class="form-check-input">
-                                            </td>
-                                            <td>
-                                                <div class="d-flex align-items-center">
-                                                    <div class="file-icon me-2">
-                                                        <i class="fas fa-file-pdf text-danger"></i>
+                    <!-- Search and Filter Bar -->
+                    <div class="d-flex gap-2 mb-4 flex-wrap">
+                        <div class="flex-grow-1" style="min-width: 200px;">
+                            <input type="text" id="documentSearch" class="form-control form-control-sm" placeholder="Search folders or files..." value="<?php echo htmlspecialchars($search); ?>">
+                        </div>
+                        <div style="flex: 0 0 auto; min-width: 180px;">
+                            <select id="tagFilter" class="form-select form-select-sm">
+                                <option value="">All Tags</option>
+                                <?php foreach ($available_tags as $tag): ?>
+                                    <option value="<?php echo htmlspecialchars($tag['name']); ?>" <?php echo $selected_tag === $tag['name'] ? 'selected' : ''; ?>>
+                                        <?php echo htmlspecialchars($tag['name']); ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Employee Folders List -->
+                    <div class="employee-folders-container">
+                        <?php if (empty($employee_folders)): ?>
+                            <div class="text-center py-5">
+                                <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
+                                <p class="text-muted mb-0">No employee folders found</p>
+                            </div>
+                        <?php else: ?>
+                            <?php foreach ($employee_folders as $folder): ?>
+                                <div class="employee-folder mb-3" data-folder-id="<?php echo $folder['employee_id']; ?>" data-employee-name="<?php echo htmlspecialchars($folder['employee_name']); ?>">
+                                    <!-- Folder Header -->
+                                    <div class="folder-header" onclick="toggleFolder(<?php echo $folder['employee_id']; ?>)">
+                                        <div class="d-flex align-items-center justify-content-between">
+                                            <div class="d-flex align-items-center flex-grow-1">
+                                                <i class="fas fa-chevron-right folder-chevron me-3" id="chevron-<?php echo $folder['employee_id']; ?>"></i>
+                                                <i class="fas fa-folder folder-icon me-3"></i>
+                                                <div class="flex-grow-1">
+                                                    <div class="folder-name fw-semibold">
+                                                        <?php 
+                                                        // Format: "ID - Employee Name" if ID exists, otherwise just name
+                                                        $folder_label = $folder['employee_id'] ? $folder['employee_id'] . ' - ' . $folder['employee_name'] : $folder['employee_name'];
+                                                        echo htmlspecialchars($folder_label);
+                                                        ?>
                                                     </div>
-                                                    <span class="file-name"><?php echo htmlspecialchars($doc['name']); ?></span>
+                                                    <div class="folder-meta text-muted small mt-1">
+                                                        <?php echo count($folder['documents']); ?> document<?php echo count($folder['documents']) !== 1 ? 's' : ''; ?>
+                                                    </div>
                                                 </div>
-                                            </td>
-                                            <td>
-                                                <?php if ($doc['tag']): ?>
-                                                    <span class="tag-badge" style="background-color: <?php echo $doc['tag_color']; ?>;">
-                                                        <?php echo htmlspecialchars($doc['tag']); ?>
-                                                    </span>
-                                                <?php else: ?>
-                                                    <span class="text-muted small">no tag</span>
-                                                <?php endif; ?>
-                                            </td>
-                                            <td class="text-muted"><?php echo htmlspecialchars($doc['size']); ?></td>
-                                            <td class="text-muted"><?php echo htmlspecialchars($doc['modified']); ?></td>
-                                            <td>
-                                                <div class="dropdown">
-                                                    <button class="btn btn-sm btn-icon" type="button" data-bs-toggle="dropdown">
-                                                        <i class="fas fa-ellipsis-vertical"></i>
-                                                    </button>
-                                                    <ul class="dropdown-menu dropdown-menu-end">
-                                                        <li><a class="dropdown-item" href="#"><i class="fas fa-eye me-2"></i>View</a></li>
-                                                        <li><a class="dropdown-item" href="#"><i class="fas fa-download me-2"></i>Download</a></li>
-                                                        <li><a class="dropdown-item" href="#"><i class="fas fa-edit me-2"></i>Rename</a></li>
-                                                        <li><a class="dropdown-item" href="#"><i class="fas fa-share me-2"></i>Share</a></li>
-                                                        <li><hr class="dropdown-divider"></li>
-                                                        <li><a class="dropdown-item text-danger" href="#"><i class="fas fa-trash me-2"></i>Delete</a></li>
-                                                    </ul>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                <?php endif; ?>
-                            </tbody>
-                        </table>
+                                            </div>
+                                            <button type="button" class="btn btn-sm btn-outline-modern ms-3" onclick="event.stopPropagation(); uploadToFolder(<?php echo $folder['employee_id']; ?>, '<?php echo htmlspecialchars($folder['employee_name']); ?>');" title="Upload to this folder">
+                                                <i class="fas fa-upload me-1"></i>Upload
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Folder Content (Documents) -->
+                                    <div class="folder-content" id="folder-content-<?php echo $folder['employee_id']; ?>" style="display: none;">
+                                        <?php if (empty($folder['documents'])): ?>
+                                            <div class="text-center py-3 text-muted small">
+                                                <i class="fas fa-inbox me-2"></i>No documents in this folder
+                                            </div>
+                                        <?php else: ?>
+                                            <div class="table-responsive">
+                                                <table class="table table-sm table-borderless documents-table-folder">
+                                                    <thead>
+                                                        <tr>
+                                                            <th style="width: 40px;">
+                                                                <input type="checkbox" class="form-check-input folder-select-all" data-folder-id="<?php echo $folder['employee_id']; ?>">
+                                                            </th>
+                                                            <th>File Name</th>
+                                                            <th>Type</th>
+                                                            <th>Size</th>
+                                                            <th>Last Modified</th>
+                                                            <th style="width: 50px;"></th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <?php foreach ($folder['documents'] as $doc): ?>
+                                                            <tr class="document-row">
+                                                                <td>
+                                                                    <input type="checkbox" class="form-check-input document-checkbox" data-document-id="<?php echo $doc['id']; ?>">
+                                                                </td>
+                                                                <td>
+                                                                    <div class="d-flex align-items-center">
+                                                                        <div class="file-icon me-2">
+                                                                            <?php
+                                                                            $ext = strtolower(pathinfo($doc['name'], PATHINFO_EXTENSION));
+                                                                            if (in_array($ext, ['pdf'])) {
+                                                                                echo '<i class="fas fa-file-pdf text-danger"></i>';
+                                                                            } elseif (in_array($ext, ['doc', 'docx'])) {
+                                                                                echo '<i class="fas fa-file-word text-primary"></i>';
+                                                                            } elseif (in_array($ext, ['jpg', 'jpeg', 'png'])) {
+                                                                                echo '<i class="fas fa-file-image text-success"></i>';
+                                                                            } else {
+                                                                                echo '<i class="fas fa-file text-muted"></i>';
+                                                                            }
+                                                                            ?>
+                                                                        </div>
+                                                                        <span class="file-name"><?php echo htmlspecialchars($doc['name']); ?></span>
+                                                                    </div>
+                                                                </td>
+                                                                <td>
+                                                                    <?php if ($doc['tag']): ?>
+                                                                        <span class="tag-badge" style="background-color: <?php echo $doc['tag_color']; ?>;">
+                                                                            <?php echo htmlspecialchars($doc['tag']); ?>
+                                                                        </span>
+                                                                    <?php else: ?>
+                                                                        <span class="text-muted small">no tag</span>
+                                                                    <?php endif; ?>
+                                                                </td>
+                                                                <td class="text-muted small"><?php echo htmlspecialchars($doc['size']); ?></td>
+                                                                <td class="text-muted small"><?php echo htmlspecialchars($doc['modified']); ?></td>
+                                                                <td>
+                                                                    <div class="dropdown">
+                                                                        <button class="btn btn-sm btn-icon" type="button" data-bs-toggle="dropdown">
+                                                                            <i class="fas fa-ellipsis-vertical"></i>
+                                                                        </button>
+                                                                        <ul class="dropdown-menu dropdown-menu-end">
+                                                                            <li><a class="dropdown-item" href="#"><i class="fas fa-eye me-2"></i>View</a></li>
+                                                                            <li><a class="dropdown-item" href="#"><i class="fas fa-download me-2"></i>Download</a></li>
+                                                                            <li><a class="dropdown-item" href="#"><i class="fas fa-edit me-2"></i>Rename</a></li>
+                                                                            <li><a class="dropdown-item" href="#"><i class="fas fa-share me-2"></i>Share</a></li>
+                                                                            <li><hr class="dropdown-divider"></li>
+                                                                            <li><a class="dropdown-item text-danger" href="#"><i class="fas fa-trash me-2"></i>Delete</a></li>
+                                                                        </ul>
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        <?php endforeach; ?>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
@@ -280,8 +366,8 @@ $percentage_used = ($total_used / $total_space) * 100;
                 <div class="modal-body">
                     <input type="hidden" name="action" value="upload_document">
                     <div class="mb-3">
-                        <label class="form-label">Employee</label>
-                        <select name="employee_id" class="form-select" required>
+                        <label class="form-label">Employee <span class="text-danger">*</span></label>
+                        <select name="employee_id" id="uploadEmployeeId" class="form-select" required>
                             <option value="">Select Employee</option>
                             <?php foreach ($employees as $emp): ?>
                                 <option value="<?php echo $emp['id']; ?>">
@@ -289,9 +375,10 @@ $percentage_used = ($total_used / $total_space) * 100;
                                 </option>
                             <?php endforeach; ?>
                         </select>
+                        <small class="text-muted">Document will be stored in this employee's dedicated folder</small>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Document Type (Tag)</label>
+                        <label class="form-label">Document Type (Tag) <span class="text-danger">*</span></label>
                         <select name="document_type" class="form-select" required>
                             <option value="">Select Type</option>
                             <?php foreach ($available_tags as $tag): ?>
@@ -302,14 +389,14 @@ $percentage_used = ($total_used / $total_space) * 100;
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">File</label>
-                        <input type="file" name="document_file" class="form-control" required>
+                        <label class="form-label">File <span class="text-danger">*</span></label>
+                        <input type="file" name="document_file" class="form-control" required accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
                         <small class="text-muted">Max file size: 5MB. Allowed formats: PDF, DOC, DOCX, JPG, PNG</small>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Upload</button>
+                    <button type="submit" class="btn btn-primary-modern">Upload to Employee Folder</button>
                 </div>
             </form>
         </div>
@@ -317,25 +404,105 @@ $percentage_used = ($total_used / $total_space) * 100;
 </div>
 
 <style>
-/* Document Storage Styles - Golden Z-5 Branding */
+/* Document Storage Styles - Enterprise Navy & Gold Theme */
 
-/* Documents Table - Matches Golden Z-5 table styles */
-.documents-table thead th {
-    font-size: 0.8rem;
+/* Employee Folder Styles */
+.employee-folder {
+    border: 1px solid #E5E9F0;
+    border-radius: 12px;
+    background: #ffffff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    transition: all 0.2s ease;
+    overflow: hidden;
+}
+
+.employee-folder:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    border-color: rgba(255, 193, 7, 0.2);
+}
+
+.folder-header {
+    padding: 1rem 1.25rem;
+    cursor: pointer;
+    user-select: none;
+    background: #ffffff;
+    transition: background-color 0.2s ease;
+    border-bottom: 1px solid transparent;
+}
+
+.folder-header:hover {
+    background-color: #F8FAFC;
+}
+
+.folder-chevron {
+    transition: transform 0.2s ease;
+    color: #64748b;
+    font-size: 0.75rem;
+    width: 16px;
+    display: inline-block;
+    text-align: center;
+}
+
+.folder-chevron.expanded {
+    transform: rotate(90deg);
+}
+
+.folder-icon {
+    font-size: 1.5rem;
+    color: #FFC107;
+}
+
+.folder-name {
+    font-size: 0.95rem;
+    color: #0f172a;
+    font-weight: 600;
+}
+
+.folder-meta {
+    font-size: 0.8125rem;
+    margin-top: 0.25rem;
+    color: #64748b;
+}
+
+.folder-content {
+    padding: 0 1.25rem 1rem 1.25rem;
+    border-top: 1px solid #E5E9F0;
+    margin-top: 0;
+    padding-top: 1rem;
+    background: #F8FAFC;
+}
+
+/* Documents Table Inside Folders */
+.documents-table-folder {
+    font-size: 0.875rem;
+    background: #ffffff;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.documents-table-folder thead th {
+    font-size: 0.75rem;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    padding: 1rem 0.75rem;
-    border-bottom: 2px solid rgba(0, 0, 0, 0.05);
+    padding: 0.75rem 0.75rem;
+    border-bottom: 1px solid #E5E9F0;
+    background: #F8FAFC;
+    color: #0f172a;
 }
 
-.documents-table tbody td {
-    padding: 1rem 0.75rem;
+.documents-table-folder tbody td {
+    padding: 0.875rem 0.75rem;
     vertical-align: middle;
+    border-bottom: 1px solid #F1F5F9;
 }
 
-.document-row:hover {
-    background-color: rgba(59, 130, 246, 0.02);
+.documents-table-folder .document-row:hover {
+    background-color: rgba(255, 193, 7, 0.05);
+}
+
+.documents-table-folder .document-row:last-child td {
+    border-bottom: none;
 }
 
 .file-icon {
@@ -344,11 +511,12 @@ $percentage_used = ($total_used / $total_space) * 100;
 
 .file-name {
     font-weight: 500;
+    color: #0f172a;
 }
 
 .tag-badge {
     display: inline-block;
-    padding: 0.35rem 0.85rem;
+    padding: 0.25rem 0.75rem;
     border-radius: 20px;
     font-size: 0.75rem;
     font-weight: 600;
@@ -444,22 +612,106 @@ $percentage_used = ($total_used / $total_space) * 100;
 </style>
 
 <script>
+// Toggle folder expand/collapse
+function toggleFolder(employeeId) {
+    const content = document.getElementById('folder-content-' + employeeId);
+    const chevron = document.getElementById('chevron-' + employeeId);
+    
+    if (content && chevron) {
+        if (content.style.display === 'none' || !content.style.display) {
+            content.style.display = 'block';
+            chevron.classList.add('expanded');
+        } else {
+            content.style.display = 'none';
+            chevron.classList.remove('expanded');
+        }
+    }
+}
+
+// Upload to specific folder
+function uploadToFolder(employeeId, employeeName) {
+    const modal = new bootstrap.Modal(document.getElementById('uploadDocumentModal'));
+    const employeeSelect = document.getElementById('uploadEmployeeId');
+    if (employeeSelect) {
+        employeeSelect.value = employeeId;
+    }
+    modal.show();
+}
+
+// Search functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('documentSearch');
+    const tagFilter = document.getElementById('tagFilter');
+    
+    if (searchInput) {
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                const search = this.value.trim();
+                const tag = tagFilter ? tagFilter.value : '';
+                const params = new URLSearchParams();
+                if (search) params.set('search', search);
+                if (tag) params.set('tag', tag);
+                window.location.href = '?page=documents' + (params.toString() ? '&' + params.toString() : '');
+            }
+        });
+    }
+    
+    if (tagFilter) {
+        tagFilter.addEventListener('change', function() {
+            const search = searchInput ? searchInput.value.trim() : '';
+            const tag = this.value;
+            const params = new URLSearchParams();
+            if (search) params.set('search', search);
+            if (tag) params.set('tag', tag);
+            window.location.href = '?page=documents' + (params.toString() ? '&' + params.toString() : '');
+        });
+    }
+    
+    // Folder select all checkboxes
+    document.querySelectorAll('.folder-select-all').forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const folderId = this.getAttribute('data-folder-id');
+            const folderContent = document.getElementById('folder-content-' + folderId);
+            if (folderContent) {
+                const checkboxes = folderContent.querySelectorAll('.document-checkbox');
+                checkboxes.forEach(cb => {
+                    cb.checked = this.checked;
+                });
+            }
+        });
+    });
+    
+    // Simple client-side search filter (frontend-only)
+    if (searchInput) {
+        const searchTerm = searchInput.value.trim().toLowerCase();
+        if (searchTerm) {
+            document.querySelectorAll('.employee-folder').forEach(folder => {
+                const folderName = folder.getAttribute('data-employee-name') || '';
+                const folderContent = folder.querySelector('.folder-content');
+                const documents = folderContent ? folderContent.querySelectorAll('.document-row') : [];
+                
+                let hasMatch = folderName.toLowerCase().includes(searchTerm);
+                
+                documents.forEach(doc => {
+                    const fileName = doc.querySelector('.file-name')?.textContent || '';
+                    if (fileName.toLowerCase().includes(searchTerm)) {
+                        hasMatch = true;
+                    } else {
+                        doc.style.display = 'none';
+                    }
+                });
+                
+                if (!hasMatch) {
+                    folder.style.display = 'none';
+                }
+            });
+        }
+    }
+});
+
 // Export documents to CSV
 function exportDocuments() {
     alert('Export functionality will be implemented soon.');
     // TODO: Implement CSV export
 }
-
-// Select all checkboxes
-document.addEventListener('DOMContentLoaded', function() {
-    const selectAllCheckbox = document.getElementById('selectAll');
-    if (selectAllCheckbox) {
-        selectAllCheckbox.addEventListener('change', function() {
-            const checkboxes = document.querySelectorAll('.documents-table tbody input[type="checkbox"]');
-            checkboxes.forEach(checkbox => {
-                checkbox.checked = this.checked;
-            });
-        });
-    }
-});
 </script>

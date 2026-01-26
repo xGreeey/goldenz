@@ -281,65 +281,13 @@ if (!empty($display_first_name) || !empty($display_last_name)) {
 }
 ?>
 
-<!-- Profile Hero Section -->
-<div class="profile-hero-section">
-    <div class="profile-hero-background"></div>
-    <div class="profile-hero-content">
-        <div class="profile-avatar-hero" id="profileAvatarHero">
-            <?php if ($profile_photo): ?>
-                <img src="<?php echo htmlspecialchars($profile_photo); ?>" 
-                     alt="<?php echo htmlspecialchars($display_first_name . ' ' . $display_last_name); ?>" 
-                     id="avatarPreviewHero"
-                     class="profile-avatar-hero-img">
-            <?php else: ?>
-                <div class="profile-avatar-hero-placeholder">
-                    <?php echo htmlspecialchars($initials); ?>
-                </div>
-            <?php endif; ?>
-            <div class="profile-avatar-upload-overlay" id="avatarUploadOverlay">
-                <button type="button" 
-                        class="profile-avatar-upload-btn" 
-                        onclick="document.getElementById('avatarInput').click();"
-                        aria-label="Upload profile photo">
-                    <i class="fas fa-camera" aria-hidden="true"></i>
-                </button>
-            </div>
-        </div>
-        <div class="profile-hero-info">
-            <h1 class="profile-hero-name">
-                <?php echo htmlspecialchars(trim($display_first_name . ' ' . $display_last_name) ?: $display_username); ?>
-            </h1>
-            <div class="profile-hero-meta">
-                <?php if ($display_role): ?>
-                    <span class="profile-badge profile-badge-role">
-                        <i class="fas fa-user-tag" aria-hidden="true"></i>
-                        <?php echo htmlspecialchars(ucfirst(str_replace('_', ' ', $display_role))); ?>
-                    </span>
-                <?php endif; ?>
-                <?php if ($display_department): ?>
-                    <span class="profile-badge profile-badge-department">
-                        <i class="fas fa-building" aria-hidden="true"></i>
-                        <?php echo htmlspecialchars($display_department); ?>
-                    </span>
-                <?php endif; ?>
-                <?php if ($display_status): ?>
-                    <span class="profile-badge profile-badge-status profile-badge-<?php echo strtolower($display_status); ?>">
-                        <i class="fas fa-circle" aria-hidden="true"></i>
-                        <?php echo htmlspecialchars(ucfirst($display_status)); ?>
-                    </span>
-                <?php endif; ?>
-            </div>
-        </div>
-    </div>
-</div>
-
 <div class="container-fluid profile-page">
     <!-- Success/Error Messages -->
     <?php if (isset($_GET['updated']) && $_GET['updated'] == '1'): ?>
-    <div class="profile-alert profile-alert-success" role="alert" aria-live="polite">
+    <div class="profile-alert profile-alert-success profile-alert-auto-hide" role="alert" aria-live="polite" data-auto-hide="3000">
         <i class="fas fa-check-circle" aria-hidden="true"></i>
         <span>Profile updated successfully!</span>
-        <button type="button" class="profile-alert-close" aria-label="Close alert" onclick="this.parentElement.remove()">
+        <button type="button" class="profile-alert-close" aria-label="Close alert" onclick="hideProfileAlert(this.parentElement)">
             <i class="fas fa-times" aria-hidden="true"></i>
         </button>
     </div>
@@ -363,7 +311,94 @@ if (!empty($display_first_name) || !empty($display_last_name)) {
         <input type="hidden" name="action" value="update_profile">
         
         <div class="row g-4">
-            <!-- Left Column: Profile Information -->
+            <!-- Left Column: Profile Summary Card -->
+            <div class="col-lg-4">
+                <div class="profile-summary-card">
+                    <div class="profile-summary-avatar-container" id="profileAvatarHero">
+                        <?php if ($profile_photo): ?>
+                            <img src="<?php echo htmlspecialchars($profile_photo); ?>" 
+                                 alt="<?php echo htmlspecialchars($display_first_name . ' ' . $display_last_name); ?>" 
+                                 id="avatarPreviewHero"
+                                 class="profile-summary-avatar-img">
+                        <?php else: ?>
+                            <div class="profile-summary-avatar-placeholder">
+                                <?php echo htmlspecialchars($initials); ?>
+                            </div>
+                        <?php endif; ?>
+                        <div class="profile-avatar-upload-overlay" id="avatarUploadOverlay">
+                            <button type="button" 
+                                    class="profile-avatar-upload-btn" 
+                                    onclick="document.getElementById('avatarInput').click();"
+                                    aria-label="Upload profile photo">
+                                <i class="fas fa-camera" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                        <input type="file" 
+                               class="form-control" 
+                               id="avatarInput" 
+                               name="avatar" 
+                               accept="image/jpeg,image/jpg,image/png,image/gif"
+                               style="display: none;"
+                               aria-label="Upload profile photo">
+                    </div>
+                    <div class="profile-summary-content">
+                        <h1 class="profile-summary-name">
+                            <?php echo htmlspecialchars(trim($display_first_name . ' ' . $display_last_name) ?: $display_username); ?>
+                        </h1>
+                        <div class="profile-summary-details">
+                            <?php if ($display_role): ?>
+                                <div class="profile-summary-detail-item">
+                                    <i class="fas fa-user-tag" aria-hidden="true"></i>
+                                    <span><?php echo htmlspecialchars(ucfirst(str_replace('_', ' ', $display_role))); ?></span>
+                                </div>
+                            <?php endif; ?>
+                            <?php if ($display_department): ?>
+                                <div class="profile-summary-detail-item">
+                                    <i class="fas fa-building" aria-hidden="true"></i>
+                                    <span><?php echo htmlspecialchars($display_department); ?></span>
+                                </div>
+                            <?php endif; ?>
+                            <?php if ($display_status): ?>
+                                <div class="profile-summary-detail-item profile-summary-status-<?php echo strtolower($display_status); ?>">
+                                    <i class="fas fa-circle" aria-hidden="true"></i>
+                                    <span><?php echo htmlspecialchars(ucfirst($display_status)); ?></span>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                        <?php if ($member_since || $last_login): ?>
+                        <div class="profile-summary-meta">
+                            <?php if ($member_since): ?>
+                                <div class="profile-summary-meta-item">
+                                    <i class="fas fa-calendar-plus" aria-hidden="true"></i>
+                                    <span>Member since <?php echo date('M Y', strtotime($member_since)); ?></span>
+                                </div>
+                            <?php endif; ?>
+                            <?php if ($last_login): ?>
+                                <div class="profile-summary-meta-item">
+                                    <i class="fas fa-clock" aria-hidden="true"></i>
+                                    <span>
+                                        <?php 
+                                        $login_time = strtotime($last_login);
+                                        $now = time();
+                                        $diff = $now - $login_time;
+                                        if ($diff < 3600) {
+                                            echo 'Last login ' . floor($diff / 60) . ' minutes ago';
+                                        } elseif ($diff < 86400) {
+                                            echo 'Last login ' . floor($diff / 3600) . ' hours ago';
+                                        } else {
+                                            echo 'Last login ' . date('M d, Y', $login_time);
+                                        }
+                                        ?>
+                                    </span>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Profile Form Sections -->
             <div class="col-lg-8">
                 <!-- Personal Information Card -->
                 <div class="profile-card profile-card-personal">
@@ -385,7 +420,7 @@ if (!empty($display_first_name) || !empty($display_last_name)) {
                                style="display: none;"
                                aria-label="Upload profile photo">
                         
-                        <div class="row g-4">
+                        <div class="row g-3">
                             <!-- First Name -->
                             <div class="col-md-6">
                                 <div class="profile-field-group">
@@ -500,10 +535,7 @@ if (!empty($display_first_name) || !empty($display_last_name)) {
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Right Column: Profile Stats & Info -->
-            <div class="col-lg-4">
                 <!-- Account Information Card -->
                 <div class="profile-card profile-card-account">
                     <div class="profile-card-header">
@@ -535,174 +567,106 @@ if (!empty($display_first_name) || !empty($display_last_name)) {
                             </div>
                         </div>
                         <?php endif; ?>
-                        <?php if ($member_since): ?>
-                        <div class="profile-info-item">
-                            <div class="profile-info-label">
-                                <i class="fas fa-calendar-plus" aria-hidden="true"></i>
-                                Member Since
-                            </div>
-                            <div class="profile-info-value">
-                                <?php echo date('M Y', strtotime($member_since)); ?>
-                            </div>
-                        </div>
-                        <?php endif; ?>
-                        <?php if ($last_login): ?>
-                        <div class="profile-info-item">
-                            <div class="profile-info-label">
-                                <i class="fas fa-clock" aria-hidden="true"></i>
-                                Last Login
-                            </div>
-                            <div class="profile-info-value">
-                                <?php 
-                                $login_time = strtotime($last_login);
-                                $now = time();
-                                $diff = $now - $login_time;
-                                if ($diff < 3600) {
-                                    echo floor($diff / 60) . ' minutes ago';
-                                } elseif ($diff < 86400) {
-                                    echo floor($diff / 3600) . ' hours ago';
-                                } else {
-                                    echo date('M d, Y', $login_time);
-                                }
-                                ?>
-                            </div>
-                        </div>
-                        <?php endif; ?>
                     </div>
                 </div>
 
-                <!-- Quick Actions Card -->
-                <div class="profile-card profile-card-actions">
-                    <div class="profile-card-header">
-                        <div class="profile-card-header-content">
-                            <i class="fas fa-bolt profile-card-icon" aria-hidden="true"></i>
-                            <div>
-                                <h3 class="profile-card-title">Quick Actions</h3>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="profile-card-body">
-                        <div class="profile-action-buttons">
-                            <button type="submit" class="profile-action-btn profile-action-btn-primary" id="saveProfileBtn">
-                                <i class="fas fa-save" aria-hidden="true"></i>
-                                <span>Save Changes</span>
-                            </button>
-                            <a href="?page=dashboard" class="profile-action-btn profile-action-btn-secondary">
-                                <i class="fas fa-arrow-left" aria-hidden="true"></i>
-                                <span>Back to Dashboard</span>
-                            </a>
-                        </div>
-                    </div>
+                <!-- Save Changes Button -->
+                <div class="profile-actions-footer">
+                    <button type="submit" class="profile-action-btn profile-action-btn-primary" id="saveProfileBtn">
+                        <i class="fas fa-save" aria-hidden="true"></i>
+                        <span>Save Changes</span>
+                    </button>
                 </div>
             </div>
         </div>
     </form>
 </div>
 
+<!-- Profile Field Edit Modal -->
+<div class="profile-edit-modal" id="profileEditModal" role="dialog" aria-labelledby="profileEditModalTitle" aria-hidden="true">
+    <div class="profile-edit-modal-backdrop"></div>
+    <div class="profile-edit-modal-dialog">
+        <div class="profile-edit-modal-content">
+            <div class="profile-edit-modal-header">
+                <h3 class="profile-edit-modal-title" id="profileEditModalTitle">Edit Field</h3>
+                <button type="button" class="profile-edit-modal-close" aria-label="Close modal">
+                    <i class="fas fa-times" aria-hidden="true"></i>
+                </button>
+            </div>
+            <div class="profile-edit-modal-body">
+                <form class="profile-edit-form" id="profileEditForm">
+                    <div class="profile-edit-field-group">
+                        <label class="profile-edit-label" id="profileEditLabel">Field Label</label>
+                        <input type="text" 
+                               class="profile-edit-input" 
+                               id="profileEditInput" 
+                               autocomplete="off"
+                               aria-labelledby="profileEditLabel">
+                        <small class="profile-edit-hint" id="profileEditHint"></small>
+                    </div>
+                </form>
+            </div>
+            <div class="profile-edit-modal-footer">
+                <button type="button" class="profile-edit-btn profile-edit-btn-cancel">Cancel</button>
+                <button type="button" class="profile-edit-btn profile-edit-btn-save">Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <style>
 /* ============================================
-   EXTRAORDINARY PROFILE PAGE DESIGN
-   Modern, unique, world-class UI
+   PROFILE PAGE - TWO-COLUMN LAYOUT
+   Modern, SaaS-grade, enterprise-friendly
    ============================================ */
 
-/* Profile Hero Section - Stunning Header */
-.profile-hero-section {
-    position: relative;
-    width: 100%;
-    min-height: 320px;
-    margin-bottom: 2rem;
-    border-radius: 0 0 24px 24px;
-    overflow: hidden;
-    background: linear-gradient(135deg, #0f172a 0%, #1e293b 30%, #334155 60%, #475569 100%);
-    box-shadow: 0 20px 60px rgba(15, 23, 42, 0.3);
-}
-
-.profile-hero-background {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: 
-        radial-gradient(circle at 20% 50%, rgba(31, 178, 213, 0.15) 0%, transparent 50%),
-        radial-gradient(circle at 80% 80%, rgba(14, 165, 233, 0.1) 0%, transparent 50%),
-        linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
-    animation: gradientShift 15s ease infinite;
-}
-
-@keyframes gradientShift {
-    0%, 100% { 
-        background: 
-            radial-gradient(circle at 20% 50%, rgba(31, 178, 213, 0.15) 0%, transparent 50%),
-            radial-gradient(circle at 80% 80%, rgba(14, 165, 233, 0.1) 0%, transparent 50%),
-            linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
-    }
-    50% { 
-        background: 
-            radial-gradient(circle at 80% 50%, rgba(31, 178, 213, 0.15) 0%, transparent 50%),
-            radial-gradient(circle at 20% 80%, rgba(14, 165, 233, 0.1) 0%, transparent 50%),
-            linear-gradient(135deg, #1e293b 0%, #334155 50%, #475569 100%);
-    }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .profile-hero-background {
-        animation: none;
-    }
-}
-
-.profile-hero-content {
-    position: relative;
-    z-index: 1;
+/* Profile Summary Card - Left Column */
+.profile-summary-card {
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    border: 1px solid #E5E9F0;
+    padding: 0;
+    position: sticky;
+    top: 2rem;
+    height: fit-content;
     display: flex;
-    align-items: center;
-    gap: 2.5rem;
-    padding: 3rem 2.5rem;
-    max-width: 1400px;
-    margin: 0 auto;
+    flex-direction: column;
 }
 
-/* Hero Avatar - Large, Beautiful */
-.profile-avatar-hero {
+.profile-summary-avatar-container {
     position: relative;
-    width: 180px;
-    height: 180px;
-    flex-shrink: 0;
+    width: 100px;
+    height: 100px;
+    margin: 1.25rem auto 1rem;
 }
 
-.profile-avatar-hero-img,
-.profile-avatar-hero-placeholder {
-    width: 180px;
-    height: 180px;
+.profile-summary-avatar-img,
+.profile-summary-avatar-placeholder {
+    width: 100px;
+    height: 100px;
     border-radius: 50%;
     object-fit: cover;
-    border: 5px solid rgba(255, 255, 255, 0.2);
-    box-shadow: 
-        0 0 0 4px rgba(31, 178, 213, 0.3),
-        0 20px 40px rgba(0, 0, 0, 0.4),
-        inset 0 0 0 1px rgba(255, 255, 255, 0.1);
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
+    border: 3px solid #E5E9F0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    transition: all 0.25s ease;
 }
 
-.profile-avatar-hero:hover .profile-avatar-hero-img,
-.profile-avatar-hero:hover .profile-avatar-hero-placeholder {
-    transform: scale(1.05);
-    box-shadow: 
-        0 0 0 4px rgba(31, 178, 213, 0.5),
-        0 25px 50px rgba(0, 0, 0, 0.5),
-        inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+.profile-summary-avatar-container:hover .profile-summary-avatar-img,
+.profile-summary-avatar-container:hover .profile-summary-avatar-placeholder {
+    border-color: #1fb2d5;
+    box-shadow: 0 4px 12px rgba(31, 178, 213, 0.15);
 }
 
-.profile-avatar-hero-placeholder {
-    background: linear-gradient(135deg, #1fb2d5 0%, #0ea5e9 50%, #0284c7 100%);
-    color: white;
+.profile-summary-avatar-placeholder {
+    background: linear-gradient(135deg, #0F1F3D 0%, #1C2F52 100%);
+    color: #ffffff;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 4rem;
+    font-size: 2rem;
     font-weight: 700;
     letter-spacing: 0.02em;
-    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
 }
 
 .profile-avatar-upload-overlay {
@@ -712,33 +676,33 @@ if (!empty($display_first_name) || !empty($display_last_name)) {
     right: 0;
     bottom: 0;
     border-radius: 50%;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.4);
     display: flex;
     align-items: center;
     justify-content: center;
     opacity: 0;
-    transition: opacity 0.3s ease;
-    backdrop-filter: blur(4px);
+    transition: opacity 0.25s ease;
+    backdrop-filter: blur(2px);
 }
 
-.profile-avatar-hero:hover .profile-avatar-upload-overlay {
+.profile-summary-avatar-container:hover .profile-avatar-upload-overlay {
     opacity: 1;
 }
 
 .profile-avatar-upload-btn {
-    width: 56px;
-    height: 56px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #1fb2d5 0%, #0ea5e9 100%);
-    border: 3px solid white;
+    background: #1fb2d5;
+    border: 2px solid #ffffff;
     color: white;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.25rem;
+    font-size: 1rem;
     cursor: pointer;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    box-shadow: 0 4px 12px rgba(31, 178, 213, 0.4);
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(31, 178, 213, 0.3);
 }
 
 .profile-avatar-upload-btn i,
@@ -753,58 +717,68 @@ if (!empty($display_first_name) || !empty($display_last_name)) {
 }
 
 .profile-avatar-upload-btn:hover {
-    transform: scale(1.1);
-    box-shadow: 0 6px 20px rgba(31, 178, 213, 0.6);
+    transform: scale(1.08);
+    box-shadow: 0 4px 12px rgba(31, 178, 213, 0.4);
+    background: #0ea5e9;
 }
 
 .profile-avatar-upload-btn:focus-visible {
-    outline: 2px solid white;
+    outline: 2px solid #1fb2d5;
     outline-offset: 2px;
 }
 
-/* Hero Info */
-.profile-hero-info {
-    flex: 1;
-    color: white;
+.profile-summary-content {
+    text-align: center;
+    padding: 0 1.5rem 1.5rem;
+    box-sizing: border-box;
 }
 
-.profile-hero-name {
-    font-size: 2.5rem;
+.profile-summary-name {
+    font-size: 1.25rem;
     font-weight: 700;
-    margin: 0 0 1rem 0;
-    letter-spacing: -0.02em;
-    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-    line-height: 1.2;
+    margin: 0 0 0.75rem 0;
+    letter-spacing: -0.01em;
+    line-height: 1.3;
+    color: #0f172a;
 }
 
-.profile-hero-meta {
+.profile-summary-details {
     display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem;
+    flex-direction: column;
+    gap: 0.375rem;
     align-items: center;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #E5E9F0;
 }
 
-.profile-badge {
-    display: inline-flex;
+.profile-summary-detail-item {
+    display: flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    border-radius: 20px;
-    font-size: 0.875rem;
-    font-weight: 600;
-    backdrop-filter: blur(10px);
-    background: rgba(255, 255, 255, 0.15);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: white;
-    transition: transform 0.2s ease, background 0.2s ease;
+    font-size: 0.8125rem;
+    color: #64748b;
+    font-weight: 500;
 }
 
-.profile-badge:hover {
-    transform: translateY(-2px);
-    background: rgba(255, 255, 255, 0.25);
+.profile-summary-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: center;
+    margin-top: 0.75rem;
 }
 
-.profile-badge i {
+.profile-summary-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    color: #94a3b8;
+    font-weight: 400;
+}
+
+.profile-summary-meta-item i {
     font-size: 0.75rem;
     font-family: 'Font Awesome 6 Free', 'Font Awesome 5 Free' !important;
     font-weight: 900 !important;
@@ -812,28 +786,53 @@ if (!empty($display_first_name) || !empty($display_last_name)) {
     display: inline-block !important;
     visibility: visible !important;
     opacity: 1 !important;
-    color: white !important;
+    color: #94a3b8 !important;
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
 }
 
-.profile-badge-status.profile-badge-active i {
-    color: #22c55e;
+.profile-summary-detail-item i {
+    font-size: 0.875rem;
+    font-family: 'Font Awesome 6 Free', 'Font Awesome 5 Free' !important;
+    font-weight: 900 !important;
+    font-style: normal !important;
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    color: #1fb2d5 !important;
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
 }
 
-.profile-badge-status.profile-badge-inactive i {
-    color: #94a3b8;
+.profile-summary-detail-item.profile-summary-status-active i {
+    color: #22c55e !important;
 }
 
-.profile-badge-status.profile-badge-suspended i {
-    color: #ef4444;
+.profile-summary-detail-item.profile-summary-status-inactive i {
+    color: #94a3b8 !important;
+}
+
+.profile-summary-detail-item.profile-summary-status-suspended i {
+    color: #ef4444 !important;
 }
 
 /* Profile Page Container */
 .profile-page {
-    padding: 0 2.5rem 3rem 2.5rem;
+    padding: 1.5rem;
     max-width: 1400px;
     margin: 0 auto;
-    background: #f8fafc;
-    min-height: calc(100vh - 320px);
+    background: #F4F6F9;
+    min-height: calc(100vh - 200px);
+    box-sizing: border-box;
+}
+
+/* Ensure row columns align at top baseline */
+.profile-page .row {
+    align-items: flex-start;
 }
 
 /* Profile Alerts */
@@ -841,11 +840,25 @@ if (!empty($display_first_name) || !empty($display_last_name)) {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    padding: 1rem 1.25rem;
+    padding: 0.875rem 1.25rem;
     border-radius: 12px;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.25rem;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     animation: slideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.4s ease-out, visibility 0.4s ease-out, margin-bottom 0.4s ease-out;
+}
+
+.profile-alert.profile-alert-fading {
+    opacity: 0;
+    visibility: hidden;
+    margin-bottom: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    overflow: hidden;
+    max-height: 0;
+    transition: opacity 0.4s ease-out, visibility 0.4s ease-out, margin-bottom 0.4s ease-out, padding 0.4s ease-out, max-height 0.4s ease-out;
 }
 
 @keyframes slideDown {
@@ -899,36 +912,52 @@ if (!empty($display_first_name) || !empty($display_last_name)) {
 /* Profile Cards - Modern Glassmorphism */
 .profile-card {
     background: #ffffff;
-    border-radius: 20px;
-    box-shadow: 
-        0 1px 3px rgba(0, 0, 0, 0.05),
-        0 4px 12px rgba(0, 0, 0, 0.04),
-        0 0 0 1px rgba(31, 178, 213, 0.08);
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    border: 1px solid #E5E9F0;
     overflow: hidden;
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     margin-bottom: 1.5rem;
-    border: 1px solid rgba(226, 232, 240, 0.8);
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+}
+
+.profile-card:last-of-type {
+    margin-bottom: 0;
 }
 
 .profile-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 
-        0 4px 16px rgba(0, 0, 0, 0.08),
-        0 8px 24px rgba(0, 0, 0, 0.06),
-        0 0 0 1px rgba(31, 178, 213, 0.15);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    border-color: rgba(31, 178, 213, 0.2);
 }
 
 .profile-card-header {
     background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
-    padding: 1.5rem 2rem;
+    padding: 1rem 1.5rem;
     border-bottom: 1px solid #e2e8f0;
+    min-height: 56px;
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
+}
+
+/* Ensure consistent header alignment across all cards */
+.profile-card-personal .profile-card-header,
+.profile-card-account .profile-card-header {
+    padding: 1rem 1.5rem;
+    min-height: 56px;
+    box-sizing: border-box;
 }
 
 .profile-card-header-content {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     gap: 1rem;
     width: 100%;
+    min-height: 0;
+    box-sizing: border-box;
 }
 
 .profile-card-header-content > div {
@@ -936,51 +965,54 @@ if (!empty($display_first_name) || !empty($display_last_name)) {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    min-height: 48px;
+    min-height: 0;
 }
 
-/* Ensure icon and title are perfectly aligned */
+/* Clean standalone icon - vertically centered with title */
 .profile-card-header-content .profile-card-icon {
-    align-self: flex-start;
+    align-self: center;
     margin-top: 0;
     flex-shrink: 0;
 }
 
-/* Perfect alignment for cards with subtitle */
-.profile-card-header-content > div:has(.profile-card-subtitle) {
-    justify-content: flex-start;
-    padding-top: 0;
+/* For cards with subtitle, align icon with first line of title */
+.profile-card-header-content:has(.profile-card-subtitle) {
+    align-items: flex-start;
 }
 
-/* Perfect alignment for cards without subtitle */
-.profile-card-account .profile-card-header-content > div,
-.profile-card-actions .profile-card-header-content > div {
-    justify-content: center;
-    padding-top: 0;
+.profile-card-header-content:has(.profile-card-subtitle) .profile-card-icon {
+    align-self: flex-start;
+    margin-top: 0.1875rem; /* Fine-tune to align with title baseline */
 }
 
-.profile-card-account .profile-card-title,
-.profile-card-actions .profile-card-title {
+/* For cards without subtitle, center everything */
+.profile-card-account .profile-card-header-content {
+    align-items: center;
+}
+
+.profile-card-account .profile-card-title {
     margin: 0;
-    line-height: 1.2;
+    line-height: 1.3;
 }
 
+/* Clean standalone icon - no background, no borders, no wrapper */
 .profile-card-icon {
-    width: 48px;
-    height: 48px;
-    min-width: 48px;
-    min-height: 48px;
-    border-radius: 12px;
-    background: linear-gradient(135deg, #1fb2d5 0%, #0ea5e9 100%);
-    color: white;
-    display: flex;
+    width: auto;
+    height: auto;
+    min-width: 0;
+    min-height: 0;
+    border-radius: 0;
+    background: none;
+    border: none;
+    box-shadow: none;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
     font-size: 1.25rem;
-    box-shadow: 0 4px 12px rgba(31, 178, 213, 0.25);
     flex-shrink: 0;
     margin-top: 0;
     line-height: 1;
+    padding: 0;
 }
 
 .profile-card-icon i,
@@ -991,7 +1023,7 @@ if (!empty($display_first_name) || !empty($display_last_name)) {
     display: inline-block !important;
     visibility: visible !important;
     opacity: 1 !important;
-    color: white !important;
+    color: #1fb2d5 !important;
 }
 
 .profile-card-title {
@@ -1001,24 +1033,37 @@ if (!empty($display_first_name) || !empty($display_last_name)) {
     margin: 0;
     padding: 0;
     letter-spacing: -0.01em;
-    line-height: 1.4;
-    display: flex;
-    align-items: center;
+    line-height: 1.3;
+    display: block;
 }
 
 .profile-card-subtitle {
     font-size: 0.875rem;
     color: #64748b;
     margin: 0.25rem 0 0 0;
+    line-height: 1.4;
 }
 
 .profile-card-body {
-    padding: 2rem;
+    padding: 1.5rem;
+    background: #ffffff;
+    box-sizing: border-box;
+}
+
+/* Ensure consistent spacing in all card bodies */
+.profile-card-personal .profile-card-body,
+.profile-card-account .profile-card-body {
+    padding: 1.5rem;
+    box-sizing: border-box;
 }
 
 /* Profile Field Groups */
 .profile-field-group {
     margin-bottom: 1.5rem;
+}
+
+.profile-field-group:last-child {
+    margin-bottom: 0;
 }
 
 .profile-field-label {
@@ -1027,7 +1072,7 @@ if (!empty($display_first_name) || !empty($display_last_name)) {
     gap: 0.5rem;
     font-weight: 600;
     color: #475569;
-    margin-bottom: 0.625rem;
+    margin-bottom: 0.5rem;
     font-size: 0.875rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -1042,25 +1087,33 @@ if (!empty($display_first_name) || !empty($display_last_name)) {
     display: inline-block !important;
     visibility: visible !important;
     opacity: 1 !important;
+    /* Clean standalone icon - no wrapper */
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
 }
 
 .profile-field-wrapper {
     position: relative;
     display: flex;
-    align-items: center;
+    align-items: stretch;
 }
 
 .profile-field-input {
     width: 100%;
     border: 2px solid #e2e8f0;
     border-radius: 12px;
-    padding: 0.875rem 3rem 0.875rem 1rem;
+    padding: 0.75rem 3rem 0.75rem 1rem;
     font-size: 0.9375rem;
     color: #1e293b;
     background: #ffffff;
     transition: border-color 0.2s cubic-bezier(0.4, 0, 0.2, 1), 
                 box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1),
                 background 0.2s ease;
+    line-height: 1.5;
+    display: flex;
+    align-items: center;
 }
 
 .profile-field-input:hover:not(:disabled):not([readonly]) {
@@ -1098,6 +1151,8 @@ if (!empty($display_first_name) || !empty($display_last_name)) {
 .profile-field-edit-btn {
     position: absolute;
     right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
     width: 32px;
     height: 32px;
     border-radius: 8px;
@@ -1125,7 +1180,7 @@ if (!empty($display_first_name) || !empty($display_last_name)) {
 .profile-field-edit-btn:hover {
     background: #1fb2d5;
     color: white;
-    transform: scale(1.1);
+    transform: translateY(-50%) scale(1.05);
 }
 
 .profile-field-edit-btn:hover i,
@@ -1157,12 +1212,20 @@ if (!empty($display_first_name) || !empty($display_last_name)) {
 
 /* Profile Info Items */
 .profile-info-item {
-    padding: 1rem 0;
+    padding: 0.625rem 0;
     border-bottom: 1px solid #f1f5f9;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.profile-info-item:first-child {
+    padding-top: 0;
 }
 
 .profile-info-item:last-child {
     border-bottom: none;
+    padding-bottom: 0;
 }
 
 .profile-info-label {
@@ -1171,10 +1234,11 @@ if (!empty($display_first_name) || !empty($display_last_name)) {
     gap: 0.5rem;
     font-size: 0.8125rem;
     color: #64748b;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0;
     font-weight: 500;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    line-height: 1.4;
 }
 
 .profile-info-label i {
@@ -1186,30 +1250,55 @@ if (!empty($display_first_name) || !empty($display_last_name)) {
     display: inline-block !important;
     visibility: visible !important;
     opacity: 1 !important;
+    /* Clean standalone icon - no wrapper */
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
 }
 
 .profile-info-value {
     font-size: 1rem;
     font-weight: 600;
     color: #0f172a;
+    line-height: 1.5;
+    padding-left: 1.625rem; /* Align with label text (icon width + gap) */
 }
 
 /* Profile Action Buttons */
+.profile-actions-footer {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 0;
+    padding-top: 1.5rem;
+    padding-left: 0;
+    padding-right: 0;
+    border-top: none;
+    box-sizing: border-box;
+}
+
+/* Align actions footer with card content padding */
+.profile-card-account + .profile-actions-footer {
+    padding-left: 0;
+    padding-right: 0;
+}
+
 .profile-action-buttons {
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
+    width: 100%;
 }
 
 .profile-action-btn {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.75rem;
-    padding: 0.875rem 1.5rem;
-    border-radius: 12px;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
     font-weight: 600;
-    font-size: 0.9375rem;
+    font-size: 0.875rem;
     transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), 
                 box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1),
                 background 0.2s ease;
@@ -1217,17 +1306,18 @@ if (!empty($display_first_name) || !empty($display_last_name)) {
     cursor: pointer;
     text-decoration: none;
     touch-action: manipulation;
+    min-width: auto;
 }
 
 .profile-action-btn-primary {
     background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
     color: white;
-    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.25);
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.25);
 }
 
 .profile-action-btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.35);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.35);
     background: linear-gradient(135deg, #1e293b 0%, #334155 50%, #475569 100%);
     color: white;
 }
@@ -1238,7 +1328,7 @@ if (!empty($display_first_name) || !empty($display_last_name)) {
 }
 
 .profile-action-btn-primary:focus-visible {
-    outline: 2px solid #1fb2d5;
+    outline: 2px solid #0f172a;
     outline-offset: 2px;
 }
 
@@ -1274,8 +1364,8 @@ if (!empty($display_first_name) || !empty($display_last_name)) {
 /* Ensure all Font Awesome icons are visible - Comprehensive Fix */
 .profile-page i[class*="fa-"],
 .profile-page [class*="fa-"],
-.profile-hero-section i[class*="fa-"],
-.profile-hero-section [class*="fa-"] {
+.profile-summary-card i[class*="fa-"],
+.profile-summary-card [class*="fa-"] {
     font-family: 'Font Awesome 6 Free', 'Font Awesome 5 Free', 'Font Awesome 6 Brands', 'Font Awesome 5 Brands' !important;
     font-style: normal !important;
     font-variant: normal !important;
@@ -1290,22 +1380,22 @@ if (!empty($display_first_name) || !empty($display_last_name)) {
 
 .profile-page i.fas,
 .profile-page [class*="fa-"].fas,
-.profile-hero-section i.fas,
-.profile-hero-section [class*="fa-"].fas {
+.profile-summary-card i.fas,
+.profile-summary-card [class*="fa-"].fas {
     font-weight: 900 !important;
 }
 
 .profile-page i.far,
 .profile-page [class*="fa-"].far,
-.profile-hero-section i.far,
-.profile-hero-section [class*="fa-"].far {
+.profile-summary-card i.far,
+.profile-summary-card [class*="fa-"].far {
     font-weight: 400 !important;
 }
 
 .profile-page i.fal,
 .profile-page [class*="fa-"].fal,
-.profile-hero-section i.fal,
-.profile-hero-section [class*="fa-"].fal {
+.profile-summary-card i.fal,
+.profile-summary-card [class*="fa-"].fal {
     font-weight: 300 !important;
 }
 
@@ -1330,47 +1420,46 @@ if (!empty($display_first_name) || !empty($display_last_name)) {
 
 /* Responsive Design */
 @media (max-width: 991px) {
-    .profile-hero-content {
-        flex-direction: column;
-        text-align: center;
-        padding: 2rem 1.5rem;
-    }
-    
-    .profile-hero-name {
-        font-size: 2rem;
-    }
-    
-    .profile-hero-meta {
-        justify-content: center;
+    .profile-summary-card {
+        position: static;
+        margin-bottom: 1.5rem;
     }
     
     .profile-page {
-        padding: 0 1rem 2rem 1rem;
+        padding: 1.5rem 1rem;
+    }
+    
+    .profile-actions-footer {
+        justify-content: stretch;
+    }
+    
+    .profile-action-btn-primary {
+        width: 100%;
     }
 }
 
 @media (max-width: 576px) {
-    .profile-hero-section {
-        min-height: 280px;
+    .profile-summary-avatar-container {
+        width: 80px;
+        height: 80px;
     }
     
-    .profile-avatar-hero {
-        width: 140px;
-        height: 140px;
+    .profile-summary-avatar-img,
+    .profile-summary-avatar-placeholder {
+        width: 80px;
+        height: 80px;
     }
     
-    .profile-avatar-hero-img,
-    .profile-avatar-hero-placeholder {
-        width: 140px;
-        height: 140px;
-    }
-    
-    .profile-avatar-hero-placeholder {
-        font-size: 3rem;
-    }
-    
-    .profile-hero-name {
+    .profile-summary-avatar-placeholder {
         font-size: 1.75rem;
+    }
+    
+    .profile-summary-name {
+        font-size: 1.125rem;
+    }
+    
+    .profile-summary-card {
+        padding: 1.25rem;
     }
     
     .profile-card-body {
@@ -1436,6 +1525,338 @@ html[data-theme="dark"] .profile-action-btn-secondary {
 html[data-theme="dark"] .profile-action-btn-secondary:hover {
     background: #334155 !important;
 }
+
+/* ============================================
+   PROFILE EDIT MODAL
+   Clean, centered popup with smooth animations
+   ============================================ */
+
+.profile-edit-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+.profile-edit-modal.active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+.profile-edit-modal-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(15, 23, 42, 0.5);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+}
+
+.profile-edit-modal-dialog {
+    position: relative;
+    width: 100%;
+    max-width: 480px;
+    margin: 0 auto;
+    transform: scale(0.95) translateY(-10px);
+    opacity: 0;
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+                opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.profile-edit-modal.active .profile-edit-modal-dialog {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+}
+
+.profile-edit-modal-content {
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12),
+                0 2px 8px rgba(0, 0, 0, 0.08);
+    border: 1px solid #E5E9F0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    max-height: 90vh;
+}
+
+.profile-edit-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.5rem;
+    border-bottom: 1px solid #E5E9F0;
+    background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+}
+
+.profile-edit-modal-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0;
+    letter-spacing: -0.01em;
+    line-height: 1.3;
+}
+
+.profile-edit-modal-close {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 0;
+    flex-shrink: 0;
+}
+
+.profile-edit-modal-close:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+}
+
+.profile-edit-modal-close:focus-visible {
+    outline: 2px solid #1fb2d5;
+    outline-offset: 2px;
+}
+
+.profile-edit-modal-close i {
+    font-size: 1rem;
+    font-family: 'Font Awesome 6 Free', 'Font Awesome 5 Free' !important;
+    font-weight: 900 !important;
+    font-style: normal !important;
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+.profile-edit-modal-body {
+    padding: 1.5rem;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.profile-edit-field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.profile-edit-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #0f172a;
+    margin: 0;
+    line-height: 1.4;
+}
+
+.profile-edit-input {
+    width: 100%;
+    padding: 0.875rem 1rem;
+    font-size: 1rem;
+    font-weight: 400;
+    color: #0f172a;
+    background: #ffffff;
+    border: 1px solid #E5E9F0;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+    font-family: inherit;
+}
+
+.profile-edit-input:focus {
+    outline: none;
+    border-color: #1fb2d5;
+    box-shadow: 0 0 0 3px rgba(31, 178, 213, 0.1);
+}
+
+.profile-edit-input::placeholder {
+    color: #94a3b8;
+}
+
+.profile-edit-hint {
+    font-size: 0.8125rem;
+    color: #64748b;
+    margin: 0;
+    line-height: 1.4;
+}
+
+.profile-edit-modal-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    padding: 1.25rem 1.5rem;
+    border-top: 1px solid #E5E9F0;
+    background: #f8fafc;
+}
+
+.profile-edit-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.875rem;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    touch-action: manipulation;
+    min-width: 100px;
+    font-family: inherit;
+}
+
+.profile-edit-btn-cancel {
+    background: #ffffff;
+    color: #64748b;
+    border: 1px solid #E5E9F0;
+}
+
+.profile-edit-btn-cancel:hover {
+    background: #f8fafc;
+    color: #0f172a;
+    border-color: #cbd5e1;
+}
+
+.profile-edit-btn-cancel:focus-visible {
+    outline: 2px solid #1fb2d5;
+    outline-offset: 2px;
+}
+
+.profile-edit-btn-save {
+    background: #1fb2d5;
+    color: white;
+    box-shadow: 0 2px 8px rgba(31, 178, 213, 0.3);
+}
+
+.profile-edit-btn-save:hover {
+    background: #0ea5e9;
+    box-shadow: 0 4px 12px rgba(31, 178, 213, 0.4);
+    transform: translateY(-1px);
+}
+
+.profile-edit-btn-save:active {
+    transform: translateY(0);
+}
+
+.profile-edit-btn-save:focus-visible {
+    outline: 2px solid #1fb2d5;
+    outline-offset: 2px;
+}
+
+.profile-edit-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* Dark theme support for modal */
+html[data-theme="dark"] .profile-edit-modal-backdrop {
+    background: rgba(0, 0, 0, 0.7);
+}
+
+html[data-theme="dark"] .profile-edit-modal-content {
+    background: #1e293b;
+    border-color: rgba(226, 232, 240, 0.1);
+}
+
+html[data-theme="dark"] .profile-edit-modal-header {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    border-color: rgba(226, 232, 240, 0.1);
+}
+
+html[data-theme="dark"] .profile-edit-modal-title {
+    color: #f1f5f9;
+}
+
+html[data-theme="dark"] .profile-edit-modal-close {
+    color: #94a3b8;
+}
+
+html[data-theme="dark"] .profile-edit-modal-close:hover {
+    background: #334155;
+    color: #f1f5f9;
+}
+
+html[data-theme="dark"] .profile-edit-input {
+    background: #0f172a;
+    border-color: rgba(226, 232, 240, 0.2);
+    color: #f1f5f9;
+}
+
+html[data-theme="dark"] .profile-edit-input:focus {
+    border-color: #1fb2d5;
+}
+
+html[data-theme="dark"] .profile-edit-label {
+    color: #cbd5e1;
+}
+
+html[data-theme="dark"] .profile-edit-hint {
+    color: #94a3b8;
+}
+
+html[data-theme="dark"] .profile-edit-modal-footer {
+    background: #1e293b;
+    border-color: rgba(226, 232, 240, 0.1);
+}
+
+html[data-theme="dark"] .profile-edit-btn-cancel {
+    background: #334155;
+    color: #f1f5f9;
+    border-color: rgba(226, 232, 240, 0.2);
+}
+
+html[data-theme="dark"] .profile-edit-btn-cancel:hover {
+    background: #475569;
+}
+
+/* Responsive adjustments */
+@media (max-width: 576px) {
+    .profile-edit-modal-dialog {
+        max-width: 100%;
+        margin: 0;
+    }
+    
+    .profile-edit-modal-content {
+        border-radius: 12px 12px 0 0;
+        max-height: 85vh;
+    }
+    
+    .profile-edit-modal-header,
+    .profile-edit-modal-body,
+    .profile-edit-modal-footer {
+        padding: 1.25rem;
+    }
+    
+    .profile-edit-modal-footer {
+        flex-direction: column-reverse;
+    }
+    
+    .profile-edit-btn {
+        width: 100%;
+    }
+}
 </style>
 
 <script>
@@ -1444,32 +1865,228 @@ document.addEventListener('DOMContentLoaded', function() {
     const saveProfileBtn = document.getElementById('saveProfileBtn');
     const avatarInput = document.getElementById('avatarInput');
     const avatarPreviewHero = document.getElementById('avatarPreviewHero');
-    const avatarPlaceholder = document.querySelector('.profile-avatar-hero-placeholder');
+    const avatarPlaceholder = document.querySelector('.profile-summary-avatar-placeholder');
     
-    // Handle edit buttons for first_name, last_name, and email
+    // Auto-hide success alerts after specified duration
+    function hideProfileAlert(alertElement) {
+        if (!alertElement) return;
+        
+        alertElement.classList.add('profile-alert-fading');
+        
+        // Remove from DOM after transition completes
+        setTimeout(function() {
+            if (alertElement && alertElement.parentNode) {
+                alertElement.remove();
+            }
+        }, 400); // Match CSS transition duration
+    }
+    
+    function cleanUrlParameter() {
+        // Remove 'updated' parameter from URL without page reload
+        if (window.location.search.includes('updated=')) {
+            const url = new URL(window.location);
+            url.searchParams.delete('updated');
+            window.history.replaceState({}, '', url.pathname + url.search);
+        }
+    }
+    
+    function initAutoHideAlerts() {
+        const autoHideAlerts = document.querySelectorAll('.profile-alert-auto-hide');
+        autoHideAlerts.forEach(function(alert) {
+            const delay = parseInt(alert.getAttribute('data-auto-hide')) || 3000;
+            
+            // Clean URL immediately when alert is shown (so refresh won't show it again)
+            cleanUrlParameter();
+            
+            // Set up auto-hide timer
+            const timer = setTimeout(function() {
+                hideProfileAlert(alert);
+            }, delay);
+            
+            // Clear timer if user manually closes
+            const closeBtn = alert.querySelector('.profile-alert-close');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', function() {
+                    clearTimeout(timer);
+                });
+            }
+        });
+    }
+    
+    // Initialize auto-hide for success alerts
+    initAutoHideAlerts();
+    
+    // Also clean URL on page load if parameter exists (fallback)
+    if (window.location.search.includes('updated=')) {
+        // Small delay to ensure message is visible before cleaning URL
+        setTimeout(cleanUrlParameter, 100);
+    }
+    
+    // Profile Edit Modal
+    const editModal = document.getElementById('profileEditModal');
+    const editModalBackdrop = editModal.querySelector('.profile-edit-modal-backdrop');
+    const editModalClose = editModal.querySelector('.profile-edit-modal-close');
+    const editModalCancel = editModal.querySelector('.profile-edit-btn-cancel');
+    const editModalSave = editModal.querySelector('.profile-edit-btn-save');
+    const editModalTitle = editModal.querySelector('.profile-edit-modal-title');
+    const editModalLabel = editModal.querySelector('.profile-edit-label');
+    const editModalInput = editModal.querySelector('.profile-edit-input');
+    const editModalHint = editModal.querySelector('.profile-edit-hint');
+    let currentFieldName = null;
+    let currentFieldInput = null;
+    let currentEditButton = null;
+    
+    // Field configuration
+    const fieldConfig = {
+        'first_name': {
+            label: 'First Name',
+            placeholder: 'Enter your first name',
+            hint: '',
+            type: 'text',
+            autocomplete: 'given-name'
+        },
+        'last_name': {
+            label: 'Last Name',
+            placeholder: 'Enter your last name',
+            hint: '',
+            type: 'text',
+            autocomplete: 'family-name'
+        },
+        'email': {
+            label: 'Email Address',
+            placeholder: 'Enter your email address',
+            hint: 'We\'ll use this email for important notifications.',
+            type: 'email',
+            autocomplete: 'email'
+        },
+        'username': {
+            label: 'Username',
+            placeholder: 'Enter your username',
+            hint: 'Username cannot be changed after creation.',
+            type: 'text',
+            autocomplete: 'username',
+            readonly: true
+        }
+    };
+    
+    // Open modal function
+    function openEditModal(fieldName, editButton) {
+        const config = fieldConfig[fieldName];
+        if (!config) return;
+        
+        const originalInput = document.getElementById(fieldName);
+        if (!originalInput) return;
+        
+        currentFieldName = fieldName;
+        currentFieldInput = originalInput;
+        currentEditButton = editButton;
+        
+        // Set modal content
+        editModalTitle.textContent = 'Edit ' + config.label;
+        editModalLabel.textContent = config.label;
+        editModalInput.type = config.type;
+        editModalInput.value = originalInput.value || '';
+        editModalInput.placeholder = config.placeholder;
+        editModalInput.autocomplete = config.autocomplete;
+        editModalInput.readOnly = config.readonly || false;
+        editModalHint.textContent = config.hint || '';
+        editModalHint.style.display = config.hint ? 'block' : 'none';
+        
+        // Disable save button if readonly
+        if (config.readonly) {
+            editModalSave.disabled = true;
+            editModalSave.style.opacity = '0.5';
+            editModalInput.style.cursor = 'not-allowed';
+        } else {
+            editModalSave.disabled = false;
+            editModalSave.style.opacity = '1';
+            editModalInput.style.cursor = 'text';
+        }
+        
+        // Show modal with animation
+        editModal.classList.add('active');
+        editModal.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+        
+        // Focus input after animation
+        setTimeout(function() {
+            if (!config.readonly) {
+                editModalInput.focus();
+                editModalInput.select();
+            }
+        }, 100);
+    }
+    
+    // Close modal function
+    function closeEditModal() {
+        editModal.classList.remove('active');
+        editModal.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+        currentFieldName = null;
+        currentFieldInput = null;
+        currentEditButton = null;
+    }
+    
+    // Save changes function
+    function saveEditModal() {
+        if (!currentFieldInput || !currentFieldName) return;
+        
+        const newValue = editModalInput.value.trim();
+        const config = fieldConfig[currentFieldName];
+        
+        // Validation
+        if (config.type === 'email' && newValue) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(newValue)) {
+                editModalInput.focus();
+                editModalInput.style.borderColor = '#ef4444';
+                setTimeout(function() {
+                    editModalInput.style.borderColor = '';
+                }, 2000);
+                return;
+            }
+        }
+        
+        // Update original input
+        currentFieldInput.value = newValue;
+        
+        // Close modal
+        closeEditModal();
+        
+        // Show success feedback
+        if (currentEditButton) {
+            currentEditButton.style.transform = 'scale(1.1)';
+            setTimeout(function() {
+                if (currentEditButton) {
+                    currentEditButton.style.transform = '';
+                }
+            }, 200);
+        }
+    }
+    
+    // Event listeners for modal
+    editModalBackdrop.addEventListener('click', closeEditModal);
+    editModalClose.addEventListener('click', closeEditModal);
+    editModalCancel.addEventListener('click', closeEditModal);
+    editModalSave.addEventListener('click', saveEditModal);
+    
+    // Keyboard support
+    editModal.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeEditModal();
+        } else if (e.key === 'Enter' && e.ctrlKey) {
+            e.preventDefault();
+            saveEditModal();
+        }
+    });
+    
+    // Handle edit buttons for first_name, last_name, email, and username
     const editButtons = document.querySelectorAll('.profile-field-edit-btn');
     editButtons.forEach(function(btn) {
         btn.addEventListener('click', function() {
             const fieldName = this.getAttribute('data-field');
-            const inputField = document.getElementById(fieldName);
-            
-            if (inputField) {
-                if (inputField.readOnly) {
-                    // Enable editing
-                    inputField.readOnly = false;
-                    inputField.style.backgroundColor = '#ffffff';
-                    inputField.focus();
-                    this.classList.add('active');
-                    this.innerHTML = '<i class="fas fa-check" aria-hidden="true"></i>';
-                    this.setAttribute('aria-label', 'Save ' + fieldName);
-                } else {
-                    // Disable editing
-                    inputField.readOnly = true;
-                    inputField.style.backgroundColor = '#f8fafc';
-                    this.classList.remove('active');
-                    this.innerHTML = '<i class="fas fa-edit" aria-hidden="true"></i>';
-                    this.setAttribute('aria-label', 'Edit ' + fieldName);
-                }
+            if (fieldName && fieldConfig[fieldName]) {
+                openEditModal(fieldName, this);
             }
         });
         
@@ -1481,6 +2098,12 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+    
+    // Also handle username field if it has an edit button (for future use)
+    const usernameInput = document.getElementById('username');
+    if (usernameInput && !usernameInput.closest('.profile-field-wrapper')) {
+        // If username gets an edit button in the future, it will work
+    }
     
     // Handle avatar preview with hero image update
     if (avatarInput) {
@@ -1513,7 +2136,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         // Create new img element if it doesn't exist
                         const newImg = document.createElement('img');
                         newImg.id = 'avatarPreviewHero';
-                        newImg.className = 'profile-avatar-hero-img';
+                        newImg.className = 'profile-summary-avatar-img';
                         newImg.src = readerEvent.target.result;
                         newImg.alt = 'Profile Photo';
                         newImg.style.display = 'block';
@@ -1582,10 +2205,17 @@ document.addEventListener('DOMContentLoaded', function() {
         alert.className = `profile-alert profile-alert-${type} profile-alert-dynamic`;
         alert.setAttribute('role', 'alert');
         alert.setAttribute('aria-live', 'polite');
+        
+        // Add auto-hide for success messages
+        if (type === 'success') {
+            alert.classList.add('profile-alert-auto-hide');
+            alert.setAttribute('data-auto-hide', '3000');
+        }
+        
         alert.innerHTML = `
             <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}" aria-hidden="true"></i>
             <span>${message}</span>
-            <button type="button" class="profile-alert-close" aria-label="Close alert" onclick="this.parentElement.remove()">
+            <button type="button" class="profile-alert-close" aria-label="Close alert" onclick="hideProfileAlert(this.parentElement)">
                 <i class="fas fa-times" aria-hidden="true"></i>
             </button>
         `;
@@ -1594,15 +2224,12 @@ document.addEventListener('DOMContentLoaded', function() {
         if (profilePage) {
             profilePage.insertBefore(alert, profilePage.firstChild);
             
-            // Auto-remove after 5 seconds
-            setTimeout(() => {
-                if (alert.parentNode) {
-                    alert.style.opacity = '0';
-                    alert.style.transform = 'translateY(-10px)';
-                    alert.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-                    setTimeout(() => alert.remove(), 300);
-                }
-            }, 5000);
+            // Auto-hide success messages after 3 seconds
+            if (type === 'success') {
+                setTimeout(function() {
+                    hideProfileAlert(alert);
+                }, 3000);
+            }
         }
     }
 });
