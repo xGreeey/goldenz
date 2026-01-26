@@ -78,6 +78,21 @@ if (!empty($_SESSION['user_id']) && function_exists('get_user_by_id')) {
                 <i class="fas fa-chevron-down hrdash-welcome__chevron"></i>
             </button>
             <ul class="dropdown-menu dropdown-menu-end">
+                <li class="dropdown-header d-flex align-items-center gap-2 px-3 py-2">
+                    <?php if ($current_user_avatar): ?>
+                        <img src="<?php echo htmlspecialchars($current_user_avatar); ?>" 
+                             alt="<?php echo htmlspecialchars($displayName); ?>" 
+                             class="hrdash-welcome__avatar hrdash-welcome__avatar-img" 
+                             style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;">
+                    <?php else: ?>
+                        <span class="hrdash-welcome__avatar" style="width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.75rem;"><?php echo htmlspecialchars($initials); ?></span>
+                    <?php endif; ?>
+                    <div class="d-flex flex-column">
+                        <strong style="font-size: 0.875rem; color: #1e293b;"><?php echo htmlspecialchars($displayName); ?></strong>
+                        <small style="font-size: 0.75rem; color: #64748b;">HR Administrator</small>
+                    </div>
+                </li>
+                <li><hr class="dropdown-divider"></li>
                 <li><a class="dropdown-item" href="?page=profile&from=header"><i class="fas fa-user me-2"></i>Profile</a></li>
                 <li><a class="dropdown-item" href="?page=settings&from=header"><i class="fas fa-cog me-2"></i>Settings</a></li>
                 <li><hr class="dropdown-divider"></li>

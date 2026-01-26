@@ -10,6 +10,81 @@ $page = 'add_employee';
 // This ensures both Page 1 and Page 2 data are saved together.
 // ============================================================================
 
+/**
+ * Process image to 2x2 square format (400x400 pixels)
+ * Crops from center and resizes to square
+ * 
+ * @param string $source_path Source image path
+ * @param string $target_path Target image path
+ * @param string $extension Image extension (jpg or png)
+ * @return bool True on success, false on failure
+ */
+function processImageTo2x2($source_path, $target_path, $extension) {
+    if (!function_exists('imagecreatefromjpeg') || !function_exists('imagecreatefrompng')) {
+        return false; // GD library not available
+    }
+    
+    // Create image resource based on type
+    if ($extension === 'jpg' || $extension === 'jpeg') {
+        $source_image = @imagecreatefromjpeg($source_path);
+    } elseif ($extension === 'png') {
+        $source_image = @imagecreatefrompng($source_path);
+    } else {
+        return false;
+    }
+    
+    if (!$source_image) {
+        return false;
+    }
+    
+    // Get source dimensions
+    $source_width = imagesx($source_image);
+    $source_height = imagesy($source_image);
+    
+    // Target size for 2x2 photo (400x400 pixels)
+    $target_size = 400;
+    
+    // Calculate crop dimensions (center crop to square)
+    $crop_size = min($source_width, $source_height);
+    $crop_x = ($source_width - $crop_size) / 2;
+    $crop_y = ($source_height - $crop_size) / 2;
+    
+    // Create target image
+    $target_image = imagecreatetruecolor($target_size, $target_size);
+    
+    // Preserve transparency for PNG
+    if ($extension === 'png') {
+        imagealphablending($target_image, false);
+        imagesavealpha($target_image, true);
+        $transparent = imagecolorallocatealpha($target_image, 255, 255, 255, 127);
+        imagefill($target_image, 0, 0, $transparent);
+    }
+    
+    // Resize and crop image
+    imagecopyresampled(
+        $target_image,  // Destination
+        $source_image,  // Source
+        0, 0,           // Destination x, y
+        $crop_x, $crop_y, // Source x, y (crop from center)
+        $target_size, $target_size, // Destination width, height
+        $crop_size, $crop_size     // Source width, height (square crop)
+    );
+    
+    // Save processed image
+    $saved = false;
+    if ($extension === 'jpg' || $extension === 'jpeg') {
+        $saved = imagejpeg($target_image, $target_path, 92); // 92% quality
+    } elseif ($extension === 'png') {
+        $saved = imagepng($target_image, $target_path, 9); // 9 compression level
+    }
+    
+    // Free memory
+    imagedestroy($source_image);
+    imagedestroy($target_image);
+    
+    return $saved;
+}
+
 // Check for success message from session
 $show_success_popup = false;
 $success_message = '';
@@ -563,7 +638,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['first_name'])) {
         // Store Page 1 data in session
         $_SESSION['employee_page1_data'] = $employee_data;
         
-        // Handle photo upload - store temporarily
+        // Handle photo upload - store temporarily and process to 2x2 format
         if (isset($_FILES['employee_photo']) && $_FILES['employee_photo']['error'] === UPLOAD_ERR_OK) {
             $file = $_FILES['employee_photo'];
             $allowed_types = ['image/jpeg', 'image/jpg', 'image/png'];
@@ -582,7 +657,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['first_name'])) {
                 $temp_filename = session_id() . '_' . time() . '.' . $extension;
                 $temp_target_path = $temp_upload_dir . $temp_filename;
                 
-                if (move_uploaded_file($file['tmp_name'], $temp_target_path)) {
+                // Process image to 2x2 square format (400x400 pixels)
+                $processed = processImageTo2x2($file['tmp_name'], $temp_target_path, $extension);
+                
+                if ($processed) {
                     // Store temp file info in session
                     $_SESSION['employee_temp_photo'] = [
                         'path' => $temp_target_path,
@@ -592,10 +670,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['first_name'])) {
                     ];
                     
                     if (function_exists('log_db_error')) {
-                        log_db_error('photo_upload', 'Photo uploaded to temp location', [
+                        log_db_error('photo_upload', 'Photo uploaded and processed to 2x2 format', [
                             'temp_path' => $temp_target_path,
                             'filename' => $temp_filename
                         ]);
+                    }
+                } else {
+                    // Fallback: try to move original file if processing fails
+                    if (move_uploaded_file($file['tmp_name'], $temp_target_path)) {
+                        $_SESSION['employee_temp_photo'] = [
+                            'path' => $temp_target_path,
+                            'filename' => $temp_filename,
+                            'extension' => $extension,
+                            'original_name' => $file['name']
+                        ];
                     }
                 }
             }
@@ -3566,15 +3654,69 @@ function previewPhoto(input) {
     const previewImg = document.getElementById('photo_preview_img');
     
     if (input.files && input.files[0]) {
+        const file = input.files[0];
         const reader = new FileReader();
         
         reader.onload = function(e) {
-            preview.style.display = 'none';
-            previewImg.src = e.target.result;
-            previewImg.style.display = 'block';
+            const img = new Image();
+            img.onload = function() {
+                // Create canvas for 2x2 square crop
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                
+                // Set canvas size to square (2x2 format - standard size 400x400 pixels)
+                const size = 400;
+                canvas.width = size;
+                canvas.height = size;
+                
+                // Calculate crop dimensions (center crop)
+                const sourceSize = Math.min(img.width, img.height);
+                const sourceX = (img.width - sourceSize) / 2;
+                const sourceY = (img.height - sourceSize) / 2;
+                
+                // Draw cropped and resized image to canvas
+                ctx.drawImage(
+                    img,
+                    sourceX, sourceY, sourceSize, sourceSize, // Source rectangle (square crop)
+                    0, 0, size, size // Destination rectangle (resized to 400x400)
+                );
+                
+                // Convert canvas to blob and update file input
+                canvas.toBlob(function(blob) {
+                    if (blob) {
+                        // Create new File object with the cropped image
+                        const croppedFile = new File([blob], file.name, {
+                            type: file.type,
+                            lastModified: Date.now()
+                        });
+                        
+                        // Create a new FileList-like object
+                        const dataTransfer = new DataTransfer();
+                        dataTransfer.items.add(croppedFile);
+                        input.files = dataTransfer.files;
+                        
+                        // Update preview
+                        const croppedDataUrl = canvas.toDataURL(file.type);
+                        preview.style.display = 'none';
+                        previewImg.src = croppedDataUrl;
+                        previewImg.style.display = 'block';
+                        previewImg.style.width = '100%';
+                        previewImg.style.height = 'auto';
+                        previewImg.style.objectFit = 'cover';
+                        previewImg.style.borderRadius = '4px';
+                    } else {
+                        // Fallback if blob creation fails
+                        preview.style.display = 'none';
+                        previewImg.src = e.target.result;
+                        previewImg.style.display = 'block';
+                    }
+                }, file.type, 0.92); // 0.92 quality for JPEG
+            };
+            
+            img.src = e.target.result;
         };
         
-        reader.readAsDataURL(input.files[0]);
+        reader.readAsDataURL(file);
     } else {
         preview.style.display = 'flex';
         previewImg.style.display = 'none';
