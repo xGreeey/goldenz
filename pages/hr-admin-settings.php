@@ -60,13 +60,6 @@ if (!empty($_SESSION['user_id']) && function_exists('get_user_by_id')) {
                             <i class="fas fa-shield-alt me-2"></i>Account Security
                         </button>
                         <button class="list-group-item list-group-item-action"
-                                id="profile-tab"
-                                data-bs-toggle="list"
-                                data-bs-target="#profile"
-                                type="button" role="tab">
-                            <i class="fas fa-user me-2"></i>Profile
-                        </button>
-                        <button class="list-group-item list-group-item-action"
                                 id="preferences-tab"
                                 data-bs-toggle="list"
                                 data-bs-target="#preferences"
@@ -205,109 +198,6 @@ if (!empty($_SESSION['user_id']) && function_exists('get_user_by_id')) {
                                     </div>
                                 </div>
                             </form>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Profile -->
-                <div class="tab-pane fade" id="profile" role="tabpanel">
-                    <div class="card card-modern mb-4">
-                        <div class="card-body-modern">
-                            <div class="card-header-modern mb-3">
-                                <h5 class="card-title-modern">Profile Information</h5>
-                                <small class="card-subtitle">View and manage your account profile details.</small>
-                            </div>
-
-                            <!-- Profile Photo -->
-                            <div class="row g-3 mb-4">
-                                <div class="col-12">
-                                    <label class="form-label">Profile Photo</label>
-                                    <div class="d-flex align-items-center gap-3">
-                                        <div class="profile-photo-preview">
-                                            <?php 
-                                            // Get profile photo from current user
-                                            $profile_photo = null;
-                                            if (!empty($current_user_data) && !empty($current_user_data['avatar'])) {
-                                                $profile_photo = get_avatar_url($current_user_data['avatar']);
-                                            }
-                                            
-                                            // Generate initials
-                                            $profile_initials = 'HA';
-                                            if (!empty($current_user_data)) {
-                                                $first_name = $current_user_data['first_name'] ?? '';
-                                                $last_name = $current_user_data['last_name'] ?? '';
-                                                if (!empty($first_name) || !empty($last_name)) {
-                                                    $first = strtoupper(substr($first_name, 0, 1));
-                                                    $last = strtoupper(substr($last_name, 0, 1));
-                                                    $profile_initials = $first . ($last ?: $first);
-                                                }
-                                            }
-                                            ?>
-                                            <?php if ($profile_photo): ?>
-                                                <img src="<?php echo htmlspecialchars($profile_photo); ?>" 
-                                                     alt="Profile Photo" 
-                                                     class="profile-photo-img"
-                                                     style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 3px solid #e2e8f0; display: block;">
-                                            <?php else: ?>
-                                                <div class="profile-photo-placeholder" 
-                                                     class="fs-40 fw-bold" style="width: 120px; height: 120px; border-radius: 50%; background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1e293b 100%); color: white; display: flex; align-items: center; justify-content: center; border: 3px solid #e2e8f0;">
-                                                    <?php echo htmlspecialchars($profile_initials); ?>
-                                                </div>
-                                            <?php endif; ?>
-                                        </div>
-                                        <div class="flex-grow-1">
-                                            <p class="text-muted mb-0 small">Your profile photo is displayed in the header and throughout the system.</p>
-                                            <p class="text-muted mb-0 small">To update your profile photo, please visit the <a href="?page=profile">Profile page</a>.</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <label class="form-label">Username</label>
-                                    <input type="text" class="form-control" value="<?php echo htmlspecialchars($current_user['username'] ?? $_SESSION['username'] ?? 'N/A'); ?>" readonly>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Email</label>
-                                    <input type="email" class="form-control" value="<?php echo htmlspecialchars($current_user['email'] ?? $_SESSION['email'] ?? 'N/A'); ?>" readonly>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Full Name</label>
-                                    <input type="text" class="form-control" value="<?php echo htmlspecialchars($current_user['name'] ?? $_SESSION['name'] ?? 'N/A'); ?>" readonly>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Role</label>
-                                    <input type="text" class="form-control" value="<?php echo htmlspecialchars(ucfirst(str_replace('_', ' ', $user_role ?? 'N/A'))); ?>" readonly>
-                                </div>
-                                <?php if (!empty($current_user['department'])): ?>
-                                <div class="col-md-6">
-                                    <label class="form-label">Department</label>
-                                    <input type="text" class="form-control" value="<?php echo htmlspecialchars($current_user['department']); ?>" readonly>
-                                </div>
-                                <?php endif; ?>
-                                <?php if (!empty($current_user['phone'])): ?>
-                                <div class="col-md-6">
-                                    <label class="form-label">Phone</label>
-                                    <input type="text" class="form-control" value="<?php echo htmlspecialchars($current_user['phone']); ?>" readonly>
-                                </div>
-                                <?php endif; ?>
-                                <div class="col-md-6">
-                                    <label class="form-label">Account Status</label>
-                                    <input type="text" class="form-control" value="<?php echo htmlspecialchars(ucfirst($current_user['status'] ?? 'Active')); ?>" readonly>
-                                </div>
-                                <?php if (!empty($current_user['created_at'])): ?>
-                                <div class="col-md-6">
-                                    <label class="form-label">Member Since</label>
-                                    <input type="text" class="form-control" value="<?php echo htmlspecialchars(date('F j, Y', strtotime($current_user['created_at']))); ?>" readonly>
-                                </div>
-                                <?php endif; ?>
-                            </div>
-
-                            <div class="alert alert-info mt-4">
-                                <i class="fas fa-info-circle me-2"></i>
-                                <strong>Note:</strong> Profile information is managed by system administrators. Please contact your administrator if you need to update your profile details.
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -859,10 +749,10 @@ document.addEventListener('DOMContentLoaded', function() {
     text-decoration: none !important;
 }
 
-/* Make Change Password button highly visible */
+/* Make Change Password button match dashboard colors */
 .hr-admin-settings #changePasswordBtn,
 .hr-admin-settings .btn-primary-modern {
-    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1e293b 100%) !important;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%) !important;
     color: #ffffff !important;
     border: none !important;
     padding: 0.75rem 1.5rem !important;
@@ -870,7 +760,7 @@ document.addEventListener('DOMContentLoaded', function() {
     font-weight: 600 !important;
     font-size: 0.9375rem !important;
     transition: all 0.2s ease !important;
-    box-shadow: 0 4px 12px rgba(30, 58, 138, 0.35) !important;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.25) !important;
     cursor: pointer !important;
     min-height: 44px !important;
     display: inline-flex !important;
@@ -880,15 +770,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
 .hr-admin-settings #changePasswordBtn:hover,
 .hr-admin-settings .btn-primary-modern:hover {
-    background: linear-gradient(135deg, #1e40af 0%, #1e293b 50%, #1e3a8a 100%) !important;
-    transform: translateY(-2px) !important;
-    box-shadow: 0 6px 20px rgba(30, 58, 138, 0.45) !important;
+    background: linear-gradient(135deg, #1e293b 0%, #334155 50%, #475569 100%) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.35) !important;
 }
 
 .hr-admin-settings #changePasswordBtn:active,
 .hr-admin-settings .btn-primary-modern:active {
     transform: translateY(0) !important;
-    box-shadow: 0 2px 8px rgba(30, 58, 138, 0.3) !important;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.25) !important;
 }
 
 .hr-admin-settings #changePasswordBtn:focus,
@@ -896,7 +786,7 @@ document.addEventListener('DOMContentLoaded', function() {
 .hr-admin-settings #changePasswordBtn:focus-visible,
 .hr-admin-settings .btn-primary-modern:focus-visible {
     outline: none !important;
-    box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.2), 0 4px 12px rgba(30, 58, 138, 0.35) !important;
+    box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.2), 0 2px 8px rgba(15, 23, 42, 0.25) !important;
 }
 
 /* Password Strength Indicator */
