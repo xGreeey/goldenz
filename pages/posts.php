@@ -1529,9 +1529,39 @@ function deletePost(postId) {
 }
 
 
+// Initialize PostsManager
+let postsManager = null;
+
+function initPostsManager() {
+    if (postsManager) {
+        // Re-bind events if manager already exists
+        postsManager.bindEvents();
+    } else {
+        postsManager = new PostsManager();
+    }
+}
+
 // Initialize when page loads
-document.addEventListener('DOMContentLoaded', () => {
-    new PostsManager();
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initPostsManager);
+} else {
+    initPostsManager();
+}
+
+// Re-initialize when page content is loaded via AJAX
+document.addEventListener('pageContentLoaded', function(e) {
+    const page = e.detail?.page || new URLSearchParams(window.location.search).get('page');
+    if (page === 'posts') {
+        setTimeout(initPostsManager, 100);
+    }
+});
+
+// Also listen for the old event name (backwards compatibility)
+document.addEventListener('pageLoaded', function(e) {
+    const page = e.detail?.page || new URLSearchParams(window.location.search).get('page');
+    if (page === 'posts') {
+        setTimeout(initPostsManager, 100);
+    }
 });
 </script>
 
