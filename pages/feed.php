@@ -843,7 +843,7 @@ function formatBirthdayDate($date) {
 }
 
 .feed-avatar-placeholder {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #1fb2d5 0%, #0ea5e9 100%);
     color: white;
     display: flex;
     align-items: center;
@@ -864,29 +864,29 @@ function formatBirthdayDate($date) {
 }
 
 .feed-whats-new:hover {
-    border-color: #667eea;
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+    border-color: #1fb2d5;
+    box-shadow: 0 4px 12px rgba(31, 178, 213, 0.15);
     transform: translateY(-1px);
     background: #ffffff;
 }
 
 .feed-whats-new:focus {
-    border-color: #667eea;
-    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    border-color: #1fb2d5;
+    box-shadow: 0 0 0 4px rgba(31, 178, 213, 0.1);
     outline: none;
     background: #ffffff;
 }
 
 .feed-post-event-btn {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
     border: none;
     color: white;
     font-weight: 600;
     padding: 0.875rem 1.75rem;
     border-radius: 24px;
     font-size: 0.9375rem;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.25);
     white-space: nowrap;
     display: flex;
     align-items: center;
@@ -894,15 +894,15 @@ function formatBirthdayDate($date) {
 }
 
 .feed-post-event-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.35);
     color: white;
-    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+    background: linear-gradient(135deg, #1e293b 0%, #334155 50%, #475569 100%);
 }
 
 .feed-post-event-btn:active {
     transform: translateY(0);
-    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.25);
 }
 
 .feed-post-event-btn i {
@@ -935,7 +935,7 @@ function formatBirthdayDate($date) {
 }
 
 .feed-action-btn:hover {
-    color: #3b82f6;
+    color: #1fb2d5;
 }
 
 .feed-action-btn i,
@@ -982,7 +982,7 @@ function formatBirthdayDate($date) {
 }
 
 .feed-post-avatar-placeholder {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #1fb2d5 0%, #0ea5e9 100%);
     color: white;
     display: flex;
     align-items: center;
@@ -1174,7 +1174,7 @@ function formatBirthdayDate($date) {
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #3b82f6;
+    color: #1fb2d5;
     flex-shrink: 0;
 }
 
@@ -1242,7 +1242,7 @@ function formatBirthdayDate($date) {
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #1fb2d5 0%, #0ea5e9 100%);
     color: white;
     display: flex;
     align-items: center;
@@ -1332,7 +1332,7 @@ function formatBirthdayDate($date) {
 .feed-expanded-form-card {
     border: none;
     border-radius: 12px;
-    box-shadow: 0 25px 70px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(102, 126, 234, 0.1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.04), 0 0 0 1px rgba(31, 178, 213, 0.1);
     overflow: hidden;
     background: #ffffff;
     position: relative;
@@ -1342,7 +1342,7 @@ function formatBirthdayDate($date) {
 }
 
 .feed-expanded-form-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
     color: white;
     border: none;
     padding: 0.875rem 1.25rem;
@@ -1358,7 +1358,7 @@ function formatBirthdayDate($date) {
     right: -50%;
     width: 200%;
     height: 200%;
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+    background: radial-gradient(circle, rgba(31, 178, 213, 0.15) 0%, transparent 70%);
     animation: pulse 3s ease-in-out infinite;
 }
 
@@ -1455,12 +1455,12 @@ function formatBirthdayDate($date) {
 }
 
 .feed-expanded-form-body::-webkit-scrollbar-thumb {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #1fb2d5 0%, #0ea5e9 100%);
     border-radius: 4px;
 }
 
 .feed-expanded-form-body::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+    background: linear-gradient(135deg, #0ea5e9 0%, #1fb2d5 100%);
 }
 
 .feed-expanded-form-footer {
@@ -1525,21 +1525,21 @@ function formatBirthdayDate($date) {
 .event-form-input:hover,
 .event-form-textarea:hover {
     border-color: #cbd5e1;
-    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.08);
+    box-shadow: 0 2px 8px rgba(31, 178, 213, 0.08);
 }
 
 .event-form-input:focus-visible,
 .event-form-textarea:focus-visible {
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.12), 0 2px 8px rgba(102, 126, 234, 0.15);
+    border-color: #1fb2d5;
+    box-shadow: 0 0 0 3px rgba(31, 178, 213, 0.1), 0 2px 8px rgba(31, 178, 213, 0.15);
     outline: none;
     transform: translateY(-1px);
 }
 
 .event-form-input:focus:not(:focus-visible),
 .event-form-textarea:focus:not(:focus-visible) {
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.12);
+    border-color: #1fb2d5;
+    box-shadow: 0 0 0 3px rgba(31, 178, 213, 0.1);
     outline: none;
 }
 
@@ -1550,7 +1550,7 @@ function formatBirthdayDate($date) {
 
 
 .event-btn-primary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
     border: none;
     color: white;
     font-weight: 600;
@@ -1559,14 +1559,14 @@ function formatBirthdayDate($date) {
     transition: background 0.2s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     align-items: center;
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.25);
     position: relative;
     overflow: hidden;
     font-size: 0.875rem;
 }
 
 .event-btn-primary:focus-visible {
-    outline: 2px solid #667eea;
+    outline: 2px solid #1fb2d5;
     outline-offset: 2px;
 }
 
@@ -1593,7 +1593,7 @@ function formatBirthdayDate($date) {
 
 .event-btn-primary:active {
     transform: translateY(0);
-    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.25);
 }
 
 .event-btn-primary:disabled {
@@ -1619,27 +1619,27 @@ function formatBirthdayDate($date) {
 }
 
 .event-btn-secondary {
-    background: #f1f5f9;
-    border: 2px solid #e2e8f0;
-    color: #64748b;
-    font-weight: 600;
+    background: #ffffff;
+    border: 1.5px solid #e2e8f0;
+    color: #475569;
+    font-weight: 500;
     padding: 0.4375rem 1.25rem;
     border-radius: 8px;
-    transition: background 0.2s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.2s cubic-bezier(0.4, 0, 0.2, 1), color 0.2s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
     font-size: 0.875rem;
 }
 
 .event-btn-secondary:focus-visible {
-    outline: 2px solid #64748b;
+    outline: 2px solid #1fb2d5;
     outline-offset: 2px;
 }
 
 .event-btn-secondary:hover {
-    background: #e2e8f0;
+    background: #f1f5f9;
     border-color: #cbd5e1;
-    color: #475569;
+    color: #334155;
     transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .event-btn-secondary:active {
