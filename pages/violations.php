@@ -39,6 +39,7 @@ try {
         // Fallback: try direct query
         $sql = "SELECT ev.*, 
                        e.first_name, e.surname, e.post,
+                       e.employee_no, e.email, e.cp_number, e.department, e.status as employee_status,
                        CONCAT(e.surname, ', ', e.first_name) as employee_name,
                        vt.name as violation_type_name,
                        vt.category as violation_category
@@ -338,12 +339,51 @@ document.addEventListener('DOMContentLoaded', function() {
             const violation = JSON.parse(this.dataset.violation);
             const violationDate = violation.violation_date ? new Date(violation.violation_date).toLocaleDateString('en-US', {year: 'numeric', month: 'long', day: 'numeric'}) : 'N/A';
             const sanctionDate = violation.sanction_date ? new Date(violation.sanction_date).toLocaleDateString('en-US', {year: 'numeric', month: 'long', day: 'numeric'}) : 'N/A';
+            const employeeNo = violation.employee_no || violation.employee_id || 'N/A';
+            const employeeEmail = violation.email || 'N/A';
+            const employeePhone = violation.cp_number || 'N/A';
+            const employeeDepartment = violation.department || 'N/A';
+            const employeePost = violation.post || violation.employee_post || 'N/A';
+            const employeeStatus = violation.employee_status || 'N/A';
             const content = `
                 <div class="row g-3">
+                    <div class="col-12">
+                        <div class="p-3 border rounded-3 bg-light">
+                            <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+                                <div>
+                                    <div class="text-muted small">Employee</div>
+                                    <div class="fw-semibold">${violation.employee_name || 'Unknown Employee'}</div>
+                                    <div class="text-muted small">${employeePost}</div>
+                                </div>
+                                <div class="text-end">
+                                    <div class="text-muted small">Employee #</div>
+                                    <div class="fw-semibold">${employeeNo}</div>
+                                </div>
+                            </div>
+                            <div class="row g-2 mt-2">
+                                <div class="col-md-4">
+                                    <div class="text-muted small">Department</div>
+                                    <div class="fw-semibold">${employeeDepartment}</div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="text-muted small">Email</div>
+                                    <div class="fw-semibold">${employeeEmail}</div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="text-muted small">Contact</div>
+                                    <div class="fw-semibold">${employeePhone}</div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="text-muted small">Employee Status</div>
+                                    <div class="fw-semibold">${employeeStatus}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     <div class="col-md-6">
                         <strong>Employee:</strong><br>
                         ${violation.employee_name || 'Unknown Employee'}<br>
-                        <small class="text-muted">${violation.post || violation.employee_post || 'N/A'}</small>
+                        <small class="text-muted">${employeePost}</small>
                     </div>
                     <div class="col-md-6">
                         <strong>Violation Date:</strong><br>
