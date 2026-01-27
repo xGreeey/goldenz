@@ -18,6 +18,24 @@ header('X-XSS-Protection: 1; mode=block');
 
 // Handle logout
 if (isset($_GET['logout'])) {
+    // Clear remember token from database if user is logged in
+    if (isset($_SESSION['user_id'])) {
+        try {
+            require_once __DIR__ . '/../includes/database.php';
+            $pdo = get_db_connection();
+            $clear_sql = "UPDATE users SET remember_token = NULL WHERE id = ?";
+            $clear_stmt = $pdo->prepare($clear_sql);
+            $clear_stmt->execute([$_SESSION['user_id']]);
+        } catch (Exception $e) {
+            error_log('Error clearing remember token on logout: ' . $e->getMessage());
+        }
+    }
+    
+    // Clear remember token cookie
+    if (isset($_COOKIE['remember_token'])) {
+        setcookie('remember_token', '', time() - 3600, '/');
+    }
+    
     // Clear all session data
     $_SESSION = [];
     
@@ -956,8 +974,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         exit;
     }
     
-    // Default: invalid action (but skip for profile page non-AJAX requests)
-    $allowPageToHandle = !$isAjax && $page === 'profile' && $action === 'update_profile';
+    // Default: invalid action (but skip for certain pages that handle their own actions)
+    $pageHandledActions = [
+        'profile' => ['update_profile'],
+        'add_post' => ['create'],
+        'edit_post' => ['update'],
+        'post_assignments' => ['assign', 'remove']
+    ];
+    
+    $allowPageToHandle = !$isAjax && 
+                         isset($pageHandledActions[$page]) && 
+                         in_array($action, $pageHandledActions[$page]);
     
     if (!$allowPageToHandle) {
         echo json_encode(['success' => false, 'message' => 'Invalid action']);

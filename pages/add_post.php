@@ -16,55 +16,118 @@ if (isset($_SESSION['post_created_success']) && $_SESSION['post_created_success'
 // Handle form submission
 if ($_POST['action'] ?? '' === 'create') {
     $post_data = [
-        'post_title' => $_POST['post_title'] ?? '',
-        'post_code' => $_POST['post_code'] ?? '',
-        'department' => $_POST['department'] ?? '',
-        'employee_type' => $_POST['employee_type'] ?? '',
-        'location' => $_POST['location'] ?? '',
-        'description' => $_POST['description'] ?? '',
-        'requirements' => $_POST['requirements'] ?? '',
-        'responsibilities' => $_POST['responsibilities'] ?? '',
+        'post_title' => trim($_POST['post_title'] ?? ''),
+        'post_code' => !empty($_POST['post_code']) ? trim($_POST['post_code']) : null,
+        'department' => !empty($_POST['department']) ? trim($_POST['department']) : null,
+        'employee_type' => trim($_POST['employee_type'] ?? ''),
+        'location' => trim($_POST['location'] ?? ''),
+        'description' => !empty($_POST['description']) ? trim($_POST['description']) : null,
+        'requirements' => !empty($_POST['requirements']) ? trim($_POST['requirements']) : null,
+        'responsibilities' => !empty($_POST['responsibilities']) ? trim($_POST['responsibilities']) : null,
         'required_count' => (int)($_POST['required_count'] ?? 1),
-        'priority' => $_POST['priority'] ?? 'Medium',
-        'status' => $_POST['status'] ?? 'Active',
-        'shift_type' => $_POST['shift_type'] ?? 'Day',
-        'work_hours' => $_POST['work_hours'] ?? '8 hours',
-        'salary_range' => $_POST['salary_range'] ?? '',
-        'benefits' => $_POST['benefits'] ?? '',
-        'reporting_to' => $_POST['reporting_to'] ?? '',
-        'expires_at' => $_POST['expires_at'] ?? null
+        'filled_count' => (int)($_POST['filled_count'] ?? 0),
+        'priority' => in_array($_POST['priority'] ?? 'Medium', ['Low', 'Medium', 'High', 'Urgent']) ? $_POST['priority'] : 'Medium',
+        'status' => in_array($_POST['status'] ?? 'Active', ['Active', 'Inactive', 'Closed']) ? $_POST['status'] : 'Active',
+        'shift_type' => !empty($_POST['shift_type']) ? trim($_POST['shift_type']) : null,
+        'work_hours' => !empty($_POST['work_hours']) ? trim($_POST['work_hours']) : null,
+        'salary_range' => !empty($_POST['salary_range']) ? trim($_POST['salary_range']) : null,
+        'benefits' => !empty($_POST['benefits']) ? trim($_POST['benefits']) : null,
+        'reporting_to' => !empty($_POST['reporting_to']) ? trim($_POST['reporting_to']) : null,
+        'expires_at' => !empty($_POST['expires_at']) ? trim($_POST['expires_at']) : null
     ];
     
-    if (create_post($post_data)) {
-        // Get the newly created post ID if available
-        $pdo = get_db_connection();
-        $new_post_id = $pdo->lastInsertId();
-        
-        // Set success flag and message - show popup instead of redirecting
-        $success_message = 'Post created successfully!';
-        
-        // Store success info in session
-        $_SESSION['post_created_success'] = true;
-        $_SESSION['post_created_message'] = $success_message;
-        $_SESSION['post_created_id'] = $new_post_id;
-        
-        // Build redirect URL using JavaScript since headers may already be sent
-        $current_url = $_SERVER['REQUEST_URI'] ?? '';
-        // Remove existing query parameters and rebuild
-        $base_url = strtok($current_url, '?');
-        if (empty($base_url)) {
-            $base_url = $_SERVER['SCRIPT_NAME'] ?? '/index.php';
-        }
-        $redirect_url = $base_url . '?page=add_post&success=1';
-        
-        // Use JavaScript to redirect (works even if headers are sent)
-        echo '<script>
-            window.location.href = ' . json_encode($redirect_url) . ';
-        </script>';
-        // Stop execution to prevent any further output
-        exit;
+    // Validate required fields before attempting to create
+    $validation_errors = [];
+    if (empty($post_data['post_title'])) {
+        $validation_errors[] = 'Post Title is required.';
+    }
+    if (empty($post_data['employee_type'])) {
+        $validation_errors[] = 'Employee Type is required.';
+    }
+    if (empty($post_data['location'])) {
+        $validation_errors[] = 'Location is required.';
+    }
+    if ($post_data['required_count'] <= 0) {
+        $validation_errors[] = 'Number of positions must be greater than 0.';
+    }
+    if ($post_data['filled_count'] < 0) {
+        $validation_errors[] = 'Filled count cannot be negative.';
+    }
+    if ($post_data['filled_count'] > $post_data['required_count']) {
+        $validation_errors[] = 'Filled count cannot exceed required count.';
+    }
+    
+    if (!empty($validation_errors)) {
+        $error_message = 'Validation errors:\n' . implode('\n', $validation_errors);
+        echo '<script>alert(' . json_encode($error_message) . ');</script>';
     } else {
-        echo '<script>alert("Error creating post. Please try again.");</script>';
+        // Clear any previous error
+        global $last_post_error;
+        $last_post_error = null;
+        
+        if (create_post($post_data)) {
+            // Get the newly created post ID if available
+            $pdo = get_db_connection();
+            $new_post_id = $pdo->lastInsertId();
+            
+            // Set success flag and message - show popup instead of redirecting
+            $success_message = 'Post created successfully!';
+            
+            // Store success info in session
+            $_SESSION['post_created_success'] = true;
+            $_SESSION['post_created_message'] = $success_message;
+            $_SESSION['post_created_id'] = $new_post_id;
+            
+            // Build redirect URL using JavaScript since headers may already be sent
+            $current_url = $_SERVER['REQUEST_URI'] ?? '';
+            // Remove existing query parameters and rebuild
+            $base_url = strtok($current_url, '?');
+            if (empty($base_url)) {
+                $base_url = $_SERVER['SCRIPT_NAME'] ?? '/index.php';
+            }
+            $redirect_url = $base_url . '?page=add_post&success=1';
+            
+            // Use JavaScript to redirect (works even if headers are sent)
+            echo '<script>
+                window.location.href = ' . json_encode($redirect_url) . ';
+            </script>';
+            // Stop execution to prevent any further output
+            exit;
+        } else {
+            // Get detailed error message if available
+            global $last_post_error;
+            $error_message = 'Error creating post.';
+            
+            // Debug: Log what we received
+            error_log("add_post.php: create_post returned false");
+            error_log("add_post.php: last_post_error = " . var_export($last_post_error, true));
+            error_log("add_post.php: POST data = " . print_r($_POST, true));
+            
+            if (!empty($last_post_error)) {
+                // Check for common database errors
+                if (stripos($last_post_error, 'Duplicate entry') !== false) {
+                    if (stripos($last_post_error, 'post_code') !== false) {
+                        $error_message = 'Error: A post with this Post Code already exists. Please use a different Post Code.';
+                    } else {
+                        $error_message = 'Error: Duplicate entry. ' . htmlspecialchars($last_post_error);
+                    }
+                } else if (stripos($last_post_error, 'SQLSTATE') !== false || stripos($last_post_error, 'PDO Error') !== false) {
+                    // Extract the actual error message from PDO error
+                    $error_message = 'Database error: ' . htmlspecialchars($last_post_error);
+                } else if (stripos($last_post_error, 'Invalid') !== false) {
+                    $error_message = htmlspecialchars($last_post_error);
+                } else {
+                    $error_message = 'Error: ' . htmlspecialchars($last_post_error);
+                }
+            } else {
+                $error_message = 'Error creating post. Please check that all required fields are filled correctly and try again. If the problem persists, check the server error logs.';
+            }
+            
+            // Also log to help debug
+            error_log("add_post.php: Final error message - " . $error_message);
+            
+            echo '<script>alert(' . json_encode($error_message) . ');</script>';
+        }
     }
 }
 ?>
@@ -180,17 +243,17 @@ if ($_POST['action'] ?? '' === 'create') {
                                 <div class="form-text">e.g., Security Guard - Main Gate</div>
                             </div>
                             <div class="col-md-6">
-                                <label for="post_code" class="form-label">Post Code *</label>
-                                <input type="text" class="form-control" id="post_code" name="post_code" required>
-                                <div class="form-text">e.g., SG001, LG001, SO001</div>
+                                <label for="post_code" class="form-label">Post Code</label>
+                                <input type="text" class="form-control" id="post_code" name="post_code">
+                                <div class="form-text">e.g., SG001, LG001, SO001 (optional)</div>
                             </div>
                         </div>
 
                         <div class="row mb-4">
                             <div class="col-md-6">
-                                <label for="department" class="form-label">Department *</label>
-                                <select class="form-select" id="department" name="department" required>
-                                    <option value="">Select Department</option>
+                                <label for="department" class="form-label">Department</label>
+                                <select class="form-select" id="department" name="department">
+                                    <option value="">Select Department (Optional)</option>
                                     <option value="Security">Security</option>
                                     <option value="Administration">Administration</option>
                                     <option value="Operations">Operations</option>
@@ -236,12 +299,18 @@ if ($_POST['action'] ?? '' === 'create') {
 
                         <!-- Position Details -->
                         <div class="row mb-4">
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <label for="required_count" class="form-label">Number of Positions Needed *</label>
                                 <input type="number" class="form-control" id="required_count" name="required_count" 
                                        value="1" min="1" required>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
+                                <label for="filled_count" class="form-label">Filled Positions</label>
+                                <input type="number" class="form-control" id="filled_count" name="filled_count" 
+                                       value="0" min="0">
+                                <div class="form-text">Number of positions already filled</div>
+                            </div>
+                            <div class="col-md-3">
                                 <label for="priority" class="form-label">Priority</label>
                                 <select class="form-select" id="priority" name="priority">
                                     <option value="Low">Low</option>
@@ -250,13 +319,12 @@ if ($_POST['action'] ?? '' === 'create') {
                                     <option value="Urgent">Urgent</option>
                                 </select>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <label for="status" class="form-label">Status</label>
                                 <select class="form-select" id="status" name="status">
                                     <option value="Active" selected>Active</option>
                                     <option value="Inactive">Inactive</option>
-                                    <option value="Filled">Filled</option>
-                                    <option value="Suspended">Suspended</option>
+                                    <option value="Closed">Closed</option>
                                 </select>
                             </div>
                         </div>
@@ -265,17 +333,13 @@ if ($_POST['action'] ?? '' === 'create') {
                         <div class="row mb-4">
                             <div class="col-md-6">
                                 <label for="shift_type" class="form-label">Shift Type</label>
-                                <select class="form-select" id="shift_type" name="shift_type">
-                                    <option value="Day">Day</option>
-                                    <option value="Night">Night</option>
-                                    <option value="Rotating">Rotating</option>
-                                    <option value="Flexible">Flexible</option>
-                                </select>
+                                <input type="text" class="form-control" id="shift_type" name="shift_type" 
+                                       placeholder="e.g., Day, Night, Rotating">
                             </div>
                             <div class="col-md-6">
                                 <label for="work_hours" class="form-label">Work Hours</label>
                                 <input type="text" class="form-control" id="work_hours" name="work_hours" 
-                                       value="8 hours" placeholder="e.g., 8 hours, 12 hours">
+                                       placeholder="e.g., 8 hours, 12 hours">
                             </div>
                         </div>
 
@@ -632,7 +696,7 @@ document.getElementById('addPostForm').addEventListener('submit', function(e) {
     // Remove any existing validation states
     this.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
     
-    const requiredFields = ['post_title', 'post_code', 'department', 'employee_type', 'location', 'required_count'];
+    const requiredFields = ['post_title', 'employee_type', 'location', 'required_count'];
     let hasErrors = false;
     const errors = [];
     const firstErrorField = [];
@@ -663,6 +727,29 @@ document.getElementById('addPostForm').addEventListener('submit', function(e) {
             }
         }
     });
+    
+    // Validate filled_count doesn't exceed required_count
+    const requiredCount = parseInt(document.getElementById('required_count').value) || 0;
+    const filledCount = parseInt(document.getElementById('filled_count').value) || 0;
+    const filledCountField = document.getElementById('filled_count');
+    
+    if (filledCount < 0) {
+        filledCountField.classList.add('is-invalid');
+        hasErrors = true;
+        if (firstErrorField.length === 0) {
+            firstErrorField.push(filledCountField);
+        }
+        errors.push('Filled count cannot be negative');
+    } else if (filledCount > requiredCount) {
+        filledCountField.classList.add('is-invalid');
+        hasErrors = true;
+        if (firstErrorField.length === 0) {
+            firstErrorField.push(filledCountField);
+        }
+        errors.push('Filled count cannot exceed required count');
+    } else {
+        filledCountField.classList.remove('is-invalid');
+    }
     
     if (hasErrors) {
         e.preventDefault();
