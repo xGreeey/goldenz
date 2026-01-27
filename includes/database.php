@@ -4456,9 +4456,10 @@ if (!function_exists('send_new_user_credentials_email')) {
                 $user_name = $username;
             }
             
-            // Login URL
-            $login_url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http') . 
-                        '://' . $_SERVER['HTTP_HOST'] . 
+            // Login URL - use improved HTTPS detection
+            require_once __DIR__ . '/paths.php';
+            $scheme = is_https() ? 'https' : 'http';
+            $login_url = $scheme . '://' . $_SERVER['HTTP_HOST'] . 
                         dirname(dirname($_SERVER['PHP_SELF'])) . 
                         '/landing/index.php';
             

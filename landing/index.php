@@ -75,6 +75,24 @@ require_once __DIR__ . '/../includes/database.php';
 
 // Handle logout
 if (isset($_GET['logout']) && $_GET['logout'] == '1') {
+    // Clear remember token from database if user is logged in
+    if (isset($_SESSION['user_id'])) {
+        try {
+            $pdo = get_db_connection();
+            $clear_sql = "UPDATE users SET remember_token = NULL WHERE id = ?";
+            $clear_stmt = $pdo->prepare($clear_sql);
+            $clear_stmt->execute([$_SESSION['user_id']]);
+        } catch (Exception $e) {
+            error_log('Error clearing remember token on logout: ' . $e->getMessage());
+        }
+    }
+    
+    // Clear remember token cookie (this prevents auto-login)
+    // BUT keep remembered_username cookie so username field can be pre-filled
+    if (isset($_COOKIE['remember_token'])) {
+        setcookie('remember_token', '', time() - 3600, '/');
+    }
+    
     session_unset();
     session_destroy();
     // Clear session cookie
@@ -237,6 +255,117 @@ unset($_SESSION['login_status_error']);
 unset($_SESSION['login_status_message']);
 
 $show_password_change_modal = isset($_SESSION['require_password_change']) && $_SESSION['require_password_change'];
+
+/**
+ * REMEMBER ME TOKEN CHECK
+ * Check for remember token cookie and auto-login if valid
+ * This runs before POST handling to restore sessions from remember tokens
+ */
+if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
+    if (isset($_COOKIE['remember_token']) && !empty($_COOKIE['remember_token'])) {
+        try {
+            $pdo = get_db_connection();
+            $token_data = $_COOKIE['remember_token'];
+            
+            // Token format: user_id|token (for optimization) or just token (backward compatibility)
+            $token_parts = explode('|', $token_data, 2);
+            $user_id = null;
+            $token = $token_data;
+            
+            if (count($token_parts) === 2 && is_numeric($token_parts[0])) {
+                // New format: user_id|token
+                $user_id = (int)$token_parts[0];
+                $token = $token_parts[1];
+            }
+            
+            if ($user_id) {
+                // Optimized: Lookup by user_id first
+                $sql = "SELECT id, username, password_hash, name, role, status, employee_id, department, 
+                               remember_token, failed_login_attempts, locked_until, password_changed_at,
+                               two_factor_enabled, two_factor_secret
+                        FROM users 
+                        WHERE id = ? 
+                        AND remember_token IS NOT NULL 
+                        AND remember_token != ''";
+                
+                $stmt = $pdo->prepare($sql);
+                $stmt->execute([$user_id]);
+                $user = $stmt->fetch(PDO::FETCH_ASSOC);
+                
+                if ($user && password_verify($token, $user['remember_token'])) {
+                    // Token verified - proceed with login
+                    $token_valid = true;
+                } else {
+                    $token_valid = false;
+                }
+            } else {
+                // Fallback: Check all users (for backward compatibility with old tokens)
+                $sql = "SELECT id, username, password_hash, name, role, status, employee_id, department, 
+                               remember_token, failed_login_attempts, locked_until, password_changed_at,
+                               two_factor_enabled, two_factor_secret
+                        FROM users 
+                        WHERE remember_token IS NOT NULL 
+                        AND remember_token != ''";
+                
+                $stmt = $pdo->prepare($sql);
+                $stmt->execute();
+                $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                
+                $user = null;
+                $token_valid = false;
+                foreach ($users as $u) {
+                    if (password_verify($token, $u['remember_token'])) {
+                        $user = $u;
+                        $token_valid = true;
+                        break;
+                    }
+                }
+            }
+            
+            if ($token_valid && $user) {
+                // Check user status
+                if ($user['status'] === 'inactive' || $user['status'] === 'suspended') {
+                    // Invalid status - clear remember token
+                    $clear_sql = "UPDATE users SET remember_token = NULL WHERE id = ?";
+                    $clear_stmt = $pdo->prepare($clear_sql);
+                    $clear_stmt->execute([$user['id']]);
+                    setcookie('remember_token', '', time() - 3600, '/');
+                } elseif (!empty($user['locked_until']) && strtotime($user['locked_until']) > time()) {
+                    // Account is locked - don't auto-login
+                    // Token remains valid for when account is unlocked
+                } else {
+                    // Valid token - restore session
+                    $_SESSION['user_id'] = $user['id'];
+                    $_SESSION['user_role'] = $user['role'];
+                    $_SESSION['logged_in'] = true;
+                    $_SESSION['username'] = $user['username'];
+                    $_SESSION['name'] = $user['name'];
+                    $_SESSION['employee_id'] = $user['employee_id'] ?? null;
+                    $_SESSION['department'] = $user['department'] ?? null;
+                    
+                    // Update last login
+                    $update_sql = "UPDATE users SET last_login = NOW(), last_login_ip = ? WHERE id = ?";
+                    $update_stmt = $pdo->prepare($update_sql);
+                    $update_stmt->execute([$_SERVER['REMOTE_ADDR'] ?? null, $user['id']]);
+                    
+                    // Redirect based on role
+                    if ($user['role'] === 'super_admin') {
+                        header('Location: /super-admin/dashboard');
+                        exit;
+                    } elseif ($user['role'] === 'developer') {
+                        header('Location: /developer/dashboard');
+                        exit;
+                    } else {
+                        header('Location: /hr-admin/dashboard');
+                        exit;
+                    }
+                }
+            }
+        } catch (Exception $e) {
+            error_log('Remember token check error: ' . $e->getMessage());
+        }
+    }
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
     $isAjaxRequest = isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
@@ -435,6 +564,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
                             $_SESSION['department'] = $user['department'] ?? null;
                             
                             $debug_info[] = "Session variables set";
+                            
+                            // Handle "Remember Me" functionality
+                            $remember_me = isset($_POST['remember_me']) && $_POST['remember_me'] == '1';
+                            $cookie_expiry = time() + (7 * 24 * 60 * 60); // 7 days
+                            $is_https = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || 
+                                       (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443);
+                            
+                            if ($remember_me) {
+                                // Generate a secure random token
+                                $remember_token = bin2hex(random_bytes(32)); // 64 character token
+                                
+                                // Hash the token before storing in database
+                                $hashed_token = password_hash($remember_token, PASSWORD_DEFAULT);
+                                
+                                // Store hashed token in database
+                                $token_sql = "UPDATE users SET remember_token = ? WHERE id = ?";
+                                $token_stmt = $pdo->prepare($token_sql);
+                                $token_stmt->execute([$hashed_token, $user['id']]);
+                                
+                                // Set remember token cookie with 7 days expiry
+                                // Format: user_id|token for optimized lookup
+                                $token_cookie_value = $user['id'] . '|' . $remember_token;
+                                setcookie('remember_token', $token_cookie_value, $cookie_expiry, '/', '', $is_https, true);
+                                
+                                // Store username in cookie for convenience (even after logout)
+                                setcookie('remembered_username', $user['username'], $cookie_expiry, '/', '', $is_https, false);
+                                
+                                $debug_info[] = "Remember me token set for 7 days";
+                            } else {
+                                // Clear any existing remember token if user didn't check remember me
+                                $clear_sql = "UPDATE users SET remember_token = NULL WHERE id = ?";
+                                $clear_stmt = $pdo->prepare($clear_sql);
+                                $clear_stmt->execute([$user['id']]);
+                                
+                                // Clear remember token cookie if it exists
+                                if (isset($_COOKIE['remember_token'])) {
+                                    setcookie('remember_token', '', time() - 3600, '/');
+                                }
+                                
+                                // Clear remembered username cookie
+                                if (isset($_COOKIE['remembered_username'])) {
+                                    setcookie('remembered_username', '', time() - 3600, '/');
+                                }
+                            }
                             
                             // Redirect based on role (Role-Based Dashboard Access)
                             if ($user['role'] === 'super_admin') {
@@ -1131,7 +1304,13 @@ ob_end_flush();
                                    aria-required="true"
                                    aria-describedby="username-error"
                                    data-validation-message="Enter a valid username"
-                                   value="<?php echo isset($_POST['username']) ? htmlspecialchars(trim($_POST['username'])) : ''; ?>">
+                                   value="<?php 
+                                       if (isset($_POST['username'])) {
+                                           echo htmlspecialchars(trim($_POST['username']));
+                                       } elseif (isset($_COOKIE['remembered_username'])) {
+                                           echo htmlspecialchars(trim($_COOKIE['remembered_username']));
+                                       }
+                                   ?>">
                             <div class="invalid-feedback" id="username-error" role="alert"></div>
                         </div>
                     </div>
