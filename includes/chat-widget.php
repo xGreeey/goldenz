@@ -762,6 +762,13 @@ if (!$current_user_id) {
     word-wrap: break-word;
     line-height: 1.5;
     font-size: 14px;
+    /* Emoji-compatible font stack for proper rendering */
+    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", "Android Emoji", "EmojiSymbols", "EmojiOne Mozilla", "Twemoji Mozilla", "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+    font-feature-settings: "liga" 1, "calt" 1;
+    text-rendering: optimizeLegibility;
+    font-variant-emoji: emoji;
+    vertical-align: baseline;
+    overflow: visible;
 }
 
 .chat-message.sent .chat-message-bubble {
@@ -922,6 +929,11 @@ if (!$current_user_id) {
     border-radius: 20px;
     padding: 10px 16px;
     font-size: 14px;
+    /* Emoji-compatible font stack for input */
+    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", "Android Emoji", "EmojiSymbols", "EmojiOne Mozilla", "Twemoji Mozilla", "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+    font-feature-settings: "liga" 1, "calt" 1;
+    text-rendering: optimizeLegibility;
+    font-variant-emoji: emoji;
     color: #0f172a;
     resize: none;
     max-height: 120px;

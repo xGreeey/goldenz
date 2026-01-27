@@ -144,11 +144,38 @@
             }
         });
 
-        // Emoji picker
-        elements.emojiBtn?.addEventListener('click', function(e) {
-            e.preventDefault();
-            toggleEmojiPicker();
-        });
+        // Emoji picker - use event delegation in case element is not found initially
+        const emojiBtn = elements.emojiBtn || document.getElementById('chatEmojiBtn');
+        if (emojiBtn) {
+            emojiBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                // Toggle the picker - this runs first
+                toggleEmojiPicker();
+            }, false); // Use bubble phase (default)
+        } else {
+            console.warn('Emoji button not found during initialization - will retry when input container is shown');
+            // Retry when input container becomes visible
+            const observer = new MutationObserver(function(mutations) {
+                const inputContainer = document.getElementById('chatInputContainer');
+                if (inputContainer && inputContainer.style.display !== 'none') {
+                    const btn = document.getElementById('chatEmojiBtn');
+                    if (btn && !btn.hasAttribute('data-emoji-listener')) {
+                        btn.setAttribute('data-emoji-listener', 'true');
+                        btn.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            toggleEmojiPicker();
+                        }, false);
+                        observer.disconnect();
+                    }
+                }
+            });
+            const inputContainer = document.getElementById('chatInputContainer');
+            if (inputContainer) {
+                observer.observe(inputContainer, { attributes: true, attributeFilter: ['style'] });
+            }
+        }
 
         // Photo upload
         elements.attachPhotoBtn?.addEventListener('click', function(e) {
@@ -177,14 +204,26 @@
         });
 
         // Close emoji picker when clicking outside
+        // Use a small delay to let button click handler run first
         document.addEventListener('click', function(e) {
-            if (state.isEmojiPickerOpen && 
-                elements.emojiPicker && 
-                !elements.emojiPicker.contains(e.target) && 
-                !elements.emojiBtn?.contains(e.target)) {
-                closeEmojiPicker();
-            }
-        });
+            // Use setTimeout to let button handler run first
+            setTimeout(function() {
+                // Check if click was on emoji button or inside picker
+                const clickedEmojiBtn = e.target.closest('#chatEmojiBtn');
+                const clickedInsidePicker = elements.emojiPicker && elements.emojiPicker.contains(e.target);
+                
+                // Don't close if clicking on emoji button or inside picker
+                if (clickedEmojiBtn || clickedInsidePicker) {
+                    return;
+                }
+                
+                // Close if picker is open and click is outside
+                const emojiPicker = elements.emojiPicker || document.getElementById('chatEmojiPicker');
+                if (emojiPicker && emojiPicker.style.display !== 'none') {
+                    closeEmojiPicker();
+                }
+            }, 0);
+        }, false); // Use bubble phase
 
         // Tabs: All / Pinned
         document.querySelectorAll('.chat-list-tab').forEach(tab => {
@@ -678,13 +717,15 @@
             const formData = new FormData();
             
             if (hasPhoto) {
-                formData.append('action', 'send_message');
+                // Use upload_photo action for photo uploads
+                formData.append('action', 'upload_photo');
                 formData.append('receiver_id', state.selectedUserId);
                 formData.append('photo', state.photoFile);
                 if (message) {
                     formData.append('caption', message);
                 }
             } else {
+                // Use send_message action for text messages
                 formData.append('action', 'send_message');
                 formData.append('receiver_id', state.selectedUserId);
                 formData.append('message', message);
@@ -696,9 +737,26 @@
                 body: formData
             });
 
-            const data = await response.json();
+            // Parse response
+            let data;
+            try {
+                const responseText = await response.text();
+                data = JSON.parse(responseText);
+            } catch (e) {
+                throw new Error('Invalid response from server');
+            }
 
-            if (data.success && data.message) {
+            // Check for errors in response
+            if (!data.success) {
+                throw new Error(data.error || 'Failed to send message');
+            }
+
+            // Check if response is ok (HTTP status)
+            if (!response.ok) {
+                throw new Error(data.error || `Server error: ${response.status} ${response.statusText}`);
+            }
+
+            if (data.message) {
                 // Add message to state
                 state.messages.push(data.message);
                 state.lastMessageId = data.message.id;
@@ -729,7 +787,8 @@
             }
         } catch (error) {
             console.error('Error sending message:', error);
-            alert('Failed to send message. Please try again.');
+            const errorMessage = error.message || 'Failed to send message. Please try again.';
+            alert(errorMessage);
         } finally {
             // Re-enable input
             if (elements.messageInput) elements.messageInput.disabled = false;
@@ -954,6 +1013,8 @@
     }
 
     function escapeHtml(text) {
+        // Use textContent to preserve Unicode characters including emojis
+        // textContent automatically escapes HTML but preserves emoji Unicode sequences
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
@@ -999,50 +1060,135 @@
     // ============================================
 
     function renderEmojiPicker() {
-        if (!elements.emojiGrid) return;
+        const emojiGrid = elements.emojiGrid || document.getElementById('chatEmojiGrid');
+        if (!emojiGrid) {
+            console.error('Emoji grid element not found');
+            return;
+        }
         
-        const html = EMOJIS.map(emoji => `
-            <button class="chat-emoji-item" type="button" data-emoji="${emoji}">
-                ${emoji}
-            </button>
-        `).join('');
+        // Update reference
+        if (!elements.emojiGrid) {
+            elements.emojiGrid = emojiGrid;
+        }
         
-        elements.emojiGrid.innerHTML = html;
+        // Create buttons with emojis - use proper HTML encoding
+        const html = EMOJIS.map(emoji => {
+            // Escape emoji for HTML attribute using encodeURIComponent or direct Unicode
+            // For data attributes, we can use the emoji directly in quotes
+            return `<button class="chat-emoji-item" type="button" data-emoji="${emoji}">${emoji}</button>`;
+        }).join('');
+        
+        emojiGrid.innerHTML = html;
+        
+        // Debug: Check if HTML was set
+        console.log('Emoji picker rendered:', emojiGrid.children.length, 'emojis');
         
         // Attach click handlers
-        elements.emojiGrid.querySelectorAll('.chat-emoji-item').forEach(btn => {
-            btn.addEventListener('click', function() {
-                insertEmoji(this.dataset.emoji);
+        emojiGrid.querySelectorAll('.chat-emoji-item').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                const emoji = this.dataset.emoji || this.textContent.trim();
+                if (emoji) {
+                    insertEmoji(emoji);
+                }
             });
         });
     }
 
     function toggleEmojiPicker() {
-        if (!elements.emojiPicker) return;
+        // Re-query elements in case they weren't found during initialization
+        const emojiPicker = elements.emojiPicker || document.getElementById('chatEmojiPicker');
+        if (!emojiPicker) {
+            console.error('Emoji picker element not found');
+            return;
+        }
         
-        if (state.isEmojiPickerOpen) {
-            closeEmojiPicker();
+        // Update elements reference
+        if (!elements.emojiPicker) {
+            elements.emojiPicker = emojiPicker;
+        }
+        if (!elements.emojiGrid) {
+            elements.emojiGrid = document.getElementById('chatEmojiGrid');
+        }
+        
+        // Check actual DOM state - most reliable
+        const isCurrentlyVisible = emojiPicker.style.display !== 'none' && 
+                                   emojiPicker.style.display !== '' &&
+                                   window.getComputedStyle(emojiPicker).display !== 'none';
+        
+        // Use DOM state as source of truth, but also check state variable
+        if (isCurrentlyVisible || state.isEmojiPickerOpen) {
+            // Picker is visible, close it
+            state.isEmojiPickerOpen = false;
+            emojiPicker.style.display = 'none';
+            console.log('Emoji picker closed');
         } else {
+            // Picker is hidden, open it
             openEmojiPicker();
         }
     }
 
     function openEmojiPicker() {
-        if (!elements.emojiPicker) return;
+        const emojiPicker = elements.emojiPicker || document.getElementById('chatEmojiPicker');
+        const emojiGrid = elements.emojiGrid || document.getElementById('chatEmojiGrid');
         
-        // Render emojis if not already rendered
-        if (!elements.emojiGrid.innerHTML.trim()) {
-            renderEmojiPicker();
+        if (!emojiPicker) {
+            console.error('Emoji picker element not found');
+            return;
         }
         
+        if (!emojiGrid) {
+            console.error('Emoji grid element not found');
+            return;
+        }
+        
+        // Update elements reference
+        if (!elements.emojiPicker) elements.emojiPicker = emojiPicker;
+        if (!elements.emojiGrid) elements.emojiGrid = emojiGrid;
+        
+        // Always render emojis to ensure they're displayed
+        renderEmojiPicker();
+        
         state.isEmojiPickerOpen = true;
-        elements.emojiPicker.style.display = 'block';
+        emojiPicker.style.display = 'block';
+        
+        // Force a reflow to ensure rendering
+        emojiPicker.offsetHeight;
+        
+        // Debug: Check if emojis are rendered
+        setTimeout(() => {
+            const emojiCount = emojiGrid.querySelectorAll('.chat-emoji-item').length;
+            console.log('Emoji picker opened. Emojis rendered:', emojiCount);
+            if (emojiCount === 0) {
+                console.error('No emojis found in grid! HTML:', emojiGrid.innerHTML.substring(0, 200));
+            }
+        }, 100);
     }
 
     function closeEmojiPicker() {
-        if (!elements.emojiPicker) return;
+        const emojiPicker = elements.emojiPicker || document.getElementById('chatEmojiPicker');
+        if (!emojiPicker) {
+            // Update reference if needed
+            const found = document.getElementById('chatEmojiPicker');
+            if (found) {
+                elements.emojiPicker = found;
+                found.style.display = 'none';
+                state.isEmojiPickerOpen = false;
+            }
+            return;
+        }
+        
+        // Force close - set both state and DOM
         state.isEmojiPickerOpen = false;
-        elements.emojiPicker.style.display = 'none';
+        emojiPicker.style.display = 'none';
+        
+        // Update reference if needed
+        if (!elements.emojiPicker) {
+            elements.emojiPicker = emojiPicker;
+        }
+        
+        console.log('Emoji picker closed via closeEmojiPicker()');
     }
 
     function insertEmoji(emoji) {
@@ -1064,7 +1210,12 @@
         // Trigger input event for auto-resize
         textarea.dispatchEvent(new Event('input'));
         
-        closeEmojiPicker();
+        // Close picker after inserting emoji
+        state.isEmojiPickerOpen = false;
+        const emojiPicker = elements.emojiPicker || document.getElementById('chatEmojiPicker');
+        if (emojiPicker) {
+            emojiPicker.style.display = 'none';
+        }
     }
 
     // ============================================
@@ -1144,6 +1295,26 @@
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', init);
     } else {
+        // DOM already loaded, initialize immediately
         init();
     }
+    
+    // Debug: Log element availability
+    window.addEventListener('load', function() {
+        if (elements.emojiBtn) {
+            console.log('✅ Emoji button found:', elements.emojiBtn);
+        } else {
+            console.error('❌ Emoji button NOT found');
+        }
+        if (elements.emojiPicker) {
+            console.log('✅ Emoji picker found:', elements.emojiPicker);
+        } else {
+            console.error('❌ Emoji picker NOT found');
+        }
+        if (elements.emojiGrid) {
+            console.log('✅ Emoji grid found:', elements.emojiGrid);
+        } else {
+            console.error('❌ Emoji grid NOT found');
+        }
+    });
 })();

@@ -167,16 +167,16 @@ if (!$current_user_id) {
                             Press Enter to send, Shift+Enter for new line
                         </small>
                     </div>
+                    
+                    <!-- Emoji Picker Panel - Positioned relative to input container -->
+                    <div id="chatEmojiPicker" class="chat-emoji-picker" style="display: none;">
+                        <div class="chat-emoji-grid" id="chatEmojiGrid">
+                            <!-- Emojis will be rendered here -->
+                        </div>
+                    </div>
                 </form>
             </div>
         </div>
-
-    <!-- Emoji Picker Panel -->
-    <div id="chatEmojiPicker" class="chat-emoji-picker" style="display: none;">
-        <div class="chat-emoji-grid" id="chatEmojiGrid">
-            <!-- Emojis will be rendered here -->
-        </div>
-    </div>
     
     <!-- Photo Preview Modal -->
     <div id="chatPhotoModal" class="chat-photo-modal" style="display: none;">
@@ -249,6 +249,26 @@ if (!$current_user_id) {
 
 <!-- Chat System Styles -->
 <style>
+/* Global Emoji Support - Ensure proper rendering across all browsers */
+@supports (font-variant-emoji: emoji) {
+    * {
+        font-variant-emoji: emoji;
+    }
+}
+
+/* Emoji fallback font stack for all chat elements */
+.chat-system-container,
+.chat-system-container * {
+    /* Emoji-compatible font stack - system fonts first for best performance */
+    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", "Android Emoji", "EmojiSymbols", "EmojiOne Mozilla", "Twemoji Mozilla", "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* Ensure text inputs preserve emoji rendering */
+input[type="text"],
+textarea {
+    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", "Android Emoji", "EmojiSymbols", "EmojiOne Mozilla", "Twemoji Mozilla", "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+}
+
 /* Modern Chat System Styles */
 .chat-system-container {
     display: flex;
@@ -532,6 +552,11 @@ if (!$current_user_id) {
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 180px;
+    /* Emoji-compatible font stack for message preview */
+    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", "Android Emoji", "EmojiSymbols", "EmojiOne Mozilla", "Twemoji Mozilla", "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+    font-feature-settings: "liga" 1, "calt" 1;
+    text-rendering: optimizeLegibility;
+    font-variant-emoji: emoji;
 }
 
 .chat-user-item.active .chat-user-last-message {
@@ -724,6 +749,27 @@ if (!$current_user_id) {
     white-space: pre-wrap;
     font-size: 0.875rem;
     line-height: 1.5;
+    /* Emoji-compatible font stack for proper rendering */
+    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", "Android Emoji", "EmojiSymbols", "EmojiOne Mozilla", "Twemoji Mozilla", "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+    /* Ensure emojis render correctly */
+    font-feature-settings: "liga" 1, "calt" 1;
+    text-rendering: optimizeLegibility;
+    /* Proper emoji sizing and alignment */
+    font-variant-emoji: emoji;
+}
+
+/* Ensure emojis are properly sized and aligned */
+.chat-message-bubble * {
+    font-family: inherit;
+}
+
+.chat-message-bubble img.emoji,
+.chat-message-bubble .emoji {
+    display: inline-block;
+    vertical-align: baseline;
+    height: 1.2em;
+    width: 1.2em;
+    margin: 0 0.05em;
 }
 
 .chat-message.sent .chat-message-bubble {
@@ -810,7 +856,7 @@ if (!$current_user_id) {
     padding: 0.75rem 1rem;
     background: #ffffff;
     flex-shrink: 0;
-    position: relative;
+    position: relative; /* Required for emoji picker absolute positioning */
     z-index: 10;
     box-shadow: 0 -2px 8px rgba(15, 23, 42, 0.04);
 }
@@ -877,6 +923,11 @@ if (!$current_user_id) {
     font-size: 0.875rem;
     line-height: 1.5;
     transition: all 0.2s ease;
+    /* Emoji-compatible font stack for input */
+    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", "Android Emoji", "EmojiSymbols", "EmojiOne Mozilla", "Twemoji Mozilla", "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+    font-feature-settings: "liga" 1, "calt" 1;
+    text-rendering: optimizeLegibility;
+    font-variant-emoji: emoji;
 }
 
 .chat-message-input:focus {
@@ -1271,39 +1322,87 @@ if (!$current_user_id) {
 
 .chat-emoji-picker {
     position: absolute;
-    bottom: 70px;
-    left: 20px;
+    bottom: calc(100% + 10px);
+    left: 0;
     width: 320px;
     max-height: 300px;
+    min-height: 150px;
     background: white;
     border-radius: 12px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-    z-index: 1000;
-    overflow: hidden;
+    z-index: 1001; /* Higher than input container z-index */
+    overflow: visible; /* Changed from hidden to visible to see emojis */
     border: 1px solid #e2e8f0;
+    /* Ensure picker is visible */
+    visibility: visible !important;
+    opacity: 1 !important;
+    display: block !important;
 }
 
 .chat-emoji-grid {
-    display: grid;
+    display: grid !important;
     grid-template-columns: repeat(8, 1fr);
     gap: 4px;
     padding: 12px;
     max-height: 300px;
     overflow-y: auto;
+    min-height: 100px;
+    /* Ensure grid items are visible */
+    visibility: visible !important;
+    opacity: 1 !important;
+    width: 100%;
+    height: auto;
+}
+
+/* Ensure emoji grid children are visible */
+.chat-emoji-grid > * {
+    visibility: visible !important;
+    opacity: 1 !important;
+    display: flex !important;
+}
+
+/* Ensure emoji buttons contain visible text/emojis */
+.chat-emoji-item {
+    color: #000 !important;
+    font-size: 24px !important;
+}
+
+.chat-emoji-item::before,
+.chat-emoji-item::after {
+    display: none; /* Remove any pseudo-elements that might interfere */
 }
 
 .chat-emoji-item {
     width: 36px;
     height: 36px;
+    min-width: 36px;
+    min-height: 36px;
     border: none;
     background: transparent;
     border-radius: 8px;
     cursor: pointer;
-    display: flex;
+    display: flex !important;
     align-items: center;
     justify-content: center;
-    font-size: 20px;
+    font-size: 24px !important;
+    line-height: 1 !important;
     transition: all 0.2s;
+    padding: 0;
+    margin: 0;
+    /* Emoji-compatible font stack for emoji picker */
+    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", "Android Emoji", "EmojiSymbols", "EmojiOne Mozilla", "Twemoji Mozilla", "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif !important;
+    font-feature-settings: "liga" 1, "calt" 1;
+    text-rendering: optimizeLegibility;
+    font-variant-emoji: emoji;
+    /* Ensure emojis are visible */
+    color: inherit;
+    opacity: 1;
+    visibility: visible;
+    /* Prevent text selection */
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
 }
 
 .chat-emoji-item:hover {
@@ -1591,5 +1690,66 @@ if (!$current_user_id) {
 
 .chat-empty-state i.fa-comments::before {
     content: "\f086" !important;
+}
+
+/* ============================================
+   EMOJI RENDERING ENHANCEMENTS
+   ============================================ */
+
+/* Ensure emojis render with proper baseline alignment */
+.chat-message-bubble,
+.chat-user-last-message,
+.chat-message-input,
+.chat-emoji-item {
+    /* Proper vertical alignment for emojis */
+    vertical-align: baseline;
+    /* Prevent emoji clipping */
+    overflow: visible;
+}
+
+/* Emoji-specific styling for better rendering */
+.chat-message-bubble::before,
+.chat-message-bubble::after {
+    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", "Android Emoji", "EmojiSymbols", "EmojiOne Mozilla", "Twemoji Mozilla", "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* Ensure emojis don't break layout */
+.chat-message-bubble,
+.chat-user-last-message {
+    word-break: break-word;
+    overflow-wrap: break-word;
+    /* Allow emojis to display fully */
+    min-height: 1.5em;
+}
+
+/* Better emoji rendering in different contexts */
+.chat-message-bubble emoji,
+.chat-user-last-message emoji,
+.chat-message-input emoji {
+    display: inline-block;
+    vertical-align: middle;
+    line-height: 1;
+    font-size: 1em;
+}
+
+/* Cross-browser emoji rendering fixes */
+@supports (-webkit-appearance: none) {
+    /* WebKit/Blink browsers */
+    .chat-message-bubble,
+    .chat-user-last-message,
+    .chat-message-input {
+        -webkit-font-feature-settings: "liga" 1, "calt" 1;
+        -webkit-font-smoothing: antialiased;
+    }
+}
+
+@supports (-moz-appearance: none) {
+    /* Firefox */
+    .chat-message-bubble,
+    .chat-user-last-message,
+    .chat-message-input {
+        -moz-font-feature-settings: "liga" 1, "calt" 1;
+        -moz-osx-font-smoothing: grayscale;
+    }
 }
 </style>
