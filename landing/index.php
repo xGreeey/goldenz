@@ -1168,7 +1168,7 @@ ob_end_flush();
                         <div class="form-check remember-me">
                             <input class="form-check-input" type="checkbox" id="rememberMe" name="remember_me" value="1">
                             <label class="form-check-label" for="rememberMe">
-                                Remember credentials
+                                Remember me
                             </label>
                         </div>
                         <a href="forgot-password.php" class="forgot-password-link" id="resetPasswordLink">
