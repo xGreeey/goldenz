@@ -1269,6 +1269,17 @@ foreach ($violation_history as $history) {
     }
 }
 
+/* Smooth filter transitions (table rows) */
+.violation-table tbody tr {
+    transition: opacity 160ms ease, transform 160ms ease;
+    will-change: opacity, transform;
+}
+
+.violation-table tbody tr.is-filter-hidden {
+    opacity: 0;
+    transform: translateY(-2px);
+}
+
 .violation-table {
     width: 100%;
     min-width: 800px;
@@ -1742,8 +1753,44 @@ document.addEventListener('DOMContentLoaded', function() {
     const resetBtn = document.getElementById('filter-reset-btn');
     const searchClearBtn = document.getElementById('search-clear-btn');
     const violationCount = document.getElementById('violation-count');
+    const filterForm = document.getElementById('violation-types-filter-form');
     
     let searchTimeout;
+
+    // Prevent Enter key / form submit from causing a page jump/reload
+    if (filterForm) {
+        filterForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+        });
+    }
+
+    function hideRowSmooth(row) {
+        if (!row) return;
+        if (row.style.display === 'none') return;
+        // Fade out, then remove from layout
+        row.classList.add('is-filter-hidden');
+        window.setTimeout(() => {
+            // Only hide if still intended to be hidden
+            if (row.classList.contains('is-filter-hidden')) {
+                row.style.display = 'none';
+            }
+        }, 170);
+    }
+
+    function showRowSmooth(row) {
+        if (!row) return;
+        if (row.style.display === '') {
+            // ensure visible state
+            row.classList.remove('is-filter-hidden');
+            return;
+        }
+        row.style.display = '';
+        // Start hidden then fade in next frame
+        row.classList.add('is-filter-hidden');
+        requestAnimationFrame(() => {
+            row.classList.remove('is-filter-hidden');
+        });
+    }
 
     function filterViolations() {
         const searchFilter = filterSearch ? filterSearch.value.toLowerCase().trim() : '';
@@ -1799,14 +1846,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 const matchesCategory = !categoryFilter || category === categoryFilter;
                 
                 if (matchesSearch && matchesCategory) {
-                    row.style.display = '';
+                    showRowSmooth(row);
                     tabVisibleCount++;
                     // Only count if tab is visible
                     if (isTabVisible) {
                         totalVisibleCount++;
                     }
                 } else {
-                    row.style.display = 'none';
+                    hideRowSmooth(row);
                 }
             });
             
