@@ -28,7 +28,9 @@ function getPageTitle($page) {
         'settings' => 'System Settings',
         'profile' => 'My Profile',
         'tasks' => 'Tasks',
-        'help' => 'Help & Support'
+        'help' => 'Help & Support',
+        'chat' => 'Messages',
+        'feed' => 'Feed'
     ];
 
     return $titles[$page] ?? 'Dashboard';
@@ -511,6 +513,12 @@ function isNavLinkActive($linkPage, $currentPage, $fromHeader = false) {
                     break;
                 case 'post_assignments':
                     include $pages_path . 'post_assignments.php';
+                    break;
+                case 'chat':
+                    include $pages_path . 'chat.php';
+                    break;
+                case 'feed':
+                    include $pages_path . 'feed.php';
                     break;
                 default:
                     include $pages_path . 'dashboard.php';

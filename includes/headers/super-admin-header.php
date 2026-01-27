@@ -28,7 +28,9 @@ function getPageTitle($page) {
         'help' => 'Help & Support',
         'users' => 'User Management',
         'system_logs' => 'System Logs',
-        'audit_trail' => 'Audit Trail'
+        'audit_trail' => 'Audit Trail',
+        'chat' => 'Messages',
+        'feed' => 'Feed'
     ];
     
     return $titles[$page] ?? 'Dashboard';
@@ -303,6 +305,26 @@ $activeSection = getActiveSection($page);
                     ?>
                 </a>
             </li>
+            
+            <!-- Messages Section -->
+            <li class="nav-item">
+                <a href="?page=chat" 
+                   class="nav-link <?php echo ($page === 'chat') ? 'active' : ''; ?>"
+                   data-page="chat">
+                    <i class="fas fa-comments" aria-hidden="true"></i>
+                    <span>Messages</span>
+                </a>
+            </li>
+            
+            <!-- Feed Section -->
+            <li class="nav-item">
+                <a href="?page=feed" 
+                   class="nav-link <?php echo ($page === 'feed') ? 'active' : ''; ?>"
+                   data-page="feed">
+                    <i class="fas fa-rss" aria-hidden="true"></i>
+                    <span>Feed</span>
+                </a>
+            </li>
         </ul>
     </nav>
     
@@ -405,6 +427,12 @@ $activeSection = getActiveSection($page);
                     break;
                 case 'audit_trail':
                     include $pages_path . 'audit_trail.php';
+                    break;
+                case 'chat':
+                    include $pages_path . 'chat.php';
+                    break;
+                case 'feed':
+                    include $pages_path . 'feed.php';
                     break;
                 default:
                     include $pages_path . 'dashboard.php';
