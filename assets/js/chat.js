@@ -13,6 +13,26 @@
     const TYPING_TIMEOUT = config.typingTimeout || 5000;
     const CURRENT_USER_ID = config.currentUserId;
 
+    // Emoji list (most commonly used emojis)
+    const EMOJIS = [
+        '😀', '😃', '😄', '😁', '😆', '😅', '🤣', '😂',
+        '🙂', '🙃', '😉', '😊', '😇', '🥰', '😍', '🤩',
+        '😘', '😗', '😚', '😙', '😋', '😛', '😜', '🤪',
+        '😝', '🤑', '🤗', '🤭', '🤫', '🤔', '🤐', '🤨',
+        '😐', '😑', '😶', '😏', '😒', '🙄', '😬', '🤥',
+        '😌', '😔', '😪', '🤤', '😴', '😷', '🤒', '🤕',
+        '🤢', '🤮', '🤧', '🥵', '🥶', '😵', '🤯', '🤠',
+        '🥳', '😎', '🤓', '🧐', '😕', '😟', '🙁', '☹️',
+        '😮', '😯', '😲', '😳', '🥺', '😦', '😧', '😨',
+        '😰', '😥', '😢', '😭', '😱', '😖', '😣', '😞',
+        '😓', '😩', '😫', '🥱', '😤', '😡', '😠', '🤬',
+        '👍', '👎', '👌', '✌️', '🤞', '🤟', '🤘', '🤙',
+        '👏', '🙌', '👐', '🤲', '🙏', '✍️', '💪', '🦾',
+        '❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍',
+        '💯', '💢', '💥', '💫', '💦', '💨', '🕳️', '💬',
+        '👁️', '🗨️', '🗯️', '💭', '💤', '👋', '🤚', '✋'
+    ];
+
     // State
     const state = {
         selectedUserId: null,
@@ -25,7 +45,10 @@
         pollTimer: null,
         typingTimer: null,
         isTyping: false,
-        scrolledToBottom: true
+        scrolledToBottom: true,
+        photoFile: null,
+        photoPreviewUrl: null,
+        isEmojiPickerOpen: false
     };
 
     // DOM Elements
@@ -52,7 +75,19 @@
         infoAvatar: document.getElementById('chatInfoAvatar'),
         infoName: document.getElementById('chatInfoName'),
         infoSub: document.getElementById('chatInfoSub'),
-        infoMembers: document.getElementById('chatInfoMembers')
+        infoMembers: document.getElementById('chatInfoMembers'),
+        // Emoji and photo elements
+        emojiBtn: document.getElementById('chatEmojiBtn'),
+        emojiPicker: document.getElementById('chatEmojiPicker'),
+        emojiGrid: document.getElementById('chatEmojiGrid'),
+        attachPhotoBtn: document.getElementById('chatAttachPhotoBtn'),
+        photoInput: document.getElementById('chatPhotoInput'),
+        photoPreview: document.getElementById('chatPhotoPreview'),
+        photoPreviewImg: document.getElementById('chatPhotoPreviewImg'),
+        photoPreviewRemove: document.getElementById('chatPhotoPreviewRemove'),
+        photoModal: document.getElementById('chatPhotoModal'),
+        photoModalImg: document.getElementById('chatPhotoModalImg'),
+        photoModalClose: document.getElementById('chatPhotoModalClose')
     };
 
     // Initialize
@@ -106,6 +141,48 @@
         elements.refreshMessagesBtn?.addEventListener('click', function() {
             if (state.selectedUserId) {
                 loadMessages(state.selectedUserId, true);
+            }
+        });
+
+        // Emoji picker
+        elements.emojiBtn?.addEventListener('click', function(e) {
+            e.preventDefault();
+            toggleEmojiPicker();
+        });
+
+        // Photo upload
+        elements.attachPhotoBtn?.addEventListener('click', function(e) {
+            e.preventDefault();
+            elements.photoInput?.click();
+        });
+
+        elements.photoInput?.addEventListener('change', function(e) {
+            handlePhotoSelect(e.target.files[0]);
+        });
+
+        elements.photoPreviewRemove?.addEventListener('click', function(e) {
+            e.preventDefault();
+            removePhotoPreview();
+        });
+
+        // Photo modal
+        elements.photoModalClose?.addEventListener('click', function() {
+            closePhotoModal();
+        });
+
+        elements.photoModal?.addEventListener('click', function(e) {
+            if (e.target.classList.contains('chat-photo-modal-overlay')) {
+                closePhotoModal();
+            }
+        });
+
+        // Close emoji picker when clicking outside
+        document.addEventListener('click', function(e) {
+            if (state.isEmojiPickerOpen && 
+                elements.emojiPicker && 
+                !elements.emojiPicker.contains(e.target) && 
+                !elements.emojiBtn?.contains(e.target)) {
+                closeEmojiPicker();
             }
         });
 
@@ -346,6 +423,15 @@
         state.messages = [];
         state.lastMessageId = 0;
 
+        // Hide typing indicator when switching users
+        if (elements.typingIndicator) {
+            elements.typingIndicator.style.display = 'none';
+        }
+
+        // Clear photo preview when switching users
+        removePhotoPreview();
+        closeEmojiPicker();
+
         // Update UI
         updateActiveUser();
         showChatInterface();
@@ -538,13 +624,31 @@
             ? '<span class="chat-message-status" title="Sent"><i class="fas fa-check"></i></span>'
             : '';
 
+        // Handle attachments
+        let attachmentHTML = '';
+        if (msg.attachment_path && msg.attachment_type === 'image') {
+            const attachmentUrl = msg.attachment_path.startsWith('http') 
+                ? msg.attachment_path 
+                : '/' + msg.attachment_path;
+            attachmentHTML = `
+                <div class="chat-message-attachment" onclick="window.chatSystem?.openPhotoModal('${attachmentUrl}')">
+                    <img src="${attachmentUrl}" alt="Attachment" onerror="this.style.display='none';">
+                </div>
+            `;
+        }
+
+        const messageText = msg.message !== '[Photo]' && msg.message 
+            ? `<div class="chat-message-bubble">${escapeHtml(msg.message).replace(/\n/g, '<br>')}</div>` 
+            : '';
+
         return `
             <div class="chat-message ${messageClass}" data-message-id="${msg.id}">
                 <div class="chat-message-avatar">
                     ${avatarUrl ? `<img src="${avatarUrl}" alt="${escapeHtml(msg.sender_name)}">` : initials}
                 </div>
                 <div class="chat-message-content">
-                    <div class="chat-message-bubble">${escapeHtml(msg.message)}</div>
+                    ${attachmentHTML}
+                    ${messageText}
                     <div class="chat-message-meta">
                         <span class="chat-message-time">${timestamp}</span>
                         ${readStatus}
@@ -558,18 +662,33 @@
     async function sendMessage() {
         if (!state.selectedUserId) return;
 
-        const message = elements.messageInput?.value.trim();
-        if (!message) return;
+        const message = elements.messageInput?.value.trim() || '';
+        const hasPhoto = state.photoFile !== null;
+
+        // Must have either message or photo
+        if (!message && !hasPhoto) return;
 
         // Disable input while sending
         if (elements.messageInput) elements.messageInput.disabled = true;
         if (elements.sendBtn) elements.sendBtn.disabled = true;
+        if (elements.emojiBtn) elements.emojiBtn.disabled = true;
+        if (elements.attachPhotoBtn) elements.attachPhotoBtn.disabled = true;
 
         try {
             const formData = new FormData();
-            formData.append('action', 'send_message');
-            formData.append('receiver_id', state.selectedUserId);
-            formData.append('message', message);
+            
+            if (hasPhoto) {
+                formData.append('action', 'send_message');
+                formData.append('receiver_id', state.selectedUserId);
+                formData.append('photo', state.photoFile);
+                if (message) {
+                    formData.append('caption', message);
+                }
+            } else {
+                formData.append('action', 'send_message');
+                formData.append('receiver_id', state.selectedUserId);
+                formData.append('message', message);
+            }
 
             const response = await fetch(API_ENDPOINT, {
                 method: 'POST',
@@ -587,10 +706,14 @@
                 // Append message to UI
                 appendMessage(data.message);
 
-                // Clear input
+                // Clear input and photo preview
                 if (elements.messageInput) {
                     elements.messageInput.value = '';
                     autoResizeTextarea(elements.messageInput);
+                }
+                
+                if (hasPhoto) {
+                    removePhotoPreview();
                 }
 
                 // Scroll to bottom
@@ -611,6 +734,8 @@
             // Re-enable input
             if (elements.messageInput) elements.messageInput.disabled = false;
             if (elements.sendBtn) elements.sendBtn.disabled = false;
+            if (elements.emojiBtn) elements.emojiBtn.disabled = false;
+            if (elements.attachPhotoBtn) elements.attachPhotoBtn.disabled = false;
             if (elements.messageInput) elements.messageInput.focus();
         }
     }
@@ -649,6 +774,7 @@
             // Poll for new messages if user selected
             if (state.selectedUserId) {
                 pollNewMessages();
+                pollTypingStatus();
             } else {
                 // Only refresh user list when no chat is open
                 // (to catch new conversations from other users)
@@ -791,6 +917,32 @@
         }
     }
 
+    // Poll Typing Status
+    async function pollTypingStatus() {
+        if (!state.selectedUserId || !elements.typingIndicator) return;
+
+        try {
+            const url = `${API_ENDPOINT}?action=get_typing_status&user_id=${state.selectedUserId}`;
+            
+            const response = await fetch(url, {
+                method: 'GET',
+                credentials: 'same-origin'
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                if (data.is_typing) {
+                    elements.typingIndicator.style.display = 'flex';
+                } else {
+                    elements.typingIndicator.style.display = 'none';
+                }
+            }
+        } catch (error) {
+            console.error('Error polling typing status:', error);
+        }
+    }
+
     // Utility Functions
     function getInitials(name) {
         if (!name) return '?';
@@ -841,6 +993,146 @@
             timeout = setTimeout(later, wait);
         };
     }
+
+    // ============================================
+    // EMOJI PICKER
+    // ============================================
+
+    function renderEmojiPicker() {
+        if (!elements.emojiGrid) return;
+        
+        const html = EMOJIS.map(emoji => `
+            <button class="chat-emoji-item" type="button" data-emoji="${emoji}">
+                ${emoji}
+            </button>
+        `).join('');
+        
+        elements.emojiGrid.innerHTML = html;
+        
+        // Attach click handlers
+        elements.emojiGrid.querySelectorAll('.chat-emoji-item').forEach(btn => {
+            btn.addEventListener('click', function() {
+                insertEmoji(this.dataset.emoji);
+            });
+        });
+    }
+
+    function toggleEmojiPicker() {
+        if (!elements.emojiPicker) return;
+        
+        if (state.isEmojiPickerOpen) {
+            closeEmojiPicker();
+        } else {
+            openEmojiPicker();
+        }
+    }
+
+    function openEmojiPicker() {
+        if (!elements.emojiPicker) return;
+        
+        // Render emojis if not already rendered
+        if (!elements.emojiGrid.innerHTML.trim()) {
+            renderEmojiPicker();
+        }
+        
+        state.isEmojiPickerOpen = true;
+        elements.emojiPicker.style.display = 'block';
+    }
+
+    function closeEmojiPicker() {
+        if (!elements.emojiPicker) return;
+        state.isEmojiPickerOpen = false;
+        elements.emojiPicker.style.display = 'none';
+    }
+
+    function insertEmoji(emoji) {
+        if (!elements.messageInput) return;
+        
+        const textarea = elements.messageInput;
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const text = textarea.value;
+        const newText = text.substring(0, start) + emoji + text.substring(end);
+        
+        textarea.value = newText;
+        textarea.focus();
+        
+        // Set cursor position after inserted emoji
+        const newPos = start + emoji.length;
+        textarea.setSelectionRange(newPos, newPos);
+        
+        // Trigger input event for auto-resize
+        textarea.dispatchEvent(new Event('input'));
+        
+        closeEmojiPicker();
+    }
+
+    // ============================================
+    // PHOTO UPLOAD
+    // ============================================
+
+    function handlePhotoSelect(file) {
+        if (!file) return;
+        
+        // Validate file type
+        const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+        if (!validTypes.includes(file.type)) {
+            alert('Please select a valid image file (JPG, PNG, GIF, or WEBP)');
+            return;
+        }
+        
+        // Validate file size (max 10MB)
+        const maxSize = 10 * 1024 * 1024; // 10MB
+        if (file.size > maxSize) {
+            alert('Image size must be less than 10MB');
+            return;
+        }
+        
+        // Store file
+        state.photoFile = file;
+        
+        // Create preview
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            state.photoPreviewUrl = e.target.result;
+            if (elements.photoPreviewImg) {
+                elements.photoPreviewImg.src = e.target.result;
+            }
+            if (elements.photoPreview) {
+                elements.photoPreview.style.display = 'block';
+            }
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function removePhotoPreview() {
+        state.photoFile = null;
+        state.photoPreviewUrl = null;
+        
+        if (elements.photoPreview) {
+            elements.photoPreview.style.display = 'none';
+        }
+        if (elements.photoInput) {
+            elements.photoInput.value = '';
+        }
+    }
+
+    function openPhotoModal(imageUrl) {
+        if (!elements.photoModal || !elements.photoModalImg) return;
+        
+        elements.photoModalImg.src = imageUrl;
+        elements.photoModal.style.display = 'flex';
+    }
+
+    function closePhotoModal() {
+        if (!elements.photoModal) return;
+        elements.photoModal.style.display = 'none';
+    }
+
+    // Expose functions globally for onclick handlers
+    window.chatSystem = {
+        openPhotoModal: openPhotoModal
+    };
 
     // Cleanup on page unload
     window.addEventListener('beforeunload', () => {
