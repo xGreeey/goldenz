@@ -572,7 +572,6 @@ ob_end_flush();
     <!-- font-override.css moved after landing.css to allow overrides -->
     <link href="../assets/css/font-override.css" rel="stylesheet">
     <link href="../assets/css/notifications.css" rel="stylesheet">
-    <link href="assets/rain-animation.css" rel="stylesheet">
     <!-- Number rendering fix for Windows 10/11 -->
     <!-- number-rendering-fix.css merged into font-override.css -->
     
@@ -1470,7 +1469,6 @@ ob_end_flush();
     <!-- JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="../assets/js/notifications.js"></script>
-    <script src="assets/rain-animation.js"></script>
     <script>
     // Simplified JavaScript - minimal interference
     document.addEventListener('DOMContentLoaded', function() {
