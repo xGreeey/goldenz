@@ -497,6 +497,18 @@ textarea.form-control.is-valid {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Validation without icons - only green border/background (for birth_date and age) */
+.form-control.is-valid-no-icon,
+.form-select.is-valid-no-icon,
+textarea.form-control.is-valid-no-icon {
+    border-color: #16a34a;
+    background-color: #f0fff4;
+    padding-right: 0.75rem; /* No extra padding for icon */
+    background-image: none; /* No checkmark icon */
+    box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.1);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 .form-select.is-invalid {
     background-position: right calc(2.25rem) center;
 }
@@ -579,6 +591,23 @@ textarea.form-control:focus.is-valid {
     height: 1rem !important;
     min-height: 1rem !important;
     overflow: hidden !important;
+}
+
+/* Character References helper text alignment */
+.add-employee-container .row.g-3 .col-12 > p.text-muted.small {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    text-align: left !important;
+}
+
+/* Ensure table-responsive has no extra padding that would misalign content */
+.add-employee-container .table-responsive {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
 }
 
 /* Ensure consistent alignment across columns - COMPACT */
@@ -938,6 +967,34 @@ textarea.form-control:focus.is-valid {
     margin-bottom: 0 !important;
     padding-top: 0.3rem !important;
     padding-bottom: 0.3rem !important;
+}
+
+/* Ensure nested rows in phone number fields align properly */
+.add-employee-container .row.g-3 > [class*="col-"] > .form-group > .row {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    align-items: center !important;
+}
+
+.add-employee-container .row.g-3 > [class*="col-"] > .form-group > .row > [class*="col-"] {
+    padding-left: 0.25rem !important;
+    padding-right: 0.25rem !important;
+}
+
+.add-employee-container .row.g-3 > [class*="col-"] > .form-group > .row > [class*="col-"]:first-child {
+    padding-left: 0 !important;
+}
+
+.add-employee-container .row.g-3 > [class*="col-"] > .form-group > .row > [class*="col-"]:last-child {
+    padding-right: 0 !important;
+}
+
+/* Ensure phone number inputs match other field heights */
+.add-employee-container .row.g-3 > [class*="col-"] > .form-group > .row .form-control,
+.add-employee-container .row.g-3 > [class*="col-"] > .form-group > .row .form-select {
+    height: 30px !important;
+    min-height: 30px !important;
+    max-height: 30px !important;
 }
 
 /* Force consistent help text height - doesn't affect input position */

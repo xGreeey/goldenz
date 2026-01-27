@@ -118,13 +118,30 @@ $page1_session_data = $_SESSION['employee_page1_data'] ?? null;
 // Create merged form data: prioritize POST data, fallback to session data
 // This ensures form fields are repopulated when user returns from Page 2
 $form_data = [];
+// Only populate form_data if we're editing an existing employee OR if there were validation errors
+// For "Add Employee" mode, form should start blank
+$is_edit_mode = !empty($_GET['employee_id']) || !empty($_GET['edit']);
+$has_validation_errors = !empty($errors) && is_array($errors) && count($errors) > 0;
+
 if (!empty($page1_session_data) && is_array($page1_session_data)) {
     // Start with session data (from Page 2 return)
     $form_data = $page1_session_data;
+    // CRITICAL: Don't prefill employee_no from session in Add Employee mode
+    if (!$is_edit_mode && isset($form_data['employee_no'])) {
+        unset($form_data['employee_no']);
+    }
 }
-// Override with POST data if available (new submission or validation error)
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST)) {
+// Override with POST data ONLY if editing OR if there were validation errors (to preserve user input)
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST) && ($is_edit_mode || $has_validation_errors)) {
     $form_data = array_merge($form_data, $_POST);
+    // Remove unwanted default values that were set during processing
+    if (isset($form_data['surname']) && $form_data['surname'] === 'USER') {
+        unset($form_data['surname']);
+    }
+    // Don't prefill employee_no unless editing
+    if (!$is_edit_mode && isset($form_data['employee_no'])) {
+        unset($form_data['employee_no']);
+    }
 }
 
 // Helper function to get form field value with fallback
@@ -179,7 +196,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['first_name'])) {
 
     // Auto-generate Employee Number (chronological) if missing
     // This overrides the previous random generator so records stay sequential.
-    if (empty($_POST['employee_no'])) {
+    // Only generate if we're actually submitting (not just loading the form)
+    if (empty($_POST['employee_no']) && !empty($_POST['first_name']) && !empty($_POST['surname'])) {
         try {
             if (function_exists('get_db_connection')) {
                 $pdo = get_db_connection();
@@ -439,16 +457,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['first_name'])) {
     // Check if at least first_name and surname are present
     $has_minimum_fields = !empty($_POST['first_name']) && !empty($_POST['surname']);
     
-    // If minimum fields missing, set defaults to allow submission
-    if (!$has_minimum_fields) {
-        if (empty($_POST['first_name'])) {
-            $_POST['first_name'] = 'TEMP';
-        }
-        if (empty($_POST['surname'])) {
-            $_POST['surname'] = 'USER';
-        }
-        $has_minimum_fields = true; // Now we have minimum fields
-    }
+    // DO NOT set default values - let validation handle missing required fields
+    // This prevents unwanted prefilled values on form refresh
     
     if ($has_minimum_fields) {
         // ========================================================================
@@ -780,17 +790,11 @@ if (isset($_SESSION['employee_redirect_url'])) {
 }
 ?>
 <div class="container-fluid hrdash add-employee-container add-employee-modern">
-    <!-- Page Header -->
-    <div class="page-header-modern">
-        <div class="page-title-modern">
-            <h1 class="page-title-main">Add New Employee</h1>
-            <p class="page-subtitle-modern">Create a new employee record in the system</p>
-        </div>
-        <div class="page-actions-modern">
-            <a href="?page=employees" class="btn btn-outline-modern">
-                <i class="fas fa-arrow-left me-2"></i>Back to Employees
-            </a>
-        </div>
+    <!-- Back Button -->
+    <div class="d-flex justify-content-end mb-3" style="padding-top: 1.25rem;">
+        <a href="?page=employees" class="btn btn-outline-modern">
+            <i class="fas fa-arrow-left me-2"></i>Back to Employees
+        </a>
     </div>
 
     <!-- Success/Error Messages -->
@@ -887,15 +891,9 @@ if (isset($_SESSION['employee_redirect_url'])) {
     <!-- Add Employee Form -->
     <div class="add-employee-form-wrapper">
         <div class="form-header-compact">
-            <h3 class="form-title-compact">Employee Information</h3>
+            <h3 class="form-title-compact text-center">Employee Information</h3>
         </div>
         <form method="POST" id="addEmployeeForm" enctype="multipart/form-data" action="?page=add_employee" class="add-employee-form-compact" novalidate>
-                <!-- Employee Created By Info -->
-                <div class="alert alert-info">
-                    <span class="hr-icon hr-icon-message me-2"></span>
-                    <strong>Recorded By:</strong>&nbsp;<?php echo htmlspecialchars($current_user_name); ?><?php if ($current_user_department): ?> <?php echo htmlspecialchars($current_user_department); ?><?php endif; ?>
-                </div>
-
                 <!-- Basic Information Section -->
                 <div class="row g-3 mb-2">
                     <div class="col-12">
@@ -917,10 +915,12 @@ if (isset($_SESSION['employee_redirect_url'])) {
                                 pattern="\\d{1,5}"
                                 maxlength="5"
                                 placeholder="Up to 5 digits" 
-                                value="<?php echo get_form_value('employee_no'); ?>" 
+                                value="" 
+                                autocomplete="off"
+                                data-no-prefill="true"
                                 required
                             >
-                            <small class="form-text text-muted" style="visibility: hidden;">Placeholder</small>
+                            <div class="invalid-feedback"></div>
                         </div>
                     </div>
                             <div class="col-md-4">
@@ -989,16 +989,20 @@ if (isset($_SESSION['employee_redirect_url'])) {
                         <div class="form-group">
                             <label for="surname" class="form-label">Last Name <span class="text-danger">*</span></label>
                             <input type="text" class="form-control text-uppercase" id="surname" name="surname" maxlength="50"
-                                   value="<?php echo get_form_value('surname'); ?>" required>
-                            <small class="form-text text-muted" style="visibility: hidden;">Placeholder</small>
+                                   value="<?php echo get_form_value('surname', ''); ?>" 
+                                   autocomplete="family-name"
+                                   required>
+                            <div class="invalid-feedback"></div>
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
                             <label for="first_name" class="form-label">First Name <span class="text-danger">*</span></label>
                             <input type="text" class="form-control text-uppercase" id="first_name" name="first_name" maxlength="50"
-                                   value="<?php echo htmlspecialchars($_POST['first_name'] ?? ''); ?>" required>
-                            <small class="form-text text-muted" style="visibility: hidden;">Placeholder</small>
+                                   value="<?php echo get_form_value('first_name', ''); ?>" 
+                                   autocomplete="given-name"
+                                   required>
+                            <div class="invalid-feedback"></div>
                         </div>
                     </div>
                     <div class="col-md-4">
@@ -1013,23 +1017,29 @@ if (isset($_SESSION['employee_redirect_url'])) {
                         <div class="form-group">
                             <label for="birth_date" class="form-label">Birth Date</label>
                             <input type="date" class="form-control" id="birth_date" name="birth_date" 
-                                   value="<?php echo get_form_value('birth_date'); ?>">
-                            <small class="form-text text-muted" style="visibility: hidden;">Placeholder</small>
+                                   value="<?php echo get_form_value('birth_date', ''); ?>"
+                                   autocomplete="bday">
+                            <div class="invalid-feedback"></div>
                         </div>
                     </div>
                     <div class="col-md-2">
                         <div class="form-group">
                             <label for="age" class="form-label">Age</label>
                             <input type="number" class="form-control" id="age" name="age" min="0" max="120" step="1"
-                                   value="<?php echo htmlspecialchars($_POST['age'] ?? ''); ?>" placeholder="0" aria-label="Age">
+                                   value="<?php echo get_form_value('age', ''); ?>" 
+                                   placeholder="0" 
+                                   aria-label="Age"
+                                   readonly
+                                   tabindex="-1">
+                            <div class="invalid-feedback"></div>
                             <small class="form-text text-muted">Auto-calculated from Birth Date.</small>
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="form-group">
                             <label class="form-label d-block">Gender</label>
-                            <?php $selGender = get_form_value('gender'); ?>
-                            <div class="d-flex gap-4 mt-1">
+                            <?php $selGender = get_form_value('gender', ''); ?>
+                            <div class="d-flex gap-4 mt-1" id="gender-group">
                                 <div class="form-check">
                                     <input class="form-check-input" type="radio" name="gender" id="gender_male" value="Male" <?php echo ($selGender === 'Male') ? 'checked' : ''; ?>>
                                     <label class="form-check-label" for="gender_male">Male</label>
@@ -1039,7 +1049,7 @@ if (isset($_SESSION['employee_redirect_url'])) {
                                     <label class="form-check-label" for="gender_female">Female</label>
                                 </div>
                             </div>
-                            <small class="form-text text-muted" style="visibility: hidden;">Placeholder</small>
+                            <div class="invalid-feedback" id="gender-error"></div>
                         </div>
                     </div>
                     <div class="col-md-4">
@@ -1537,7 +1547,7 @@ if (isset($_SESSION['employee_redirect_url'])) {
                 <div class="row g-3 mb-2">
                     <div class="col-12">
                         <h4 class="form-section-title">CHARACTER REFERENCES</h4>
-                        <p class="text-muted small mb-3">(If previously employed, reference/s should be from your previous employment)</p>
+                        <p class="text-muted small mb-3" style="margin-left: 0; margin-right: 0; padding-left: 0; padding-right: 0;">(If previously employed, reference/s should be from your previous employment)</p>
                     </div>
 
                     <div class="col-12">
@@ -1548,7 +1558,7 @@ if (isset($_SESSION['employee_redirect_url'])) {
                                         <th style="min-width: 200px;">NAME</th>
                                         <th style="min-width: 180px;">OCCUPATION</th>
                                         <th style="min-width: 200px;">COMPANY</th>
-                                        <th style="min-width: 200px;">CONTACT NO./S</th>
+                                        <th style="min-width: 200px;">CONTACT NO.</th>
                                         <th style="width: 50px;"></th>
                                     </tr>
                                 </thead>
@@ -1644,7 +1654,6 @@ if (isset($_SESSION['employee_redirect_url'])) {
                                     <tr class="text-muted small">
                                         <th style="min-width: 260px;">Type of Examination</th>
                                         <th style="min-width: 180px;">Score / Rating</th>
-                                        <th style="width: 60px;"></th>
                                     </tr>
                                 </thead>
                                 <tbody id="govExamTbody">
@@ -1656,7 +1665,7 @@ if (isset($_SESSION['employee_redirect_url'])) {
                                         $type = is_array($e) ? ($e['type'] ?? '') : '';
                                         $score = is_array($e) ? ($e['score'] ?? '') : '';
                                     ?>
-                                    <tr class="exam-row">
+                                    <tr class="exam-row" data-exam-index="<?php echo (int)$i; ?>">
                                         <td>
                                             <input type="text" class="form-control text-uppercase"
                                                    name="gov_exams[<?php echo (int)$i; ?>][type]"
@@ -1669,20 +1678,19 @@ if (isset($_SESSION['employee_redirect_url'])) {
                                                    value="<?php echo htmlspecialchars($score); ?>"
                                                    placeholder="e.g., 85.00" maxlength="20" inputmode="decimal">
                                         </td>
-                                        <td class="text-end">
-                                            <button type="button" class="btn btn-outline-modern btn-sm exam-remove" aria-label="Remove exam record">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </td>
                                     </tr>
                                     <?php endforeach; ?>
                                 </tbody>
                             </table>
                         </div>
 
-                        <div class="d-flex justify-content-end">
-                            <button type="button" class="btn btn-outline-primary btn-sm" id="addGovExamBtn">
-                                <i class="fas fa-plus me-2"></i>Add Exam
+                        <!-- Government Examination Action Buttons -->
+                        <div class="gov-exam-actions d-flex justify-content-center align-items-center gap-2 mt-3">
+                            <button type="button" class="btn btn-icon-action gov-exam-add-btn" id="addGovExamBtn" title="Add government examination record" aria-label="Add government examination record">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                            <button type="button" class="btn btn-icon-action gov-exam-remove-btn" id="removeGovExamBtn" title="Remove last government examination record" aria-label="Remove last government examination record">
+                                <i class="fas fa-minus"></i>
                             </button>
                         </div>
                     </div>
@@ -1697,14 +1705,14 @@ if (isset($_SESSION['employee_redirect_url'])) {
                     <div class="col-md-6">
                         <div class="form-group">
                             <label class="form-label">Contact Phone Number <span class="text-danger">*</span></label>
-                            <div class="row g-2 align-items-start">
-                                <div class="col-4 col-sm-3">
-                                    <select class="form-select" id="cc_cp" disabled style="height: 38px;">
+                            <div class="row g-2 align-items-center" style="margin-left: 0; margin-right: 0;">
+                                <div class="col-4 col-sm-3" style="padding-left: 0; padding-right: 0.25rem;">
+                                    <select class="form-select" id="cc_cp" disabled>
                                         <option value="+63" selected>+63 PH</option>
                                     </select>
                                 </div>
-                                <div class="col-8 col-sm-9">
-                                    <input type="tel" class="form-control" id="num_cp_full" inputmode="numeric" pattern="^9\d{9}$" maxlength="10" placeholder="9XXXXXXXXX" required style="height: 38px;">
+                                <div class="col-8 col-sm-9" style="padding-left: 0.25rem; padding-right: 0;">
+                                    <input type="tel" class="form-control" id="num_cp_full" inputmode="numeric" pattern="^9\d{9}$" maxlength="10" placeholder="9XXXXXXXXX" required>
                                 </div>
                             </div>
                             <input type="hidden" id="cp_number" name="cp_number" value="<?php echo get_form_value('cp_number'); ?>">
@@ -1745,14 +1753,14 @@ if (isset($_SESSION['employee_redirect_url'])) {
                     <div class="col-md-5">
                         <div class="form-group">
                             <label class="form-label">Emergency Contact Number <span class="text-danger">*</span></label>
-                            <div class="row g-2 align-items-start">
-                                <div class="col-4 col-sm-3">
-                                    <select class="form-select" id="cc_em" disabled style="height: 38px;">
+                            <div class="row g-2 align-items-center" style="margin-left: 0; margin-right: 0;">
+                                <div class="col-4 col-sm-3" style="padding-left: 0; padding-right: 0.25rem;">
+                                    <select class="form-select" id="cc_em" disabled>
                                         <option value="+63" selected>+63 PH</option>
                                     </select>
                                 </div>
-                                <div class="col-8 col-sm-9">
-                                    <input type="tel" class="form-control" id="num_em_full" inputmode="numeric" pattern="^9\d{9}$" maxlength="10" placeholder="9XXXXXXXXX" required style="height: 38px;">
+                                <div class="col-8 col-sm-9" style="padding-left: 0.25rem; padding-right: 0;">
+                                    <input type="tel" class="form-control" id="num_em_full" inputmode="numeric" pattern="^9\d{9}$" maxlength="10" placeholder="9XXXXXXXXX" required>
                                 </div>
                             </div>
                             <input type="hidden" id="contact_person_number" name="contact_person_number" value="<?php echo get_form_value('contact_person_number'); ?>">
@@ -1766,7 +1774,9 @@ if (isset($_SESSION['employee_redirect_url'])) {
                     </div>
 
                     <div class="col-12 d-flex justify-content-end">
-                        <button type="button" class="btn btn-outline-primary btn-sm" id="addContactBtn">Add another contact</button>
+                        <button type="button" class="btn btn-outline-modern btn-sm" id="addContactBtn">
+                            <i class="fas fa-plus me-2"></i>Add another contact
+                        </button>
                     </div>
                 </div>
 
@@ -1825,7 +1835,9 @@ if (isset($_SESSION['employee_redirect_url'])) {
                         </div>
                     </div>
                     <div class="col-12 d-flex justify-content-end">
-                        <button type="button" class="btn btn-outline-danger btn-sm" id="removeContactBtn">Remove this contact</button>
+                        <button type="button" class="btn btn-outline-modern btn-sm" id="removeContactBtn">
+                            <i class="fas fa-times me-2"></i>Remove this contact
+                        </button>
                     </div>
                 </div>
 
@@ -1918,10 +1930,12 @@ if (isset($_SESSION['employee_redirect_url'])) {
                                 id="sss_no" 
                                 name="sss_no" 
                                 inputmode="numeric" 
-                                pattern="[0-9]{2}-[0-9]{7}-[0-9]{1}"
-                                placeholder="02-1179877-4" 
+                                pattern="\d{2}-\d{7}-\d{1}"
+                                maxlength="12"
+                                placeholder="00-0000000-0" 
                                 value="<?php echo htmlspecialchars($_POST['sss_no'] ?? ''); ?>"
                             >
+                            <div class="invalid-feedback"></div>
                             <small class="form-text text-muted">Format: ##-#######-#</small>
                         </div>
                     </div>
@@ -1934,10 +1948,12 @@ if (isset($_SESSION['employee_redirect_url'])) {
                                 id="pagibig_no" 
                                 name="pagibig_no" 
                                 inputmode="numeric" 
-                                pattern="[0-9]{4}-[0-9]{4}-[0-9]{4}"
-                                placeholder="1210-9087-6528" 
+                                pattern="\d{4}-\d{4}-\d{4}"
+                                maxlength="14"
+                                placeholder="0000-0000-0000" 
                                 value="<?php echo get_form_value('pagibig_no'); ?>"
                             >
+                            <div class="invalid-feedback"></div>
                             <small class="form-text text-muted">Format: ####-####-####</small>
                         </div>
                     </div>
@@ -1950,10 +1966,12 @@ if (isset($_SESSION['employee_redirect_url'])) {
                                 id="tin_number" 
                                 name="tin_number" 
                                 inputmode="numeric" 
-                                pattern="[0-9]{3}-[0-9]{3}-[0-9]{3}-[0-9]{3}"
-                                placeholder="360-889-408-000" 
+                                pattern="\d{3}-\d{3}-\d{3}-\d{3}"
+                                maxlength="15"
+                                placeholder="000-000-000-000" 
                                 value="<?php echo htmlspecialchars($_POST['tin_number'] ?? ''); ?>"
                             >
+                            <div class="invalid-feedback"></div>
                             <small class="form-text text-muted">Format: ###-###-###-###</small>
                         </div>
                     </div>
@@ -1966,10 +1984,12 @@ if (isset($_SESSION['employee_redirect_url'])) {
                                 id="philhealth_no" 
                                 name="philhealth_no" 
                                 inputmode="numeric" 
-                                pattern="[0-9]{2}-[0-9]{9}-[0-9]{1}"
-                                placeholder="21-200190443-1" 
+                                pattern="\d{2}-\d{9}-\d{1}"
+                                maxlength="14"
+                                placeholder="00-000000000-0" 
                                 value="<?php echo get_form_value('philhealth_no'); ?>"
                             >
+                            <div class="invalid-feedback"></div>
                             <small class="form-text text-muted">Format: ##-#########-#</small>
                         </div>
                     </div>
@@ -2405,6 +2425,159 @@ if (isset($_SESSION['employee_redirect_url'])) {
     }, true);
 })();
 
+// Government Examination handlers
+(function() {
+    'use strict';
+    
+    const reindexGovExams = () => {
+        const tbody = document.getElementById('govExamTbody');
+        if (!tbody) return;
+        
+        const rows = Array.from(tbody.querySelectorAll('tr.exam-row'));
+        rows.forEach((row, idx) => {
+            row.setAttribute('data-exam-index', idx);
+            row.querySelectorAll('input').forEach((el) => {
+                const name = el.getAttribute('name') || '';
+                if (!name) return;
+                el.setAttribute('name', name.replace(/^gov_exams\[\d+\]/, `gov_exams[${idx}]`));
+            });
+        });
+        
+        const removeBtn = document.getElementById('removeGovExamBtn');
+        if (removeBtn) {
+            // Mirror existing behavior from other sections: hide minus when only one row
+            removeBtn.style.display = rows.length > 1 ? 'inline-flex' : 'none';
+        }
+    };
+    
+    // Expose globally so we can reindex on AJAX navigation if needed
+    window.reindexGovExams = reindexGovExams;
+    
+    const addGovExamRow = () => {
+        const tbody = document.getElementById('govExamTbody');
+        if (!tbody) {
+            console.warn('govExamTbody not found');
+            return;
+        }
+        
+        const currentRowCount = tbody.querySelectorAll('.exam-row').length;
+        const idx = currentRowCount;
+        
+        const tr = document.createElement('tr');
+        tr.className = 'exam-row';
+        tr.setAttribute('data-exam-index', idx);
+        tr.innerHTML = `
+            <td>
+                <input type="text" class="form-control text-uppercase"
+                       name="gov_exams[${idx}][type]"
+                       placeholder="e.g., Civil Service Exam" maxlength="200">
+            </td>
+            <td>
+                <input type="text" class="form-control"
+                       name="gov_exams[${idx}][score]"
+                       placeholder="e.g., 85.00" maxlength="20" inputmode="decimal">
+            </td>
+        `;
+        
+        tbody.appendChild(tr);
+        reindexGovExams();
+        
+        // Focus the first input of the newly added row
+        const firstInput = tr.querySelector('input');
+        if (firstInput) {
+            firstInput.focus();
+        }
+    };
+    
+    // Event delegation for add / remove buttons
+    document.addEventListener('click', (e) => {
+        const addBtn = e.target.closest('#addGovExamBtn, .gov-exam-add-btn');
+        if (addBtn && addBtn.id === 'addGovExamBtn') {
+            e.preventDefault();
+            e.stopPropagation();
+            addGovExamRow();
+            return;
+        }
+        
+        const removeBtn = e.target.closest('#removeGovExamBtn, .gov-exam-remove-btn');
+        if (removeBtn) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const tbody = document.getElementById('govExamTbody');
+            if (!tbody) return;
+            
+            const rows = Array.from(tbody.querySelectorAll('.exam-row'));
+            if (rows.length === 0) {
+                return;
+            }
+            
+            // Match existing behavior in other sections:
+            // - If only one row, clear its fields but keep the row.
+            // - If more than one row, remove the last one.
+            if (rows.length <= 1) {
+                rows[0].querySelectorAll('input').forEach(el => {
+                    el.value = '';
+                });
+                reindexGovExams();
+            } else {
+                const lastRow = rows[rows.length - 1];
+                lastRow.remove();
+                reindexGovExams();
+            }
+        }
+    }, true);
+    
+    // Initial reindex on load
+    document.addEventListener('DOMContentLoaded', () => {
+        reindexGovExams();
+    });
+})();
+
+// Ensure employee_no is empty on page load (runs immediately, before DOMContentLoaded)
+(function() {
+    function clearEmployeeNo() {
+        const employeeNoInput = document.getElementById('employee_no');
+        if (employeeNoInput && employeeNoInput.dataset.noPrefill === 'true') {
+            employeeNoInput.value = '';
+            employeeNoInput.setAttribute('autocomplete', 'off');
+        }
+    }
+    
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', clearEmployeeNo);
+    } else {
+        clearEmployeeNo();
+    }
+})();
+
+// Clear validation states for phone fields on page load/refresh
+(function() {
+    function clearPhoneValidationStates() {
+        const phoneFields = ['num_cp_full', 'num_em_full'];
+        phoneFields.forEach(fieldId => {
+            const field = document.getElementById(fieldId);
+            if (field) {
+                field.classList.remove('is-invalid', 'is-valid');
+                const formGroup = field.closest('.form-group');
+                if (formGroup) {
+                    const invalidFeedback = formGroup.querySelector('.invalid-feedback');
+                    if (invalidFeedback) {
+                        invalidFeedback.style.display = 'none';
+                        invalidFeedback.textContent = '';
+                    }
+                }
+            }
+        });
+    }
+    
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', clearPhoneValidationStates);
+    } else {
+        clearPhoneValidationStates();
+    }
+})();
+
 document.addEventListener('DOMContentLoaded', function() {
     // Check for redirect to page 2 (backup in case immediate redirect didn't work)
     <?php if (isset($_SESSION['employee_redirect_url'])): ?>
@@ -2453,8 +2626,34 @@ document.addEventListener('DOMContentLoaded', function() {
         ageInput.setAttribute('tabindex', '-1');
 
         // Live update while picking/typing a date
-        birthDateInput.addEventListener('input', syncAge);
-        birthDateInput.addEventListener('change', syncAge);
+        birthDateInput.addEventListener('input', function() {
+            syncAge();
+            // Trigger validation after age is updated (without icons)
+            if (typeof validateField === 'function') {
+                setTimeout(() => {
+                    validateField(birthDateInput);
+                    validateField(ageInput);
+                }, 100);
+            }
+        });
+        birthDateInput.addEventListener('change', function() {
+            syncAge();
+            // Trigger validation on change (without icons)
+            if (typeof validateField === 'function') {
+                setTimeout(() => {
+                    validateField(birthDateInput);
+                    validateField(ageInput);
+                }, 100);
+            }
+        });
+        birthDateInput.addEventListener('blur', function() {
+            syncAge();
+            // Trigger validation on blur (without icons)
+            if (typeof validateField === 'function') {
+                validateField(birthDateInput);
+                validateField(ageInput);
+            }
+        });
         syncAge();
     }
 
@@ -2471,6 +2670,10 @@ document.addEventListener('DOMContentLoaded', function() {
     if (window.reindexCharacterReferences) {
         window.reindexCharacterReferences();
     }
+
+    if (window.reindexGovExams) {
+        window.reindexGovExams();
+    }
     
     // Re-initialize on pageLoaded event (for AJAX page transitions)
     document.addEventListener('pageLoaded', function() {
@@ -2483,14 +2686,50 @@ document.addEventListener('DOMContentLoaded', function() {
         if (window.reindexCharacterReferences) {
             window.reindexCharacterReferences();
         }
+        if (window.reindexGovExams) {
+            window.reindexGovExams();
+        }
+        // Clear employee_no on AJAX navigation (if not editing)
+        const employeeNoInput = document.getElementById('employee_no');
+        if (employeeNoInput && employeeNoInput.dataset.noPrefill === 'true') {
+            employeeNoInput.value = '';
+        }
+    });
+    
+    // Also listen for pageContentLoaded event
+    document.addEventListener('pageContentLoaded', function(e) {
+        const page = e.detail?.page || new URLSearchParams(window.location.search).get('page');
+        if (page === 'add_employee') {
+            // Clear employee_no on AJAX navigation (if not editing)
+            setTimeout(() => {
+                const employeeNoInput = document.getElementById('employee_no');
+                if (employeeNoInput && employeeNoInput.dataset.noPrefill === 'true') {
+                    employeeNoInput.value = '';
+                }
+            }, 100);
+        }
+    });
+    
+    // Re-initialize validation on AJAX page navigation
+    document.addEventListener('pageContentLoaded', function(e) {
+        const page = e.detail?.page || new URLSearchParams(window.location.search).get('page');
+        if (page === 'add_employee') {
+            setTimeout(initAddEmployeeValidation, 100);
+        }
+    });
+    
+    // Also listen for the old event name (backwards compatibility)
+    document.addEventListener('pageLoaded', function(e) {
+        const page = e.detail?.page || new URLSearchParams(window.location.search).get('page');
+        if (page === 'add_employee') {
+            setTimeout(initAddEmployeeValidation, 100);
+        }
     });
 
-    // Government Examination (conditional + repeatable rows)
+    // Government Examination (conditional details visibility)
     const govYes = document.getElementById('gov_exam_yes');
     const govNo = document.getElementById('gov_exam_no');
     const govDetails = document.getElementById('govExamDetails');
-    const govTbody = document.getElementById('govExamTbody');
-    const addGovExamBtn = document.getElementById('addGovExamBtn');
 
     const setGovDetailsVisible = (visible) => {
         if (!govDetails) return;
@@ -2507,50 +2746,100 @@ document.addEventListener('DOMContentLoaded', function() {
         govNo.addEventListener('change', syncGov);
         syncGov();
     }
-
-    if (govTbody) {
-        govTbody.addEventListener('click', (e) => {
-            const btn = e.target.closest('.exam-remove');
-            if (!btn) return;
-            const row = btn.closest('tr');
-            if (!row) return;
-            removeRowOrClear(govTbody, row, '.exam-row', 'gov_exams');
-        });
-    }
-
-    if (addGovExamBtn && govTbody) {
-        addGovExamBtn.addEventListener('click', () => {
-            const idx = govTbody.querySelectorAll('.exam-row').length;
-            const tr = document.createElement('tr');
-            tr.className = 'exam-row';
-            tr.innerHTML = `
-                <td>
-                    <input type="text" class="form-control text-uppercase"
-                           name="gov_exams[${idx}][type]"
-                           placeholder="e.g., Civil Service Exam" maxlength="200">
-                </td>
-                <td>
-                    <input type="text" class="form-control"
-                           name="gov_exams[${idx}][score]"
-                           placeholder="e.g., 85.00" maxlength="20" inputmode="decimal">
-                </td>
-                <td class="text-end">
-                    <button type="button" class="btn btn-outline-secondary btn-sm exam-remove" aria-label="Remove exam record">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </td>
-            `;
-            govTbody.appendChild(tr);
-        });
-    }
     
     // ============================================
     // COMPREHENSIVE VALIDATION SYSTEM
     // Validates ALL form fields with elegant animations
     // ============================================
     
+    // Initialize validation system (works on both initial load and AJAX navigation)
+    function initAddEmployeeValidation() {
+        const form = document.getElementById('addEmployeeForm');
+        if (!form) return;
+        
+        // Attach validation listeners to all fields
+        const allFields = form.querySelectorAll('input:not([type="hidden"]):not([type="file"]), select, textarea');
+        allFields.forEach(field => {
+            // Check if listeners are already attached (prevent duplicates)
+            if (!field.dataset.validationAttached) {
+                attachValidationListeners(field);
+                field.dataset.validationAttached = 'true';
+            }
+        });
+    }
+    
+    // Attach validation listeners to a field
+    function attachValidationListeners(field) {
+        // Special handling for phone fields that require submit before showing required errors
+        const phoneFieldsRequireSubmit = ['num_cp_full', 'num_em_full'];
+        const isPhoneFieldRequiringSubmit = phoneFieldsRequireSubmit.includes(field.id);
+        
+        // Validate on blur (when user leaves field)
+        field.addEventListener('blur', function() {
+            // For phone fields requiring submit, only validate format, not required
+            validateField(this);
+        });
+        
+        // Validate on input (real-time) for text fields
+        if (field.type === 'text' || field.type === 'email' || field.type === 'tel' || field.tagName === 'TEXTAREA') {
+            let timeout;
+            field.addEventListener('input', function() {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => {
+                    // For phone fields requiring submit, validate format only (not required)
+                    // For other fields, validate normally
+                    if (isPhoneFieldRequiringSubmit) {
+                        // Only validate if there's a value (format validation)
+                        if (this.value.trim()) {
+                            validateField(this);
+                        } else {
+                            // Clear validation state when empty (before submit)
+                            this.classList.remove('is-invalid', 'is-valid');
+                            hideValidationMessage(this);
+                        }
+                    } else {
+                        // Always validate required fields, or fields with values
+                        if (this.hasAttribute('required') || this.value.trim()) {
+                            validateField(this);
+                        }
+                    }
+                }, 300); // Debounce for better performance
+            });
+        }
+        
+        // Validate on change for selects
+        if (field.tagName === 'SELECT') {
+            field.addEventListener('change', function() {
+                validateField(this);
+            });
+        }
+        
+        // Validate radio buttons on change
+        if (field.type === 'radio') {
+            field.addEventListener('change', function() {
+                // Validate all radios in the group
+                const radioGroup = form.querySelectorAll(`input[type="radio"][name="${this.name}"]`);
+                radioGroup.forEach(radio => {
+                    if (typeof validateField === 'function') {
+                        validateField(radio);
+                    }
+                });
+            });
+        }
+    }
+    
     const form = document.getElementById('addEmployeeForm');
-    if (!form) return;
+    if (!form) {
+        // Form not found - might be AJAX loaded, will be initialized via pageLoaded event
+        return;
+    }
+    
+    // Initialize validation on initial page load
+    initAddEmployeeValidation();
+    
+    // Form-level flag to track if form has been submitted
+    // Required validation for phone fields only shows after submit attempt
+    let formIsSubmitted = false;
     
     // Helper function to get field label
     function getFieldLabel(field) {
@@ -2570,21 +2859,21 @@ document.addEventListener('DOMContentLoaded', function() {
         const formGroup = field.closest('.form-group');
         if (!formGroup) return;
         
-        let msgEl = formGroup.querySelector('.validation-message');
+        // Prefer Bootstrap's invalid-feedback element if it exists
+        let msgEl = formGroup.querySelector('.invalid-feedback');
         if (!msgEl) {
-            msgEl = document.createElement('small');
-            msgEl.className = 'validation-message';
-            // Insert after the field or after existing form-text
-            const formText = formGroup.querySelector('.form-text');
-            if (formText) {
-                formText.parentNode.insertBefore(msgEl, formText.nextSibling);
-            } else {
-                formGroup.appendChild(msgEl);
+            // Fallback to validation-message
+            msgEl = formGroup.querySelector('.validation-message');
+            if (!msgEl) {
+                msgEl = document.createElement('div');
+                msgEl.className = 'invalid-feedback';
+                // Insert after the field
+                field.parentNode.insertBefore(msgEl, field.nextSibling);
             }
         }
         msgEl.textContent = message;
-        msgEl.className = `validation-message ${type}`;
-        setTimeout(() => msgEl.classList.add('show'), 10);
+        msgEl.className = `invalid-feedback ${type || ''}`;
+        msgEl.style.display = 'block';
     }
     
     // Helper function to hide validation message
@@ -2592,6 +2881,14 @@ document.addEventListener('DOMContentLoaded', function() {
         const formGroup = field.closest('.form-group');
         if (!formGroup) return;
         
+        // Hide Bootstrap invalid-feedback
+        const invalidFeedback = formGroup.querySelector('.invalid-feedback');
+        if (invalidFeedback) {
+            invalidFeedback.style.display = 'none';
+            invalidFeedback.textContent = '';
+        }
+        
+        // Also hide validation-message if it exists
         const msgEl = formGroup.querySelector('.validation-message');
         if (msgEl) {
             msgEl.classList.remove('show');
@@ -2605,8 +2902,12 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Comprehensive field validation function
     function validateField(field) {
-        // Remove previous validation states
-        field.classList.remove('is-invalid', 'is-valid');
+        // Skip validation icons for birth_date and age (only show green border/background, no icons)
+        const excludeIconsFields = ['birth_date', 'age'];
+        const shouldExcludeIcons = excludeIconsFields.includes(field.id);
+        
+        // Remove previous validation states (including no-icon variant)
+        field.classList.remove('is-invalid', 'is-valid', 'is-valid-no-icon');
         hideValidationMessage(field);
         
         const fieldType = field.type || field.tagName.toLowerCase();
@@ -2626,15 +2927,36 @@ document.addEventListener('DOMContentLoaded', function() {
                 isValid = false;
                 errorMessage = getFieldLabel(field) + ' is required';
             }
-        } else if (field.type === 'checkbox' || field.type === 'radio') {
+        } else if (field.type === 'checkbox') {
             if (isRequired && !field.checked) {
                 isValid = false;
                 errorMessage = getFieldLabel(field) + ' is required';
             }
-        } else if (field.tagName === 'TEXTAREA' || field.type === 'text' || field.type === 'email' || field.type === 'tel') {
-            if (isRequired && !fieldValue) {
+        } else if (field.type === 'radio') {
+            // Radio button validation - check entire group
+            const radioGroup = Array.from(form.querySelectorAll(`input[type="radio"][name="${field.name}"]`));
+            const isAnyChecked = radioGroup.some(radio => radio.checked);
+            const groupIsRequired = isRequired || radioGroup.some(radio => radio.hasAttribute('required'));
+            
+            if (groupIsRequired && !isAnyChecked) {
                 isValid = false;
                 errorMessage = getFieldLabel(field) + ' is required';
+            } else if (isAnyChecked) {
+                isValid = true;
+            }
+        } else if (field.tagName === 'TEXTAREA' || field.type === 'text' || field.type === 'email' || field.type === 'tel') {
+            // Special handling for Contact Phone Number and Emergency Contact Number
+            // Only show required errors after form submit, not during typing/blur
+            const phoneFieldsRequireSubmit = ['num_cp_full', 'num_em_full'];
+            const isPhoneFieldRequiringSubmit = phoneFieldsRequireSubmit.includes(field.id);
+            
+            // Check required validation only if form has been submitted OR field is not a phone field requiring submit
+            if (isRequired && !fieldValue) {
+                if (!isPhoneFieldRequiringSubmit || formIsSubmitted) {
+                    isValid = false;
+                    errorMessage = getFieldLabel(field) + ' is required';
+                }
+                // If phone field and not submitted, skip required check but still validate format if value exists
             } else if (fieldValue) {
                 // Validate email format
                 if (field.type === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fieldValue)) {
@@ -2646,12 +2968,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     const phoneDigits = fieldValue.replace(/\D/g, '');
                     const enforcePH = field.hasAttribute('pattern');
                     if (enforcePH) {
-                        // Check if it's a PH phone number (must start with 9, 10 digits)
-                        if (field.hasAttribute('required') || phoneDigits.length > 0) {
-                            if (phoneDigits.length === 0 && field.hasAttribute('required')) {
-                                isValid = false;
-                                errorMessage = getFieldLabel(field) + ' is required';
-                            } else if (phoneDigits.length > 0 && (phoneDigits.length !== 10 || !phoneDigits.startsWith('9'))) {
+                        // Always validate format (even before submit), but only check required after submit
+                        if (phoneDigits.length > 0) {
+                            if (phoneDigits.length !== 10 || !phoneDigits.startsWith('9')) {
                                 isValid = false;
                                 errorMessage = 'Phone number must be 10 digits starting with 9';
                             } else if (field.hasAttribute('pattern')) {
@@ -2661,6 +2980,53 @@ document.addEventListener('DOMContentLoaded', function() {
                                     errorMessage = 'Please enter a valid phone number format';
                                 }
                             }
+                        }
+                        // Only check required if form has been submitted
+                        if (phoneDigits.length === 0 && field.hasAttribute('required') && formIsSubmitted) {
+                            isValid = false;
+                            errorMessage = getFieldLabel(field) + ' is required';
+                        }
+                    }
+                }
+                // Validate pattern attribute (for text fields with pattern like Employee Number and Government IDs)
+                if (field.hasAttribute('pattern')) {
+                    const patternValue = field.getAttribute('pattern');
+                    // Convert HTML pattern to JavaScript regex
+                    // HTML pattern "\\d{1,5}" becomes "\d{1,5}" in JS, which needs to be converted to /\d{1,5}/
+                    let patternRegex;
+                    try {
+                        // Replace escaped backslashes with single backslashes, then create regex
+                        const cleanedPattern = patternValue.replace(/\\\\/g, '\\');
+                        patternRegex = new RegExp('^' + cleanedPattern + '$');
+                    } catch (e) {
+                        // Fallback: try direct pattern match
+                        patternRegex = new RegExp('^' + patternValue + '$');
+                    }
+                    
+                    if (!patternRegex.test(fieldValue)) {
+                        isValid = false;
+                        // Provide specific error messages based on field
+                        if (field.id === 'employee_no' || field.name === 'employee_no') {
+                            // Check for non-numeric characters first
+                            if (!/^\d+$/.test(fieldValue)) {
+                                errorMessage = 'Employee Number must contain only digits';
+                            } else if (fieldValue.length === 0) {
+                                errorMessage = 'Employee Number is required';
+                            } else if (fieldValue.length < 1 || fieldValue.length > 5) {
+                                errorMessage = 'Employee Number must be 1 to 5 digits';
+                            } else {
+                                errorMessage = 'Employee Number must be 1 to 5 digits';
+                            }
+                        } else if (field.id === 'sss_no' || field.name === 'sss_no') {
+                            errorMessage = 'Must be in the format ##-#######-#.';
+                        } else if (field.id === 'pagibig_no' || field.name === 'pagibig_no') {
+                            errorMessage = 'Must be in the format ####-####-####.';
+                        } else if (field.id === 'tin_number' || field.name === 'tin_number') {
+                            errorMessage = 'Must be in the format ###-###-###-###.';
+                        } else if (field.id === 'philhealth_no' || field.name === 'philhealth_no') {
+                            errorMessage = 'Must be in the format ##-#########-#.';
+                        } else {
+                            errorMessage = 'Please enter a valid ' + getFieldLabel(field).toLowerCase();
                         }
                     }
                 }
@@ -2675,13 +3041,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 isValid = false;
                 errorMessage = getFieldLabel(field) + ' is required';
             } else if (fieldValue) {
-                // Validate date range if max attribute exists
-                if (field.hasAttribute('max')) {
-                    const maxDate = new Date(field.getAttribute('max'));
+                // Validate date format
+                const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+                if (!dateRegex.test(fieldValue)) {
+                    isValid = false;
+                    errorMessage = 'Please enter a valid date';
+                } else {
                     const selectedDate = new Date(fieldValue);
-                    if (selectedDate > maxDate) {
+                    if (isNaN(selectedDate.getTime())) {
                         isValid = false;
-                        errorMessage = 'Date cannot be in the future';
+                        errorMessage = 'Please enter a valid date';
+                    } else {
+                        // Validate date range if max attribute exists
+                        if (field.hasAttribute('max')) {
+                            const maxDate = new Date(field.getAttribute('max'));
+                            if (selectedDate > maxDate) {
+                                isValid = false;
+                                errorMessage = 'Date cannot be in the future';
+                            }
+                        }
                     }
                 }
             }
@@ -2708,16 +3086,93 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         // Apply validation styling with animation
-        if (isValid && fieldValue) {
-            field.classList.add('is-valid');
-            hideValidationMessage(field);
-        } else if (!isValid) {
-            field.classList.add('is-invalid');
-            showValidationMessage(field, errorMessage, 'error');
+        // CRITICAL: Remove both classes first to prevent conflicts
+        field.classList.remove('is-invalid', 'is-valid');
+        
+        // Special handling for radio buttons - validate entire group
+        if (field.type === 'radio') {
+            const radioGroup = Array.from(form.querySelectorAll(`input[type="radio"][name="${field.name}"]`));
+            const isAnyChecked = radioGroup.some(radio => radio.checked);
+            const groupIsRequired = field.hasAttribute('required') || radioGroup.some(radio => radio.hasAttribute('required'));
+            
+            if (groupIsRequired && !isAnyChecked) {
+                // Invalid - no selection
+                isValid = false;
+                errorMessage = getFieldLabel(field) + ' is required';
+                radioGroup.forEach(radio => {
+                    radio.classList.add('is-invalid');
+                    radio.classList.remove('is-valid');
+                });
+                // Show error message at group level
+                const genderError = document.getElementById('gender-error');
+                if (field.name === 'gender' && genderError) {
+                    genderError.textContent = errorMessage;
+                    genderError.style.display = 'block';
+                }
+            } else if (isAnyChecked) {
+                // Valid - selection made
+                isValid = true;
+                // Only apply green styling to the SELECTED radio's label, not all radios
+                radioGroup.forEach(radio => {
+                    radio.classList.remove('is-invalid');
+                    const label = radio.closest('.form-check')?.querySelector('.form-check-label');
+                    if (radio.checked) {
+                        radio.classList.add('is-valid');
+                        if (label) {
+                            label.classList.add('text-success');
+                        }
+                    } else {
+                        radio.classList.remove('is-valid');
+                        if (label) {
+                            label.classList.remove('text-success');
+                        }
+                    }
+                });
+                // Hide error message
+                const genderError = document.getElementById('gender-error');
+                if (field.name === 'gender' && genderError) {
+                    genderError.style.display = 'none';
+                }
+                hideValidationMessage(field);
+            } else {
+                // Not required and empty - remove validation classes
+                radioGroup.forEach(radio => {
+                    radio.classList.remove('is-invalid', 'is-valid');
+                    const label = radio.closest('.form-check')?.querySelector('.form-check-label');
+                    if (label) {
+                        label.classList.remove('text-success');
+                    }
+                });
+                const genderError = document.getElementById('gender-error');
+                if (field.name === 'gender' && genderError) {
+                    genderError.style.display = 'none';
+                }
+                hideValidationMessage(field);
+            }
         } else {
-            // Field is empty but not required - remove validation classes
-            field.classList.remove('is-invalid', 'is-valid');
-            hideValidationMessage(field);
+            // Regular field validation
+            if (isValid && fieldValue) {
+                // For birth_date and age, use special class that only applies green styling (no icons)
+                if (shouldExcludeIcons) {
+                    field.classList.add('is-valid-no-icon');
+                } else {
+                    field.classList.add('is-valid');
+                }
+                hideValidationMessage(field);
+            } else if (!isValid) {
+                field.classList.add('is-invalid');
+                showValidationMessage(field, errorMessage, 'error');
+            } else {
+                // Field is empty but not required - remove validation classes (already removed above)
+                // Special case: if phone field requiring submit is empty and form hasn't been submitted, clear invalid state
+                const phoneFieldsRequireSubmit = ['num_cp_full', 'num_em_full'];
+                if (phoneFieldsRequireSubmit.includes(field.id) && !formIsSubmitted) {
+                    field.classList.remove('is-invalid');
+                    hideValidationMessage(field);
+                } else {
+                    hideValidationMessage(field);
+                }
+            }
         }
         
         return isValid;
@@ -2725,6 +3180,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Validate all form fields
     function validateAllFields() {
+        // Ensure formIsSubmitted is true when validating all fields (called on submit)
+        formIsSubmitted = true;
+        
         const allFields = form.querySelectorAll('input:not([type="hidden"]):not([type="file"]), select, textarea');
         let allValid = true;
         const firstInvalidField = [];
@@ -2739,6 +3197,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         
         // Validate hidden phone number fields (they have required attribute on visible input)
+        // Note: validateField() already handles these via the visible inputs, but we keep this
+        // as a fallback to ensure hidden fields are synced correctly
         const cpNumber = document.getElementById('cp_number');
         const contactPersonNumber = document.getElementById('contact_person_number');
         
@@ -2797,6 +3257,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Form submission handler
     form.addEventListener('submit', function(e) {
+        // Set form submission flag BEFORE validation
+        formIsSubmitted = true;
+        
         // Validate all fields
         if (!validateAllFields()) {
             e.preventDefault();
@@ -2817,31 +3280,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Real-time validation on input and blur for ALL fields
     const allFields = form.querySelectorAll('input:not([type="hidden"]):not([type="file"]), select, textarea');
     allFields.forEach(field => {
-        // Validate on blur (when user leaves field)
-        field.addEventListener('blur', function() {
-            validateField(this);
-        });
-        
-        // Validate on input (real-time) for text fields
-        if (field.type === 'text' || field.type === 'email' || field.type === 'tel' || field.tagName === 'TEXTAREA') {
-            let timeout;
-            field.addEventListener('input', function() {
-                clearTimeout(timeout);
-                timeout = setTimeout(() => {
-                    // Always validate required fields, or fields with values
-                    if (this.hasAttribute('required') || this.value.trim()) {
-                        validateField(this);
-                    }
-                }, 300); // Debounce for better performance
-            });
-        }
-        
-        // Validate on change for selects
-        if (field.tagName === 'SELECT') {
-            field.addEventListener('change', function() {
-                validateField(this);
-            });
-        }
+        attachValidationListeners(field);
     });
 
     // Enforce numeric-only inputs on specific fields
@@ -3468,75 +3907,171 @@ document.addEventListener('DOMContentLoaded', function() {
     }
         
     // (Emergency numbers are validated via the dedicated phone inputs and hidden fields)
-    // Validation for Government Identification Numbers
+    // ============================================
+    // GOVERNMENT ID INPUT MASKING & VALIDATION
+    // Reusable masker/validator for government ID fields
+    // ============================================
+    
+    /**
+     * Reusable input masker for government ID fields
+     * @param {HTMLInputElement} input - The input element
+     * @param {string} mask - The mask pattern (e.g., '##-#######-#')
+     * @param {RegExp} pattern - The validation regex pattern
+     * @param {string} formatLabel - The format label for error messages (e.g., '##-#######-#')
+     */
+    function createGovIdMasker(input, mask, pattern, formatLabel) {
+        const errorDiv = input.parentElement.querySelector('.invalid-feedback');
+        
+        /**
+         * Format input value according to mask
+         * @param {string} value - Raw input value (digits only)
+         * @returns {string} - Formatted value with hyphens
+         */
+        function formatValue(value) {
+            // Remove all non-digits
+            const digits = value.replace(/\D/g, '');
+            
+            // Apply mask based on field type
+            if (input.id === 'sss_no') {
+                // Format: ##-#######-#
+                if (digits.length <= 2) return digits;
+                if (digits.length <= 9) return digits.slice(0, 2) + '-' + digits.slice(2);
+                return digits.slice(0, 2) + '-' + digits.slice(2, 9) + '-' + digits.slice(9, 10);
+            } else if (input.id === 'pagibig_no') {
+                // Format: ####-####-####
+                if (digits.length <= 4) return digits;
+                if (digits.length <= 8) return digits.slice(0, 4) + '-' + digits.slice(4);
+                return digits.slice(0, 4) + '-' + digits.slice(4, 8) + '-' + digits.slice(8, 12);
+            } else if (input.id === 'tin_number') {
+                // Format: ###-###-###-###
+                if (digits.length <= 3) return digits;
+                if (digits.length <= 6) return digits.slice(0, 3) + '-' + digits.slice(3);
+                if (digits.length <= 9) return digits.slice(0, 3) + '-' + digits.slice(3, 6) + '-' + digits.slice(6);
+                return digits.slice(0, 3) + '-' + digits.slice(3, 6) + '-' + digits.slice(6, 9) + '-' + digits.slice(9, 12);
+            } else if (input.id === 'philhealth_no') {
+                // Format: ##-#########-#
+                if (digits.length <= 2) return digits;
+                if (digits.length <= 11) return digits.slice(0, 2) + '-' + digits.slice(2);
+                return digits.slice(0, 2) + '-' + digits.slice(2, 11) + '-' + digits.slice(11, 12);
+            }
+            
+            return digits;
+        }
+        
+        /**
+         * Validate and show feedback
+         * @param {boolean} showError - Whether to show error message
+         */
+        function validate(showError = true) {
+            const value = input.value.trim();
+            
+            if (!value || value === '') {
+                // Empty - remove validation classes (optional fields)
+                input.classList.remove('is-valid', 'is-invalid');
+                if (errorDiv) errorDiv.style.display = 'none';
+                return false;
+            } else if (pattern.test(value)) {
+                // Valid format
+                input.classList.remove('is-invalid');
+                input.classList.add('is-valid');
+                if (errorDiv) errorDiv.style.display = 'none';
+                return true;
+            } else {
+                // Invalid format
+                input.classList.remove('is-valid');
+                input.classList.add('is-invalid');
+                if (errorDiv && showError) {
+                    errorDiv.textContent = 'Must be in the format ' + formatLabel + '.';
+                    errorDiv.style.display = 'block';
+                }
+                return false;
+            }
+        }
+        
+        // Handle input event - apply masking
+        input.addEventListener('input', function(e) {
+            const cursorPosition = this.selectionStart;
+            const originalValue = this.value;
+            
+            // Get digits only
+            const digits = originalValue.replace(/\D/g, '');
+            
+            // Format the value
+            const formatted = formatValue(digits);
+            
+            // Update input value
+            this.value = formatted;
+            
+            // Restore cursor position (adjust for added hyphens)
+            const addedHyphens = formatted.length - digits.length;
+            const newPosition = Math.min(cursorPosition + addedHyphens, formatted.length);
+            this.setSelectionRange(newPosition, newPosition);
+            
+            // Validate (don't show error while typing)
+            validate(false);
+        });
+        
+        // Handle paste event - format pasted content
+        input.addEventListener('paste', function(e) {
+            e.preventDefault();
+            const pastedText = (e.clipboardData || window.clipboardData).getData('text');
+            const digits = pastedText.replace(/\D/g, '');
+            const formatted = formatValue(digits);
+            this.value = formatted;
+            
+            // Validate after paste
+            setTimeout(() => validate(true), 10);
+        });
+        
+        // Handle blur event - validate and show error if needed
+        input.addEventListener('blur', function() {
+            // Use comprehensive validation if available (it will handle error messages)
+            if (typeof validateField === 'function') {
+                validateField(this);
+            } else {
+                // Fallback to local validation
+                validate(true);
+            }
+        });
+        
+        // Initial validation if field has value
+        if (input.value.trim().length > 0) {
+            validate(true);
+        }
+    }
+    
+    // Initialize masking and validation for all government ID fields
     const govIdFields = [
         {
             id: 'sss_no',
-            pattern: /^[0-9]{2}-[0-9]{7}-[0-9]{1}$/,
-            maxLength: 12
+            mask: '##-#######-#',
+            pattern: /^\d{2}-\d{7}-\d{1}$/,
+            formatLabel: '##-#######-#'
         },
         {
             id: 'pagibig_no',
-            pattern: /^[0-9]{4}-[0-9]{4}-[0-9]{4}$/,
-            maxLength: 14
+            mask: '####-####-####',
+            pattern: /^\d{4}-\d{4}-\d{4}$/,
+            formatLabel: '####-####-####'
         },
         {
             id: 'tin_number',
-            pattern: /^[0-9]{3}-[0-9]{3}-[0-9]{3}-[0-9]{3}$/,
-            maxLength: 15
+            mask: '###-###-###-###',
+            pattern: /^\d{3}-\d{3}-\d{3}-\d{3}$/,
+            formatLabel: '###-###-###-###'
         },
         {
             id: 'philhealth_no',
-            pattern: /^[0-9]{2}-[0-9]{9}-[0-9]{1}$/,
-            maxLength: 14
+            mask: '##-#########-#',
+            pattern: /^\d{2}-\d{9}-\d{1}$/,
+            formatLabel: '##-#########-#'
         }
     ];
 
     govIdFields.forEach(fieldConfig => {
         const field = document.getElementById(fieldConfig.id);
-        if (!field) return;
-
-        const validateGovId = () => {
-            const value = field.value.trim();
-            
-            // Valid if matches pattern exactly
-            if (value && fieldConfig.pattern.test(value)) {
-                field.classList.remove('is-invalid');
-                field.classList.add('is-valid');
-                return true;
-            } else if (value && value.length > 0) {
-                // Has value but doesn't match pattern
-                field.classList.remove('is-valid');
-                field.classList.add('is-invalid');
-                return false;
-            } else {
-                // Empty field - remove validation classes (optional fields)
-                field.classList.remove('is-valid', 'is-invalid');
-                return false;
-            }
-        };
-
-        // Validate on input (real-time) - but also call comprehensive validation
-        field.addEventListener('input', function() {
-            validateGovId();
-            // Also trigger comprehensive validation after a short delay
-            if (typeof validateField === 'function') {
-                setTimeout(() => validateField(this), 50);
-            }
-        });
-        
-        // Validate on blur (when user leaves field) - use comprehensive validation
-        field.addEventListener('blur', function() {
-            if (typeof validateField === 'function') {
-                validateField(this);
-            } else {
-                validateGovId();
-            }
-        });
-        
-        // Initial validation if field has value
-        if (field.value.trim().length > 0) {
-            validateGovId();
+        if (field) {
+            createGovIdMasker(field, fieldConfig.mask, fieldConfig.pattern, fieldConfig.formatLabel);
         }
     });
 
@@ -3625,34 +4160,118 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Secondary contact toggle
-    const addContactBtn = document.getElementById('addContactBtn');
-    const removeContactBtn = document.getElementById('removeContactBtn');
-    const secondaryContact = document.getElementById('secondaryContact');
-    if (addContactBtn && secondaryContact) {
-        addContactBtn.addEventListener('click', () => {
+    // ============================================
+    // SECONDARY CONTACT BUTTON INITIALIZATION
+    // Works on initial load and AJAX navigation
+    // ============================================
+    function initContactButtons() {
+        const addContactBtn = document.getElementById('addContactBtn');
+        const removeContactBtn = document.getElementById('removeContactBtn');
+        const secondaryContact = document.getElementById('secondaryContact');
+        
+        if (!addContactBtn || !secondaryContact) return;
+        
+        // Remove existing listeners by cloning (prevents duplicates)
+        const newAddBtn = addContactBtn.cloneNode(true);
+        addContactBtn.parentNode.replaceChild(newAddBtn, addContactBtn);
+        
+        // Attach click handler to new button
+        newAddBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
             // Show the secondary contact section
             secondaryContact.classList.remove('d-none');
             // Hide the "Add another contact" button
-            addContactBtn.classList.add('d-none');
+            newAddBtn.classList.add('d-none');
+            
+            // Initialize phone number formatting for secondary contact (if not already initialized)
+            // Wait a bit for DOM to be ready
+            setTimeout(() => {
+                const numEm2Full = document.getElementById('num_em2_full');
+                const contactPersonNumberAlt = document.getElementById('contact_person_number_alt');
+                const ccEm2 = document.getElementById('cc_em2');
+                
+                // Check if phone formatting is already bound (avoid duplicate listeners)
+                if (numEm2Full && contactPersonNumberAlt && ccEm2 && typeof bindPhoneSingle === 'function') {
+                    // Check if already initialized by checking for data attribute
+                    if (!numEm2Full.dataset.phoneInitialized) {
+                        bindPhoneSingle('contact_person_number_alt', 'cc_em2', 'num_em2_full', 10);
+                        numEm2Full.dataset.phoneInitialized = 'true';
+                    }
+                }
+                
+                // Attach validation listeners to new contact fields (if not already attached)
+                const contactPersonAlt = document.getElementById('contact_person_alt');
+                const relationshipAlt = document.getElementById('relationship_alt');
+                const contactPersonAddressAlt = document.getElementById('contact_person_address_alt');
+                
+                if (contactPersonAlt && typeof attachValidationListeners === 'function' && !contactPersonAlt.dataset.validationAttached) {
+                    attachValidationListeners(contactPersonAlt);
+                    contactPersonAlt.dataset.validationAttached = 'true';
+                }
+                if (relationshipAlt && typeof attachValidationListeners === 'function' && !relationshipAlt.dataset.validationAttached) {
+                    attachValidationListeners(relationshipAlt);
+                    relationshipAlt.dataset.validationAttached = 'true';
+                }
+                if (contactPersonAddressAlt && typeof attachValidationListeners === 'function' && !contactPersonAddressAlt.dataset.validationAttached) {
+                    attachValidationListeners(contactPersonAddressAlt);
+                    contactPersonAddressAlt.dataset.validationAttached = 'true';
+                }
+            }, 50);
         });
-    }
-    if (removeContactBtn && secondaryContact) {
-        removeContactBtn.addEventListener('click', () => {
-            // Hide the secondary contact section
-            secondaryContact.classList.add('d-none');
-            // Show the "Add another contact" button again
-            if (addContactBtn) {
-                addContactBtn.classList.remove('d-none');
-            }
-            // Clear all fields in the secondary contact section
-            const clearIds = ['contact_person_alt','relationship_alt','num_em2_full','contact_person_number_alt','contact_person_address_alt'];
-            clearIds.forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.value = '';
+        
+        // Handle remove button
+        if (removeContactBtn) {
+            const newRemoveBtn = removeContactBtn.cloneNode(true);
+            removeContactBtn.parentNode.replaceChild(newRemoveBtn, removeContactBtn);
+            
+            newRemoveBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // Hide the secondary contact section
+                secondaryContact.classList.add('d-none');
+                // Show the "Add another contact" button again
+                newAddBtn.classList.remove('d-none');
+                
+                // Clear all fields in the secondary contact section
+                const clearIds = ['contact_person_alt','relationship_alt','num_em2_full','contact_person_number_alt','contact_person_address_alt'];
+                clearIds.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) {
+                        el.value = '';
+                        // Remove validation classes
+                        el.classList.remove('is-invalid', 'is-valid');
+                        const errorDiv = el.parentElement.querySelector('.invalid-feedback');
+                        if (errorDiv) {
+                            errorDiv.style.display = 'none';
+                            errorDiv.textContent = '';
+                        }
+                    }
+                });
             });
-        });
+        }
     }
+    
+    // Initialize on page load
+    initContactButtons();
+    
+    // Re-initialize on AJAX page navigation
+    document.addEventListener('pageContentLoaded', function(e) {
+        const page = e.detail?.page || new URLSearchParams(window.location.search).get('page');
+        if (page === 'add_employee') {
+            setTimeout(initContactButtons, 100);
+        }
+    });
+    
+    // Also listen for the old event name (backwards compatibility)
+    document.addEventListener('pageLoaded', function(e) {
+        const page = e.detail?.page || new URLSearchParams(window.location.search).get('page');
+        if (page === 'add_employee') {
+            setTimeout(initContactButtons, 100);
+        }
+    });
 
     // RLM toggle: show/require expiration only if has_rlm checked
     const hasRlm = document.getElementById('has_rlm');
