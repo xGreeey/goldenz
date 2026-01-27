@@ -2601,23 +2601,86 @@ document.addEventListener('DOMContentLoaded', function() {
     // (Removed random generator)
 
     // Auto-calculate age from Birth Date (recommended)
-    const calcAge = (isoDate) => {
-        if (!isoDate) return '';
-        const d = new Date(isoDate);
-        if (Number.isNaN(d.getTime())) return '';
+    const parseBirthDateLocal = (raw) => {
+        // Accept mm/dd/yyyy (UI) and yyyy-mm-dd (native date inputs).
+        // Returns a LOCAL Date at midnight, or null when invalid/incomplete.
+        if (!raw) return null;
+        const v = String(raw).trim();
+        if (!v) return null;
+
+        // Native <input type="date"> value (yyyy-mm-dd)
+        const iso = /^(\d{4})-(\d{2})-(\d{2})$/.exec(v);
+        if (iso) {
+            const year = Number(iso[1]);
+            const month = Number(iso[2]);
+            const day = Number(iso[3]);
+            if (!Number.isFinite(year) || !Number.isFinite(month) || !Number.isFinite(day)) return null;
+            const d = new Date(year, month - 1, day);
+            if (d.getFullYear() !== year || (d.getMonth() + 1) !== month || d.getDate() !== day) return null;
+            return d;
+        }
+
+        // mm/dd/yyyy (as shown in UI)
+        const us = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(v);
+        if (!us) return null; // incomplete/invalid while typing -> treat as invalid
+        const month = Number(us[1]);
+        const day = Number(us[2]);
+        const year = Number(us[3]);
+        if (!Number.isFinite(year) || !Number.isFinite(month) || !Number.isFinite(day)) return null;
+        if (year < 1900 || year > 2100) return null;
+        const d = new Date(year, month - 1, day); // local midnight
+        if (d.getFullYear() !== year || (d.getMonth() + 1) !== month || d.getDate() !== day) return null;
+        return d;
+    };
+
+    const calcAgeFromBirthDate = (birthDate) => {
+        // birthDate is a LOCAL Date (midnight). Returns '' when invalid/out-of-range.
+        if (!(birthDate instanceof Date) || Number.isNaN(birthDate.getTime())) return '';
         const today = new Date();
-        let age = today.getFullYear() - d.getFullYear();
-        const m = today.getMonth() - d.getMonth();
-        if (m < 0 || (m === 0 && today.getDate() < d.getDate())) {
+        const todayYear = today.getFullYear();
+        const todayMonth = today.getMonth(); // 0-based
+        const todayDay = today.getDate();
+
+        const bYear = birthDate.getFullYear();
+        const bMonth = birthDate.getMonth();
+        const bDay = birthDate.getDate();
+
+        let age = todayYear - bYear;
+        // Subtract 1 if birthday hasn't occurred yet this year (local date comparison)
+        if (todayMonth < bMonth || (todayMonth === bMonth && todayDay < bDay)) {
             age--;
         }
         if (age < 0 || age > 120) return '';
         return String(age);
     };
 
+    const clearValidationState = (field) => {
+        if (!field) return;
+        field.classList.remove('is-invalid', 'is-valid', 'is-valid-no-icon');
+        // Hide any associated messages (function exists later in the file)
+        if (typeof hideValidationMessage === 'function') {
+            hideValidationMessage(field);
+        } else {
+            const formGroup = field.closest('.form-group');
+            const invalidFeedback = formGroup ? formGroup.querySelector('.invalid-feedback') : null;
+            if (invalidFeedback) {
+                invalidFeedback.style.display = 'none';
+                invalidFeedback.textContent = '';
+            }
+        }
+    };
+
     const syncAge = () => {
         if (!birthDateInput || !ageInput) return;
-        ageInput.value = calcAge(birthDateInput.value);
+        const birthDate = parseBirthDateLocal(birthDateInput.value);
+        if (!birthDate) {
+            ageInput.value = '';
+            // When Birthdate is empty/invalid, keep UI neutral (no validation icons/classes)
+            clearValidationState(birthDateInput);
+            clearValidationState(ageInput);
+            return;
+        }
+        ageInput.value = calcAgeFromBirthDate(birthDate);
     };
 
     if (birthDateInput && ageInput) {
@@ -2628,31 +2691,40 @@ document.addEventListener('DOMContentLoaded', function() {
         // Live update while picking/typing a date
         birthDateInput.addEventListener('input', function() {
             syncAge();
-            // Trigger validation after age is updated (without icons)
+            // Only validate when birthdate is valid; otherwise keep fields neutral (no icons/messages)
             if (typeof validateField === 'function') {
-                setTimeout(() => {
-                    validateField(birthDateInput);
-                    validateField(ageInput);
-                }, 100);
-            }
+                const isValidBirthDate = !!parseBirthDateLocal(birthDateInput.value);
+                if (isValidBirthDate) {
+                    setTimeout(() => {
+                        validateField(birthDateInput);
+                        validateField(ageInput);
+                    }, 100);
+                }
+            }            
         });
         birthDateInput.addEventListener('change', function() {
             syncAge();
-            // Trigger validation on change (without icons)
+            // Only validate when birthdate is valid; otherwise keep fields neutral (no icons/messages)
             if (typeof validateField === 'function') {
-                setTimeout(() => {
-                    validateField(birthDateInput);
-                    validateField(ageInput);
-                }, 100);
-            }
+                const isValidBirthDate = !!parseBirthDateLocal(birthDateInput.value);
+                if (isValidBirthDate) {
+                    setTimeout(() => {
+                        validateField(birthDateInput);
+                        validateField(ageInput);
+                    }, 100);
+                }
+            }            
         });
         birthDateInput.addEventListener('blur', function() {
             syncAge();
-            // Trigger validation on blur (without icons)
+            // Final validation on blur only when a valid date is present
             if (typeof validateField === 'function') {
-                validateField(birthDateInput);
-                validateField(ageInput);
-            }
+                const isValidBirthDate = !!parseBirthDateLocal(birthDateInput.value);
+                if (isValidBirthDate) {
+                    validateField(birthDateInput);
+                    validateField(ageInput);
+                }
+            }            
         });
         syncAge();
     }
@@ -3152,16 +3224,23 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
             // Regular field validation
             if (isValid && fieldValue) {
-                // For birth_date and age, use special class that only applies green styling (no icons)
+                // For birth_date and age, use special class that only applies green styling (no icons/messages)
                 if (shouldExcludeIcons) {
                     field.classList.add('is-valid-no-icon');
+                    hideValidationMessage(field);
                 } else {
                     field.classList.add('is-valid');
+                    hideValidationMessage(field);
                 }
-                hideValidationMessage(field);
             } else if (!isValid) {
-                field.classList.add('is-invalid');
-                showValidationMessage(field, errorMessage, 'error');
+                if (shouldExcludeIcons) {
+                    // Keep neutral (no icons/messages) but still report invalid state via return value
+                    field.classList.remove('is-valid-no-icon', 'is-valid', 'is-invalid');
+                    hideValidationMessage(field);
+                } else {
+                    field.classList.add('is-invalid');
+                    showValidationMessage(field, errorMessage, 'error');
+                }
             } else {
                 // Field is empty but not required - remove validation classes (already removed above)
                 // Special case: if phone field requiring submit is empty and form hasn't been submitted, clear invalid state
