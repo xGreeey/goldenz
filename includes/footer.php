@@ -714,15 +714,15 @@
     <!-- Chat Widget - Floating chat accessible from all pages -->
     <?php 
     // Only include if user is logged in
-    // HR Admin: use full-page Messages instead of floating widget
+    // HR Admin and Super Admin: use full-page Messages instead of floating widget
     $role = $_SESSION['user_role'] ?? '';
-    if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true && $role !== 'hr_admin') {
+    if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true && $role !== 'hr_admin' && $role !== 'super_admin') {
         include __DIR__ . '/chat-widget.php';
     }
     ?>
     
     <!-- Chat Widget JavaScript -->
-    <?php if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true && (($_SESSION['user_role'] ?? '') !== 'hr_admin')): ?>
+    <?php if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true && (($_SESSION['user_role'] ?? '') !== 'hr_admin') && (($_SESSION['user_role'] ?? '') !== 'super_admin')): ?>
     <script src="<?php echo asset_url('js/chat-widget.js'); ?>"></script>
     <?php endif; ?>
     
