@@ -3,14 +3,20 @@
 $post_id = $_GET['id'] ?? 0;
 
 if (!$post_id) {
-    redirect_with_message('?page=posts', 'Post ID is required.', 'danger');
+    $_SESSION['message'] = 'Post ID is required.';
+    $_SESSION['message_type'] = 'danger';
+    echo '<script>window.location.href = ' . json_encode('?page=posts') . ';</script>';
+    exit;
 }
 
 // Get post data
 $post = get_post_by_id($post_id);
 
 if (!$post) {
-    redirect_with_message('?page=posts', 'Post not found.', 'danger');
+    $_SESSION['message'] = 'Post not found.';
+    $_SESSION['message_type'] = 'danger';
+    echo '<script>window.location.href = ' . json_encode('?page=posts') . ';</script>';
+    exit;
 }
 
 // Handle form submission
@@ -63,7 +69,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'updat
         if (update_post($post_id, $post_data)) {
             $_SESSION['message'] = 'Post updated successfully!';
             $_SESSION['message_type'] = 'success';
-            header('Location: ?page=posts');
+            
+            // Use JavaScript redirect since headers may already be sent
+            echo '<script>
+                window.location.href = ' . json_encode('?page=posts') . ';
+            </script>';
             exit;
         } else {
             $errors[] = 'Failed to update post. Please try again.';
