@@ -414,33 +414,51 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    const searchInput = document.getElementById('leaveSearch');
-    const tableBody = document.getElementById('leaveTableBody');
-    const countEl = document.getElementById('leave-count');
-    const rows = () => Array.from(tableBody?.querySelectorAll('tr.leave-row') || []);
+    function initLeaveSearch() {
+        const searchInput = document.getElementById('leaveSearch');
+        const tableBody = document.getElementById('leaveTableBody');
+        const countEl = document.getElementById('leave-count');
+        const rows = () => Array.from(tableBody?.querySelectorAll('tr.leave-row') || []);
 
-    const updateCount = () => {
-        if (!countEl) return;
-        const visible = rows().filter(r => r.style.display !== 'none').length;
-        countEl.textContent = visible.toLocaleString();
-    };
+        const updateCount = () => {
+            if (!countEl) return;
+            const visible = rows().filter(r => r.style.display !== 'none').length;
+            countEl.textContent = visible.toLocaleString();
+        };
 
-    if (searchInput) {
-        let t = null;
-        searchInput.addEventListener('input', () => {
-            window.clearTimeout(t);
-            t = window.setTimeout(() => {
-                const q = (searchInput.value || '').trim().toLowerCase();
+        if (searchInput) {
+            // Remove any existing listeners by cloning
+            const newInput = searchInput.cloneNode(true);
+            searchInput.parentNode.replaceChild(newInput, searchInput);
+            
+            let searchTimeout;
+            newInput.addEventListener('input', () => {
+                window.clearTimeout(searchTimeout);
+                searchTimeout = window.setTimeout(() => {
+                    const q = (newInput.value || '').trim().toLowerCase();
+                    rows().forEach(row => {
+                        const name = (row.querySelector('.employee-name')?.textContent || '').toLowerCase();
+                        const post = (row.querySelector('.employee-role')?.textContent || '').toLowerCase();
+                        row.style.display = (q === '' || name.includes(q) || post.includes(q)) ? '' : 'none';
+                    });
+                    updateCount();
+                }, 150);
+            });
+            
+            // Trigger initial filter if there's a value
+            if (newInput.value) {
+                const q = (newInput.value || '').trim().toLowerCase();
                 rows().forEach(row => {
                     const name = (row.querySelector('.employee-name')?.textContent || '').toLowerCase();
                     const post = (row.querySelector('.employee-role')?.textContent || '').toLowerCase();
                     row.style.display = (q === '' || name.includes(q) || post.includes(q)) ? '' : 'none';
                 });
-                updateCount();
-            }, 150);
-        });
+            }
+        }
+        updateCount();
     }
-    updateCount();
+    
+    initLeaveSearch();
 
     // Approve button
     document.querySelectorAll('.approve-btn').forEach(btn => {
@@ -455,5 +473,90 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('reject_request_id').value = this.dataset.requestId;
         });
     });
+});
+
+// Re-initialize when page content is loaded via AJAX (outside DOMContentLoaded)
+document.addEventListener('pageContentLoaded', function(e) {
+    const page = e.detail?.page || new URLSearchParams(window.location.search).get('page');
+    if (page === 'timeoff' || page === 'leaves') {
+        setTimeout(function() {
+            const statusSelect = document.getElementById('leaveStatusFilter');
+            const typeSelect = document.getElementById('leaveTypeFilter');
+            if (statusSelect) {
+                statusSelect.addEventListener('change', () => {
+                    document.getElementById('leaveFilterForm')?.submit();
+                });
+            }
+            if (typeSelect) {
+                typeSelect.addEventListener('change', () => {
+                    document.getElementById('leaveFilterForm')?.submit();
+                });
+            }
+            
+            const searchInput = document.getElementById('leaveSearch');
+            const tableBody = document.getElementById('leaveTableBody');
+            const countEl = document.getElementById('leave-count');
+            const rows = () => Array.from(tableBody?.querySelectorAll('tr.leave-row') || []);
+
+            const updateCount = () => {
+                if (!countEl) return;
+                const visible = rows().filter(r => r.style.display !== 'none').length;
+                countEl.textContent = visible.toLocaleString();
+            };
+
+            if (searchInput) {
+                let searchTimeout;
+                searchInput.addEventListener('input', () => {
+                    window.clearTimeout(searchTimeout);
+                    searchTimeout = window.setTimeout(() => {
+                        const q = (searchInput.value || '').trim().toLowerCase();
+                        rows().forEach(row => {
+                            const name = (row.querySelector('.employee-name')?.textContent || '').toLowerCase();
+                            const post = (row.querySelector('.employee-role')?.textContent || '').toLowerCase();
+                            row.style.display = (q === '' || name.includes(q) || post.includes(q)) ? '' : 'none';
+                        });
+                        updateCount();
+                    }, 150);
+                });
+            }
+            updateCount();
+        }, 100);
+    }
+});
+
+// Also listen for the old event name (backwards compatibility)
+document.addEventListener('pageLoaded', function(e) {
+    const page = e.detail?.page || new URLSearchParams(window.location.search).get('page');
+    if (page === 'timeoff' || page === 'leaves') {
+        setTimeout(function() {
+            const searchInput = document.getElementById('leaveSearch');
+            const tableBody = document.getElementById('leaveTableBody');
+            const countEl = document.getElementById('leave-count');
+            const rows = () => Array.from(tableBody?.querySelectorAll('tr.leave-row') || []);
+
+            const updateCount = () => {
+                if (!countEl) return;
+                const visible = rows().filter(r => r.style.display !== 'none').length;
+                countEl.textContent = visible.toLocaleString();
+            };
+
+            if (searchInput) {
+                let searchTimeout;
+                searchInput.addEventListener('input', () => {
+                    window.clearTimeout(searchTimeout);
+                    searchTimeout = window.setTimeout(() => {
+                        const q = (searchInput.value || '').trim().toLowerCase();
+                        rows().forEach(row => {
+                            const name = (row.querySelector('.employee-name')?.textContent || '').toLowerCase();
+                            const post = (row.querySelector('.employee-role')?.textContent || '').toLowerCase();
+                            row.style.display = (q === '' || name.includes(q) || post.includes(q)) ? '' : 'none';
+                        });
+                        updateCount();
+                    }, 150);
+                });
+            }
+            updateCount();
+        }, 100);
+    }
 });
 </script>

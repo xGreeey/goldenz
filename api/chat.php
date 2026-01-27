@@ -10,8 +10,8 @@ require_once __DIR__ . '/../includes/security.php';
 require_once __DIR__ . '/../includes/database.php';
 require_once __DIR__ . '/../includes/paths.php';
 
-// Enforce JSON responses
-header('Content-Type: application/json');
+// Enforce JSON responses with UTF-8 encoding for emoji support
+header('Content-Type: application/json; charset=UTF-8');
 
 // Security: Check if user is authenticated
 if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
@@ -168,7 +168,8 @@ try {
                 $user['avatar_url'] = get_avatar_url($user['avatar'] ?? null);
             }
             
-            echo json_encode(['success' => true, 'users' => $users]);
+            // Preserve Unicode (emojis) in user data
+            echo json_encode(['success' => true, 'users' => $users], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
             break;
             
         case 'get_messages':
@@ -268,11 +269,12 @@ try {
                 }
             }
             
+            // Ensure UTF-8 encoding for emoji support in JSON response
             echo json_encode([
                 'success' => true, 
                 'messages' => $messages,
                 'current_user_id' => $current_user_id
-            ]);
+            ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
             break;
             
         case 'send_message':
@@ -350,11 +352,12 @@ try {
                 );
             }
             
+            // Preserve Unicode (emojis) in message content
             echo json_encode([
                 'success' => true, 
                 'message' => $newMessage,
                 'message_id' => $message_id
-            ]);
+            ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
             break;
             
         case 'get_unread_count':
@@ -651,11 +654,12 @@ try {
                 );
             }
             
+            // Preserve Unicode (emojis) in message content
             echo json_encode([
                 'success' => true, 
                 'message' => $newMessage,
                 'message_id' => $message_id
-            ]);
+            ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
             break;
             
         case 'check_soft_delete':
