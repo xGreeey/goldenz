@@ -247,7 +247,18 @@ if (!function_exists('redirect_with_message')) {
     function redirect_with_message($url, $message, $type = 'info') {
         $_SESSION['message'] = $message;
         $_SESSION['message_type'] = $type;
-        header("Location: $url");
+        
+        // Avoid "headers already sent" warnings when pages are rendered inside a layout
+        // that may have already started output (e.g. includes/header.php).
+        if (!headers_sent()) {
+            header('Location: ' . $url);
+            exit;
+        }
+        
+        // Fallback to a client-side redirect if output already started.
+        $safeUrl = json_encode((string)$url, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
+        echo "<script>window.location.href = {$safeUrl};</script>";
+        echo "<noscript><meta http-equiv=\"refresh\" content=\"0;url=" . htmlspecialchars((string)$url, ENT_QUOTES, 'UTF-8') . "\"></noscript>";
         exit;
     }
 }

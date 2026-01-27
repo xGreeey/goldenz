@@ -1387,6 +1387,37 @@ body.portal-hr-admin .btn-outline-modern .fal {
     height: auto !important;
 }
 
+/* Ensure icons in standard Bootstrap outline buttons are always visible (e.g. action icons) */
+body.portal-hr-admin .btn-outline-primary i,
+body.portal-hr-admin .btn-outline-success i,
+body.portal-hr-admin .btn-outline-danger i,
+body.portal-hr-admin .btn-outline-info i,
+body.portal-hr-admin .btn-outline-secondary i,
+body.portal-hr-admin .btn-outline-primary .fas,
+body.portal-hr-admin .btn-outline-success .fas,
+body.portal-hr-admin .btn-outline-danger .fas,
+body.portal-hr-admin .btn-outline-info .fas,
+body.portal-hr-admin .btn-outline-secondary .fas,
+body.portal-hr-admin .btn-outline-primary .far,
+body.portal-hr-admin .btn-outline-success .far,
+body.portal-hr-admin .btn-outline-danger .far,
+body.portal-hr-admin .btn-outline-info .far,
+body.portal-hr-admin .btn-outline-secondary .far,
+body.portal-hr-admin .btn-outline-primary .fal,
+body.portal-hr-admin .btn-outline-success .fal,
+body.portal-hr-admin .btn-outline-danger .fal,
+body.portal-hr-admin .btn-outline-info .fal,
+body.portal-hr-admin .btn-outline-secondary .fal {
+    font-family: 'Font Awesome 6 Free', 'Font Awesome 5 Free' !important;
+    font-weight: 900 !important;
+    font-style: normal !important;
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    color: inherit !important;
+    line-height: 1 !important;
+}
+
 body.portal-hr-admin .btn-outline-modern.btn-sm i,
 body.portal-hr-admin .btn-outline-modern.btn-sm .fas {
     font-size: 0.8125rem !important;
