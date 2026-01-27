@@ -4,6 +4,36 @@
  * Works regardless of entry folder (developer, hr-admin, etc.)
  */
 
+if (!function_exists('is_https')) {
+    /**
+     * Detect if the current request is using HTTPS
+     * Handles proxies, load balancers, and direct connections
+     * 
+     * @return bool True if HTTPS, false otherwise
+     */
+    function is_https(): bool
+    {
+        // Direct HTTPS check
+        if (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') {
+            return true;
+        }
+        // Check X-Forwarded-Proto header (common with proxies/load balancers)
+        if (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') {
+            return true;
+        }
+        // Check X-Forwarded-Ssl header
+        if (!empty($_SERVER['HTTP_X_FORWARDED_SSL']) && $_SERVER['HTTP_X_FORWARDED_SSL'] === 'on') {
+            return true;
+        }
+        // Check if port is 443
+        if (!empty($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443) {
+            return true;
+        }
+        
+        return false;
+    }
+}
+
 if (!function_exists('root_prefix')) {
     function root_prefix(): string
     {
@@ -17,7 +47,7 @@ if (!function_exists('root_prefix')) {
 if (!function_exists('base_url')) {
     function base_url(): string
     {
-        $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+        $scheme = is_https() ? 'https' : 'http';
         $host = $_SERVER['HTTP_HOST'] ?? '';
         return $scheme . '://' . $host . root_prefix();
     }

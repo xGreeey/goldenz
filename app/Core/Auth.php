@@ -139,6 +139,23 @@ class Auth
      */
     public static function logout()
     {
+        // Clear remember token from database if user is logged in
+        if (isset($_SESSION['user_id'])) {
+            try {
+                $pdo = \get_db_connection();
+                $clear_sql = "UPDATE users SET remember_token = NULL WHERE id = ?";
+                $clear_stmt = $pdo->prepare($clear_sql);
+                $clear_stmt->execute([$_SESSION['user_id']]);
+            } catch (Exception $e) {
+                error_log('Error clearing remember token on logout: ' . $e->getMessage());
+            }
+        }
+        
+        // Clear remember token cookie
+        if (isset($_COOKIE['remember_token'])) {
+            setcookie('remember_token', '', time() - 3600, '/');
+        }
+        
         $_SESSION = [];
         if (isset($_COOKIE[session_name()])) {
             setcookie(session_name(), '', time() - 3600, '/');
