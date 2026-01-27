@@ -73,6 +73,50 @@ try {
 // Include database functions
 require_once __DIR__ . '/../includes/database.php';
 
+/**
+ * Encryption helper functions for Remember Me password storage
+ */
+if (!function_exists('encrypt_remember_password')) {
+    /**
+     * Encrypt password for secure cookie storage
+     * @param string $password
+     * @return string Base64 encoded encrypted password
+     */
+    function encrypt_remember_password($password) {
+        // Use a secret key - in production, this should be in .env file
+        $secret_key = $_ENV['APP_KEY'] ?? 'goldenz_hr_secret_key_change_in_production_' . md5(__FILE__);
+        $key = hash('sha256', $secret_key, true);
+        $iv = openssl_random_pseudo_bytes(16);
+        $encrypted = openssl_encrypt($password, 'AES-256-CBC', $key, 0, $iv);
+        return base64_encode($iv . $encrypted);
+    }
+}
+
+if (!function_exists('decrypt_remember_password')) {
+    /**
+     * Decrypt password from cookie
+     * @param string $encrypted_password Base64 encoded encrypted password
+     * @return string|false Decrypted password or false on failure
+     */
+    function decrypt_remember_password($encrypted_password) {
+        try {
+            $secret_key = $_ENV['APP_KEY'] ?? 'goldenz_hr_secret_key_change_in_production_' . md5(__FILE__);
+            $key = hash('sha256', $secret_key, true);
+            $data = base64_decode($encrypted_password);
+            if ($data === false || strlen($data) < 16) {
+                return false;
+            }
+            $iv = substr($data, 0, 16);
+            $encrypted = substr($data, 16);
+            $decrypted = openssl_decrypt($encrypted, 'AES-256-CBC', $key, 0, $iv);
+            return $decrypted !== false ? $decrypted : false;
+        } catch (Exception $e) {
+            error_log('Password decryption error: ' . $e->getMessage());
+            return false;
+        }
+    }
+}
+
 // Handle logout
 if (isset($_GET['logout']) && $_GET['logout'] == '1') {
     // Clear remember token from database if user is logged in
@@ -90,8 +134,25 @@ if (isset($_GET['logout']) && $_GET['logout'] == '1') {
     // Clear remember token cookie (this prevents auto-login)
     // BUT keep remembered_username cookie so username field can be pre-filled
     if (isset($_COOKIE['remember_token'])) {
-        setcookie('remember_token', '', time() - 3600, '/');
+        $cookie_params = session_get_cookie_params();
+        $cookie_domain = $cookie_params['domain'] ?? '';
+        $is_https = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || 
+                   (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443);
+        if (PHP_VERSION_ID >= 70300) {
+            setcookie('remember_token', '', [
+                'expires' => time() - 3600,
+                'path' => '/',
+                'domain' => $cookie_domain,
+                'secure' => $is_https,
+                'httponly' => true,
+                'samesite' => 'Lax'
+            ]);
+        } else {
+            setcookie('remember_token', '', time() - 3600, '/', $cookie_domain, $is_https, true);
+        }
     }
+    // NOTE: We intentionally do NOT clear remembered_username and remembered_password cookies here
+    // so both username and password fields can be pre-filled after logout
     
     session_unset();
     session_destroy();
@@ -586,10 +647,56 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
                                 // Set remember token cookie with 7 days expiry
                                 // Format: user_id|token for optimized lookup
                                 $token_cookie_value = $user['id'] . '|' . $remember_token;
-                                setcookie('remember_token', $token_cookie_value, $cookie_expiry, '/', '', $is_https, true);
+                                // Set cookie with proper parameters
+                                $cookie_params = session_get_cookie_params();
+                                $cookie_domain = $cookie_params['domain'] ?? '';
                                 
-                                // Store username in cookie for convenience (even after logout)
-                                setcookie('remembered_username', $user['username'], $cookie_expiry, '/', '', $is_https, false);
+                                // Use array syntax for PHP 7.3+, fallback for older versions
+                                if (PHP_VERSION_ID >= 70300) {
+                                    setcookie('remember_token', $token_cookie_value, [
+                                        'expires' => $cookie_expiry,
+                                        'path' => '/',
+                                        'domain' => $cookie_domain,
+                                        'secure' => $is_https,
+                                        'httponly' => true,
+                                        'samesite' => 'Lax'
+                                    ]);
+                                    
+                                    // Store username in cookie for convenience (even after logout)
+                                    // This cookie persists even after logout so username can be pre-filled
+                                    setcookie('remembered_username', $user['username'], [
+                                        'expires' => $cookie_expiry,
+                                        'path' => '/',
+                                        'domain' => $cookie_domain,
+                                        'secure' => $is_https,
+                                        'httponly' => false, // Not HttpOnly so JavaScript can access if needed
+                                        'samesite' => 'Lax'
+                                    ]);
+                                    
+                                    // Store encrypted password in cookie (even after logout)
+                                    // Password is encrypted for security, but not HttpOnly so JS can read it
+                                    $encrypted_password = encrypt_remember_password($password);
+                                    if ($encrypted_password) {
+                                        setcookie('remembered_password', $encrypted_password, [
+                                            'expires' => $cookie_expiry,
+                                            'path' => '/',
+                                            'domain' => $cookie_domain,
+                                            'secure' => $is_https,
+                                            'httponly' => false, // Not HttpOnly so JavaScript can read and fill password field
+                                            'samesite' => 'Lax'
+                                        ]);
+                                    }
+                                } else {
+                                    // Fallback for PHP < 7.3
+                                    setcookie('remember_token', $token_cookie_value, $cookie_expiry, '/', $cookie_domain, $is_https, true);
+                                    setcookie('remembered_username', $user['username'], $cookie_expiry, '/', $cookie_domain, $is_https, false);
+                                    
+                                    // Store encrypted password
+                                    $encrypted_password = encrypt_remember_password($password);
+                                    if ($encrypted_password) {
+                                        setcookie('remembered_password', $encrypted_password, $cookie_expiry, '/', $cookie_domain, $is_https, false);
+                                    }
+                                }
                                 
                                 $debug_info[] = "Remember me token set for 7 days";
                             } else {
@@ -600,12 +707,56 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
                                 
                                 // Clear remember token cookie if it exists
                                 if (isset($_COOKIE['remember_token'])) {
-                                    setcookie('remember_token', '', time() - 3600, '/');
+                                    $cookie_params = session_get_cookie_params();
+                                    $cookie_domain = $cookie_params['domain'] ?? '';
+                                    if (PHP_VERSION_ID >= 70300) {
+                                        setcookie('remember_token', '', [
+                                            'expires' => time() - 3600,
+                                            'path' => '/',
+                                            'domain' => $cookie_domain,
+                                            'secure' => $is_https,
+                                            'httponly' => true,
+                                            'samesite' => 'Lax'
+                                        ]);
+                                    } else {
+                                        setcookie('remember_token', '', time() - 3600, '/', $cookie_domain, $is_https, true);
+                                    }
                                 }
                                 
-                                // Clear remembered username cookie
+                                // Clear remembered username and password cookies (only if user unchecks remember me)
                                 if (isset($_COOKIE['remembered_username'])) {
-                                    setcookie('remembered_username', '', time() - 3600, '/');
+                                    $cookie_params = session_get_cookie_params();
+                                    $cookie_domain = $cookie_params['domain'] ?? '';
+                                    if (PHP_VERSION_ID >= 70300) {
+                                        setcookie('remembered_username', '', [
+                                            'expires' => time() - 3600,
+                                            'path' => '/',
+                                            'domain' => $cookie_domain,
+                                            'secure' => $is_https,
+                                            'httponly' => false,
+                                            'samesite' => 'Lax'
+                                        ]);
+                                    } else {
+                                        setcookie('remembered_username', '', time() - 3600, '/', $cookie_domain, $is_https, false);
+                                    }
+                                }
+                                
+                                // Clear remembered password cookie
+                                if (isset($_COOKIE['remembered_password'])) {
+                                    $cookie_params = session_get_cookie_params();
+                                    $cookie_domain = $cookie_params['domain'] ?? '';
+                                    if (PHP_VERSION_ID >= 70300) {
+                                        setcookie('remembered_password', '', [
+                                            'expires' => time() - 3600,
+                                            'path' => '/',
+                                            'domain' => $cookie_domain,
+                                            'secure' => $is_https,
+                                            'httponly' => true,
+                                            'samesite' => 'Lax'
+                                        ]);
+                                    } else {
+                                        setcookie('remembered_password', '', time() - 3600, '/', $cookie_domain, $is_https, false);
+                                    }
                                 }
                             }
                             
@@ -1334,6 +1485,17 @@ ob_end_flush();
                                    minlength="8"
                                    maxlength="255"
                                    aria-required="true"
+                                   <?php if (isset($_POST['password'])): ?>
+                                   value="<?php echo htmlspecialchars($_POST['password']); ?>"
+                                   <?php endif; ?>
+                                   data-remembered-password="<?php 
+                                       if (isset($_COOKIE['remembered_password'])) {
+                                           $decrypted = decrypt_remember_password($_COOKIE['remembered_password']);
+                                           if ($decrypted !== false) {
+                                               echo htmlspecialchars($decrypted, ENT_QUOTES);
+                                           }
+                                       }
+                                   ?>"
                                    aria-describedby="password-error"
                                    data-validation-message="Minimum 8 characters required">
                             <button class="password-toggle" type="button" id="togglePassword" aria-label="Show password" tabindex="-1">
@@ -1648,6 +1810,30 @@ ob_end_flush();
     <!-- JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="../assets/js/notifications.js"></script>
+    <script>
+    // Fill password field from remembered password cookie (if available)
+    document.addEventListener('DOMContentLoaded', function() {
+        // Function to get cookie value
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+            return null;
+        }
+        
+        // Function to decrypt password (client-side decryption would require the key, which is insecure)
+        // Instead, we'll use a server-side approach via data attribute
+        const passwordField = document.getElementById('password');
+        if (passwordField && passwordField.dataset.rememberedPassword) {
+            // Set password value from data attribute (decrypted server-side)
+            passwordField.value = passwordField.dataset.rememberedPassword;
+            // Clear the data attribute for security after reading
+            setTimeout(function() {
+                passwordField.removeAttribute('data-remembered-password');
+            }, 100);
+        }
+    });
+    </script>
     <script>
     // Simplified JavaScript - minimal interference
     document.addEventListener('DOMContentLoaded', function() {
