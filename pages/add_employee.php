@@ -115,6 +115,24 @@ if (isset($_SESSION['employee_created_success']) && $_SESSION['employee_created_
 // Check if returning from Page 2 to edit Page 1 data
 $page1_session_data = $_SESSION['employee_page1_data'] ?? null;
 
+// Create merged form data: prioritize POST data, fallback to session data
+// This ensures form fields are repopulated when user returns from Page 2
+$form_data = [];
+if (!empty($page1_session_data) && is_array($page1_session_data)) {
+    // Start with session data (from Page 2 return)
+    $form_data = $page1_session_data;
+}
+// Override with POST data if available (new submission or validation error)
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST)) {
+    $form_data = array_merge($form_data, $_POST);
+}
+
+// Helper function to get form field value with fallback
+function get_form_value($field, $default = '') {
+    global $form_data;
+    return htmlspecialchars($form_data[$field] ?? $default);
+}
+
 // Get logged-in user information
 // Try to get from session, or use default system user
 $current_user_id = $_SESSION['user_id'] ?? $_SESSION['id'] ?? 1; // Default to user ID 1 (admin)
@@ -899,7 +917,7 @@ if (isset($_SESSION['employee_redirect_url'])) {
                                 pattern="\\d{1,5}"
                                 maxlength="5"
                                 placeholder="Up to 5 digits" 
-                                value="<?php echo htmlspecialchars($_POST['employee_no'] ?? ''); ?>" 
+                                value="<?php echo get_form_value('employee_no'); ?>" 
                                 required
                             >
                             <small class="form-text text-muted" style="visibility: hidden;">Placeholder</small>
@@ -910,9 +928,9 @@ if (isset($_SESSION['employee_redirect_url'])) {
                             <label for="employee_type" class="form-label">Designation <span class="text-danger">*</span></label>
                             <select class="form-select" id="employee_type" name="employee_type" required>
                                 <option value="">Select Designation</option>
-                                <option value="SG" <?php echo (($_POST['employee_type'] ?? '') === 'SG') ? 'selected' : ''; ?>>Security Guard (SG)</option>
-                                <option value="LG" <?php echo (($_POST['employee_type'] ?? '') === 'LG') ? 'selected' : ''; ?>>Lady Guard (LG)</option>
-                                <option value="SO" <?php echo (($_POST['employee_type'] ?? '') === 'SO') ? 'selected' : ''; ?>>Security Officer (SO)</option>
+                                <option value="SG" <?php echo (get_form_value('employee_type') === 'SG') ? 'selected' : ''; ?>>Security Guard (SG)</option>
+                                <option value="LG" <?php echo (get_form_value('employee_type') === 'LG') ? 'selected' : ''; ?>>Lady Guard (LG)</option>
+                                <option value="SO" <?php echo (get_form_value('employee_type') === 'SO') ? 'selected' : ''; ?>>Security Officer (SO)</option>
                             </select>
                             <small class="form-text text-muted">Indicates the employee's official position or designation.</small>
                         </div>
@@ -922,10 +940,11 @@ if (isset($_SESSION['employee_redirect_url'])) {
                             <label for="employment_status" class="form-label">Employment Status <span class="text-danger">*</span></label>
                             <select class="form-select" id="employment_status" name="employment_status" required>
                                 <option value="">Select Employment Status</option>
-                                <option value="Probationary" <?php echo (($_POST['employment_status'] ?? '') === 'Probationary') ? 'selected' : ''; ?>>Probationary</option>
-                                <option value="Regular" <?php echo (($_POST['employment_status'] ?? '') === 'Regular') ? 'selected' : ''; ?>>Regular</option>
-                                <option value="Suspended" <?php echo (($_POST['employment_status'] ?? '') === 'Suspended') ? 'selected' : ''; ?>>Suspended</option>
-                                <option value="Terminated" <?php echo (($_POST['employment_status'] ?? '') === 'Terminated') ? 'selected' : ''; ?>>Terminated</option>
+                                <?php $selEmpStatus = get_form_value('employment_status'); ?>
+                                <option value="Probationary" <?php echo ($selEmpStatus === 'Probationary') ? 'selected' : ''; ?>>Probationary</option>
+                                <option value="Regular" <?php echo ($selEmpStatus === 'Regular') ? 'selected' : ''; ?>>Regular</option>
+                                <option value="Suspended" <?php echo ($selEmpStatus === 'Suspended') ? 'selected' : ''; ?>>Suspended</option>
+                                <option value="Terminated" <?php echo ($selEmpStatus === 'Terminated') ? 'selected' : ''; ?>>Terminated</option>
                             </select>
                             <small class="form-text text-muted">Indicates the employee's official employment status.</small>
                         </div>
@@ -935,8 +954,9 @@ if (isset($_SESSION['employee_redirect_url'])) {
                             <label for="status" class="form-label">Account Access Status <span class="text-danger">*</span></label>
                             <select class="form-select" id="status" name="status" required>
                                 <option value="">Select Account Access Status</option>
-                                <option value="Active" <?php echo (($_POST['status'] ?? '') === 'Active') ? 'selected' : ''; ?>>Active</option>
-                                <option value="Inactive" <?php echo (($_POST['status'] ?? '') === 'Inactive') ? 'selected' : ''; ?>>Inactive</option>
+                                <?php $selStatus = get_form_value('status'); ?>
+                                <option value="Active" <?php echo ($selStatus === 'Active') ? 'selected' : ''; ?>>Active</option>
+                                <option value="Inactive" <?php echo ($selStatus === 'Inactive') ? 'selected' : ''; ?>>Inactive</option>
                             </select>
                             <small class="form-text text-muted">Indicates the employee's access to the information system.</small>
                                 </div>
@@ -969,7 +989,7 @@ if (isset($_SESSION['employee_redirect_url'])) {
                         <div class="form-group">
                             <label for="surname" class="form-label">Last Name <span class="text-danger">*</span></label>
                             <input type="text" class="form-control text-uppercase" id="surname" name="surname" maxlength="50"
-                                   value="<?php echo htmlspecialchars($_POST['surname'] ?? ''); ?>" required>
+                                   value="<?php echo get_form_value('surname'); ?>" required>
                             <small class="form-text text-muted" style="visibility: hidden;">Placeholder</small>
                         </div>
                     </div>
@@ -985,7 +1005,7 @@ if (isset($_SESSION['employee_redirect_url'])) {
                         <div class="form-group">
                             <label for="middle_name" class="form-label">Middle Name</label>
                             <input type="text" class="form-control text-uppercase" id="middle_name" name="middle_name" maxlength="50"
-                                   value="<?php echo htmlspecialchars($_POST['middle_name'] ?? ''); ?>">
+                                   value="<?php echo get_form_value('middle_name'); ?>">
                             <small class="form-text text-muted" style="visibility: hidden;">Placeholder</small>
                         </div>
                     </div>
@@ -993,7 +1013,7 @@ if (isset($_SESSION['employee_redirect_url'])) {
                         <div class="form-group">
                             <label for="birth_date" class="form-label">Birth Date</label>
                             <input type="date" class="form-control" id="birth_date" name="birth_date" 
-                                   value="<?php echo htmlspecialchars($_POST['birth_date'] ?? ''); ?>">
+                                   value="<?php echo get_form_value('birth_date'); ?>">
                             <small class="form-text text-muted" style="visibility: hidden;">Placeholder</small>
                         </div>
                     </div>
@@ -1008,7 +1028,7 @@ if (isset($_SESSION['employee_redirect_url'])) {
                     <div class="col-md-3">
                         <div class="form-group">
                             <label class="form-label d-block">Gender</label>
-                            <?php $selGender = $_POST['gender'] ?? ''; ?>
+                            <?php $selGender = get_form_value('gender'); ?>
                             <div class="d-flex gap-4 mt-1">
                                 <div class="form-check">
                                     <input class="form-check-input" type="radio" name="gender" id="gender_male" value="Male" <?php echo ($selGender === 'Male') ? 'checked' : ''; ?>>
@@ -1025,7 +1045,7 @@ if (isset($_SESSION['employee_redirect_url'])) {
                     <div class="col-md-4">
                         <div class="form-group">
                             <label for="civil_status" class="form-label">Civil Status</label>
-                            <?php $selCivil = $_POST['civil_status'] ?? ''; ?>
+                            <?php $selCivil = get_form_value('civil_status'); ?>
                             <select class="form-select" id="civil_status" name="civil_status">
                                 <option value="">Select</option>
                                 <option value="Single" <?php echo ($selCivil === 'Single') ? 'selected' : ''; ?>>Single</option>
@@ -1040,7 +1060,7 @@ if (isset($_SESSION['employee_redirect_url'])) {
                         <div class="form-group">
                             <label for="birthplace" class="form-label">Birthplace</label>
                             <input type="text" class="form-control text-uppercase" id="birthplace" name="birthplace" maxlength="150"
-                                   value="<?php echo htmlspecialchars($_POST['birthplace'] ?? ''); ?>">
+                                   value="<?php echo get_form_value('birthplace'); ?>">
                             <small class="form-text text-muted" style="visibility: hidden;">Placeholder</small>
                         </div>
                     </div>
@@ -1055,7 +1075,7 @@ if (isset($_SESSION['employee_redirect_url'])) {
                     <div class="col-md-6">
                         <div class="form-group">
                             <label for="address" class="form-label">City Address</label>
-                            <textarea class="form-control text-uppercase" id="address" name="address" rows="2"><?php echo htmlspecialchars($_POST['address'] ?? ''); ?></textarea>
+                            <textarea class="form-control text-uppercase" id="address" name="address" rows="2"><?php echo get_form_value('address'); ?></textarea>
                         </div>
                     </div>
                     <div class="col-md-6">
@@ -1071,7 +1091,7 @@ if (isset($_SESSION['employee_redirect_url'])) {
                                 <input type="number" class="form-control" id="height_ft" min="0" max="9" step="1" placeholder="ft" aria-label="Height feet">
                                 <input type="number" class="form-control" id="height_in" min="0" max="11" step="1" placeholder="in" aria-label="Height inches">
                             </div>
-                            <input type="hidden" id="height" name="height" value="<?php echo htmlspecialchars($_POST['height'] ?? ''); ?>">
+                            <input type="hidden" id="height" name="height" value="<?php echo get_form_value('height'); ?>">
                             <small class="form-text text-muted">Separate feet and inches; stored as 5'7".</small>
                         </div>
                     </div>
@@ -1090,15 +1110,16 @@ if (isset($_SESSION['employee_redirect_url'])) {
                         <div class="form-group">
                             <label for="blood_type" class="form-label">Blood Type <span class="text-danger">*</span></label>
                             <select class="form-select" id="blood_type" name="blood_type" required>
+                                <?php $selBloodType = get_form_value('blood_type'); ?>
                                 <option value="">Select Blood Type</option>
-                                <option value="A+" <?php echo (($_POST['blood_type'] ?? '') === 'A+') ? 'selected' : ''; ?>>A+</option>
-                                <option value="A-" <?php echo (($_POST['blood_type'] ?? '') === 'A-') ? 'selected' : ''; ?>>A-</option>
-                                <option value="B+" <?php echo (($_POST['blood_type'] ?? '') === 'B+') ? 'selected' : ''; ?>>B+</option>
-                                <option value="B-" <?php echo (($_POST['blood_type'] ?? '') === 'B-') ? 'selected' : ''; ?>>B-</option>
-                                <option value="AB+" <?php echo (($_POST['blood_type'] ?? '') === 'AB+') ? 'selected' : ''; ?>>AB+</option>
-                                <option value="AB-" <?php echo (($_POST['blood_type'] ?? '') === 'AB-') ? 'selected' : ''; ?>>AB-</option>
-                                <option value="O+" <?php echo (($_POST['blood_type'] ?? '') === 'O+') ? 'selected' : ''; ?>>O+</option>
-                                <option value="O-" <?php echo (($_POST['blood_type'] ?? '') === 'O-') ? 'selected' : ''; ?>>O-</option>
+                                <option value="A+" <?php echo ($selBloodType === 'A+') ? 'selected' : ''; ?>>A+</option>
+                                <option value="A-" <?php echo ($selBloodType === 'A-') ? 'selected' : ''; ?>>A-</option>
+                                <option value="B+" <?php echo ($selBloodType === 'B+') ? 'selected' : ''; ?>>B+</option>
+                                <option value="B-" <?php echo ($selBloodType === 'B-') ? 'selected' : ''; ?>>B-</option>
+                                <option value="AB+" <?php echo ($selBloodType === 'AB+') ? 'selected' : ''; ?>>AB+</option>
+                                <option value="AB-" <?php echo ($selBloodType === 'AB-') ? 'selected' : ''; ?>>AB-</option>
+                                <option value="O+" <?php echo ($selBloodType === 'O+') ? 'selected' : ''; ?>>O+</option>
+                                <option value="O-" <?php echo ($selBloodType === 'O-') ? 'selected' : ''; ?>>O-</option>
                             </select>
                             <small class="form-text text-muted" style="visibility: hidden;">Placeholder</small>
                         </div>
@@ -1116,7 +1137,7 @@ if (isset($_SESSION['employee_redirect_url'])) {
                                     'Muslim','Buddhist','Hindu','Sikh','Taoist',
                                     'Indigenous / Tribal','No Religion','Other'
                                 ];
-                                $selRel = $_POST['religion'] ?? '';
+                                $selRel = get_form_value('religion');
                                 foreach ($religions as $rel):
                                 ?>
                                     <option value="<?php echo htmlspecialchars($rel); ?>" <?php echo ($selRel === $rel) ? 'selected' : ''; ?>>
@@ -1131,7 +1152,7 @@ if (isset($_SESSION['employee_redirect_url'])) {
                         <div class="form-group">
                             <label for="special_skills" class="form-label">Special Skills / Interests</label>
                             <textarea class="form-control" id="special_skills" name="special_skills" rows="2" maxlength="500"
-                                      placeholder="e.g., First Aid, Driving, Computer Literate, Sports"><?php echo htmlspecialchars($_POST['special_skills'] ?? ''); ?></textarea>
+                                      placeholder="e.g., First Aid, Driving, Computer Literate, Sports"><?php echo get_form_value('special_skills'); ?></textarea>
                         </div>
                     </div>
                     <div class="col-12">
@@ -1148,14 +1169,14 @@ if (isset($_SESSION['employee_redirect_url'])) {
                         <div class="form-group">
                             <label for="spouse_age" class="form-label">Spouse Age</label>
                             <input type="number" class="form-control" id="spouse_age" name="spouse_age" min="0" max="120" step="1"
-                                   value="<?php echo htmlspecialchars($_POST['spouse_age'] ?? ''); ?>">
+                                   value="<?php echo get_form_value('spouse_age'); ?>">
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
                             <label for="spouse_occupation" class="form-label">Spouse Occupation</label>
                             <input type="text" class="form-control text-uppercase" id="spouse_occupation" name="spouse_occupation" maxlength="150"
-                                   value="<?php echo htmlspecialchars($_POST['spouse_occupation'] ?? ''); ?>">
+                                   value="<?php echo get_form_value('spouse_occupation'); ?>">
                         </div>
                     </div>
                     <div class="col-md-6">
@@ -1169,7 +1190,7 @@ if (isset($_SESSION['employee_redirect_url'])) {
                         <div class="form-group">
                             <label for="father_age" class="form-label">Father Age</label>
                             <input type="number" class="form-control" id="father_age" name="father_age" min="0" max="120" step="1"
-                                   value="<?php echo htmlspecialchars($_POST['father_age'] ?? ''); ?>">
+                                   value="<?php echo get_form_value('father_age'); ?>">
                         </div>
                     </div>
                     <div class="col-md-4">
@@ -1183,7 +1204,7 @@ if (isset($_SESSION['employee_redirect_url'])) {
                         <div class="form-group">
                             <label for="mother_name" class="form-label">Name of Mother</label>
                             <input type="text" class="form-control text-uppercase" id="mother_name" name="mother_name" maxlength="150"
-                                   value="<?php echo htmlspecialchars($_POST['mother_name'] ?? ''); ?>">
+                                   value="<?php echo get_form_value('mother_name'); ?>">
                         </div>
                     </div>
                     <div class="col-md-2">
@@ -1197,14 +1218,14 @@ if (isset($_SESSION['employee_redirect_url'])) {
                         <div class="form-group">
                             <label for="mother_occupation" class="form-label">Mother Occupation</label>
                             <input type="text" class="form-control text-uppercase" id="mother_occupation" name="mother_occupation" maxlength="150"
-                                   value="<?php echo htmlspecialchars($_POST['mother_occupation'] ?? ''); ?>">
+                                   value="<?php echo get_form_value('mother_occupation'); ?>">
                         </div>
                     </div>
                     <div class="col-12">
                         <div class="form-group">
                             <label for="children_names" class="form-label">Name of Children</label>
                             <textarea class="form-control" id="children_names" name="children_names" rows="2" maxlength="800"
-                                      placeholder="List children names, one per line"><?php echo htmlspecialchars($_POST['children_names'] ?? ''); ?></textarea>
+                                      placeholder="List children names, one per line"><?php echo get_form_value('children_names'); ?></textarea>
                         </div>
                     </div>
                 </div>
@@ -1224,7 +1245,7 @@ if (isset($_SESSION['employee_redirect_url'])) {
                             <label for="college_course" class="form-label">Course</label>
                             <input type="text" class="form-control text-uppercase" id="college_course" name="college_course" maxlength="150"
                                    placeholder="e.g., BS Information Technology"
-                                   value="<?php echo htmlspecialchars($_POST['college_course'] ?? ''); ?>">
+                                   value="<?php echo get_form_value('college_course'); ?>">
                         </div>
                     </div>
                     <div class="col-md-4">
@@ -1239,7 +1260,7 @@ if (isset($_SESSION['employee_redirect_url'])) {
                             <label for="college_years" class="form-label">Years Covered</label>
                             <input type="text" class="form-control" id="college_years" name="college_years" maxlength="15" inputmode="numeric"
                                    placeholder="e.g., 2018 - 2022"
-                                   value="<?php echo htmlspecialchars($_POST['college_years'] ?? ''); ?>">
+                                   value="<?php echo get_form_value('college_years'); ?>">
                         </div>
                     </div>
                     <div class="col-12">
@@ -1259,7 +1280,7 @@ if (isset($_SESSION['employee_redirect_url'])) {
                             <label for="vocational_course" class="form-label">Course</label>
                             <input type="text" class="form-control text-uppercase" id="vocational_course" name="vocational_course" maxlength="150"
                                    placeholder="e.g., Automotive Servicing NC II"
-                                   value="<?php echo htmlspecialchars($_POST['vocational_course'] ?? ''); ?>">
+                                   value="<?php echo get_form_value('vocational_course'); ?>">
                         </div>
                     </div>
                     <div class="col-md-4">
@@ -1274,7 +1295,7 @@ if (isset($_SESSION['employee_redirect_url'])) {
                             <label for="vocational_years" class="form-label">Years Covered</label>
                             <input type="text" class="form-control" id="vocational_years" name="vocational_years" maxlength="15" inputmode="numeric"
                                    placeholder="e.g., 2016 - 2017"
-                                   value="<?php echo htmlspecialchars($_POST['vocational_years'] ?? ''); ?>">
+                                   value="<?php echo get_form_value('vocational_years'); ?>">
                         </div>
                     </div>
                     <div class="col-12">
@@ -1293,7 +1314,7 @@ if (isset($_SESSION['employee_redirect_url'])) {
                         <div class="form-group">
                             <label for="highschool_school_name" class="form-label">School Name</label>
                             <input type="text" class="form-control text-uppercase" id="highschool_school_name" name="highschool_school_name" maxlength="200"
-                                   value="<?php echo htmlspecialchars($_POST['highschool_school_name'] ?? ''); ?>">
+                                   value="<?php echo get_form_value('highschool_school_name'); ?>">
                         </div>
                     </div>
                     <div class="col-md-4">
@@ -1308,7 +1329,7 @@ if (isset($_SESSION['employee_redirect_url'])) {
                         <div class="form-group">
                             <label for="highschool_school_address" class="form-label">School Address</label>
                             <input type="text" class="form-control text-uppercase" id="highschool_school_address" name="highschool_school_address" maxlength="255"
-                                   value="<?php echo htmlspecialchars($_POST['highschool_school_address'] ?? ''); ?>">
+                                   value="<?php echo get_form_value('highschool_school_address'); ?>">
                         </div>
                     </div>
 
@@ -1328,7 +1349,7 @@ if (isset($_SESSION['employee_redirect_url'])) {
                             <label for="elementary_years" class="form-label">Years Covered</label>
                             <input type="text" class="form-control" id="elementary_years" name="elementary_years" maxlength="15" inputmode="numeric"
                                    placeholder="e.g., 2006 - 2012"
-                                   value="<?php echo htmlspecialchars($_POST['elementary_years'] ?? ''); ?>">
+                                   value="<?php echo get_form_value('elementary_years'); ?>">
                         </div>
                     </div>
                     <div class="col-md-4">
@@ -1686,7 +1707,7 @@ if (isset($_SESSION['employee_redirect_url'])) {
                                     <input type="tel" class="form-control" id="num_cp_full" inputmode="numeric" pattern="^9\d{9}$" maxlength="10" placeholder="9XXXXXXXXX" required style="height: 38px;">
                                 </div>
                             </div>
-                            <input type="hidden" id="cp_number" name="cp_number" value="<?php echo htmlspecialchars($_POST['cp_number'] ?? ''); ?>">
+                            <input type="hidden" id="cp_number" name="cp_number" value="<?php echo get_form_value('cp_number'); ?>">
                         </div>
                     </div>
                 </div>
@@ -1710,7 +1731,7 @@ if (isset($_SESSION['employee_redirect_url'])) {
                                     'Mother','Father','Spouse','Partner','Sibling','Child',
                                     'Relative','Friend','Colleague','Guardian','Other'
                                 ];
-                                $relSel = $_POST['relationship'] ?? '';
+                                $relSel = get_form_value('relationship');
                                 ?>
                                 <option value="">Select</option>
                                 <?php foreach ($relationships as $rel): ?>
@@ -1734,7 +1755,7 @@ if (isset($_SESSION['employee_redirect_url'])) {
                                     <input type="tel" class="form-control" id="num_em_full" inputmode="numeric" pattern="^9\d{9}$" maxlength="10" placeholder="9XXXXXXXXX" required style="height: 38px;">
                                 </div>
                             </div>
-                            <input type="hidden" id="contact_person_number" name="contact_person_number" value="<?php echo htmlspecialchars($_POST['contact_person_number'] ?? ''); ?>">
+                            <input type="hidden" id="contact_person_number" name="contact_person_number" value="<?php echo get_form_value('contact_person_number'); ?>">
                         </div>
                     </div>
                     <div class="col-md-12">
@@ -1759,7 +1780,7 @@ if (isset($_SESSION['employee_redirect_url'])) {
                             <label for="contact_person_alt" class="form-label">Emergency Contact Person</label>
                             <input type="text" class="form-control text-uppercase" id="contact_person_alt" name="contact_person_alt" maxlength="150"
                                    placeholder="Full Name"
-                                   value="<?php echo htmlspecialchars($_POST['contact_person_alt'] ?? ''); ?>">
+                                   value="<?php echo get_form_value('contact_person_alt'); ?>">
                         </div>
                     </div>
                     <div class="col-md-3">
@@ -1772,7 +1793,7 @@ if (isset($_SESSION['employee_redirect_url'])) {
                                     'Mother','Father','Spouse','Partner','Sibling','Child',
                                     'Relative','Friend','Colleague','Guardian','Other'
                                 ];
-                                $relSelAlt = $_POST['relationship_alt'] ?? '';
+                                $relSelAlt = get_form_value('relationship_alt');
                                 foreach ($relationships as $rel): ?>
                                     <option value="<?php echo htmlspecialchars($rel); ?>" <?php echo ($relSelAlt === $rel) ? 'selected' : ''; ?>>
                                         <?php echo htmlspecialchars($rel); ?>
@@ -1800,7 +1821,7 @@ if (isset($_SESSION['employee_redirect_url'])) {
                     <div class="col-md-12">
                         <div class="form-group">
                             <label for="contact_person_address_alt" class="form-label">Contact Address</label>
-                            <textarea class="form-control text-uppercase" id="contact_person_address_alt" name="contact_person_address_alt" rows="2"><?php echo htmlspecialchars($_POST['contact_person_address_alt'] ?? ''); ?></textarea>
+                            <textarea class="form-control text-uppercase" id="contact_person_address_alt" name="contact_person_address_alt" rows="2"><?php echo get_form_value('contact_person_address_alt'); ?></textarea>
                         </div>
                     </div>
                     <div class="col-12 d-flex justify-content-end">
@@ -1831,7 +1852,7 @@ if (isset($_SESSION['employee_redirect_url'])) {
                         <div class="form-group">
                             <label for="date_hired" class="form-label">Date Hired <span class="text-danger">*</span></label>
                             <input type="date" class="form-control" id="date_hired" name="date_hired" 
-                                   value="<?php echo htmlspecialchars($_POST['date_hired'] ?? ''); ?>" max="<?php echo date('Y-m-d'); ?>" required>
+                                   value="<?php echo get_form_value('date_hired'); ?>" max="<?php echo date('Y-m-d'); ?>" required>
                             <small class="form-text text-muted" style="visibility: hidden;">Placeholder</small>
                         </div>
                     </div>
@@ -1863,7 +1884,7 @@ if (isset($_SESSION['employee_redirect_url'])) {
                         <div class="form-group">
                             <label for="license_exp_date" class="form-label">License Expiration Date <span class="text-danger">*</span></label>
                             <input type="date" class="form-control" id="license_exp_date" name="license_exp_date" 
-                                   value="<?php echo htmlspecialchars($_POST['license_exp_date'] ?? ''); ?>" required>
+                                   value="<?php echo get_form_value('license_exp_date'); ?>" required>
                             <small class="form-text text-muted" style="visibility: hidden;">Placeholder</small>
                         </div>
                     </div>
@@ -1877,7 +1898,7 @@ if (isset($_SESSION['employee_redirect_url'])) {
                                 <span>RLM Expiration</span>
                             </label>
                             <input type="date" class="form-control" id="rlm_exp" name="rlm_exp" 
-                                   value="<?php echo htmlspecialchars($_POST['rlm_exp'] ?? ''); ?>">
+                                   value="<?php echo get_form_value('rlm_exp'); ?>">
                             <small class="form-text text-muted" style="visibility: hidden;">Placeholder</small>
                         </div>
                     </div>
@@ -1915,7 +1936,7 @@ if (isset($_SESSION['employee_redirect_url'])) {
                                 inputmode="numeric" 
                                 pattern="[0-9]{4}-[0-9]{4}-[0-9]{4}"
                                 placeholder="1210-9087-6528" 
-                                value="<?php echo htmlspecialchars($_POST['pagibig_no'] ?? ''); ?>"
+                                value="<?php echo get_form_value('pagibig_no'); ?>"
                             >
                             <small class="form-text text-muted">Format: ####-####-####</small>
                         </div>
@@ -1947,7 +1968,7 @@ if (isset($_SESSION['employee_redirect_url'])) {
                                 inputmode="numeric" 
                                 pattern="[0-9]{2}-[0-9]{9}-[0-9]{1}"
                                 placeholder="21-200190443-1" 
-                                value="<?php echo htmlspecialchars($_POST['philhealth_no'] ?? ''); ?>"
+                                value="<?php echo get_form_value('philhealth_no'); ?>"
                             >
                             <small class="form-text text-muted">Format: ##-#########-#</small>
                         </div>
@@ -1963,17 +1984,18 @@ if (isset($_SESSION['employee_redirect_url'])) {
                     <div class="col-md-6">
                         <div class="form-group">
                             <label for="hr_remarks" class="form-label">HR Remarks</label>
-                            <textarea class="form-control" id="hr_remarks" name="hr_remarks" rows="3" maxlength="300" placeholder="Notes / flags"><?php echo htmlspecialchars($_POST['hr_remarks'] ?? ''); ?></textarea>
+                            <textarea class="form-control" id="hr_remarks" name="hr_remarks" rows="3" maxlength="300" placeholder="Notes / flags"><?php echo get_form_value('hr_remarks'); ?></textarea>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
                             <label for="status_summary" class="form-label">Status Summary</label>
                             <select class="form-select" id="status_summary" name="status_summary">
+                                <?php $selStatusSummary = get_form_value('status_summary'); ?>
                                 <option value="">Select</option>
-                                <option value="Completed" <?php echo (($_POST['status_summary'] ?? '') === 'Completed') ? 'selected' : ''; ?>>Completed</option>
-                                <option value="Incomplete" <?php echo (($_POST['status_summary'] ?? '') === 'Incomplete') ? 'selected' : ''; ?>>Incomplete</option>
-                                <option value="For Follow-Up" <?php echo (($_POST['status_summary'] ?? '') === 'For Follow-Up') ? 'selected' : ''; ?>>For Follow-Up</option>
+                                <option value="Completed" <?php echo ($selStatusSummary === 'Completed') ? 'selected' : ''; ?>>Completed</option>
+                                <option value="Incomplete" <?php echo ($selStatusSummary === 'Incomplete') ? 'selected' : ''; ?>>Incomplete</option>
+                                <option value="For Follow-Up" <?php echo ($selStatusSummary === 'For Follow-Up') ? 'selected' : ''; ?>>For Follow-Up</option>
                             </select>
                             <small class="form-text text-muted" style="visibility: hidden;">Placeholder</small>
                         </div>
