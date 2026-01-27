@@ -337,6 +337,12 @@ $role_config = config('roles.roles', []);
                     <i class="fas fa-info-circle"></i>
                     <span id="statusChangeInfoText">This action will change the user's access status.</span>
                 </div>
+                <!-- Only shown when status is Suspended -->
+                <div class="mt-3" id="suspendedDaysWrap" style="display:none;">
+                    <label for="suspendedDaysInput" class="form-label small mb-1">Suspension duration (days)</label>
+                    <input type="number" min="1" max="365" class="form-control" id="suspendedDaysInput" value="7">
+                    <small class="text-muted">User login will be blocked until this period ends.</small>
+                </div>
             </div>
             <div class="futuristic-modal-footer">
                 <button type="button" class="btn futuristic-btn-cancel" data-bs-dismiss="modal">
@@ -2098,13 +2104,16 @@ function updateUserRole(userId, newRole, selectElement) {
     });
 }
 
-function updateUserStatus(userId, newStatus, selectElement) {
-    console.log('🔄 Updating user status:', { userId, newStatus });
+function updateUserStatus(userId, newStatus, selectElement, suspendDays = null) {
+    console.log('🔄 Updating user status:', { userId, newStatus, suspendDays });
     
     const formData = new FormData();
     formData.append('action', 'update_status');
     formData.append('user_id', userId);
     formData.append('status', newStatus);
+    if (newStatus === 'suspended' && suspendDays) {
+        formData.append('suspended_days', String(suspendDays));
+    }
     
     const submitURL = window.location.pathname + '?page=users';
     
@@ -2468,6 +2477,8 @@ function showStatusChangeConfirm(userId, newStatus, statusText, selectElement) {
     const infoTextEl = document.getElementById('statusChangeInfoText');
     const iconEl = document.getElementById('statusChangeIcon');
     const infoBoxEl = document.getElementById('statusChangeInfoBox');
+    const suspendedDaysWrap = document.getElementById('suspendedDaysWrap');
+    const suspendedDaysInput = document.getElementById('suspendedDaysInput');
     
     if (!modal || !messageEl || !confirmBtn) {
         // Fallback to default confirm if modal not found
@@ -2506,7 +2517,7 @@ function showStatusChangeConfirm(userId, newStatus, statusText, selectElement) {
         iconEl.style.color = '#94a3b8';
     } else if (newStatus === 'suspended') {
         iconClass = 'fas fa-ban';
-        infoMessage = 'The user will be suspended and cannot login. This is typically used for disciplinary actions.';
+        infoMessage = 'The user will be suspended and cannot login for the specified number of days.';
         infoBoxEl.style.borderColor = 'rgba(239, 68, 68, 0.3)';
         infoBoxEl.style.background = 'rgba(239, 68, 68, 0.1)';
         iconEl.style.color = '#ef4444';
@@ -2514,6 +2525,19 @@ function showStatusChangeConfirm(userId, newStatus, statusText, selectElement) {
     
     iconEl.className = iconClass + ' futuristic-icon';
     infoTextEl.textContent = infoMessage;
+
+    // Show/hide suspended days input
+    if (suspendedDaysWrap) {
+        suspendedDaysWrap.style.display = (newStatus === 'suspended') ? 'block' : 'none';
+    }
+    if (newStatus === 'suspended' && suspendedDaysInput) {
+        // Default to 7 days if empty/invalid
+        const currentVal = parseInt(suspendedDaysInput.value, 10);
+        if (!Number.isFinite(currentVal) || currentVal < 1) {
+            suspendedDaysInput.value = '7';
+        }
+        setTimeout(() => suspendedDaysInput.focus(), 150);
+    }
     
     // Cleanup function to restore page state
     function cleanupModal() {
@@ -2536,7 +2560,12 @@ function showStatusChangeConfirm(userId, newStatus, statusText, selectElement) {
         e.preventDefault();
         e.stopPropagation();
         cleanupModal();
-        updateUserStatus(userId, newStatus, selectElement);
+        let suspendDays = null;
+        if (newStatus === 'suspended' && suspendedDaysInput) {
+            const parsed = parseInt(suspendedDaysInput.value, 10);
+            suspendDays = Number.isFinite(parsed) ? parsed : null;
+        }
+        updateUserStatus(userId, newStatus, selectElement, suspendDays);
     });
     
     // Handle cancellation
