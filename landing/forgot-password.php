@@ -94,9 +94,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['forgot_password'])) {
                     $update_stmt->execute([$token_data, $reset_expires, $user['id']]);
                 }
                 
-                // Generate reset URL
-                $reset_url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http') 
-                    . '://' . $_SERVER['HTTP_HOST'] 
+                // Generate reset URL - use improved HTTPS detection
+                require_once __DIR__ . '/../includes/paths.php';
+                $scheme = is_https() ? 'https' : 'http';
+                $reset_url = $scheme . '://' . $_SERVER['HTTP_HOST'] 
                     . dirname($_SERVER['PHP_SELF']) 
                     . '/reset-password.php?token=' . urlencode($reset_token) . '&email=' . urlencode($email);
                 

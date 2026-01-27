@@ -22,6 +22,24 @@ require_once 'includes/database.php';
 
 // Handle logout before redirecting
 if (isset($_GET['logout'])) {
+    // Clear remember token from database if user is logged in
+    if (isset($_SESSION['user_id'])) {
+        try {
+            require_once __DIR__ . '/includes/database.php';
+            $pdo = get_db_connection();
+            $clear_sql = "UPDATE users SET remember_token = NULL WHERE id = ?";
+            $clear_stmt = $pdo->prepare($clear_sql);
+            $clear_stmt->execute([$_SESSION['user_id']]);
+        } catch (Exception $e) {
+            error_log('Error clearing remember token on logout: ' . $e->getMessage());
+        }
+    }
+    
+    // Clear remember token cookie
+    if (isset($_COOKIE['remember_token'])) {
+        setcookie('remember_token', '', time() - 3600, '/');
+    }
+    
     session_unset();
     session_destroy();
     // Clear session cookie
