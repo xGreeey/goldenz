@@ -1483,11 +1483,22 @@ function exportToCSV() {
             const department = cells[2].textContent.trim();
             const employeeType = cells[3].textContent.trim();
             const location = cells[4].textContent.trim();
-            const positions = cells[5].textContent.trim();
+            
+            // Positions column renders like "filled/required" plus "remaining".
+            // Export filled + required as separate columns to keep CSV aligned.
+            let filled = '';
+            let required = '';
+            const filledRequiredText = (cells[5].querySelector('.position-info .d-flex span')?.textContent || '').trim(); // "x/y"
+            const match = filledRequiredText.match(/^\s*(\d+)\s*\/\s*(\d+)\s*$/);
+            if (match) {
+                filled = match[1];
+                required = match[2];
+            }
+            
             const priority = cells[6].textContent.trim();
             const status = cells[7].textContent.trim();
             
-            csv += `"${postTitle}","${postCode}","${department}","${employeeType}","${location}","${positions}","${priority}","${status}"\n`;
+            csv += `"${postTitle}","${postCode}","${department}","${employeeType}","${location}","${required}","${filled}","${priority}","${status}"\n`;
         }
     });
     

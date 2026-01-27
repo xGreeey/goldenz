@@ -497,7 +497,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
                     exit;
                 } elseif ($user['status'] === 'suspended') {
                     $_SESSION['login_status_error'] = 'suspended';
-                    $_SESSION['login_status_message'] = 'Your account has been suspended. Please contact your administrator for assistance.';
+                    
+                    // Build a suspension message with remaining days if locked_until is set
+                    $suspension_message = 'Your account has been suspended.';
+                    if (!empty($user['locked_until'])) {
+                        $locked_ts = strtotime($user['locked_until']);
+                        if ($locked_ts && $locked_ts > time()) {
+                            $seconds_remaining = $locked_ts - time();
+                            $days_remaining = (int)ceil($seconds_remaining / 86400);
+                            $end_date = date('M d, Y H:i', $locked_ts);
+                            $day_label = $days_remaining === 1 ? 'day' : 'days';
+                            $suspension_message .= " Suspension ends in {$days_remaining} {$day_label} (until {$end_date}).";
+                        }
+                    }
+                    $suspension_message .= ' Please contact your administrator for assistance.';
+                    
+                    $_SESSION['login_status_message'] = $suspension_message;
                     $error = 'suspended';
                     $debug_info[] = "User account is suspended - blocking login";
                     if ($wantsJson) {

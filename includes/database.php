@@ -3621,7 +3621,7 @@ if (!function_exists('update_user_role')) {
 
 // Update user status
 if (!function_exists('update_user_status')) {
-    function update_user_status($user_id, $new_status, $updated_by = null) {
+    function update_user_status($user_id, $new_status, $updated_by = null, $suspended_days = null) {
         try {
             $pdo = get_db_connection();
             
@@ -3629,6 +3629,18 @@ if (!function_exists('update_user_status')) {
             $valid_statuses = ['active', 'inactive', 'suspended'];
             if (!in_array($new_status, $valid_statuses)) {
                 return ['success' => false, 'message' => 'Invalid status specified'];
+            }
+            
+            // Validate suspended days (only when suspending)
+            if ($new_status === 'suspended') {
+                if ($suspended_days === null || $suspended_days <= 0) {
+                    // Sensible default if not provided
+                    $suspended_days = 7;
+                }
+                // Safety cap: 1..365 days
+                $suspended_days = max(1, min(365, (int)$suspended_days));
+            } else {
+                $suspended_days = null;
             }
             
             // Get current user data for audit
@@ -3653,9 +3665,11 @@ if (!function_exists('update_user_status')) {
             if ($result) {
                 // If suspending, also lock the account
                 if ($new_status === 'suspended') {
-                    $lock_sql = "UPDATE users SET locked_until = DATE_ADD(NOW(), INTERVAL 1 YEAR) WHERE id = ?";
+                    // Use a concrete datetime to avoid DB-specific parameter binding in INTERVAL
+                    $locked_until = (new DateTimeImmutable('now'))->modify('+' . $suspended_days . ' days')->format('Y-m-d H:i:s');
+                    $lock_sql = "UPDATE users SET locked_until = ? WHERE id = ?";
                     $lock_stmt = $pdo->prepare($lock_sql);
-                    $lock_stmt->execute([$user_id]);
+                    $lock_stmt->execute([$locked_until, $user_id]);
                 } elseif ($new_status === 'active') {
                     // If activating, unlock the account
                     $unlock_sql = "UPDATE users SET locked_until = NULL, failed_login_attempts = 0 WHERE id = ?";
@@ -3675,7 +3689,11 @@ if (!function_exists('update_user_status')) {
                     );
                 }
                 
-                return ['success' => true, 'message' => 'User status updated successfully'];
+                $msg = 'User status updated successfully';
+                if ($new_status === 'suspended') {
+                    $msg = 'User suspended for ' . (int)$suspended_days . ' day(s)';
+                }
+                return ['success' => true, 'message' => $msg];
             }
             
             return ['success' => false, 'message' => 'Failed to update user status'];

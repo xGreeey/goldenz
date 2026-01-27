@@ -632,7 +632,8 @@ $today_schedule = get_schedule_events($todayDate);
                                 $isToday = ($day == $currentDay);
                                 $classes = 'hrdash-schedule__calendar-day';
                                 if ($isToday) {
-                                    $classes .= ' hrdash-schedule__calendar-day--today active';
+                                    // Today indicator should not be a "selected" state by default
+                                    $classes .= ' hrdash-schedule__calendar-day--today';
                                 }
                                 echo '<div class="' . $classes . '" data-date="' . $dateStr . '">';
                                 echo '<span class="hrdash-schedule__calendar-day-num">' . $day . '</span>';
@@ -1679,9 +1680,14 @@ $today_schedule = get_schedule_events($todayDate);
     background: #fafbfc;
 }
 .hrdash-schedule__calendar-day--today {
-    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
-    color: #ffffff;
-    font-weight: 700;
+    /* Subtle "today" indicator (not a second selection) */
+    background: #ffffff;
+    color: #0f172a;
+    font-weight: 600;
+    box-shadow: inset 0 0 0 2px rgba(15, 23, 42, 0.18);
+}
+.hrdash-schedule__calendar-day--today:hover {
+    background: #f8fafc;
 }
 .hrdash-schedule__calendar-day.active {
     background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
@@ -1689,15 +1695,22 @@ $today_schedule = get_schedule_events($todayDate);
     font-weight: 700;
     box-shadow: 0 2px 8px rgba(15, 23, 42, 0.15);
 }
+.hrdash-schedule__calendar-day--today.active {
+    /* When selected, active styling should win */
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.15);
+}
 .hrdash-schedule__calendar-day-num {
     font-size: 0.875rem;
     font-weight: 500;
     line-height: 1.2;
 }
-.hrdash-schedule__calendar-day--today .hrdash-schedule__calendar-day-num,
 .hrdash-schedule__calendar-day.active .hrdash-schedule__calendar-day-num {
     font-weight: 700;
     color: #ffffff;
+}
+.hrdash-schedule__calendar-day--today .hrdash-schedule__calendar-day-num {
+    font-weight: 700;
+    color: inherit;
 }
 .hrdash-schedule__calendar-day--other .hrdash-schedule__calendar-day-num {
     color: #cbd5e1;
@@ -2313,16 +2326,24 @@ $today_schedule = get_schedule_events($todayDate);
             let currentMonth = today.getMonth();
             let currentYear = today.getFullYear();
             let selectedDate = new Date(today);
+
+            // Local-safe date formatting (avoid UTC shift from toISOString)
+            function formatLocalYMD(d) {
+                const y = d.getFullYear();
+                const m = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                return `${y}-${m}-${day}`;
+            }
             
             // Auto-update date picker to today if it exists
             if (datePicker) {
-                const todayStr = today.toISOString().split('T')[0];
+                const todayStr = formatLocalYMD(today);
                 datePicker.value = todayStr;
             }
             
             // Function to update the UI with a new date
             function updateScheduleDate(date, updatePicker = true) {
-                const dateStr = date.toISOString().split('T')[0];
+                const dateStr = formatLocalYMD(date);
                 
                 // Update date picker if it exists
                 if (updatePicker && datePicker) {
@@ -2367,7 +2388,7 @@ $today_schedule = get_schedule_events($todayDate);
                 for (let i = -2; i <= 2; i++) {
                     const date = new Date(centerDate);
                     date.setDate(date.getDate() + i);
-                    const dateStr = date.toISOString().split('T')[0];
+                    const dateStr = formatLocalYMD(date);
                     datesToCheck.push(dateStr);
                 }
                 
@@ -2381,7 +2402,7 @@ $today_schedule = get_schedule_events($todayDate);
                         const dayNum = date.getDate();
                         const dayAbbr = date.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase();
                         const dayFull = date.toLocaleDateString('en-US', { weekday: 'long' });
-                        const dateStr = date.toISOString().split('T')[0];
+                        const dateStr = formatLocalYMD(date);
                         const isSelected = i === 0;
                         
                         const btn = document.createElement('button');
@@ -2482,12 +2503,12 @@ $today_schedule = get_schedule_events($todayDate);
                 const datesToCheck = [];
                 
                 // Previous month trailing days (starting from Sunday)
-                const selectedStr = selectedDay ? selectedDay.toISOString().split('T')[0] : null;
+                const selectedStr = selectedDay ? formatLocalYMD(selectedDay) : null;
                 if (firstDayOfWeek > 0) {
                     for (let i = firstDayOfWeek - 1; i >= 0; i--) {
                         const day = daysInPrevMonth - i;
                         const date = new Date(prevYear, prevMonth, day);
-                        const dateStr = date.toISOString().split('T')[0];
+                        const dateStr = formatLocalYMD(date);
                         datesToCheck.push(dateStr);
                         
                         // Check if this date is selected (for dates from other months)
@@ -2507,12 +2528,11 @@ $today_schedule = get_schedule_events($todayDate);
                 // Current month days
                 for (let day = 1; day <= daysInMonth; day++) {
                     const date = new Date(year, month, day);
-                    const dateStr = date.toISOString().split('T')[0];
+                    const dateStr = formatLocalYMD(date);
                     datesToCheck.push(dateStr);
                     
-                    // Compare dates using date strings (YYYY-MM-DD) to avoid timezone issues
-                    const todayStr = new Date().toISOString().split('T')[0];
-                    const selectedStr = selectedDay ? selectedDay.toISOString().split('T')[0] : null;
+                    // Compare dates using LOCAL date strings (YYYY-MM-DD)
+                    const todayStr = formatLocalYMD(new Date());
                     
                     const isToday = dateStr === todayStr;
                     const isSelected = selectedStr && dateStr === selectedStr;
@@ -2536,7 +2556,7 @@ $today_schedule = get_schedule_events($todayDate);
                 const remainingCells = 42 - totalCells;
                 for (let day = 1; day <= remainingCells; day++) {
                     const date = new Date(nextYear, nextMonth, day);
-                    const dateStr = date.toISOString().split('T')[0];
+                    const dateStr = formatLocalYMD(date);
                     datesToCheck.push(dateStr);
                     html += `<div class="hrdash-schedule__calendar-day hrdash-schedule__calendar-day--other" data-date="${dateStr}">
                         <span class="hrdash-schedule__calendar-day-num">${day}</span>
@@ -2578,37 +2598,45 @@ $today_schedule = get_schedule_events($todayDate);
                                 indicator.removeAttribute('data-count');
                             }
                         }
-                        
-                        // Add click handler to each day (only if not already attached)
-                        if (!dayEl.hasAttribute('data-day-handler-attached')) {
-                            dayEl.setAttribute('data-day-handler-attached', 'true');
-                            dayEl.addEventListener('click', function(e) {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                const dateStr = this.getAttribute('data-date');
-                                if (dateStr) {
-                                    const date = new Date(dateStr + 'T00:00:00');
-                                    if (!isNaN(date.getTime())) {
-                                        // Update selected date
-                                        selectedDate = new Date(date);
-                                        currentDate = new Date(date);
-                                        
-                                        // Only update month/year if clicking on a different month
-                                        const clickedMonth = date.getMonth();
-                                        const clickedYear = date.getFullYear();
-                                        if (clickedMonth !== currentMonth || clickedYear !== currentYear) {
-                                            currentMonth = clickedMonth;
-                                            currentYear = clickedYear;
-                                        }
-                                        
-                                        // Update schedule and re-render calendar with selected date highlighted
-                                        updateScheduleDate(date, true);
-                                        renderCalendar(currentYear, currentMonth, date);
-                                    }
-                                }
-                            });
-                        }
                     });
+                });
+            }
+
+            // Calendar grid click handler (delegated; attach once)
+            if (!calendarGrid.hasAttribute('data-grid-handler-attached')) {
+                calendarGrid.setAttribute('data-grid-handler-attached', 'true');
+                calendarGrid.addEventListener('click', (e) => {
+                    const dayEl = e.target.closest('.hrdash-schedule__calendar-day');
+                    if (!dayEl || !calendarGrid.contains(dayEl)) return;
+                    e.preventDefault();
+
+                    const dateStr = dayEl.getAttribute('data-date');
+                    if (!dateStr) return;
+
+                    // Use the cell's data-date directly (no recompute)
+                    const date = new Date(dateStr + 'T00:00:00');
+                    if (isNaN(date.getTime())) return;
+
+                    // Single-highlight rule: remove active from all, then add to clicked
+                    calendarGrid.querySelectorAll('.hrdash-schedule__calendar-day.active').forEach(el => {
+                        el.classList.remove('active');
+                    });
+                    dayEl.classList.add('active');
+
+                    // Update state
+                    selectedDate = new Date(date);
+                    currentDate = new Date(date);
+
+                    // If clicked date is in another month, re-render to correct month view
+                    const clickedMonth = date.getMonth();
+                    const clickedYear = date.getFullYear();
+                    if (clickedMonth !== currentMonth || clickedYear !== currentYear) {
+                        currentMonth = clickedMonth;
+                        currentYear = clickedYear;
+                        renderCalendar(currentYear, currentMonth, date);
+                    }
+
+                    updateScheduleDate(date, true);
                 });
             }
             

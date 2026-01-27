@@ -109,6 +109,56 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST)) {
         }
     }
     
+    // Validate Basic Requirements section - All 5 fields are mandatory
+    $basic_requirements_fields = [
+        'sec_lic_no' => 'Security License No.',
+        'sss_no_page2' => 'SSS No.',
+        'pagibig_no_page2' => 'Pag-IBIG No.',
+        'philhealth_no_page2' => 'PhilHealth No.',
+        'tin_no_page2' => 'TIN No.'
+    ];
+    
+    foreach ($basic_requirements_fields as $field => $label) {
+        if (empty($_POST[$field]) || trim($_POST[$field]) === '') {
+            $errors[] = $label . ' is required.';
+        } else {
+            $value = trim($_POST[$field]);
+            // Validate format
+            switch ($field) {
+                case 'sec_lic_no':
+                    // Security License: PREFIX-YYYY###### or PREFIXYYYY######
+                    if (!preg_match('/^[A-Z0-9]{2,4}-?[0-9]{4}[0-9]{5,10}$/i', $value)) {
+                        $errors[] = $label . ' must be in format PREFIX-YYYY###### or PREFIXYYYY###### (e.g., R03-202210000014, NCR20221025742).';
+                    }
+                    break;
+                case 'sss_no_page2':
+                    // SSS: ##-#######-#
+                    if (!preg_match('/^\d{2}-\d{7}-\d{1}$/', $value)) {
+                        $errors[] = $label . ' must be in format ##-#######-# (e.g., 02-1179877-4).';
+                    }
+                    break;
+                case 'pagibig_no_page2':
+                    // Pag-IBIG: ####-####-####
+                    if (!preg_match('/^\d{4}-\d{4}-\d{4}$/', $value)) {
+                        $errors[] = $label . ' must be in format ####-####-#### (e.g., 1210-9087-6528).';
+                    }
+                    break;
+                case 'philhealth_no_page2':
+                    // PhilHealth: ##-#########-#
+                    if (!preg_match('/^\d{2}-\d{9}-\d{1}$/', $value)) {
+                        $errors[] = $label . ' must be in format ##-#########-# (e.g., 21-200190443-1).';
+                    }
+                    break;
+                case 'tin_no_page2':
+                    // TIN: ###-###-###-###
+                    if (!preg_match('/^\d{3}-\d{3}-\d{3}-\d{3}$/', $value)) {
+                        $errors[] = $label . ' must be in format ###-###-###-### (e.g., 360-889-408-000).';
+                    }
+                    break;
+            }
+        }
+    }
+    
     // If we have Page 1 data, proceed with INSERT
     if (empty($errors) && !empty($page1_data)) {
         try {
@@ -589,28 +639,11 @@ if (isset($_SESSION['employee_redirect_url'])) {
 ?>
 
 <div class="container-fluid hrdash add-employee-container add-employee-modern">
-    <!-- Page Header -->
-    <div class="page-header-modern">
-        <div class="page-title-modern">
-            <h1 class="page-title-main">Add New Employee - Page 2</h1>
-            <p class="page-subtitle-modern">Complete the employee application form</p>
-            <?php if ($has_page1_data): ?>
-                <div class="alert alert-info mt-2 mb-0 fs-sm" style="border-left: 3px solid #0dcaf0;">
-                    <i class="fas fa-info-circle me-2"></i>
-                    <strong>Draft Employee:</strong>&nbsp;
-                    <span class="text-dark"><?php echo htmlspecialchars(trim(($page1_data['first_name'] ?? '') . ' ' . ($page1_data['surname'] ?? ''))); ?></span>
-                    <span class="text-muted">(<?php echo htmlspecialchars($page1_data['employee_type'] ?? ''); ?> #<?php echo htmlspecialchars($page1_data['employee_no'] ?? ''); ?>)</span>
-                </div>
-            <?php endif; ?>
-        </div>
-        <div class="page-actions-modern">
-            <a href="?page=add_employee" class="btn btn-outline-modern me-2">
-                <i class="fas fa-arrow-left me-2"></i>Back to Page 1
-            </a>
-            <a href="?page=employees" class="btn btn-outline-modern">
-                <i class="fas fa-times me-2"></i>Cancel
-            </a>
-        </div>
+    <!-- Page Header (UI-only cleanup: keep Back to Page 1 only) -->
+    <div class="d-flex justify-content-end mb-3" style="padding-top: 1.25rem;">
+        <a href="?page=add_employee" class="btn btn-outline-modern">
+            <i class="fas fa-arrow-left me-2"></i>Back to Page 1
+        </a>
     </div>
 
     <!-- Error Messages -->
@@ -1236,12 +1269,20 @@ if (isset($_SESSION['employee_redirect_url'])) {
                     padding: 0.25rem 0;
                 }
 
+                .req-input-wrapper {
+                    position: relative;
+                    display: inline-block;
+                    min-width: 200px;
+                }
+                
                 .req-input-underline {
                     border: none;
                     border-bottom: 1px solid #d1d5db;
                     padding: 0.125rem 0.25rem;
                     font-size: 0.75rem;
                     background: transparent;
+                    width: 100%;
+                    transition: border-color 0.2s ease;
                     outline: none;
                     min-width: 120px;
                 }
@@ -1249,6 +1290,39 @@ if (isset($_SESSION['employee_redirect_url'])) {
                 .req-input-underline:focus {
                     border-bottom-color: #3b82f6;
                     background-color: #f9fafb;
+                    outline: none;
+                }
+                
+                .req-input-underline.is-invalid {
+                    border-bottom-color: #dc3545;
+                    background-color: #fff5f5;
+                }
+                
+                .req-input-underline.is-valid {
+                    border-bottom-color: #28a745;
+                    background-color: #f0fff4;
+                }
+                
+                .req-input-wrapper .invalid-feedback {
+                    display: none;
+                    width: 100%;
+                    margin-top: 0.25rem;
+                    font-size: 0.7rem;
+                    color: #dc3545;
+                    position: absolute;
+                    top: 100%;
+                    left: 0;
+                    z-index: 10;
+                    background: white;
+                    padding: 0.25rem 0.5rem;
+                    border-radius: 0.25rem;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                    white-space: nowrap;
+                }
+                
+                .req-input-wrapper .invalid-feedback[style*="block"] {
+                    display: block !important;
+                }
                 }
 
                 /* Responsive */
@@ -1672,7 +1746,10 @@ if (isset($_SESSION['employee_redirect_url'])) {
                             <div class="req-item-with-input">
                                 <span class="req-number">10.</span>
                                 <span class="req-label">Sec. Lic. No.</span>
-                                <input type="text" class="req-input-underline" id="sec_lic_no" name="sec_lic_no" placeholder="_______________">
+                                <div class="req-input-wrapper">
+                                    <input type="text" class="req-input-underline" id="sec_lic_no" name="sec_lic_no" placeholder="_______________" required>
+                                    <div class="invalid-feedback" id="sec_lic_no_error"></div>
+                                </div>
                                 <div class="req-checkboxes">
                                     <input type="checkbox" name="req_sec_lic_no" id="req_sec_lic_no_y" value="YO">
                                     <input type="checkbox" name="req_sec_lic_no" id="req_sec_lic_no_n" value="NO">
@@ -1682,7 +1759,10 @@ if (isset($_SESSION['employee_redirect_url'])) {
                             <div class="req-item-with-input">
                                 <span class="req-number">11.</span>
                                 <span class="req-label">SSS No.</span>
-                                <input type="text" class="req-input-underline" id="sss_no_page2" name="sss_no_page2" placeholder="_______________">
+                                <div class="req-input-wrapper">
+                                    <input type="text" class="req-input-underline" id="sss_no_page2" name="sss_no_page2" placeholder="##-#######-#" pattern="\d{2}-\d{7}-\d{1}" maxlength="12" required>
+                                    <div class="invalid-feedback" id="sss_no_page2_error"></div>
+                                </div>
                                 <div class="req-checkboxes">
                                     <input type="checkbox" name="req_sss" id="req_sss_y" value="YO">
                                     <input type="checkbox" name="req_sss" id="req_sss_n" value="NO">
@@ -1692,7 +1772,10 @@ if (isset($_SESSION['employee_redirect_url'])) {
                             <div class="req-item-with-input">
                                 <span class="req-number">12.</span>
                                 <span class="req-label">Pag-Ibig No.</span>
-                                <input type="text" class="req-input-underline" id="pagibig_no_page2" name="pagibig_no_page2" placeholder="_______________">
+                                <div class="req-input-wrapper">
+                                    <input type="text" class="req-input-underline" id="pagibig_no_page2" name="pagibig_no_page2" placeholder="####-####-####" pattern="\d{4}-\d{4}-\d{4}" maxlength="14" required>
+                                    <div class="invalid-feedback" id="pagibig_no_page2_error"></div>
+                                </div>
                                 <div class="req-checkboxes">
                                     <input type="checkbox" name="req_pagibig" id="req_pagibig_y" value="YO">
                                     <input type="checkbox" name="req_pagibig" id="req_pagibig_n" value="NO">
@@ -1702,7 +1785,10 @@ if (isset($_SESSION['employee_redirect_url'])) {
                             <div class="req-item-with-input">
                                 <span class="req-number">13.</span>
                                 <span class="req-label">PhilHealth No.</span>
-                                <input type="text" class="req-input-underline" id="philhealth_no_page2" name="philhealth_no_page2" placeholder="_______________">
+                                <div class="req-input-wrapper">
+                                    <input type="text" class="req-input-underline" id="philhealth_no_page2" name="philhealth_no_page2" placeholder="##-#########-#" pattern="\d{2}-\d{9}-\d{1}" maxlength="14" required>
+                                    <div class="invalid-feedback" id="philhealth_no_page2_error"></div>
+                                </div>
                                 <div class="req-checkboxes">
                                     <input type="checkbox" name="req_philhealth" id="req_philhealth_y" value="YO">
                                     <input type="checkbox" name="req_philhealth" id="req_philhealth_n" value="NO">
@@ -1712,7 +1798,10 @@ if (isset($_SESSION['employee_redirect_url'])) {
                             <div class="req-item-with-input">
                                 <span class="req-number">14.</span>
                                 <span class="req-label">TIN No.</span>
-                                <input type="text" class="req-input-underline" id="tin_no_page2" name="tin_no_page2" placeholder="_______________">
+                                <div class="req-input-wrapper">
+                                    <input type="text" class="req-input-underline" id="tin_no_page2" name="tin_no_page2" placeholder="###-###-###-###" pattern="\d{3}-\d{3}-\d{3}-\d{3}" maxlength="15" required>
+                                    <div class="invalid-feedback" id="tin_no_page2_error"></div>
+                                </div>
                                 <div class="req-checkboxes">
                                     <input type="checkbox" name="req_tin" id="req_tin_y" value="YO">
                                     <input type="checkbox" name="req_tin" id="req_tin_n" value="NO">
@@ -1983,6 +2072,83 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
             
+            // Validate Basic Requirements section - All 5 fields are mandatory
+            const basicRequirementsFields = [
+                {
+                    id: 'sec_lic_no',
+                    name: 'sec_lic_no',
+                    label: 'Security License No.',
+                    pattern: /^[A-Z0-9]{2,4}-?[0-9]{4}[0-9]{5,10}$/i,
+                    errorMsg: 'Security License No. is required and must be in format PREFIX-YYYY###### or PREFIXYYYY###### (e.g., R03-202210000014, NCR20221025742)'
+                },
+                {
+                    id: 'sss_no_page2',
+                    name: 'sss_no_page2',
+                    label: 'SSS No.',
+                    pattern: /^\d{2}-\d{7}-\d{1}$/,
+                    errorMsg: 'SSS No. is required and must be in format ##-#######-# (e.g., 02-1179877-4)'
+                },
+                {
+                    id: 'pagibig_no_page2',
+                    name: 'pagibig_no_page2',
+                    label: 'Pag-IBIG No.',
+                    pattern: /^\d{4}-\d{4}-\d{4}$/,
+                    errorMsg: 'Pag-IBIG No. is required and must be in format ####-####-#### (e.g., 1210-9087-6528)'
+                },
+                {
+                    id: 'philhealth_no_page2',
+                    name: 'philhealth_no_page2',
+                    label: 'PhilHealth No.',
+                    pattern: /^\d{2}-\d{9}-\d{1}$/,
+                    errorMsg: 'PhilHealth No. is required and must be in format ##-#########-# (e.g., 21-200190443-1)'
+                },
+                {
+                    id: 'tin_no_page2',
+                    name: 'tin_no_page2',
+                    label: 'TIN No.',
+                    pattern: /^\d{3}-\d{3}-\d{3}-\d{3}$/,
+                    errorMsg: 'TIN No. is required and must be in format ###-###-###-### (e.g., 360-889-408-000)'
+                }
+            ];
+            
+            basicRequirementsFields.forEach(field => {
+                const input = document.getElementById(field.id);
+                const errorDiv = document.getElementById(field.id + '_error');
+                
+                if (!input) return;
+                
+                const value = input.value.trim();
+                
+                // Check if field is empty
+                if (!value || value === '') {
+                    isValid = false;
+                    errors.push(field.label + ' is required.');
+                    input.classList.add('is-invalid');
+                    if (errorDiv) {
+                        errorDiv.textContent = field.label + ' is required.';
+                        errorDiv.style.display = 'block';
+                    }
+                } else {
+                    // Validate format
+                    if (!field.pattern.test(value)) {
+                        isValid = false;
+                        errors.push(field.errorMsg);
+                        input.classList.add('is-invalid');
+                        if (errorDiv) {
+                            errorDiv.textContent = field.errorMsg;
+                            errorDiv.style.display = 'block';
+                        }
+                    } else {
+                        // Valid - remove error styling
+                        input.classList.remove('is-invalid');
+                        input.classList.add('is-valid');
+                        if (errorDiv) {
+                            errorDiv.style.display = 'none';
+                        }
+                    }
+                }
+            });
+            
             if (!isValid) {
                 e.preventDefault();
                 // Show error message
@@ -1992,7 +2158,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const firstError = form.querySelector('.is-invalid');
                 if (firstError) {
                     firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    firstError.focus();
+                    setTimeout(() => firstError.focus(), 300);
                 }
                 return false;
             }
@@ -2026,6 +2192,129 @@ document.addEventListener('DOMContentLoaded', function() {
                     });
                 }
             });
+        });
+        
+        // Real-time validation for Basic Requirements fields
+        const basicRequirementsFields = [
+            {
+                id: 'sec_lic_no',
+                pattern: /^[A-Z0-9]{2,4}-?[0-9]{4}[0-9]{5,10}$/i,
+                errorMsg: 'Security License No. must be in format PREFIX-YYYY###### or PREFIXYYYY###### (e.g., R03-202210000014, NCR20221025742)'
+            },
+            {
+                id: 'sss_no_page2',
+                pattern: /^\d{2}-\d{7}-\d{1}$/,
+                errorMsg: 'SSS No. must be in format ##-#######-# (e.g., 02-1179877-4)'
+            },
+            {
+                id: 'pagibig_no_page2',
+                pattern: /^\d{4}-\d{4}-\d{4}$/,
+                errorMsg: 'Pag-IBIG No. must be in format ####-####-#### (e.g., 1210-9087-6528)'
+            },
+            {
+                id: 'philhealth_no_page2',
+                pattern: /^\d{2}-\d{9}-\d{1}$/,
+                errorMsg: 'PhilHealth No. must be in format ##-#########-# (e.g., 21-200190443-1)'
+            },
+            {
+                id: 'tin_no_page2',
+                pattern: /^\d{3}-\d{3}-\d{3}-\d{3}$/,
+                errorMsg: 'TIN No. must be in format ###-###-###-### (e.g., 360-889-408-000)'
+            }
+        ];
+        
+        // Auto-format inputs with dashes
+        const formatInput = (input, pattern) => {
+            let value = input.value.replace(/[^0-9A-Za-z-]/g, ''); // Remove invalid characters
+            
+            // Auto-format based on field type
+            if (input.id === 'sss_no_page2') {
+                // Format: ##-#######-#
+                value = value.replace(/\D/g, '');
+                if (value.length > 2) value = value.slice(0, 2) + '-' + value.slice(2);
+                if (value.length > 10) value = value.slice(0, 10) + '-' + value.slice(10);
+                if (value.length > 12) value = value.slice(0, 12);
+            } else if (input.id === 'pagibig_no_page2') {
+                // Format: ####-####-####
+                value = value.replace(/\D/g, '');
+                if (value.length > 4) value = value.slice(0, 4) + '-' + value.slice(4);
+                if (value.length > 9) value = value.slice(0, 9) + '-' + value.slice(9);
+                if (value.length > 14) value = value.slice(0, 14);
+            } else if (input.id === 'philhealth_no_page2') {
+                // Format: ##-#########-#
+                value = value.replace(/\D/g, '');
+                if (value.length > 2) value = value.slice(0, 2) + '-' + value.slice(2);
+                if (value.length > 11) value = value.slice(0, 11) + '-' + value.slice(11);
+                if (value.length > 14) value = value.slice(0, 14);
+            } else if (input.id === 'tin_no_page2') {
+                // Format: ###-###-###-###
+                value = value.replace(/\D/g, '');
+                if (value.length > 3) value = value.slice(0, 3) + '-' + value.slice(3);
+                if (value.length > 7) value = value.slice(0, 7) + '-' + value.slice(7);
+                if (value.length > 11) value = value.slice(0, 11) + '-' + value.slice(11);
+                if (value.length > 15) value = value.slice(0, 15);
+            }
+            
+            input.value = value;
+        };
+        
+        basicRequirementsFields.forEach(fieldConfig => {
+            const input = document.getElementById(fieldConfig.id);
+            const errorDiv = document.getElementById(fieldConfig.id + '_error');
+            
+            if (!input) return;
+            
+            // Validate on blur
+            input.addEventListener('blur', function() {
+                const value = this.value.trim();
+                const fieldLabel = fieldConfig.id === 'sec_lic_no' ? 'Security License No.' :
+                                  fieldConfig.id === 'sss_no_page2' ? 'SSS No.' :
+                                  fieldConfig.id === 'pagibig_no_page2' ? 'Pag-IBIG No.' :
+                                  fieldConfig.id === 'philhealth_no_page2' ? 'PhilHealth No.' :
+                                  fieldConfig.id === 'tin_no_page2' ? 'TIN No.' : 'This field';
+                
+                if (!value || value === '') {
+                    this.classList.remove('is-valid');
+                    this.classList.add('is-invalid');
+                    if (errorDiv) {
+                        errorDiv.textContent = fieldLabel + ' is required.';
+                        errorDiv.style.display = 'block';
+                    }
+                } else if (!fieldConfig.pattern.test(value)) {
+                    this.classList.remove('is-valid');
+                    this.classList.add('is-invalid');
+                    if (errorDiv) {
+                        errorDiv.textContent = fieldConfig.errorMsg;
+                        errorDiv.style.display = 'block';
+                    }
+                } else {
+                    this.classList.remove('is-invalid');
+                    this.classList.add('is-valid');
+                    if (errorDiv) {
+                        errorDiv.style.display = 'none';
+                    }
+                }
+            });
+            
+            // Auto-format on input (for fields with dashes)
+            if (fieldConfig.id !== 'sec_lic_no') {
+                input.addEventListener('input', function() {
+                    formatInput(this, fieldConfig.pattern);
+                });
+            }
+            
+            // Clear validation on input (for Security License - allow free typing)
+            if (fieldConfig.id === 'sec_lic_no') {
+                input.addEventListener('input', function() {
+                    // Convert to uppercase
+                    this.value = this.value.toUpperCase();
+                    // Remove validation classes while typing
+                    this.classList.remove('is-invalid', 'is-valid');
+                    if (errorDiv) {
+                        errorDiv.style.display = 'none';
+                    }
+                });
+            }
         });
     }
     
