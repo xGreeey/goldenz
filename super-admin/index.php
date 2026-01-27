@@ -557,11 +557,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                         error_log('Create user request without X-Requested-With header');
                     }
                     
+                    $first_name = trim($_POST['first_name'] ?? '');
+                    $last_name = trim($_POST['last_name'] ?? '');
+                    
+                    // Combine first_name and last_name for the name field (required by database)
+                    $full_name = trim($first_name . ' ' . $last_name);
+                    
                     $user_data = [
                         'username' => trim($_POST['username'] ?? ''),
                         'email' => trim($_POST['email'] ?? ''),
-                        'first_name' => trim($_POST['first_name'] ?? ''),
-                        'last_name' => trim($_POST['last_name'] ?? ''),
+                        'first_name' => $first_name,
+                        'last_name' => $last_name,
+                        'name' => $full_name, // Combine for name field (required when first_name/last_name columns don't exist)
                         'role' => $_POST['role'] ?? 'hr_admin',
                         'status' => $_POST['status'] ?? 'active',
                         'department' => !empty(trim($_POST['department'] ?? '')) ? trim($_POST['department']) : null,
