@@ -1268,13 +1268,185 @@ if (!function_exists('create_post')) {
     function create_post($data) {
         try {
             $pdo = get_db_connection();
-            $sql = "INSERT INTO posts (post_title, post_code, department, employee_type, location, description, requirements, responsibilities, required_count, priority, status, shift_type, work_hours, salary_range, benefits, reporting_to, expires_at) 
-                    VALUES (:post_title, :post_code, :department, :employee_type, :location, :description, :requirements, :responsibilities, :required_count, :priority, :status, :shift_type, :work_hours, :salary_range, :benefits, :reporting_to, :expires_at)";
+            
+            // Prepare data with proper null handling
+            // Convert empty strings to null for nullable fields
+            $post_code = isset($data['post_code']) ? trim((string)$data['post_code']) : null;
+            $post_code = ($post_code === '') ? null : $post_code;
+            
+            $department = isset($data['department']) ? trim((string)$data['department']) : null;
+            $department = ($department === '') ? null : $department;
+            
+            $description = isset($data['description']) ? trim((string)$data['description']) : null;
+            $description = ($description === '') ? null : $description;
+            
+            $requirements = isset($data['requirements']) ? trim((string)$data['requirements']) : null;
+            $requirements = ($requirements === '') ? null : $requirements;
+            
+            $responsibilities = isset($data['responsibilities']) ? trim((string)$data['responsibilities']) : null;
+            $responsibilities = ($responsibilities === '') ? null : $responsibilities;
+            
+            $shift_type = isset($data['shift_type']) ? trim((string)$data['shift_type']) : null;
+            $shift_type = ($shift_type === '') ? null : $shift_type;
+            
+            $work_hours = isset($data['work_hours']) ? trim((string)$data['work_hours']) : null;
+            $work_hours = ($work_hours === '') ? null : $work_hours;
+            
+            $salary_range = isset($data['salary_range']) ? trim((string)$data['salary_range']) : null;
+            $salary_range = ($salary_range === '') ? null : $salary_range;
+            
+            $benefits = isset($data['benefits']) ? trim((string)$data['benefits']) : null;
+            $benefits = ($benefits === '') ? null : $benefits;
+            
+            $reporting_to = isset($data['reporting_to']) ? trim((string)$data['reporting_to']) : null;
+            $reporting_to = ($reporting_to === '') ? null : $reporting_to;
+            
+            $expires_at = isset($data['expires_at']) ? trim((string)$data['expires_at']) : null;
+            $expires_at = ($expires_at === '') ? null : $expires_at;
+            // Validate date format if provided (should be YYYY-MM-DD)
+            if ($expires_at !== null && $expires_at !== '') {
+                $date_parts = explode('-', $expires_at);
+                if (count($date_parts) !== 3 || !checkdate((int)$date_parts[1], (int)$date_parts[2], (int)$date_parts[0])) {
+                    error_log("create_post: Invalid date format for expires_at: {$expires_at}");
+                    $expires_at = null; // Set to null if invalid
+                }
+            }
+            
+            $insert_data = [
+                'post_title' => trim((string)($data['post_title'] ?? '')),
+                'post_code' => $post_code,
+                'department' => $department,
+                'employee_type' => trim((string)($data['employee_type'] ?? '')),
+                'location' => trim((string)($data['location'] ?? '')),
+                'description' => $description,
+                'requirements' => $requirements,
+                'responsibilities' => $responsibilities,
+                'required_count' => (int)($data['required_count'] ?? 1),
+                'filled_count' => (int)($data['filled_count'] ?? 0),
+                'priority' => in_array($data['priority'] ?? 'Medium', ['Low', 'Medium', 'High', 'Urgent']) ? (string)$data['priority'] : 'Medium',
+                'status' => in_array($data['status'] ?? 'Active', ['Active', 'Inactive', 'Closed']) ? (string)$data['status'] : 'Active',
+                'shift_type' => $shift_type,
+                'work_hours' => $work_hours,
+                'salary_range' => $salary_range,
+                'benefits' => $benefits,
+                'reporting_to' => $reporting_to,
+                'expires_at' => $expires_at
+            ];
+            
+            // Validate required fields before insert
+            if (empty($insert_data['post_title'])) {
+                throw new Exception('Post Title is required');
+            }
+            if (empty($insert_data['employee_type'])) {
+                throw new Exception('Employee Type is required');
+            }
+            if (empty($insert_data['location'])) {
+                throw new Exception('Location is required');
+            }
+            
+            // Validate enum values
+            if (!in_array($insert_data['employee_type'], ['SG', 'LG', 'SO'])) {
+                throw new Exception('Invalid employee_type. Must be SG, LG, or SO');
+            }
+            if (!in_array($insert_data['priority'], ['Low', 'Medium', 'High', 'Urgent'])) {
+                throw new Exception('Invalid priority. Must be Low, Medium, High, or Urgent');
+            }
+            if (!in_array($insert_data['status'], ['Active', 'Inactive', 'Closed'])) {
+                throw new Exception('Invalid status. Must be Active, Inactive, or Closed');
+            }
+            
+            // First, check if id column has AUTO_INCREMENT, if not, get next ID manually
+            try {
+                $check_sql = "SHOW CREATE TABLE posts";
+                $check_stmt = $pdo->query($check_sql);
+                $table_info = $check_stmt->fetch(PDO::FETCH_ASSOC);
+                $create_table = $table_info['Create Table'] ?? '';
+                
+                $has_auto_increment = stripos($create_table, 'AUTO_INCREMENT') !== false;
+                
+                if (!$has_auto_increment) {
+                    // Table doesn't have AUTO_INCREMENT, we need to get the next ID manually
+                    $max_id_stmt = $pdo->query("SELECT COALESCE(MAX(id), 0) + 1 as next_id FROM posts");
+                    $max_id_result = $max_id_stmt->fetch(PDO::FETCH_ASSOC);
+                    $next_id = (int)$max_id_result['next_id'];
+                    
+                    // Add id to the insert
+                    $sql = "INSERT INTO posts (id, post_title, post_code, department, employee_type, location, description, requirements, responsibilities, required_count, filled_count, priority, status, shift_type, work_hours, salary_range, benefits, reporting_to, expires_at) 
+                            VALUES (:id, :post_title, :post_code, :department, :employee_type, :location, :description, :requirements, :responsibilities, :required_count, :filled_count, :priority, :status, :shift_type, :work_hours, :salary_range, :benefits, :reporting_to, :expires_at)";
+                    
+                    $insert_data['id'] = $next_id;
+                    error_log("create_post: Table doesn't have AUTO_INCREMENT, using manual ID: {$next_id}");
+                } else {
+                    // Table has AUTO_INCREMENT, use standard INSERT without id
+                    $sql = "INSERT INTO posts (post_title, post_code, department, employee_type, location, description, requirements, responsibilities, required_count, filled_count, priority, status, shift_type, work_hours, salary_range, benefits, reporting_to, expires_at) 
+                            VALUES (:post_title, :post_code, :department, :employee_type, :location, :description, :requirements, :responsibilities, :required_count, :filled_count, :priority, :status, :shift_type, :work_hours, :salary_range, :benefits, :reporting_to, :expires_at)";
+                }
+            } catch (Exception $e) {
+                // If we can't check the table structure, try the standard INSERT without id
+                error_log("create_post: Could not check table structure, using standard INSERT: " . $e->getMessage());
+                $sql = "INSERT INTO posts (post_title, post_code, department, employee_type, location, description, requirements, responsibilities, required_count, filled_count, priority, status, shift_type, work_hours, salary_range, benefits, reporting_to, expires_at) 
+                        VALUES (:post_title, :post_code, :department, :employee_type, :location, :description, :requirements, :responsibilities, :required_count, :filled_count, :priority, :status, :shift_type, :work_hours, :salary_range, :benefits, :reporting_to, :expires_at)";
+            }
             
             $stmt = $pdo->prepare($sql);
-            return $stmt->execute($data);
+            
+            // Log the data being inserted for debugging
+            error_log("create_post: Attempting to insert post with data: " . json_encode($insert_data));
+            error_log("create_post: SQL: " . $sql);
+            
+            $result = $stmt->execute($insert_data);
+            
+            // Check for errors even if execute returns true
+            $errorInfo = $stmt->errorInfo();
+            if ($errorInfo[0] !== '00000' && $errorInfo[0] !== null && $errorInfo[0] !== '') {
+                $errorMsg = "PDO Error [{$errorInfo[0]}]: {$errorInfo[2]}";
+                error_log("create_post: PDO Error - " . print_r($errorInfo, true));
+                error_log("create_post: SQL - " . $sql);
+                error_log("create_post: Data - " . print_r($insert_data, true));
+                
+                global $last_post_error;
+                $last_post_error = $errorMsg;
+                return false;
+            }
+            
+            if ($result) {
+                error_log("create_post: Post created successfully with ID: " . $pdo->lastInsertId());
+                return true;
+            } else {
+                $errorInfo = $stmt->errorInfo();
+                $errorMsg = "Failed to execute query. Error: " . ($errorInfo[2] ?? 'Unknown error');
+                error_log("create_post: Failed to create post - execute returned false");
+                error_log("create_post: PDO Error Info - " . print_r($errorInfo, true));
+                error_log("create_post: SQL - " . $sql);
+                error_log("create_post: Data - " . print_r($insert_data, true));
+                
+                global $last_post_error;
+                $last_post_error = $errorMsg;
+                return false;
+            }
         } catch (PDOException $e) {
-            error_log("Database error in create_post: " . $e->getMessage());
+            $errorMsg = $e->getMessage();
+            $errorCode = $e->getCode();
+            error_log("Database error in create_post: [{$errorCode}] {$errorMsg}");
+            error_log("create_post: SQL - " . ($sql ?? 'N/A'));
+            error_log("create_post: Data - " . print_r($insert_data ?? [], true));
+            error_log("create_post: Stack trace - " . $e->getTraceAsString());
+            
+            // Store error in a way that can be retrieved
+            global $last_post_error;
+            $last_post_error = $errorMsg;
+            
+            return false;
+        } catch (Exception $e) {
+            $errorMsg = $e->getMessage();
+            error_log("General error in create_post: {$errorMsg}");
+            error_log("create_post: SQL - " . ($sql ?? 'N/A'));
+            error_log("create_post: Data - " . print_r($insert_data ?? [], true));
+            error_log("create_post: Stack trace - " . $e->getTraceAsString());
+            
+            global $last_post_error;
+            $last_post_error = $errorMsg;
+            
             return false;
         }
     }
@@ -1289,17 +1461,18 @@ if (!function_exists('update_post')) {
             $update_data = [
                 'id' => (int)$id,
                 'post_title' => trim((string)($data['post_title'] ?? '')),
-                'post_code' => trim((string)($data['post_code'] ?? '')),
-                'department' => trim((string)($data['department'] ?? '')),
+                'post_code' => !empty($data['post_code']) ? trim((string)$data['post_code']) : null,
+                'department' => !empty($data['department']) ? trim((string)$data['department']) : null,
                 'employee_type' => trim((string)($data['employee_type'] ?? '')),
                 'location' => trim((string)($data['location'] ?? '')),
                 'description' => !empty($data['description']) ? trim((string)$data['description']) : null,
                 'requirements' => !empty($data['requirements']) ? trim((string)$data['requirements']) : null,
                 'responsibilities' => !empty($data['responsibilities']) ? trim((string)$data['responsibilities']) : null,
                 'required_count' => (int)($data['required_count'] ?? 1),
-                'priority' => trim((string)($data['priority'] ?? 'Medium')),
-                'status' => trim((string)($data['status'] ?? 'Active')),
-                'shift_type' => trim((string)($data['shift_type'] ?? 'Day')),
+                'filled_count' => (int)($data['filled_count'] ?? 0),
+                'priority' => in_array($data['priority'] ?? 'Medium', ['Low', 'Medium', 'High', 'Urgent']) ? (string)$data['priority'] : 'Medium',
+                'status' => in_array($data['status'] ?? 'Active', ['Active', 'Inactive', 'Closed']) ? (string)$data['status'] : 'Active',
+                'shift_type' => !empty($data['shift_type']) ? trim((string)$data['shift_type']) : null,
                 'work_hours' => !empty($data['work_hours']) ? trim((string)$data['work_hours']) : null,
                 'salary_range' => !empty($data['salary_range']) ? trim((string)$data['salary_range']) : null,
                 'benefits' => !empty($data['benefits']) ? trim((string)$data['benefits']) : null,
@@ -1317,6 +1490,7 @@ if (!function_exists('update_post')) {
                     requirements = :requirements,
                     responsibilities = :responsibilities,
                     required_count = :required_count,
+                    filled_count = :filled_count,
                     priority = :priority,
                     status = :status,
                     shift_type = :shift_type,
@@ -1340,8 +1514,8 @@ if (!function_exists('update_post')) {
             }
         } catch (PDOException $e) {
             error_log("Database error in update_post: " . $e->getMessage());
-            error_log("update_post: SQL - " . $sql);
-            error_log("update_post: Data - " . print_r($update_data, true));
+            error_log("update_post: SQL - " . ($sql ?? 'N/A'));
+            error_log("update_post: Data - " . print_r($update_data ?? [], true));
             return false;
         }
     }
@@ -4456,9 +4630,10 @@ if (!function_exists('send_new_user_credentials_email')) {
                 $user_name = $username;
             }
             
-            // Login URL
-            $login_url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http') . 
-                        '://' . $_SERVER['HTTP_HOST'] . 
+            // Login URL - use improved HTTPS detection
+            require_once __DIR__ . '/paths.php';
+            $scheme = is_https() ? 'https' : 'http';
+            $login_url = $scheme . '://' . $_SERVER['HTTP_HOST'] . 
                         dirname(dirname($_SERVER['PHP_SELF'])) . 
                         '/landing/index.php';
             

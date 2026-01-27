@@ -398,5 +398,47 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+
+    // Export violations to CSV
+    const exportBtn = document.getElementById('exportViolationsBtn');
+    if (exportBtn) {
+        exportBtn.addEventListener('click', function() {
+            const table = document.querySelector('.table.table-hover.align-middle');
+            if (!table) return;
+
+            const rows = Array.from(table.querySelectorAll('tbody tr'));
+            let csv = 'Date,Employee,Violation Type,Severity,Sanction,Status\n';
+
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                if (cells.length < 6) return;
+
+                const date = cells[0].textContent.trim();
+
+                // Employee name (first line / bold text)
+                let employee = cells[1].querySelector('.fw-semibold');
+                const employeeName = (employee ? employee.textContent : cells[1].textContent).trim();
+
+                const violationType = cells[2].textContent.trim().replace(/\s+/g, ' ');
+                const severity = cells[3].textContent.trim();
+                const sanction = cells[4].textContent.trim();
+                const status = cells[5].textContent.trim();
+
+                const values = [date, employeeName, violationType, severity, sanction, status]
+                    .map(value => `"${(value || '').replace(/"/g, '""')}"`)
+                    .join(',');
+
+                csv += values + '\n';
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'violations_export.csv';
+            a.click();
+            window.URL.revokeObjectURL(url);
+        });
+    }
 });
 </script>

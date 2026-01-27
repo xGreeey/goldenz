@@ -144,47 +144,81 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['reset_password']) && 
                 // Hash new password using bcrypt
                 $new_password_hash = password_hash($new_password, PASSWORD_DEFAULT);
                 
-                // Update password in database
-                $update_sql = "UPDATE users 
-                              SET password_hash = ?, 
-                                  password_changed_at = NOW(), 
-                                  password_reset_token = NULL,
-                                  password_reset_expires_at = NULL,
-                                  failed_login_attempts = 0,
-                                  locked_until = NULL
-                              WHERE id = ?";
+                // Check if password_reset_token column exists
+                $check_column = $pdo->query("SHOW COLUMNS FROM users LIKE 'password_reset_token'");
+                $has_reset_columns = $check_column->rowCount() > 0;
+                
+                // Build UPDATE query based on available columns
+                if ($has_reset_columns) {
+                    // Use dedicated password reset fields
+                    $update_sql = "UPDATE users 
+                                  SET password_hash = ?, 
+                                      password_changed_at = NOW(), 
+                                      password_reset_token = NULL,
+                                      password_reset_expires_at = NULL,
+                                      failed_login_attempts = 0,
+                                      locked_until = NULL
+                                  WHERE id = ?";
+                } else {
+                    // Fallback: Clear remember_token if it was used for reset
+                    $update_sql = "UPDATE users 
+                                  SET password_hash = ?, 
+                                      password_changed_at = NOW(), 
+                                      remember_token = NULL,
+                                      failed_login_attempts = 0,
+                                      locked_until = NULL
+                                  WHERE id = ?";
+                }
                 
                 $update_stmt = $pdo->prepare($update_sql);
                 $update_stmt->bindValue(1, $new_password_hash, PDO::PARAM_STR);
                 $update_stmt->bindValue(2, $user_id, PDO::PARAM_INT);
                 $update_result = $update_stmt->execute();
                 
-                if ($update_result && $update_stmt->rowCount() > 0) {
-                    // Verify the password was updated correctly
+                if (!$update_result) {
+                    error_log('Password reset failed - UPDATE query execution returned false. User ID: ' . $user_id);
+                    error_log('SQL: ' . $update_sql);
+                    $error = 'Failed to update password in database. Please try again.';
+                } else {
+                    // Verify the password was updated correctly by checking the database
                     $verify_sql = "SELECT password_hash FROM users WHERE id = ? LIMIT 1";
                     $verify_stmt = $pdo->prepare($verify_sql);
                     $verify_stmt->execute([$user_id]);
                     $updated_user = $verify_stmt->fetch(PDO::FETCH_ASSOC);
                     
-                    if ($updated_user && password_verify($new_password, $updated_user['password_hash'])) {
-                        // Log security event
-                        if (function_exists('log_security_event')) {
-                            log_security_event('Password Reset Completed', "User: {$user['username']} ({$user['email']}) - IP: " . ($_SERVER['REMOTE_ADDR'] ?? 'Unknown'));
+                    if ($updated_user && !empty($updated_user['password_hash'])) {
+                        // Verify the new password matches the stored hash
+                        if (password_verify($new_password, $updated_user['password_hash'])) {
+                            // Log security event
+                            if (function_exists('log_security_event')) {
+                                log_security_event('Password Reset Completed', "User: {$user['username']} ({$user['email']}) - IP: " . ($_SERVER['REMOTE_ADDR'] ?? 'Unknown'));
+                            }
+                            
+                            $success = true;
+                            $token_valid = false; // Invalidate token after use
+                        } else {
+                            error_log('Password reset failed - Password verification failed. User ID: ' . $user_id);
+                            error_log('Stored hash: ' . substr($updated_user['password_hash'], 0, 20) . '...');
+                            $error = 'Password was updated but verification failed. Please contact support.';
                         }
-                        
-                        $success = true;
-                        $token_valid = false; // Invalidate token after use
                     } else {
-                        $error = 'Password was updated but verification failed. Please contact support.';
+                        error_log('Password reset failed - Could not retrieve updated password hash. User ID: ' . $user_id);
+                        $error = 'Failed to verify password update. Please try again.';
                     }
-                } else {
-                    $error = 'Failed to update password in database. Please try again.';
                 }
             } else {
+                error_log('Password reset failed - User not found. Email: ' . htmlspecialchars($email));
                 $error = 'User not found. Please request a new password reset.';
             }
+        } catch (PDOException $e) {
+            // Log PDO-specific errors
+            error_log('Password reset PDO error: ' . $e->getMessage());
+            error_log('SQL Error Code: ' . $e->getCode());
+            $error = 'An error occurred while resetting your password. Please try again.';
         } catch (Exception $e) {
+            // Log general errors
             error_log('Password reset error: ' . $e->getMessage());
+            error_log('Error trace: ' . $e->getTraceAsString());
             $error = 'An error occurred while resetting your password. Please try again.';
         }
     }

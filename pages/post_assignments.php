@@ -1,4 +1,93 @@
 <?php
+// Handle form submissions FIRST - before any HTML output
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $action = $_POST['action'] ?? '';
+    
+    if ($action === 'assign') {
+        $employee_id = (int)($_POST['employee_id'] ?? 0);
+        $post_title = trim($_POST['post_title'] ?? '');
+        $post_id = (int)($_GET['post_id'] ?? $_POST['post_id'] ?? 0);
+        
+        if ($employee_id && $post_title && $post_id) {
+            try {
+                // Get the post to verify it exists
+                $post = get_post_by_id($post_id);
+                if (!$post) {
+                    throw new Exception('Post not found');
+                }
+                
+                // Update employee's post assignment
+                $sql = "UPDATE employees SET post = ? WHERE id = ?";
+                $stmt = execute_query($sql, [$post_title, $employee_id]);
+                
+                // Update the filled_count in posts table
+                $update_filled_sql = "UPDATE posts SET filled_count = (
+                    SELECT COUNT(*) FROM employees 
+                    WHERE post = ? AND status = 'Active'
+                ) WHERE id = ?";
+                execute_query($update_filled_sql, [$post_title, $post_id]);
+                
+                $_SESSION['message'] = 'Employee assigned successfully!';
+                $_SESSION['message_type'] = 'success';
+                
+                // Redirect back to the same page
+                echo '<script>window.location.href = ' . json_encode('?page=post_assignments&post_id=' . $post_id) . ';</script>';
+                exit;
+            } catch (Exception $e) {
+                error_log("Error assigning employee: " . $e->getMessage());
+                $_SESSION['message'] = 'Error assigning employee: ' . $e->getMessage();
+                $_SESSION['message_type'] = 'danger';
+                echo '<script>window.location.href = ' . json_encode('?page=post_assignments&post_id=' . $post_id) . ';</script>';
+                exit;
+            }
+        } else {
+            $_SESSION['message'] = 'Missing required information.';
+            $_SESSION['message_type'] = 'danger';
+            echo '<script>window.location.href = ' . json_encode('?page=post_assignments') . ';</script>';
+            exit;
+        }
+    }
+    
+    if ($action === 'remove') {
+        $employee_id = (int)($_POST['employee_id'] ?? 0);
+        $post_title = trim($_POST['post_title'] ?? '');
+        $post_id = (int)($_GET['post_id'] ?? $_POST['post_id'] ?? 0);
+        
+        if ($employee_id && $post_title && $post_id) {
+            try {
+                // Update employee's post to unassigned
+                $sql = "UPDATE employees SET post = 'Unassigned' WHERE id = ?";
+                execute_query($sql, [$employee_id]);
+                
+                // Update the filled_count in posts table
+                $update_filled_sql = "UPDATE posts SET filled_count = (
+                    SELECT COUNT(*) FROM employees 
+                    WHERE post = ? AND status = 'Active'
+                ) WHERE id = ?";
+                execute_query($update_filled_sql, [$post_title, $post_id]);
+                
+                $_SESSION['message'] = 'Employee removed from post successfully!';
+                $_SESSION['message_type'] = 'success';
+                
+                // Redirect back to the same page
+                echo '<script>window.location.href = ' . json_encode('?page=post_assignments&post_id=' . $post_id) . ';</script>';
+                exit;
+            } catch (Exception $e) {
+                error_log("Error removing employee assignment: " . $e->getMessage());
+                $_SESSION['message'] = 'Error removing employee: ' . $e->getMessage();
+                $_SESSION['message_type'] = 'danger';
+                echo '<script>window.location.href = ' . json_encode('?page=post_assignments&post_id=' . $post_id) . ';</script>';
+                exit;
+            }
+        } else {
+            $_SESSION['message'] = 'Missing required information.';
+            $_SESSION['message_type'] = 'danger';
+            echo '<script>window.location.href = ' . json_encode('?page=post_assignments') . ';</script>';
+            exit;
+        }
+    }
+}
+
 // Get post ID from URL
 $post_id = $_GET['post_id'] ?? null;
 $selected_post = null;
@@ -1138,7 +1227,8 @@ function assignEmployee(employeeId, postTitle) {
         // Create form and submit
         const form = document.createElement('form');
         form.method = 'POST';
-        form.action = '?page=post_assignments&post_id=<?php echo $post_id; ?>';
+        const postId = <?php echo json_encode($post_id ?? ''); ?>;
+        form.action = '?page=post_assignments&post_id=' + postId;
         
         const actionInput = document.createElement('input');
         actionInput.type = 'hidden';
@@ -1155,9 +1245,15 @@ function assignEmployee(employeeId, postTitle) {
         postInput.name = 'post_title';
         postInput.value = postTitle;
         
+        const postIdInput = document.createElement('input');
+        postIdInput.type = 'hidden';
+        postIdInput.name = 'post_id';
+        postIdInput.value = postId;
+        
         form.appendChild(actionInput);
         form.appendChild(employeeInput);
         form.appendChild(postInput);
+        form.appendChild(postIdInput);
         document.body.appendChild(form);
         form.submit();
     }
@@ -1168,7 +1264,8 @@ function removeAssignment(employeeId, postTitle) {
         // Create form and submit
         const form = document.createElement('form');
         form.method = 'POST';
-        form.action = '?page=post_assignments&post_id=<?php echo $post_id; ?>';
+        const postId = <?php echo json_encode($post_id ?? ''); ?>;
+        form.action = '?page=post_assignments&post_id=' + postId;
         
         const actionInput = document.createElement('input');
         actionInput.type = 'hidden';
@@ -1185,44 +1282,19 @@ function removeAssignment(employeeId, postTitle) {
         postInput.name = 'post_title';
         postInput.value = postTitle;
         
+        const postIdInput = document.createElement('input');
+        postIdInput.type = 'hidden';
+        postIdInput.name = 'post_id';
+        postIdInput.value = postId;
+        
         form.appendChild(actionInput);
         form.appendChild(employeeInput);
         form.appendChild(postInput);
+        form.appendChild(postIdInput);
         document.body.appendChild(form);
         form.submit();
     }
 }
 </script>
-
-<?php
-// Handle form submissions
-if ($_POST['action'] ?? '' === 'assign') {
-    $employee_id = $_POST['employee_id'] ?? 0;
-    $post_title = $_POST['post_title'] ?? '';
-    
-    if ($employee_id && $post_title) {
-        $sql = "UPDATE employees SET post = ? WHERE id = ?";
-        if (execute_query($sql, [$post_title, $employee_id])) {
-            echo '<script>alert("Employee assigned successfully!"); window.location.reload();</script>';
-        } else {
-            echo '<script>alert("Error assigning employee. Please try again.");</script>';
-        }
-    }
-}
-
-if ($_POST['action'] ?? '' === 'remove') {
-    $employee_id = $_POST['employee_id'] ?? 0;
-    $post_title = $_POST['post_title'] ?? '';
-    
-    if ($employee_id && $post_title) {
-        $sql = "UPDATE employees SET post = 'Unassigned' WHERE id = ?";
-        if (execute_query($sql, [$employee_id])) {
-            echo '<script>alert("Employee removed from post successfully!"); window.location.reload();</script>';
-        } else {
-            echo '<script>alert("Error removing employee. Please try again.");</script>';
-        }
-    }
-}
-?>
 
 </div> <!-- /.container-fluid -->
