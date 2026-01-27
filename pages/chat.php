@@ -126,10 +126,31 @@ if (!$current_user_id) {
             <!-- Message Input -->
             <div class="chat-input-container" id="chatInputContainer" style="display: none;">
                 <form id="chatMessageForm">
-                    <div class="chat-input-wrapper">
-                        <button class="chat-plus-btn" type="button" title="Attach (demo)" aria-label="Attach">
-                            <span class="hr-icon hr-icon-plus"></span>
+                    <!-- Photo Preview (hidden by default) -->
+                    <div id="chatPhotoPreview" class="chat-photo-preview" style="display: none;">
+                        <img id="chatPhotoPreviewImg" src="" alt="Preview">
+                        <button id="chatPhotoPreviewRemove" class="chat-photo-preview-remove" type="button" title="Remove photo">
+                            <i class="fas fa-times"></i>
                         </button>
+                    </div>
+                    
+                    <!-- Input Toolbar -->
+                    <div class="chat-input-toolbar">
+                        <button id="chatEmojiBtn" class="chat-input-tool-btn" type="button" title="Add emoji">
+                            <i class="fas fa-smile"></i>
+                        </button>
+                        <button id="chatAttachPhotoBtn" class="chat-input-tool-btn" type="button" title="Attach photo">
+                            <i class="fas fa-paperclip"></i>
+                        </button>
+                        <input 
+                            type="file" 
+                            id="chatPhotoInput" 
+                            accept="image/jpeg,image/jpg,image/png,image/webp,image/gif" 
+                            style="display: none;"
+                        >
+                    </div>
+                    
+                    <div class="chat-input-wrapper">
                         <textarea 
                             class="form-control chat-message-input" 
                             id="messageInput" 
@@ -149,6 +170,24 @@ if (!$current_user_id) {
                 </form>
             </div>
         </div>
+
+    <!-- Emoji Picker Panel -->
+    <div id="chatEmojiPicker" class="chat-emoji-picker" style="display: none;">
+        <div class="chat-emoji-grid" id="chatEmojiGrid">
+            <!-- Emojis will be rendered here -->
+        </div>
+    </div>
+    
+    <!-- Photo Preview Modal -->
+    <div id="chatPhotoModal" class="chat-photo-modal" style="display: none;">
+        <div class="chat-photo-modal-overlay"></div>
+        <div class="chat-photo-modal-content">
+            <button id="chatPhotoModalClose" class="chat-photo-modal-close" type="button">
+                <i class="fas fa-times"></i>
+            </button>
+            <img id="chatPhotoModalImg" src="" alt="Full size">
+        </div>
+    </div>
 
         <!-- Right Panel: Info (UI-only; populated by JS) -->
         <aside class="chat-info-panel" id="chatInfoPanel" aria-label="Conversation info">
@@ -1200,13 +1239,18 @@ if (!$current_user_id) {
 
 /* Typing indicator improvements */
 .chat-typing-indicator {
-    display: flex !important;
+    display: none !important; /* Hidden by default, shown only when someone is typing */
     align-items: center !important;
     gap: 0.5rem !important;
     padding: 0 1.5rem 1rem 1.5rem !important;
     color: #64748b !important;
     font-size: 0.875rem !important;
     visibility: visible !important;
+}
+
+.chat-typing-indicator[style*="display: flex"],
+.chat-typing-indicator[style*="display:flex"] {
+    display: flex !important;
 }
 
 .chat-typing-indicator .typing-dot {
@@ -1219,6 +1263,305 @@ if (!$current_user_id) {
     display: inline-block !important;
     visibility: visible !important;
     opacity: 1 !important;
+}
+
+/* ============================================
+   EMOJI PICKER
+   ============================================ */
+
+.chat-emoji-picker {
+    position: absolute;
+    bottom: 70px;
+    left: 20px;
+    width: 320px;
+    max-height: 300px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+}
+
+.chat-emoji-grid {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 4px;
+    padding: 12px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.chat-emoji-item {
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    transition: all 0.2s;
+}
+
+.chat-emoji-item:hover {
+    background: #f1f5f9;
+    transform: scale(1.1);
+}
+
+/* ============================================
+   PHOTO PREVIEW & UPLOAD
+   ============================================ */
+
+.chat-input-toolbar {
+    display: flex;
+    gap: 8px;
+    padding: 8px 12px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.chat-input-tool-btn {
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: transparent;
+    color: #64748b;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    font-size: 18px;
+}
+
+.chat-input-tool-btn:hover {
+    background: #f1f5f9;
+    color: #475569;
+}
+
+/* Ensure Font Awesome icons in toolbar buttons are visible */
+.chat-input-tool-btn i,
+.chat-input-tool-btn i.fas {
+    display: inline-block !important;
+    font-style: normal !important;
+    font-variant: normal !important;
+    text-rendering: auto !important;
+    line-height: 1 !important;
+    font-family: "Font Awesome 6 Free" !important;
+    font-weight: 900 !important;
+    -webkit-font-smoothing: antialiased !important;
+    -moz-osx-font-smoothing: grayscale !important;
+    font-size: 18px !important;
+    color: inherit !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    width: auto !important;
+    height: auto !important;
+    min-width: 18px !important;
+    min-height: 18px !important;
+}
+
+/* Ensure specific icon content is visible */
+.chat-input-tool-btn i.fa-smile::before {
+    content: "\f118" !important; /* Font Awesome smile icon unicode */
+}
+
+.chat-input-tool-btn i.fa-paperclip::before {
+    content: "\f0c6" !important; /* Font Awesome paperclip icon unicode */
+}
+
+.chat-photo-preview {
+    position: relative;
+    padding: 12px;
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.chat-photo-preview img {
+    max-width: 200px;
+    max-height: 200px;
+    border-radius: 8px;
+    object-fit: cover;
+}
+
+.chat-photo-preview-remove {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: rgba(0, 0, 0, 0.6);
+    color: white;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.chat-photo-preview-remove:hover {
+    background: rgba(0, 0, 0, 0.8);
+    transform: scale(1.1);
+}
+
+/* Ensure Font Awesome icon in photo preview remove button is visible */
+.chat-photo-preview-remove i,
+.chat-photo-preview-remove i.fas {
+    display: inline-block !important;
+    font-style: normal !important;
+    font-variant: normal !important;
+    text-rendering: auto !important;
+    line-height: 1 !important;
+    font-family: "Font Awesome 6 Free" !important;
+    font-weight: 900 !important;
+    -webkit-font-smoothing: antialiased !important;
+    -moz-osx-font-smoothing: grayscale !important;
+    font-size: 14px !important;
+    color: white !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    width: auto !important;
+    height: auto !important;
+}
+
+.chat-photo-preview-remove i.fa-times::before {
+    content: "\f00d" !important; /* Font Awesome times icon unicode */
+}
+
+/* ============================================
+   PHOTO MODAL
+   ============================================ */
+
+.chat-photo-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.9);
+}
+
+.chat-photo-modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.chat-photo-modal-content {
+    position: relative;
+    max-width: 90vw;
+    max-height: 90vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.chat-photo-modal-content img {
+    max-width: 100%;
+    max-height: 90vh;
+    object-fit: contain;
+    border-radius: 8px;
+}
+
+.chat-photo-modal-close {
+    position: absolute;
+    top: -40px;
+    right: 0;
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    font-size: 18px;
+}
+
+.chat-photo-modal-close:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* Ensure Font Awesome icon in photo modal close button is visible */
+.chat-photo-modal-close i,
+.chat-photo-modal-close i.fas {
+    display: inline-block !important;
+    font-style: normal !important;
+    font-variant: normal !important;
+    text-rendering: auto !important;
+    line-height: 1 !important;
+    font-family: "Font Awesome 6 Free" !important;
+    font-weight: 900 !important;
+    -webkit-font-smoothing: antialiased !important;
+    -moz-osx-font-smoothing: grayscale !important;
+    font-size: 18px !important;
+    color: white !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    width: auto !important;
+    height: auto !important;
+}
+
+.chat-photo-modal-close i.fa-times::before {
+    content: "\f00d" !important; /* Font Awesome times icon unicode */
+}
+
+/* General rule to ensure all Font Awesome icons in chat are visible */
+.chat-input-container i.fas,
+.chat-input-container i.fa,
+.chat-emoji-picker i.fas,
+.chat-emoji-picker i.fa {
+    display: inline-block !important;
+    font-style: normal !important;
+    font-variant: normal !important;
+    text-rendering: auto !important;
+    line-height: 1 !important;
+    font-family: "Font Awesome 6 Free" !important;
+    font-weight: 900 !important;
+    -webkit-font-smoothing: antialiased !important;
+    -moz-osx-font-smoothing: grayscale !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    width: auto !important;
+    height: auto !important;
+}
+
+/* ============================================
+   MESSAGE ATTACHMENTS
+   ============================================ */
+
+.chat-message-attachment {
+    margin-bottom: 8px;
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.2s;
+    max-width: 300px;
+}
+
+.chat-message-attachment:hover {
+    transform: scale(1.02);
+}
+
+.chat-message-attachment img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 12px;
 }
 
 /* Message input focus state improvements */
