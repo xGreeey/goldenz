@@ -20,17 +20,18 @@ $success_message = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'update') {
     $post_data = [
         'post_title' => trim($_POST['post_title'] ?? ''),
-        'post_code' => trim($_POST['post_code'] ?? ''),
-        'department' => trim($_POST['department'] ?? ''),
+        'post_code' => !empty($_POST['post_code']) ? trim($_POST['post_code']) : null,
+        'department' => !empty($_POST['department']) ? trim($_POST['department']) : null,
         'employee_type' => trim($_POST['employee_type'] ?? ''),
         'location' => trim($_POST['location'] ?? ''),
         'description' => !empty($_POST['description']) ? trim($_POST['description']) : null,
         'requirements' => !empty($_POST['requirements']) ? trim($_POST['requirements']) : null,
         'responsibilities' => !empty($_POST['responsibilities']) ? trim($_POST['responsibilities']) : null,
         'required_count' => (int)($_POST['required_count'] ?? 1),
-        'priority' => trim($_POST['priority'] ?? 'Medium'),
-        'status' => trim($_POST['status'] ?? 'Active'),
-        'shift_type' => trim($_POST['shift_type'] ?? 'Day'),
+        'filled_count' => (int)($_POST['filled_count'] ?? 0),
+        'priority' => in_array($_POST['priority'] ?? 'Medium', ['Low', 'Medium', 'High', 'Urgent']) ? $_POST['priority'] : 'Medium',
+        'status' => in_array($_POST['status'] ?? 'Active', ['Active', 'Inactive', 'Closed']) ? $_POST['status'] : 'Active',
+        'shift_type' => !empty($_POST['shift_type']) ? trim($_POST['shift_type']) : null,
         'work_hours' => !empty($_POST['work_hours']) ? trim($_POST['work_hours']) : null,
         'salary_range' => !empty($_POST['salary_range']) ? trim($_POST['salary_range']) : null,
         'benefits' => !empty($_POST['benefits']) ? trim($_POST['benefits']) : null,
@@ -42,12 +43,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'updat
     if (empty($post_data['post_title'])) {
         $errors[] = 'Post Title is required.';
     }
-    if (empty($post_data['post_code'])) {
-        $errors[] = 'Post Code is required.';
-    }
-    if (empty($post_data['department'])) {
-        $errors[] = 'Department is required.';
-    }
     if (empty($post_data['employee_type'])) {
         $errors[] = 'Employee Type is required.';
     }
@@ -56,6 +51,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'updat
     }
     if ($post_data['required_count'] <= 0) {
         $errors[] = 'Number of positions must be greater than 0.';
+    }
+    if ($post_data['filled_count'] < 0) {
+        $errors[] = 'Filled count cannot be negative.';
+    }
+    if ($post_data['filled_count'] > $post_data['required_count']) {
+        $errors[] = 'Filled count cannot exceed required count.';
     }
     
     if (empty($errors)) {
@@ -123,22 +124,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'updat
                                 <div class="form-text">e.g., Security Guard - Main Gate</div>
                             </div>
                             <div class="col-md-6">
-                                <label for="post_code" class="form-label">Post Code *</label>
+                                <label for="post_code" class="form-label">Post Code</label>
                                 <input type="text" 
                                        class="form-control" 
                                        id="post_code" 
                                        name="post_code" 
-                                       value="<?php echo htmlspecialchars($post['post_code'] ?? ''); ?>" 
-                                       required>
-                                <div class="form-text">e.g., SG001, LG001, SO001</div>
+                                       value="<?php echo htmlspecialchars($post['post_code'] ?? ''); ?>">
+                                <div class="form-text">e.g., SG001, LG001, SO001 (optional)</div>
                             </div>
                         </div>
 
                         <div class="row mb-4">
                             <div class="col-md-6">
-                                <label for="department" class="form-label">Department *</label>
-                                <select class="form-select" id="department" name="department" required>
-                                    <option value="">Select Department</option>
+                                <label for="department" class="form-label">Department</label>
+                                <select class="form-select" id="department" name="department">
+                                    <option value="">Select Department (Optional)</option>
                                     <option value="Security" <?php echo ($post['department'] ?? '') === 'Security' ? 'selected' : ''; ?>>Security</option>
                                     <option value="Administration" <?php echo ($post['department'] ?? '') === 'Administration' ? 'selected' : ''; ?>>Administration</option>
                                     <option value="Operations" <?php echo ($post['department'] ?? '') === 'Operations' ? 'selected' : ''; ?>>Operations</option>
@@ -198,7 +198,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'updat
 
                         <!-- Position Details -->
                         <div class="row mb-4">
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <label for="required_count" class="form-label">Number of Positions Needed *</label>
                                 <input type="number" 
                                        class="form-control" 
@@ -208,7 +208,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'updat
                                        min="1" 
                                        required>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
+                                <label for="filled_count" class="form-label">Filled Positions</label>
+                                <input type="number" 
+                                       class="form-control" 
+                                       id="filled_count" 
+                                       name="filled_count" 
+                                       value="<?php echo htmlspecialchars($post['filled_count'] ?? 0); ?>" 
+                                       min="0">
+                                <div class="form-text">Number of positions already filled</div>
+                            </div>
+                            <div class="col-md-3">
                                 <label for="priority" class="form-label">Priority</label>
                                 <select class="form-select" id="priority" name="priority">
                                     <option value="Low" <?php echo ($post['priority'] ?? 'Medium') === 'Low' ? 'selected' : ''; ?>>Low</option>
@@ -217,13 +227,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'updat
                                     <option value="Urgent" <?php echo ($post['priority'] ?? 'Medium') === 'Urgent' ? 'selected' : ''; ?>>Urgent</option>
                                 </select>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <label for="status" class="form-label">Status</label>
                                 <select class="form-select" id="status" name="status">
                                     <option value="Active" <?php echo ($post['status'] ?? 'Active') === 'Active' ? 'selected' : ''; ?>>Active</option>
                                     <option value="Inactive" <?php echo ($post['status'] ?? 'Active') === 'Inactive' ? 'selected' : ''; ?>>Inactive</option>
-                                    <option value="Filled" <?php echo ($post['status'] ?? 'Active') === 'Filled' ? 'selected' : ''; ?>>Filled</option>
-                                    <option value="Suspended" <?php echo ($post['status'] ?? 'Active') === 'Suspended' ? 'selected' : ''; ?>>Suspended</option>
+                                    <option value="Closed" <?php echo ($post['status'] ?? 'Active') === 'Closed' ? 'selected' : ''; ?>>Closed</option>
                                 </select>
                             </div>
                         </div>
@@ -483,7 +492,7 @@ document.getElementById('editPostForm').addEventListener('submit', function(e) {
     // Remove any existing validation states
     this.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
     
-    const requiredFields = ['post_title', 'post_code', 'department', 'employee_type', 'location', 'required_count'];
+    const requiredFields = ['post_title', 'employee_type', 'location', 'required_count'];
     let hasErrors = false;
     const errors = [];
     const firstErrorField = [];
@@ -514,6 +523,29 @@ document.getElementById('editPostForm').addEventListener('submit', function(e) {
             }
         }
     });
+    
+    // Validate filled_count doesn't exceed required_count
+    const requiredCount = parseInt(document.getElementById('required_count').value) || 0;
+    const filledCount = parseInt(document.getElementById('filled_count').value) || 0;
+    const filledCountField = document.getElementById('filled_count');
+    
+    if (filledCount < 0) {
+        filledCountField.classList.add('is-invalid');
+        hasErrors = true;
+        if (firstErrorField.length === 0) {
+            firstErrorField.push(filledCountField);
+        }
+        errors.push('Filled count cannot be negative');
+    } else if (filledCount > requiredCount) {
+        filledCountField.classList.add('is-invalid');
+        hasErrors = true;
+        if (firstErrorField.length === 0) {
+            firstErrorField.push(filledCountField);
+        }
+        errors.push('Filled count cannot exceed required count');
+    } else {
+        filledCountField.classList.remove('is-invalid');
+    }
     
     if (hasErrors) {
         e.preventDefault();

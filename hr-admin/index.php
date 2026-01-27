@@ -36,7 +36,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     // For non-AJAX profile updates and employee exports, let the page handle it (skip JSON response)
     $pageHandledActions = [
         'profile' => ['update_profile'],
-        'employees' => ['export_employees']
+        'employees' => ['export_employees'],
+        'add_post' => ['create'],
+        'edit_post' => ['update']
     ];
     
     $shouldSkipJson = !$isAjax && 

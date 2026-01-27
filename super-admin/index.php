@@ -974,8 +974,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         exit;
     }
     
-    // Default: invalid action (but skip for profile page non-AJAX requests)
-    $allowPageToHandle = !$isAjax && $page === 'profile' && $action === 'update_profile';
+    // Default: invalid action (but skip for certain pages that handle their own actions)
+    $pageHandledActions = [
+        'profile' => ['update_profile'],
+        'add_post' => ['create'],
+        'edit_post' => ['update']
+    ];
+    
+    $allowPageToHandle = !$isAjax && 
+                         isset($pageHandledActions[$page]) && 
+                         in_array($action, $pageHandledActions[$page]);
     
     if (!$allowPageToHandle) {
         echo json_encode(['success' => false, 'message' => 'Invalid action']);
