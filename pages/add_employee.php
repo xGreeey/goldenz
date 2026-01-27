@@ -1110,15 +1110,16 @@ if (isset($_SESSION['employee_redirect_url'])) {
                         <div class="form-group">
                             <label for="blood_type" class="form-label">Blood Type <span class="text-danger">*</span></label>
                             <select class="form-select" id="blood_type" name="blood_type" required>
+                                <?php $selBloodType = get_form_value('blood_type'); ?>
                                 <option value="">Select Blood Type</option>
-                                <option value="A+" <?php echo (($_POST['blood_type'] ?? '') === 'A+') ? 'selected' : ''; ?>>A+</option>
-                                <option value="A-" <?php echo (($_POST['blood_type'] ?? '') === 'A-') ? 'selected' : ''; ?>>A-</option>
-                                <option value="B+" <?php echo (($_POST['blood_type'] ?? '') === 'B+') ? 'selected' : ''; ?>>B+</option>
-                                <option value="B-" <?php echo (($_POST['blood_type'] ?? '') === 'B-') ? 'selected' : ''; ?>>B-</option>
-                                <option value="AB+" <?php echo (($_POST['blood_type'] ?? '') === 'AB+') ? 'selected' : ''; ?>>AB+</option>
-                                <option value="AB-" <?php echo (($_POST['blood_type'] ?? '') === 'AB-') ? 'selected' : ''; ?>>AB-</option>
-                                <option value="O+" <?php echo (($_POST['blood_type'] ?? '') === 'O+') ? 'selected' : ''; ?>>O+</option>
-                                <option value="O-" <?php echo (($_POST['blood_type'] ?? '') === 'O-') ? 'selected' : ''; ?>>O-</option>
+                                <option value="A+" <?php echo ($selBloodType === 'A+') ? 'selected' : ''; ?>>A+</option>
+                                <option value="A-" <?php echo ($selBloodType === 'A-') ? 'selected' : ''; ?>>A-</option>
+                                <option value="B+" <?php echo ($selBloodType === 'B+') ? 'selected' : ''; ?>>B+</option>
+                                <option value="B-" <?php echo ($selBloodType === 'B-') ? 'selected' : ''; ?>>B-</option>
+                                <option value="AB+" <?php echo ($selBloodType === 'AB+') ? 'selected' : ''; ?>>AB+</option>
+                                <option value="AB-" <?php echo ($selBloodType === 'AB-') ? 'selected' : ''; ?>>AB-</option>
+                                <option value="O+" <?php echo ($selBloodType === 'O+') ? 'selected' : ''; ?>>O+</option>
+                                <option value="O-" <?php echo ($selBloodType === 'O-') ? 'selected' : ''; ?>>O-</option>
                             </select>
                             <small class="form-text text-muted" style="visibility: hidden;">Placeholder</small>
                         </div>
@@ -1730,7 +1731,7 @@ if (isset($_SESSION['employee_redirect_url'])) {
                                     'Mother','Father','Spouse','Partner','Sibling','Child',
                                     'Relative','Friend','Colleague','Guardian','Other'
                                 ];
-                                $relSel = $_POST['relationship'] ?? '';
+                                $relSel = get_form_value('relationship');
                                 ?>
                                 <option value="">Select</option>
                                 <?php foreach ($relationships as $rel): ?>
@@ -1792,7 +1793,7 @@ if (isset($_SESSION['employee_redirect_url'])) {
                                     'Mother','Father','Spouse','Partner','Sibling','Child',
                                     'Relative','Friend','Colleague','Guardian','Other'
                                 ];
-                                $relSelAlt = $_POST['relationship_alt'] ?? '';
+                                $relSelAlt = get_form_value('relationship_alt');
                                 foreach ($relationships as $rel): ?>
                                     <option value="<?php echo htmlspecialchars($rel); ?>" <?php echo ($relSelAlt === $rel) ? 'selected' : ''; ?>>
                                         <?php echo htmlspecialchars($rel); ?>
@@ -1990,10 +1991,11 @@ if (isset($_SESSION['employee_redirect_url'])) {
                         <div class="form-group">
                             <label for="status_summary" class="form-label">Status Summary</label>
                             <select class="form-select" id="status_summary" name="status_summary">
+                                <?php $selStatusSummary = get_form_value('status_summary'); ?>
                                 <option value="">Select</option>
-                                <option value="Completed" <?php echo (($_POST['status_summary'] ?? '') === 'Completed') ? 'selected' : ''; ?>>Completed</option>
-                                <option value="Incomplete" <?php echo (($_POST['status_summary'] ?? '') === 'Incomplete') ? 'selected' : ''; ?>>Incomplete</option>
-                                <option value="For Follow-Up" <?php echo (($_POST['status_summary'] ?? '') === 'For Follow-Up') ? 'selected' : ''; ?>>For Follow-Up</option>
+                                <option value="Completed" <?php echo ($selStatusSummary === 'Completed') ? 'selected' : ''; ?>>Completed</option>
+                                <option value="Incomplete" <?php echo ($selStatusSummary === 'Incomplete') ? 'selected' : ''; ?>>Incomplete</option>
+                                <option value="For Follow-Up" <?php echo ($selStatusSummary === 'For Follow-Up') ? 'selected' : ''; ?>>For Follow-Up</option>
                             </select>
                             <small class="form-text text-muted" style="visibility: hidden;">Placeholder</small>
                         </div>
