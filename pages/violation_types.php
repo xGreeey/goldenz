@@ -211,7 +211,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             ");
             
             $ra5487_compliant = isset($_POST['ra5487_compliant']) ? 1 : 0;
-            $is_active = isset($_POST['is_active']) ? 1 : 1;
+            $is_active = isset($_POST['is_active']) ? 1 : 0;
             
             $stmt->execute([
                 $reference_no,
@@ -1269,6 +1269,17 @@ foreach ($violation_history as $history) {
     }
 }
 
+/* Smooth filter transitions (table rows) */
+.violation-table tbody tr {
+    transition: opacity 160ms ease, transform 160ms ease;
+    will-change: opacity, transform;
+}
+
+.violation-table tbody tr.is-filter-hidden {
+    opacity: 0;
+    transform: translateY(-2px);
+}
+
 .violation-table {
     width: 100%;
     min-width: 800px;
@@ -1617,6 +1628,8 @@ foreach ($violation_history as $history) {
 // Add Violation Form Handler
 document.addEventListener('DOMContentLoaded', function() {
     const addViolationForm = document.getElementById('addViolationForm');
+    // IMPORTANT: use a relative URL so it resolves under /hr-admin/ (session cookie path)
+    const addViolationApiUrl = 'api/violation_types.php';
     if (addViolationForm) {
         addViolationForm.addEventListener('submit', function(e) {
             e.preventDefault();
@@ -1630,7 +1643,7 @@ document.addEventListener('DOMContentLoaded', function() {
             errorsList.innerHTML = '';
             
             // Submit via AJAX
-            fetch('?page=violation_types', {
+            fetch(addViolationApiUrl, {
                 method: 'POST',
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest'
@@ -1638,17 +1651,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 body: formData
             })
             .then(response => {
-                // Check if response is JSON
-                const contentType = response.headers.get('content-type');
-                if (contentType && contentType.includes('application/json')) {
-                    return response.json();
-                } else {
-                    // If not JSON, might be HTML error page
+                // If backend returns HTML (e.g., 404 page), show a readable error instead of JSON parse crash
+                const contentType = response.headers.get('content-type') || '';
+                if (!contentType.includes('application/json')) {
                     return response.text().then(text => {
-                        console.error('Non-JSON response:', text);
-                        throw new Error('Server returned non-JSON response');
+                        throw new Error('Server returned non-JSON response (' + response.status + ').');
                     });
                 }
+                return response.json();
             })
             .then(data => {
                 if (data && data.success) {
@@ -1663,8 +1673,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     window.location.reload();
                 } else {
                     // Show errors
-                    if (data && data.errors && data.errors.length > 0) {
-                        errorsList.innerHTML = data.errors.map(error => `<li>${error}</li>`).join('');
+                    if (data && data.message) {
+                        errorsList.innerHTML = `<li>${data.message}</li>`;
                         errorsDiv.style.display = 'block';
                     } else {
                         alert('Error: ' + (data && data.message ? data.message : 'Failed to add violation type'));
@@ -1676,7 +1686,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 alert('An error occurred while submitting the form. Please try again.');
                 // Show error in form
                 if (errorsDiv && errorsList) {
-                    errorsList.innerHTML = '<li>An error occurred. Please check your connection and try again.</li>';
+                    errorsList.innerHTML = `<li>${error && error.message ? error.message : 'An error occurred. Please check your connection and try again.'}</li>`;
                     errorsDiv.style.display = 'block';
                 }
             });
@@ -1742,8 +1752,44 @@ document.addEventListener('DOMContentLoaded', function() {
     const resetBtn = document.getElementById('filter-reset-btn');
     const searchClearBtn = document.getElementById('search-clear-btn');
     const violationCount = document.getElementById('violation-count');
+    const filterForm = document.getElementById('violation-types-filter-form');
     
     let searchTimeout;
+
+    // Prevent Enter key / form submit from causing a page jump/reload
+    if (filterForm) {
+        filterForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+        });
+    }
+
+    function hideRowSmooth(row) {
+        if (!row) return;
+        if (row.style.display === 'none') return;
+        // Fade out, then remove from layout
+        row.classList.add('is-filter-hidden');
+        window.setTimeout(() => {
+            // Only hide if still intended to be hidden
+            if (row.classList.contains('is-filter-hidden')) {
+                row.style.display = 'none';
+            }
+        }, 170);
+    }
+
+    function showRowSmooth(row) {
+        if (!row) return;
+        if (row.style.display === '') {
+            // ensure visible state
+            row.classList.remove('is-filter-hidden');
+            return;
+        }
+        row.style.display = '';
+        // Start hidden then fade in next frame
+        row.classList.add('is-filter-hidden');
+        requestAnimationFrame(() => {
+            row.classList.remove('is-filter-hidden');
+        });
+    }
 
     function filterViolations() {
         const searchFilter = filterSearch ? filterSearch.value.toLowerCase().trim() : '';
@@ -1752,6 +1798,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Get all tabs (both visible and hidden)
         const allTabs = document.querySelectorAll('.violation-tab-content');
         let totalVisibleCount = 0;
+        const tabMatchCounts = new Map();
         
         allTabs.forEach(tab => {
             // Only process if tab is visible (display is not 'none')
@@ -1799,20 +1846,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 const matchesCategory = !categoryFilter || category === categoryFilter;
                 
                 if (matchesSearch && matchesCategory) {
-                    row.style.display = '';
+                    showRowSmooth(row);
                     tabVisibleCount++;
                     // Only count if tab is visible
                     if (isTabVisible) {
                         totalVisibleCount++;
                     }
                 } else {
-                    row.style.display = 'none';
+                    hideRowSmooth(row);
                 }
             });
             
             // Show no results message if needed for this tab
             const tbody = tab.querySelector('tbody');
             const hasActiveFilters = searchFilter || categoryFilter;
+
+            tabMatchCounts.set(tab.id, tabVisibleCount);
             if (tabVisibleCount === 0 && hasActiveFilters) {
                 let noResultsRow = tbody.querySelector('.no-results-row');
                 if (!noResultsRow) {
@@ -1836,6 +1885,32 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Update results count - use the updateViolationCount function
         updateViolationCount();
+
+        // If searching, auto-switch to the first tab that has matches so new items are "findable"
+        // even when user is currently on a different tab.
+        const hasActiveFilters = searchFilter || categoryFilter;
+        if (hasActiveFilters) {
+            // Find current visible tab
+            let activeTabId = null;
+            for (let tab of allTabs) {
+                const style = window.getComputedStyle(tab);
+                if (style.display !== 'none') {
+                    activeTabId = tab.id;
+                    break;
+                }
+            }
+
+            const activeCount = activeTabId ? (tabMatchCounts.get(activeTabId) || 0) : 0;
+            if (activeCount === 0) {
+                const preferredOrder = ['minor-content', 'major-content', 'ra5487-content'];
+                const targetTabId = preferredOrder.find(id => (tabMatchCounts.get(id) || 0) > 0);
+                if (targetTabId && targetTabId !== activeTabId) {
+                    const tabKey = targetTabId.replace('-content', '');
+                    const btn = document.querySelector(`.hrdash-segment__btn[data-tab="${tabKey}"]`);
+                    if (btn) btn.click();
+                }
+            }
+        }
     }
     
     // Live search as you type

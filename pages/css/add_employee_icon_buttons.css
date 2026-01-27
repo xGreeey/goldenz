@@ -437,3 +437,91 @@
     white-space: nowrap;
     direction: ltr;
 }
+
+/* ==========================================================
+   Government Examination (+ / −) buttons
+   Match the existing square plus/minus component styling
+   ========================================================== */
+.gov-exam-add-btn,
+.gov-exam-remove-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px !important;
+    min-height: 36px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 4px !important;
+    background-color: #ffffff !important;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease !important;
+    cursor: pointer !important;
+    outline: none !important;
+    box-shadow: none !important;
+    font-size: 0 !important; /* icon-only */
+    line-height: 0 !important;
+    text-align: center !important;
+}
+
+.gov-exam-add-btn {
+    color: #3b82f6 !important;
+    border-color: #cbd5e1 !important;
+}
+
+.gov-exam-add-btn:hover {
+    background-color: #eff6ff !important;
+    border-color: #3b82f6 !important;
+    color: #2563eb !important;
+}
+
+.gov-exam-add-btn:focus {
+    outline: none !important;
+    border-color: #3b82f6 !important;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+}
+
+.gov-exam-add-btn:active {
+    background-color: #dbeafe !important;
+}
+
+.gov-exam-remove-btn {
+    color: #64748b !important;
+    border-color: #cbd5e1 !important;
+}
+
+.gov-exam-remove-btn:hover {
+    background-color: #fee2e2 !important;
+    border-color: #dc3545 !important;
+    color: #dc2626 !important;
+}
+
+.gov-exam-remove-btn:focus {
+    outline: none !important;
+    border-color: #dc3545 !important;
+    box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1) !important;
+}
+
+.gov-exam-remove-btn:active {
+    background-color: #fecaca !important;
+}
+
+.gov-exam-add-btn i,
+.gov-exam-remove-btn i {
+    font-family: "Font Awesome 6 Free", "Font Awesome 5 Free", "FontAwesome" !important;
+    font-weight: 900 !important;
+    font-style: normal !important;
+    font-size: 16px !important;
+    line-height: 1 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: inline-block !important;
+    width: auto !important;
+    height: auto !important;
+    vertical-align: middle !important;
+    color: inherit !important;
+    text-rendering: auto !important;
+    -webkit-font-smoothing: antialiased !important;
+    -moz-osx-font-smoothing: grayscale !important;
+}

@@ -558,7 +558,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 
             case 'update_status':
                 $new_status = $_POST['status'] ?? '';
-                $result = update_user_status($user_id, $new_status, $current_user_id);
+                $suspended_days = isset($_POST['suspended_days']) ? (int)$_POST['suspended_days'] : null;
+                // Only applicable when setting status to suspended
+                if ($new_status !== 'suspended') {
+                    $suspended_days = null;
+                }
+                $result = update_user_status($user_id, $new_status, $current_user_id, $suspended_days);
                 echo json_encode($result);
                 exit;
 
