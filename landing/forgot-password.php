@@ -168,35 +168,189 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['forgot_password'])) {
                         <html>
                         <head>
                             <meta charset="UTF-8">
+                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
                             <style>
-                                body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-                                .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-                                .header { background-color: #0f172a; color: #fff; padding: 20px; text-align: center; }
-                                .content { background-color: #f8fafc; padding: 30px; border: 1px solid #e2e8f0; }
-                                .button { display: inline-block; padding: 12px 30px; background-color: #2563eb; color: #fff; text-decoration: none; border-radius: 6px; margin: 20px 0; }
-                                .button:hover { background-color: #1e40af; }
-                                .footer { text-align: center; padding: 20px; color: #64748b; font-size: 12px; }
-                                .warning { background-color: #fef3c7; border-left: 4px solid #f59e0b; padding: 15px; margin: 20px 0; }
+                                * { margin: 0; padding: 0; box-sizing: border-box; }
+                                body { 
+                                    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; 
+                                    line-height: 1.6; 
+                                    color: #1e293b; 
+                                    background-color: #f1f5f9;
+                                    padding: 20px;
+                                }
+                                .email-wrapper {
+                                    max-width: 600px; 
+                                    margin: 0 auto; 
+                                    background-color: #ffffff;
+                                    border-radius: 8px;
+                                    overflow: hidden;
+                                    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                                }
+                                .header { 
+                                    background: linear-gradient(135deg, #1e3a8a 0%, #6366f1 50%, #8b5cf6 100%);
+                                    color: #fff; 
+                                    padding: 40px 20px; 
+                                    text-align: center; 
+                                }
+                                .header-icons {
+                                    display: flex;
+                                    justify-content: center;
+                                    align-items: center;
+                                    gap: 8px;
+                                    margin-bottom: 16px;
+                                }
+                                .header-icon {
+                                    width: 32px;
+                                    height: 32px;
+                                    fill: #fbbf24;
+                                }
+                                .header h1 {
+                                    font-size: 28px;
+                                    font-weight: 700;
+                                    margin: 0;
+                                    letter-spacing: -0.5px;
+                                }
+                                .content { 
+                                    background-color: #ffffff; 
+                                    padding: 40px 30px; 
+                                }
+                                .content h2 {
+                                    font-size: 24px;
+                                    font-weight: 700;
+                                    color: #1e293b;
+                                    margin-bottom: 20px;
+                                }
+                                .content p {
+                                    font-size: 16px;
+                                    color: #475569;
+                                    margin-bottom: 16px;
+                                    line-height: 1.6;
+                                }
+                                .button-container {
+                                    text-align: center;
+                                    margin: 30px 0;
+                                }
+                                .button { 
+                                    display: inline-block; 
+                                    padding: 14px 32px; 
+                                    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+                                    color: #fff !important; 
+                                    text-decoration: none; 
+                                    border-radius: 8px; 
+                                    font-weight: 600;
+                                    font-size: 16px;
+                                    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+                                    transition: all 0.3s ease;
+                                }
+                                .button:hover { 
+                                    background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+                                    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.4);
+                                    transform: translateY(-2px);
+                                }
+                                .button-icon {
+                                    display: inline-block;
+                                    width: 18px;
+                                    height: 18px;
+                                    fill: #fbbf24;
+                                    vertical-align: middle;
+                                    margin-right: 8px;
+                                }
+                                .fallback-section {
+                                    background-color: #f8fafc;
+                                    border-left: 4px solid #3b82f6;
+                                    padding: 20px;
+                                    margin: 30px 0;
+                                    border-radius: 4px;
+                                }
+                                .fallback-section p {
+                                    margin-bottom: 8px;
+                                    font-size: 14px;
+                                    color: #64748b;
+                                }
+                                .fallback-link {
+                                    word-break: break-all;
+                                    color: #3b82f6 !important;
+                                    text-decoration: underline;
+                                    font-size: 13px;
+                                }
+                                .warning {
+                                    background-color: #fef3c7;
+                                    border-left: 4px solid #f59e0b;
+                                    padding: 16px;
+                                    margin: 30px 0;
+                                    border-radius: 4px;
+                                }
+                                .warning strong {
+                                    color: #92400e;
+                                    font-size: 14px;
+                                }
+                                .warning p {
+                                    color: #78350f;
+                                    font-size: 14px;
+                                    margin: 8px 0 0 0;
+                                }
+                                .footer { 
+                                    text-align: center; 
+                                    padding: 30px 20px; 
+                                    background-color: #f8fafc;
+                                    color: #64748b; 
+                                    font-size: 12px; 
+                                    border-top: 1px solid #e2e8f0;
+                                }
+                                .footer p {
+                                    margin-bottom: 8px;
+                                    color: #64748b;
+                                }
+                                @media only screen and (max-width: 600px) {
+                                    .content {
+                                        padding: 30px 20px;
+                                    }
+                                    .header {
+                                        padding: 30px 20px;
+                                    }
+                                    .header h1 {
+                                        font-size: 24px;
+                                    }
+                                    .content h2 {
+                                        font-size: 20px;
+                                    }
+                                }
                             </style>
                         </head>
                         <body>
-                            <div class="container">
+                            <div class="email-wrapper">
                                 <div class="header">
+                                    <div class="header-icons">
+                                        <svg class="header-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM9 6c0-1.66 1.34-3 3-3s3 1.34 3 3v2H9V6zm9 14H6V10h12v10zm-6-3c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2z"/>
+                                        </svg>
+                                        <svg class="header-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M17 8h-1V6c0-2.76-2.24-5-5-5S6 3.24 6 6v2H5c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM9 6c0-1.66 1.34-3 3-3s3 1.34 3 3v2H9V6zm4 10.91c0 .55-.45 1-1 1s-1-.45-1-1v-3c0-.55.45-1 1-1s1 .45 1 1v3z"/>
+                                        </svg>
+                                    </div>
                                     <h1>Golden Z-5 HR System</h1>
                                 </div>
                                 <div class="content">
                                     <h2>Password Reset Request</h2>
                                     <p>Hello ' . $user_name_safe . ',</p>
-                                    <p>We received a request to reset your password for your account. Click the button below to reset your password:</p>
-                                    <p style="text-align: center;">
-                                        <a href="' . $reset_url_safe . '" class="button">Reset Password</a>
-                                    </p>
-                                    <p>Or copy and paste this link into your browser:</p>
-                                    <p style="word-break: break-all; color: #2563eb;">' . $reset_url_safe . '</p>
-                                    <div class="warning">
-                                        <strong>⚠️ Security Notice:</strong> This link will expire in 1 hour. If you did not request this password reset, please ignore this email and your password will remain unchanged.
+                                    <p>We received a request to reset your password for your account. Click the button below to securely reset your password:</p>
+                                    <div class="button-container">
+                                        <a href="' . $reset_url_safe . '" class="button">
+                                            <svg class="button-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M17 8h-1V6c0-2.76-2.24-5-5-5S6 3.24 6 6v2H5c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM9 6c0-1.66 1.34-3 3-3s3 1.34 3 3v2H9V6zm4 10.91c0 .55-.45 1-1 1s-1-.45-1-1v-3c0-.55.45-1 1-1s1 .45 1 1v3z"/>
+                                            </svg>
+                                            Reset Password
+                                        </a>
                                     </div>
-                                    <p>If you have any questions, please contact your system administrator.</p>
+                                    <div class="fallback-section">
+                                        <p><strong>Or copy and paste this link:</strong></p>
+                                        <p><a href="' . $reset_url_safe . '" class="fallback-link">' . $reset_url_safe . '</a></p>
+                                    </div>
+                                    <div class="warning">
+                                        <strong>⚠️ Security Notice:</strong>
+                                        <p>This link will expire in 1 hour. If you did not request this password reset, please ignore this email and your password will remain unchanged.</p>
+                                    </div>
+                                    <p style="margin-top: 30px;">If you have any questions, please contact your system administrator.</p>
                                 </div>
                                 <div class="footer">
                                     <p>This is an automated message from Golden Z-5 HR Management System.</p>
