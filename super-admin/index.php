@@ -978,7 +978,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     $pageHandledActions = [
         'profile' => ['update_profile'],
         'add_post' => ['create'],
-        'edit_post' => ['update']
+        'edit_post' => ['update'],
+        'post_assignments' => ['assign', 'remove']
     ];
     
     $allowPageToHandle = !$isAjax && 
