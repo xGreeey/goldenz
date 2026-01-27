@@ -639,28 +639,11 @@ if (isset($_SESSION['employee_redirect_url'])) {
 ?>
 
 <div class="container-fluid hrdash add-employee-container add-employee-modern">
-    <!-- Page Header -->
-    <div class="page-header-modern">
-        <div class="page-title-modern">
-            <h1 class="page-title-main">Add New Employee - Page 2</h1>
-            <p class="page-subtitle-modern">Complete the employee application form</p>
-            <?php if ($has_page1_data): ?>
-                <div class="alert alert-info mt-2 mb-0 fs-sm" style="border-left: 3px solid #0dcaf0;">
-                    <i class="fas fa-info-circle me-2"></i>
-                    <strong>Draft Employee:</strong>&nbsp;
-                    <span class="text-dark"><?php echo htmlspecialchars(trim(($page1_data['first_name'] ?? '') . ' ' . ($page1_data['surname'] ?? ''))); ?></span>
-                    <span class="text-muted">(<?php echo htmlspecialchars($page1_data['employee_type'] ?? ''); ?> #<?php echo htmlspecialchars($page1_data['employee_no'] ?? ''); ?>)</span>
-                </div>
-            <?php endif; ?>
-        </div>
-        <div class="page-actions-modern">
-            <a href="?page=add_employee" class="btn btn-outline-modern me-2">
-                <i class="fas fa-arrow-left me-2"></i>Back to Page 1
-            </a>
-            <a href="?page=employees" class="btn btn-outline-modern">
-                <i class="fas fa-times me-2"></i>Cancel
-            </a>
-        </div>
+    <!-- Page Header (UI-only cleanup: keep Back to Page 1 only) -->
+    <div class="d-flex justify-content-end mb-3" style="padding-top: 1.25rem;">
+        <a href="?page=add_employee" class="btn btn-outline-modern">
+            <i class="fas fa-arrow-left me-2"></i>Back to Page 1
+        </a>
     </div>
 
     <!-- Error Messages -->
