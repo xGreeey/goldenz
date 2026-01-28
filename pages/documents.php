@@ -932,5 +932,12 @@ function exportDocuments() {
     // TODO: Implement CSV export
 }
 
+// Expose functions to global scope for inline onclick handlers
+window.toggleFolder = toggleFolder;
+window.uploadToFolder = uploadToFolder;
+window.downloadFile = downloadFile;
+window.deleteFile = deleteFile;
+window.exportDocuments = exportDocuments;
+
 })(); // End IIFE
 </script>
