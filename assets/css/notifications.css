@@ -51,7 +51,7 @@
 
 .system-alert {
     position: relative;
-    background: white;
+    background: var(--toast-bg, white);
     border-radius: 12px;
     padding: 20px 24px;
     margin-bottom: 12px;
@@ -62,6 +62,7 @@
     pointer-events: all;
     transition: all var(--notif-duration) var(--notif-ease);
     animation: slideDown var(--notif-duration) var(--notif-ease);
+    color: var(--interface-text, #1e293b);
 }
 
 @keyframes slideDown {
@@ -164,7 +165,7 @@
     margin-bottom: 6px;
     font-weight: 700;
     font-size: 16px;
-    color: #1e293b;
+    color: var(--interface-text, #1e293b);
     line-height: 1.4;
 }
 
@@ -172,7 +173,7 @@
     margin: 0;
     font-size: 14px;
     line-height: 1.6;
-    color: #475569;
+    color: var(--interface-text-muted, #475569);
 }
 
 /* Close Button */
@@ -219,7 +220,7 @@
 
 .toast {
     position: relative;
-    background: white;
+    background: var(--toast-bg, white);
     border-radius: 10px;
     padding: 16px 20px;
     margin-top: 12px;
@@ -231,6 +232,7 @@
     transition: all var(--notif-duration) var(--notif-ease);
     animation: slideInRight var(--notif-duration) var(--notif-ease);
     border-left: 4px solid transparent;
+    color: var(--interface-text, #1e293b);
 }
 
 @keyframes slideInRight {
@@ -263,22 +265,22 @@
 /* Toast Types - Bottom Right */
 .toast.toast-success {
     border-left-color: var(--notif-success);
-    background: linear-gradient(to right, var(--notif-success-light) 0%, white 10%);
+    background: linear-gradient(to right, var(--notif-success-light) 0%, var(--toast-bg, white) 10%);
 }
 
 .toast.toast-info {
     border-left-color: var(--notif-info);
-    background: linear-gradient(to right, var(--notif-info-light) 0%, white 10%);
+    background: linear-gradient(to right, var(--notif-info-light) 0%, var(--toast-bg, white) 10%);
 }
 
 .toast.toast-warning {
     border-left-color: var(--notif-gold);
-    background: linear-gradient(to right, var(--notif-gold-light) 0%, white 10%);
+    background: linear-gradient(to right, var(--notif-gold-light) 0%, var(--toast-bg, white) 10%);
 }
 
 .toast.toast-error {
     border-left-color: var(--notif-error);
-    background: linear-gradient(to right, var(--notif-error-light) 0%, white 10%);
+    background: linear-gradient(to right, var(--notif-error-light) 0%, var(--toast-bg, white) 10%);
 }
 
 /* Toast Icon */
@@ -323,7 +325,7 @@
     margin-bottom: 2px;
     font-weight: 600;
     font-size: 14px;
-    color: #1e293b;
+    color: var(--interface-text, #1e293b);
     line-height: 1.4;
 }
 
@@ -331,7 +333,7 @@
     margin: 0;
     font-size: 13px;
     line-height: 1.5;
-    color: #64748b;
+    color: var(--interface-text-muted, #64748b);
 }
 
 /* Toast Close Button */
@@ -411,13 +413,15 @@
 }
 
 .confirm-dialog {
-    background: white;
+    background: var(--modal-bg, white);
     border-radius: 12px;
     padding: 24px;
     max-width: 450px;
     width: 100%;
     box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
     animation: scaleIn 0.3s var(--notif-ease);
+    color: var(--interface-text, #1e293b);
+    border: 1px solid var(--card-border, transparent);
 }
 
 @keyframes scaleIn {
@@ -467,7 +471,7 @@
     flex: 1;
     font-size: 18px;
     font-weight: 700;
-    color: #1e293b;
+    color: var(--interface-text, #1e293b);
     margin: 0;
 }
 
@@ -475,7 +479,7 @@
     margin: 0 0 24px 0;
     font-size: 14px;
     line-height: 1.6;
-    color: #475569;
+    color: var(--interface-text-muted, #475569);
 }
 
 .confirm-actions {
@@ -568,4 +572,95 @@
 /* Prevent scrolling when confirm dialog is open */
 body.confirm-open {
     overflow: hidden;
+}
+
+/* ============================================================
+   DARK MODE SUPPORT FOR NOTIFICATIONS
+   ============================================================ */
+
+html[data-theme="dark"] .system-alert {
+    background: var(--toast-bg) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .system-alert-content strong {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .system-alert-content p {
+    color: var(--interface-text-muted) !important;
+}
+
+html[data-theme="dark"] .system-alert-close {
+    color: var(--interface-text-muted) !important;
+}
+
+html[data-theme="dark"] .system-alert-close:hover {
+    background: var(--interface-surface-1) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .toast {
+    background: var(--toast-bg) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .toast.toast-success {
+    background: linear-gradient(to right, rgba(16, 185, 129, 0.2) 0%, var(--toast-bg) 10%) !important;
+}
+
+html[data-theme="dark"] .toast.toast-info {
+    background: linear-gradient(to right, rgba(59, 130, 246, 0.2) 0%, var(--toast-bg) 10%) !important;
+}
+
+html[data-theme="dark"] .toast.toast-warning {
+    background: linear-gradient(to right, rgba(255, 215, 0, 0.2) 0%, var(--toast-bg) 10%) !important;
+}
+
+html[data-theme="dark"] .toast.toast-error {
+    background: linear-gradient(to right, rgba(239, 68, 68, 0.2) 0%, var(--toast-bg) 10%) !important;
+}
+
+html[data-theme="dark"] .toast-content strong {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .toast-content p {
+    color: var(--interface-text-muted) !important;
+}
+
+html[data-theme="dark"] .toast-close {
+    color: var(--interface-text-muted) !important;
+}
+
+html[data-theme="dark"] .toast-close:hover {
+    background: var(--interface-surface-1) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .confirm-overlay {
+    background: var(--modal-backdrop) !important;
+}
+
+html[data-theme="dark"] .confirm-dialog {
+    background: var(--modal-bg) !important;
+    border-color: var(--card-border) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .confirm-title {
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .confirm-message {
+    color: var(--interface-text-muted) !important;
+}
+
+html[data-theme="dark"] .confirm-btn-cancel {
+    background: var(--interface-surface-1) !important;
+    color: var(--interface-text) !important;
+}
+
+html[data-theme="dark"] .confirm-btn-cancel:hover {
+    background: var(--interface-surface-2) !important;
 }

@@ -70,8 +70,16 @@ function getThemeStorageKey() {
     return 'goldenz-theme';
 }
 
-// Apply theme immediately to prevent flash of unstyled content
+// Theme initialization is now handled in <head> to prevent FOUC
+// This code only runs if head initialization didn't happen (fallback)
 (function() {
+    // Check if theme was already initialized in head
+    if (window.__GOLDENZ_THEME_INIT) {
+        // Theme already applied, just sync the storage key function
+        return;
+    }
+    
+    // Fallback: Apply theme immediately if head script didn't run
     let savedTheme = 'light';
     try {
         const storageKey = getThemeStorageKey();
