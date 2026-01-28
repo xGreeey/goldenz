@@ -155,6 +155,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         $subcategory = trim($_POST['subcategory'] ?? '');
         
         if (!empty($subcategory)) {
+            // Truncate subcategory if needed to ensure reference_no fits in 20 chars
+            // Format: "SUBCAT.123" - need space for number part (up to 9999 = 4 digits + 1 dot = 5 chars)
+            // So subcategory can be max 15 chars
+            $subcategoryPrefix = mb_substr($subcategory, 0, 15);
+            
             try {
                 $stmt = $pdo->prepare("SELECT MAX(CAST(SUBSTRING_INDEX(reference_no, '.', -1) AS UNSIGNED)) AS max_num 
                                        FROM violation_types 
@@ -162,12 +167,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 $stmt->execute([$subcategory]);
                 $row = $stmt->fetch();
                 $maxNum = $row['max_num'] ?? 0;
-                $reference_no = $subcategory . '.' . ($maxNum + 1);
+                $reference_no = $subcategoryPrefix . '.' . ($maxNum + 1);
             } catch (Exception $e) {
-                $reference_no = $subcategory . '.1';
+                $reference_no = $subcategoryPrefix . '.1';
             }
         } else {
             $prefix = $category === 'Major' ? 'MAJ' : 'MIN';
+            // Format: "MAJ-12345" or "MIN-12345" - prefix is 3 chars, dash is 1 char, number can be up to 5 digits
+            // So max number is 99999 (5 digits) = total 9 chars, well within 20 char limit
             try {
                 $stmt = $pdo->prepare("SELECT MAX(CAST(SUBSTRING_INDEX(reference_no, '-', -1) AS UNSIGNED)) AS max_num 
                                        FROM violation_types 
@@ -180,6 +187,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 $reference_no = $prefix . '-1';
             }
         }
+    }
+    
+    // Validate and truncate reference_no to max 20 characters
+    if (mb_strlen($reference_no) > 20) {
+        // If user provided a long reference_no, truncate it and warn
+        $reference_no = mb_substr($reference_no, 0, 20);
+        $add_violation_errors[] = 'Reference number was truncated to 20 characters to fit database constraints.';
+    }
+    
+    // Validate reference_no is not empty after processing
+    if (empty($reference_no)) {
+        $add_violation_errors[] = 'Reference number cannot be empty.';
     }
     
     // Check if reference number already exists
@@ -211,7 +230,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             ");
             
             $ra5487_compliant = isset($_POST['ra5487_compliant']) ? 1 : 0;
-            $is_active = isset($_POST['is_active']) ? 1 : 0;
+            // Default to 1 (active) if checkbox is not present, since it's checked by default in the form
+            $is_active = array_key_exists('is_active', $_POST) ? (isset($_POST['is_active']) ? 1 : 0) : 1;
+            
+            // Prepare new values for audit log
+            $newValues = [
+                'reference_no' => $reference_no,
+                'name' => trim($_POST['name']),
+                'category' => $_POST['category'],
+                'subcategory' => !empty(trim($_POST['subcategory'] ?? '')) ? trim($_POST['subcategory']) : null,
+                'description' => !empty(trim($_POST['description'] ?? '')) ? trim($_POST['description']) : null,
+                'first_offense' => !empty(trim($_POST['first_offense'] ?? '')) ? trim($_POST['first_offense']) : null,
+                'second_offense' => !empty(trim($_POST['second_offense'] ?? '')) ? trim($_POST['second_offense']) : null,
+                'third_offense' => !empty(trim($_POST['third_offense'] ?? '')) ? trim($_POST['third_offense']) : null,
+                'fourth_offense' => !empty(trim($_POST['fourth_offense'] ?? '')) ? trim($_POST['fourth_offense']) : null,
+                'fifth_offense' => !empty(trim($_POST['fifth_offense'] ?? '')) ? trim($_POST['fifth_offense']) : null,
+                'ra5487_compliant' => $ra5487_compliant,
+                'is_active' => $is_active,
+            ];
             
             $stmt->execute([
                 $reference_no,
@@ -227,6 +263,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 $ra5487_compliant,
                 $is_active
             ]);
+            
+            // Get the inserted ID
+            $insertedId = (int)$pdo->lastInsertId();
+            
+            // Log audit event for violation type creation
+            if (function_exists('log_audit_event')) {
+                $user_id = $_SESSION['user_id'] ?? $_SESSION['id'] ?? null;
+                log_audit_event('INSERT', 'violation_types', $insertedId, null, $newValues, $user_id);
+            }
             
             $add_violation_success = true;
             
@@ -1630,17 +1675,81 @@ document.addEventListener('DOMContentLoaded', function() {
     const addViolationForm = document.getElementById('addViolationForm');
     // IMPORTANT: use a relative URL so it resolves under /hr-admin/ (session cookie path)
     const addViolationApiUrl = 'api/violation_types.php';
-    if (addViolationForm) {
+    
+    // Prevent duplicate event listeners
+    if (addViolationForm && !addViolationForm.hasAttribute('data-submit-handler-attached')) {
+        addViolationForm.setAttribute('data-submit-handler-attached', 'true');
+        
         addViolationForm.addEventListener('submit', function(e) {
             e.preventDefault();
+            e.stopPropagation();
+            
+            // Prevent double submission
+            const submitButton = addViolationForm.querySelector('button[type="submit"]');
+            if (submitButton && submitButton.disabled) {
+                return;
+            }
+            if (submitButton) {
+                submitButton.disabled = true;
+            }
+            
+            // Validate reference_no length before submission
+            const referenceNoInput = addViolationForm.querySelector('input[name="reference_no"]');
+            if (referenceNoInput && referenceNoInput.value.trim().length > 20) {
+                alert('Reference number cannot exceed 20 characters. Please shorten it.');
+                if (submitButton) submitButton.disabled = false;
+                referenceNoInput.focus();
+                return;
+            }
+            
+            // Ensure action field exists in form before creating FormData
+            let actionInput = addViolationForm.querySelector('input[name="action"]');
+            if (!actionInput) {
+                actionInput = document.createElement('input');
+                actionInput.type = 'hidden';
+                actionInput.name = 'action';
+                actionInput.value = 'add_violation';
+                addViolationForm.appendChild(actionInput);
+            } else {
+                actionInput.value = 'add_violation';
+            }
             
             const formData = new FormData(addViolationForm);
             const errorsDiv = document.getElementById('addViolationErrors');
             const errorsList = document.getElementById('addViolationErrorsList');
             
+            // Always ensure action field is present and correct (double check)
+            if (!formData.has('action')) {
+                formData.append('action', 'add_violation');
+            } else {
+                formData.set('action', 'add_violation');
+            }
+            
+            // Truncate reference_no if it's too long (client-side safety check)
+            if (formData.has('reference_no')) {
+                const refNo = formData.get('reference_no');
+                if (refNo && refNo.length > 20) {
+                    formData.set('reference_no', refNo.substring(0, 20));
+                }
+            }
+            
+            // Debug: Log form data (remove in production)
+            console.log('Form Data being sent:');
+            for (let [key, value] of formData.entries()) {
+                console.log(key + ': ' + value);
+            }
+            
+            // Verify action is present
+            if (!formData.has('action') || formData.get('action') !== 'add_violation') {
+                console.error('Action field missing or incorrect!');
+                alert('Form error: Action field is missing. Please refresh the page and try again.');
+                if (submitButton) submitButton.disabled = false;
+                return;
+            }
+            
             // Hide previous errors
-            errorsDiv.style.display = 'none';
-            errorsList.innerHTML = '';
+            if (errorsDiv) errorsDiv.style.display = 'none';
+            if (errorsList) errorsList.innerHTML = '';
             
             // Submit via AJAX
             fetch(addViolationApiUrl, {
@@ -1661,6 +1770,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 return response.json();
             })
             .then(data => {
+                // Re-enable submit button
+                if (submitButton) submitButton.disabled = false;
+                
                 if (data && data.success) {
                     // Close modal
                     const modal = bootstrap.Modal.getInstance(document.getElementById('addViolationModal'));
@@ -1674,14 +1786,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 } else {
                     // Show errors
                     if (data && data.message) {
-                        errorsList.innerHTML = `<li>${data.message}</li>`;
-                        errorsDiv.style.display = 'block';
+                        if (errorsList) errorsList.innerHTML = `<li>${data.message}</li>`;
+                        if (errorsDiv) errorsDiv.style.display = 'block';
                     } else {
                         alert('Error: ' + (data && data.message ? data.message : 'Failed to add violation type'));
                     }
                 }
             })
             .catch(error => {
+                // Re-enable submit button
+                if (submitButton) submitButton.disabled = false;
+                
                 console.error('Error:', error);
                 alert('An error occurred while submitting the form. Please try again.');
                 // Show error in form
@@ -1699,8 +1814,32 @@ document.addEventListener('DOMContentLoaded', function() {
         addViolationModal.addEventListener('hidden.bs.modal', function() {
             const form = document.getElementById('addViolationForm');
             if (form) {
+                // Store action value before reset
+                const actionValue = 'add_violation';
+                
                 form.reset();
-                document.getElementById('addViolationErrors').style.display = 'none';
+                
+                // Ensure action field is always present after reset
+                let actionInput = form.querySelector('input[name="action"]');
+                if (!actionInput) {
+                    actionInput = document.createElement('input');
+                    actionInput.type = 'hidden';
+                    actionInput.name = 'action';
+                    actionInput.value = actionValue;
+                    // Insert at the beginning of the form
+                    form.insertBefore(actionInput, form.firstChild);
+                } else {
+                    actionInput.value = actionValue;
+                }
+                
+                // Re-enable submit button if it was disabled
+                const submitButton = form.querySelector('button[type="submit"]');
+                if (submitButton) {
+                    submitButton.disabled = false;
+                }
+                
+                const errorsDiv = document.getElementById('addViolationErrors');
+                if (errorsDiv) errorsDiv.style.display = 'none';
             }
         });
     }
@@ -2054,9 +2193,10 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <div class="mb-3">
                                     <label class="form-label">Reference Number</label>
                                     <input type="text" name="reference_no" class="form-control" 
+                                           maxlength="20"
                                            placeholder="Auto-generated if left blank (e.g., MAJ-29, MIN-31, A.2)">
                                     <small class="form-text text-muted">
-                                        <i class="fas fa-info-circle me-1"></i>Leave blank to auto-generate based on category
+                                        <i class="fas fa-info-circle me-1"></i>Leave blank to auto-generate based on category (max 20 characters)
                                     </small>
                                 </div>
                                 
