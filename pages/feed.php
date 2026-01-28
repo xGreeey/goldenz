@@ -1686,50 +1686,29 @@ function formatBirthdayDate($date) {
 
 <script>
 // Feed interactions (like, comment, share, etc.)
-document.addEventListener('DOMContentLoaded', function() {
-    // Like button
-    document.querySelectorAll('[data-action="like"]').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const postId = this.dataset.postId;
-            const icon = this.querySelector('i');
-            const isLiked = icon.classList.contains('fas');
-            
-            // Toggle like state
-            if (isLiked) {
-                icon.classList.remove('fas');
-                icon.classList.add('far');
-                this.classList.remove('text-danger');
-            } else {
-                icon.classList.remove('far');
-                icon.classList.add('fas');
-                this.classList.add('text-danger');
-            }
-            
-            // TODO: Send AJAX request to update like in database
-        });
-    });
+let feedInitialized = false;
+
+function initFeedPage() {
+    // Prevent duplicate initialization
+    if (feedInitialized) {
+        return;
+    }
     
-    // Comment input
-    document.querySelectorAll('.feed-post-comment-input input').forEach(input => {
-        input.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                const comment = this.value.trim();
-                if (comment) {
-                    const postId = this.dataset.postId;
-                    // TODO: Send AJAX request to add comment
-                    this.value = '';
-                }
-            }
-        });
-    });
-    
-    // Expandable form functionality
+    // Get elements
     const feedPostInput = document.getElementById('feedPostInput');
     const feedFormCollapsed = document.getElementById('feedFormCollapsed');
     const feedFormExpanded = document.getElementById('feedFormExpanded');
     const feedFormBackdrop = document.getElementById('feedFormBackdrop');
     const closeExpandedForm = document.getElementById('closeExpandedForm');
     const cancelExpandedForm = document.getElementById('cancelExpandedForm');
+    
+    // If critical elements don't exist, wait a bit and try again
+    if (!feedPostInput || !feedFormCollapsed || !feedFormExpanded || !feedFormBackdrop) {
+        setTimeout(initFeedPage, 50);
+        return;
+    }
+    
+    feedInitialized = true;
     
     // Function to expand form
     function expandForm() {
@@ -1786,25 +1765,19 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Close on backdrop click (but not when clicking the form itself)
-    if (feedFormBackdrop) {
-        feedFormBackdrop.addEventListener('click', function(e) {
-            if (e.target === feedFormBackdrop) {
-                collapseForm();
-            }
-        });
-    }
+    feedFormBackdrop.addEventListener('click', function(e) {
+        if (e.target === feedFormBackdrop) {
+            collapseForm();
+        }
+    });
     
     // Prevent form clicks from closing
-    if (feedFormExpanded) {
-        feedFormExpanded.addEventListener('click', function(e) {
-            e.stopPropagation();
-        });
-    }
+    feedFormExpanded.addEventListener('click', function(e) {
+        e.stopPropagation();
+    });
     
-    // Open form on input click
-    if (feedPostInput) {
-        feedPostInput.addEventListener('click', expandForm);
-    }
+    // Open form on input click - THIS IS THE CRITICAL FIX
+    feedPostInput.addEventListener('click', expandForm);
     
     // Close form buttons
     if (closeExpandedForm) {
@@ -1816,11 +1789,12 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Close on Escape key
-    document.addEventListener('keydown', function(e) {
+    const escapeHandler = function(e) {
         if (e.key === 'Escape' && feedFormExpanded && feedFormExpanded.style.display !== 'none') {
             collapseForm();
         }
-    });
+    };
+    document.addEventListener('keydown', escapeHandler);
     
     // Sidebar add event button
     const sidebarAddEventBtn = document.getElementById('sidebarAddEventBtn');
@@ -1829,6 +1803,42 @@ document.addEventListener('DOMContentLoaded', function() {
             expandForm();
         });
     }
+
+    // Like button
+    document.querySelectorAll('[data-action="like"]').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const postId = this.dataset.postId;
+            const icon = this.querySelector('i');
+            const isLiked = icon.classList.contains('fas');
+            
+            // Toggle like state
+            if (isLiked) {
+                icon.classList.remove('fas');
+                icon.classList.add('far');
+                this.classList.remove('text-danger');
+            } else {
+                icon.classList.remove('far');
+                icon.classList.add('fas');
+                this.classList.add('text-danger');
+            }
+            
+            // TODO: Send AJAX request to update like in database
+        });
+    });
+    
+    // Comment input
+    document.querySelectorAll('.feed-post-comment-input input').forEach(input => {
+        input.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                const comment = this.value.trim();
+                if (comment) {
+                    const postId = this.dataset.postId;
+                    // TODO: Send AJAX request to add comment
+                    this.value = '';
+                }
+            }
+        });
+    });
 
     // Event Form Handling
     const eventForm = document.getElementById('createEventForm');
@@ -1980,6 +1990,34 @@ document.addEventListener('DOMContentLoaded', function() {
                 }, 300);
             }
         }, 5000);
+    }
+}
+
+// Initialize on DOMContentLoaded (initial page load)
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() {
+        initFeedPage();
+    });
+} else {
+    // DOM is already ready, initialize immediately
+    initFeedPage();
+}
+
+// Re-initialize when page is loaded via AJAX navigation
+document.addEventListener('pageLoaded', function(e) {
+    feedInitialized = false; // Reset flag for re-initialization
+    const page = e.detail?.page || new URLSearchParams(window.location.search).get('page');
+    if (page === 'feed') {
+        setTimeout(initFeedPage, 100);
+    }
+});
+
+// Also listen for pageContentLoaded event (alternative event name)
+document.addEventListener('pageContentLoaded', function(e) {
+    feedInitialized = false; // Reset flag for re-initialization
+    const page = e.detail?.page || new URLSearchParams(window.location.search).get('page');
+    if (page === 'feed') {
+        setTimeout(initFeedPage, 100);
     }
 });
 </script>
