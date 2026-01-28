@@ -5,18 +5,8 @@ $page = 'documents';
 // Get database connection
 $pdo = get_db_connection();
 
-// Handle file upload
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
-    $action = $_POST['action'];
-    
-    if ($action === 'upload_document' && isset($_FILES['document_file'])) {
-        // Handle document upload (to be implemented with proper file handling)
-        redirect_with_message('?page=documents', 'Document uploaded successfully!', 'success');
-    } elseif ($action === 'delete_document' && isset($_POST['document_id'])) {
-        // Handle document deletion (to be implemented)
-        redirect_with_message('?page=documents', 'Document deleted successfully!', 'success');
-    }
-}
+// File operations are now handled via API endpoints (api/employee_files.php)
+// No server-side form handling needed here
 
 // Get filter parameters
 $search = $_GET['search'] ?? '';
@@ -58,28 +48,29 @@ function get_tag_color($tag_name, $available_tags) {
     return '#6b7280'; // Default gray color
 }
 
-// Check if employee_documents table exists and fetch documents
+// Fetch documents from new secure employee_files table
 $employee_folders = [];
 $all_documents = [];
 
 try {
-    // Check if table exists
-    $table_check = $pdo->query("SHOW TABLES LIKE 'employee_documents'");
+    // Check if employee_files table exists
+    $table_check = $pdo->query("SHOW TABLES LIKE 'employee_files'");
     $table_exists = $table_check->rowCount() > 0;
     
     if ($table_exists) {
-        // Fetch all documents
-        $documents_sql = "SELECT ed.*, 
+        // Fetch all documents from secure employee_files table
+        $documents_sql = "SELECT ef.*, 
                                  e.id as employee_id,
                                  e.surname, 
                                  e.first_name,
                                  e.middle_name,
                                  CONCAT(e.surname, ', ', e.first_name) as employee_name,
                                  u.name as uploaded_by_name
-                          FROM employee_documents ed
-                          LEFT JOIN employees e ON ed.employee_id = e.id
-                          LEFT JOIN users u ON ed.uploaded_by = u.id
-                          ORDER BY ed.upload_date DESC";
+                          FROM employee_files ef
+                          LEFT JOIN employees e ON ef.employee_id = e.id
+                          LEFT JOIN users u ON ef.uploaded_by = u.id
+                          WHERE ef.deleted_at IS NULL
+                          ORDER BY ef.created_at DESC";
         
         $documents_stmt = $pdo->prepare($documents_sql);
         $documents_stmt->execute();
@@ -102,19 +93,19 @@ foreach ($employees as $employee) {
     $employee_docs = [];
     foreach ($all_documents as $doc) {
         if (isset($doc['employee_id']) && $doc['employee_id'] == $employee_id) {
-            $file_size = isset($doc['file_size']) ? (int)$doc['file_size'] : 0;
-            $document_type = $doc['document_type'] ?? 'Other';
+            $file_size = isset($doc['size_bytes']) ? (int)$doc['size_bytes'] : 0;
+            $document_type = $doc['category'] ?? 'Other';
             
             $employee_docs[] = [
                 'id' => $doc['id'] ?? null,
-                'name' => $doc['filename'] ?? $doc['file_name'] ?? 'Unknown',
+                'name' => $doc['original_filename'] ?? 'Unknown',
                 'tag' => $document_type,
                 'tag_color' => get_tag_color($document_type, $available_tags),
                 'size' => format_file_size($file_size),
-                'modified' => isset($doc['upload_date']) ? date('d.m.Y', strtotime($doc['upload_date'])) : 'N/A',
+                'modified' => isset($doc['created_at']) ? date('d.m.Y', strtotime($doc['created_at'])) : 'N/A',
                 'employee' => $employee_name,
                 'employee_id' => $employee_id,
-                'file_path' => $doc['file_path'] ?? $doc['filepath'] ?? null,
+                'file_id' => $doc['id'] ?? null,
                 'uploaded_by' => $doc['uploaded_by_name'] ?? 'Unknown'
             ];
         }
@@ -332,7 +323,7 @@ $categories = [
                                                         ?>
                                                     </div>
                                                     <div class="folder-meta text-muted small mt-1">
-                                                        <?php echo count($folder['documents']); ?> document<?php echo count($folder['documents']) !== 1 ? 's' : ''; ?>
+                                                        <span class="file-count-badge"><?php echo count($folder['documents']); ?></span> document<?php echo count($folder['documents']) !== 1 ? 's' : ''; ?>
                                                     </div>
                                                 </div>
                                             </div>
@@ -405,39 +396,13 @@ $categories = [
                                                                             <i class="fas fa-ellipsis-vertical"></i>
                                                                         </button>
                                                                         <ul class="dropdown-menu dropdown-menu-end">
-                                                                            <?php if (!empty($doc['file_path'])): ?>
-                                                                                <?php
-                                                                                // Determine file URL based on storage type
-                                                                                $file_url = null;
-                                                                                if (strpos($doc['file_path'], 'minio://') === 0) {
-                                                                                    // MinIO file - use storage URL helper if available
-                                                                                    $minio_path = substr($doc['file_path'], 8);
-                                                                                    if (function_exists('get_storage_url')) {
-                                                                                        $file_url = get_storage_url($minio_path);
-                                                                                    }
-                                                                                } elseif (strpos($doc['file_path'], 'http://') === 0 || strpos($doc['file_path'], 'https://') === 0) {
-                                                                                    // Full URL
-                                                                                    $file_url = $doc['file_path'];
-                                                                                } else {
-                                                                                    // Local file
-                                                                                    $file_url = '/' . ltrim($doc['file_path'], '/');
-                                                                                }
-                                                                                ?>
-                                                                                <?php if ($file_url): ?>
-                                                                                    <li><a class="dropdown-item" href="<?php echo htmlspecialchars($file_url); ?>" target="_blank"><i class="fas fa-eye me-2"></i>View</a></li>
-                                                                                    <li><a class="dropdown-item" href="<?php echo htmlspecialchars($file_url); ?>" download><i class="fas fa-download me-2"></i>Download</a></li>
-                                                                                <?php else: ?>
-                                                                                    <li><a class="dropdown-item" href="#" onclick="alert('File path not available'); return false;"><i class="fas fa-eye me-2"></i>View</a></li>
-                                                                                    <li><a class="dropdown-item" href="#" onclick="alert('File path not available'); return false;"><i class="fas fa-download me-2"></i>Download</a></li>
-                                                                                <?php endif; ?>
+                                                                            <?php if (!empty($doc['file_id'])): ?>
+                                                                                <li><a class="dropdown-item" href="#" onclick="downloadFile(<?php echo $doc['file_id']; ?>); return false;"><i class="fas fa-download me-2"></i>Download</a></li>
                                                                             <?php else: ?>
-                                                                                <li><a class="dropdown-item" href="#" onclick="alert('File not available'); return false;"><i class="fas fa-eye me-2"></i>View</a></li>
                                                                                 <li><a class="dropdown-item" href="#" onclick="alert('File not available'); return false;"><i class="fas fa-download me-2"></i>Download</a></li>
                                                                             <?php endif; ?>
-                                                                            <li><a class="dropdown-item" href="#" onclick="alert('Rename functionality coming soon'); return false;"><i class="fas fa-edit me-2"></i>Rename</a></li>
-                                                                            <li><a class="dropdown-item" href="#" onclick="alert('Share functionality coming soon'); return false;"><i class="fas fa-share me-2"></i>Share</a></li>
                                                                             <li><hr class="dropdown-divider"></li>
-                                                                            <li><a class="dropdown-item text-danger" href="#" onclick="if(confirm('Are you sure you want to delete this document?')) { deleteDocument(<?php echo $doc['id']; ?>); } return false;"><i class="fas fa-trash me-2"></i>Delete</a></li>
+                                                                            <li><a class="dropdown-item text-danger" href="#" onclick="if(confirm('Are you sure you want to delete this document?')) { deleteFile(<?php echo $doc['file_id'] ?? $doc['id']; ?>); } return false;"><i class="fas fa-trash me-2"></i>Delete</a></li>
                                                                         </ul>
                                                                     </div>
                                                                 </td>
@@ -466,9 +431,10 @@ $categories = [
                 <h5 class="modal-title">Upload Document</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form method="POST" enctype="multipart/form-data">
+            <form id="uploadDocumentForm" enctype="multipart/form-data" data-no-transition="true" onsubmit="return false;">
                 <div class="modal-body">
-                    <input type="hidden" name="action" value="upload_document">
+                    <div id="uploadError" class="alert alert-danger" style="display: none;"></div>
+                    <div id="uploadSuccess" class="alert alert-success" style="display: none;"></div>
                     <div class="mb-3">
                         <label class="form-label">Employee <span class="text-danger">*</span></label>
                         <select name="employee_id" id="uploadEmployeeId" class="form-select" required>
@@ -479,28 +445,31 @@ $categories = [
                                 </option>
                             <?php endforeach; ?>
                         </select>
-                        <small class="text-muted">Document will be stored in this employee's dedicated folder</small>
+                        <small class="text-muted">Document will be stored securely in this employee's dedicated folder</small>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Document Type (Tag) <span class="text-danger">*</span></label>
-                        <select name="document_type" class="form-select" required>
-                            <option value="">Select Type</option>
-                            <?php foreach ($available_tags as $tag): ?>
-                                <option value="<?php echo htmlspecialchars($tag['name']); ?>">
-                                    <?php echo htmlspecialchars($tag['name']); ?>
-                                </option>
-                            <?php endforeach; ?>
+                        <label class="form-label">Document Category <span class="text-danger">*</span></label>
+                        <select name="category" id="uploadCategory" class="form-select" required>
+                            <option value="">Select Category</option>
+                            <option value="Personal Records">Personal Records</option>
+                            <option value="Contracts">Contracts</option>
+                            <option value="Government IDs">Government IDs</option>
+                            <option value="Certifications">Certifications</option>
+                            <option value="Other">Other</option>
                         </select>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">File <span class="text-danger">*</span></label>
-                        <input type="file" name="document_file" class="form-control" required accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
-                        <small class="text-muted">Max file size: 5MB. Allowed formats: PDF, DOC, DOCX, JPG, PNG</small>
+                        <input type="file" name="file" id="uploadFile" class="form-control" required accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+                        <small class="text-muted">Max file size: 20MB. Allowed formats: PDF, DOC, DOCX, JPG, PNG</small>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary-modern">Upload to Employee Folder</button>
+                    <button type="submit" class="btn btn-primary-modern" id="uploadSubmitBtn">
+                        <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                        Upload to Employee Folder
+                    </button>
                 </div>
             </form>
         </div>
@@ -631,6 +600,9 @@ $categories = [
 </style>
 
 <script>
+(function() {
+'use strict';
+
 // Toggle folder expand/collapse
 function toggleFolder(employeeId) {
     const content = document.getElementById('folder-content-' + employeeId);
@@ -729,8 +701,9 @@ document.addEventListener('pageLoaded', function(e) {
         setTimeout(initDocumentSearch, 100);
     }
 });
-    
-    // Folder select all checkboxes
+
+// Initialize folder select all checkboxes
+function initFolderCheckboxes() {
     document.querySelectorAll('.folder-select-all').forEach(checkbox => {
         checkbox.addEventListener('change', function() {
             const folderId = this.getAttribute('data-folder-id');
@@ -743,61 +716,214 @@ document.addEventListener('pageLoaded', function(e) {
             }
         });
     });
-    
-    // Simple client-side search filter (frontend-only)
-    if (searchInput) {
-        const searchTerm = searchInput.value.trim().toLowerCase();
-        if (searchTerm) {
-            document.querySelectorAll('.employee-folder').forEach(folder => {
-                const folderName = folder.getAttribute('data-employee-name') || '';
-                const folderContent = folder.querySelector('.folder-content');
-                const documents = folderContent ? folderContent.querySelectorAll('.document-row') : [];
-                
-                let hasMatch = folderName.toLowerCase().includes(searchTerm);
-                
-                documents.forEach(doc => {
-                    const fileName = doc.querySelector('.file-name')?.textContent || '';
-                    if (fileName.toLowerCase().includes(searchTerm)) {
-                        hasMatch = true;
-                    } else {
-                        doc.style.display = 'none';
-                    }
-                });
-                
-                if (!hasMatch) {
-                    folder.style.display = 'none';
-                }
-            });
-        }
+}
+
+// Initialize folder checkboxes on page load
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initFolderCheckboxes);
+} else {
+    initFolderCheckboxes();
+}
+
+// Re-initialize folder checkboxes on AJAX page load
+document.addEventListener('pageContentLoaded', function(e) {
+    const page = e.detail?.page || new URLSearchParams(window.location.search).get('page');
+    if (page === 'documents') {
+        setTimeout(initFolderCheckboxes, 100);
     }
 });
 
-// Delete document
-function deleteDocument(documentId) {
-    if (!documentId) {
-        alert('Invalid document ID');
+document.addEventListener('pageLoaded', function(e) {
+    const page = e.detail?.page || new URLSearchParams(window.location.search).get('page');
+    if (page === 'documents') {
+        setTimeout(initFolderCheckboxes, 100);
+    }
+});
+
+// Initialize upload form handler
+function initUploadForm() {
+    const uploadForm = document.getElementById('uploadDocumentForm');
+    if (!uploadForm) {
+        console.warn('Upload form not found');
         return;
     }
     
-    // Create form and submit via POST
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = '?page=documents';
+    // Check if already initialized (prevent duplicate listeners)
+    if (uploadForm.dataset.initialized === 'true') {
+        console.log('Upload form already initialized');
+        return;
+    }
     
-    const actionInput = document.createElement('input');
-    actionInput.type = 'hidden';
-    actionInput.name = 'action';
-    actionInput.value = 'delete_document';
-    form.appendChild(actionInput);
+    // Mark as initialized
+    uploadForm.dataset.initialized = 'true';
     
-    const docIdInput = document.createElement('input');
-    docIdInput.type = 'hidden';
-    docIdInput.name = 'document_id';
-    docIdInput.value = documentId;
-    form.appendChild(docIdInput);
+    // Attach event listener to form
+    uploadForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation(); // Prevent other handlers
+        
+        console.log('Upload form submitted');
+        
+        const form = e.target;
+        const employeeId = form.querySelector('#uploadEmployeeId')?.value || document.getElementById('uploadEmployeeId')?.value;
+        const category = form.querySelector('#uploadCategory')?.value || document.getElementById('uploadCategory')?.value;
+        const fileInput = form.querySelector('#uploadFile') || document.getElementById('uploadFile');
+        const submitBtn = form.querySelector('#uploadSubmitBtn') || document.getElementById('uploadSubmitBtn');
+        const errorDiv = form.querySelector('#uploadError') || document.getElementById('uploadError');
+        const successDiv = form.querySelector('#uploadSuccess') || document.getElementById('uploadSuccess');
+        
+        if (!employeeId || !category || !fileInput?.files[0]) {
+            const errorMsg = 'Please fill in all required fields';
+            if (errorDiv) {
+                errorDiv.textContent = errorMsg;
+                errorDiv.style.display = 'block';
+            }
+            if (successDiv) successDiv.style.display = 'none';
+            console.error('Validation failed:', { employeeId, category, hasFile: !!fileInput?.files[0] });
+            return;
+        }
+        
+        const formData = new FormData();
+        formData.append('action', 'upload');
+        formData.append('employee_id', employeeId);
+        formData.append('category', category);
+        formData.append('file', fileInput.files[0]);
+        
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            const spinner = submitBtn.querySelector('.spinner-border');
+            if (spinner) spinner.classList.remove('d-none');
+        }
+        if (errorDiv) errorDiv.style.display = 'none';
+        if (successDiv) successDiv.style.display = 'none';
+        
+        try {
+            console.log('Sending upload request...');
+            // Use absolute path to ensure it works with SPA navigation
+            const apiUrl = '/api/employee_files.php?action=upload';
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                body: formData,
+                credentials: 'same-origin'
+            });
+            
+            console.log('Response status:', response.status);
+            
+            // Check if response is JSON
+            const contentType = response.headers.get('content-type');
+            let data;
+            
+            if (contentType && contentType.includes('application/json')) {
+                data = await response.json();
+            } else {
+                const text = await response.text();
+                console.error('Non-JSON response:', text);
+                throw new Error('Server returned non-JSON response: ' + text.substring(0, 100));
+            }
+            
+            console.log('Response data:', data);
+            
+            if (data.success) {
+                if (successDiv) {
+                    successDiv.textContent = 'File uploaded successfully!';
+                    successDiv.style.display = 'block';
+                }
+                form.reset();
+                setTimeout(() => {
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('uploadDocumentModal'));
+                    if (modal) modal.hide();
+                    // Reload page to show new file
+                    window.location.reload();
+                }, 1500);
+            } else {
+                const errorMsg = data.error || 'Upload failed';
+                if (errorDiv) {
+                    errorDiv.textContent = errorMsg;
+                    errorDiv.style.display = 'block';
+                }
+                console.error('Upload failed:', errorMsg);
+            }
+        } catch (error) {
+            console.error('Upload error:', error);
+            const errorMsg = 'Network error: ' + error.message;
+            if (errorDiv) {
+                errorDiv.textContent = errorMsg;
+                errorDiv.style.display = 'block';
+            }
+        } finally {
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                const spinner = submitBtn.querySelector('.spinner-border');
+                if (spinner) spinner.classList.add('d-none');
+            }
+        }
+    });
+}
+
+// Initialize on page load
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initUploadForm);
+} else {
+    initUploadForm();
+}
+
+// Re-initialize when page content is loaded via AJAX
+document.addEventListener('pageContentLoaded', function(e) {
+    const page = e.detail?.page || new URLSearchParams(window.location.search).get('page');
+    if (page === 'documents') {
+        setTimeout(initUploadForm, 100);
+    }
+});
+
+// Also listen for the old event name (backwards compatibility)
+document.addEventListener('pageLoaded', function(e) {
+    const page = e.detail?.page || new URLSearchParams(window.location.search).get('page');
+    if (page === 'documents') {
+        setTimeout(initUploadForm, 100);
+    }
+});
+
+// Download file via secure API
+function downloadFile(fileId) {
+    if (!fileId) {
+        alert('Invalid file ID');
+        return;
+    }
     
-    document.body.appendChild(form);
-    form.submit();
+    // Open download endpoint in new window/tab (use absolute path)
+    window.open(`/api/employee_files.php?action=download&file_id=${fileId}`, '_blank');
+}
+
+// Delete file via secure API
+async function deleteFile(fileId) {
+    if (!fileId) {
+        alert('Invalid file ID');
+        return;
+    }
+    
+    if (!confirm('Are you sure you want to delete this document? This action cannot be undone.')) {
+        return;
+    }
+    
+    try {
+        // Use absolute path to ensure it works with SPA navigation
+        const response = await fetch(`/api/employee_files.php?action=delete&file_id=${fileId}`, {
+            method: 'POST',
+            credentials: 'same-origin'
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            alert('File deleted successfully');
+            location.reload();
+        } else {
+            alert('Error: ' + (data.error || 'Failed to delete file'));
+        }
+    } catch (error) {
+        alert('Network error: ' + error.message);
+    }
 }
 
 // Export documents to CSV
@@ -805,4 +931,6 @@ function exportDocuments() {
     alert('Export functionality will be implemented soon.');
     // TODO: Implement CSV export
 }
+
+})(); // End IIFE
 </script>
