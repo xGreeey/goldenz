@@ -101,6 +101,53 @@ if ($userRole === 'hr_admin') {
     <link rel="icon" type="image/x-icon" href="<?php echo public_url('favicon.ico'); ?>">
     <link rel="apple-touch-icon" href="<?php echo public_url('logo.svg'); ?>">
     
+    <!-- CRITICAL: Theme initialization BEFORE CSS to prevent FOUC -->
+    <script>
+    (function() {
+        'use strict';
+        // Get user ID for scoped storage (set later in footer, but we need a fallback)
+        const userId = <?php echo json_encode($_SESSION['user_id'] ?? null); ?>;
+        
+        function getThemeStorageKey() {
+            if (userId) {
+                return 'goldenz-theme-user-' + userId;
+            }
+            return 'goldenz-theme';
+        }
+        
+        // Apply theme immediately to prevent flash of unstyled content
+        let savedTheme = 'light';
+        try {
+            const storageKey = getThemeStorageKey();
+            const stored = localStorage.getItem(storageKey);
+            if (stored === 'light' || stored === 'dark' || stored === 'auto') {
+                savedTheme = stored;
+            }
+        } catch (e) {
+            // ignore and fall back to light
+        }
+        
+        // Resolve effective theme (handle 'auto' mode)
+        const effective = savedTheme === 'auto' 
+            ? (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+            : savedTheme;
+        
+        // Apply to <html> immediately (before CSS loads)
+        if (effective === 'light') {
+            document.documentElement.removeAttribute('data-theme');
+        } else {
+            document.documentElement.setAttribute('data-theme', effective);
+        }
+        
+        // Store for later use by app.js
+        window.__GOLDENZ_THEME_INIT = {
+            savedTheme: savedTheme,
+            effective: effective,
+            storageKey: getThemeStorageKey()
+        };
+    })();
+    </script>
+    
     <!-- CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
