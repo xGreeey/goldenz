@@ -47,6 +47,46 @@ $activeSection = getActiveSection($page);
     <link rel="icon" type="image/x-icon" href="<?php echo public_url('favicon.ico'); ?>">
     <link rel="apple-touch-icon" href="<?php echo public_url('logo.svg'); ?>">
     
+    <!-- CRITICAL: Theme initialization BEFORE CSS to prevent FOUC -->
+    <script>
+    (function() {
+        'use strict';
+        const userId = <?php echo json_encode($_SESSION['user_id'] ?? null); ?>;
+        
+        function getThemeStorageKey() {
+            if (userId) {
+                return 'goldenz-theme-user-' + userId;
+            }
+            return 'goldenz-theme';
+        }
+        
+        let savedTheme = 'light';
+        try {
+            const storageKey = getThemeStorageKey();
+            const stored = localStorage.getItem(storageKey);
+            if (stored === 'light' || stored === 'dark' || stored === 'auto') {
+                savedTheme = stored;
+            }
+        } catch (e) {}
+        
+        const effective = savedTheme === 'auto' 
+            ? (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+            : savedTheme;
+        
+        if (effective === 'light') {
+            document.documentElement.removeAttribute('data-theme');
+        } else {
+            document.documentElement.setAttribute('data-theme', effective);
+        }
+        
+        window.__GOLDENZ_THEME_INIT = {
+            savedTheme: savedTheme,
+            effective: effective,
+            storageKey: getThemeStorageKey()
+        };
+    })();
+    </script>
+    
     <!-- CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
