@@ -1,0 +1,117 @@
+services:
+  web:
+    build: .
+    container_name: hr_web
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./src:/var/www/html
+      - ./apache:/etc/apache2/sites-enabled
+      - ./certs:/certs
+      - minio_upload_tmp:/tmp/minio_uploads
+      - rclone_config:/root/.config/rclone
+      - rclone_config:/var/www/.config/rclone
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_DATABASE: goldenz_hr
+      DB_USERNAME: root
+      DB_PASSWORD: Suomynona027
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_ACCESS_KEY: goldenz
+      MINIO_SECRET_KEY: SUOMYNONA
+      MINIO_BUCKET: goldenz-uploads
+      MINIO_USE_SSL: "false"
+      MINIO_REGION: us-east-1
+      RCLONE_REMOTE: rclone
+      RCLONE_CONFIG: /var/www/.config/rclone/rclone.conf
+      BACKUP_SCHEDULE: "*/30 * * * *"
+    depends_on:
+      - db
+      - minio
+
+  db:
+    image: mysql:8.0
+    container_name: hr_db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: Suomynona027
+      MYSQL_DATABASE: goldenz_hr
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./mysql-init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: hr_phpmyadmin
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+    depends_on:
+      - db
+
+  minio:
+    image: minio/minio:latest
+    container_name: hr_minio
+    command: server /data --console-address ":9001"
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: goldenz
+      MINIO_ROOT_PASSWORD: SUOMYNONA
+    volumes:
+      - minio_data:/data
+
+  db_backup:
+    image: debian:bookworm-slim
+    container_name: hr_db_backup
+    depends_on:
+      - db
+      - minio
+    restart: unless-stopped
+    environment:
+      MYSQL_HOST: db
+      MYSQL_USER: root
+      MYSQL_PASSWORD: Suomynona027
+      MYSQL_DATABASE: goldenz_hr
+      MINIO_ALIAS: localminio
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_ACCESS_KEY: goldenz
+      MINIO_SECRET_KEY: SUOMYNONA
+      MINIO_BUCKET: db-backups
+      BACKUP_SCHEDULE: "*/30 * * * *"
+    volumes:
+      - backup_tmp:/backup
+      - minio_upload_tmp:/tmp/minio_uploads
+      - ./scripts/backup.sh:/usr/local/bin/backup.sh:ro
+    command:
+      - /bin/bash
+      - -c
+      - |
+        apt-get update && \
+        apt-get install -y default-mysql-client curl wget ca-certificates cron && \
+        wget -qO /usr/local/bin/mc https://dl.min.io/client/mc/release/linux-amd64/mc && \
+        chmod +x /usr/local/bin/mc && \
+        chmod +x /usr/local/bin/backup.sh && \
+        /usr/local/bin/mc alias set $${MINIO_ALIAS} $${MINIO_ENDPOINT} $${MINIO_ACCESS_KEY} $${MINIO_SECRET_KEY} && \
+        /usr/local/bin/mc mb -p $${MINIO_ALIAS}/$${MINIO_BUCKET} || true && \
+        echo "$${BACKUP_SCHEDULE} root /usr/local/bin/backup.sh >> /var/log/backup.log 2>&1" > /etc/cron.d/backup && \
+        echo "" >> /etc/cron.d/backup && \
+        chmod 0644 /etc/cron.d/backup && \
+        service cron start && \
+        echo "Cron started. Running initial backup..." && \
+        /usr/local/bin/backup.sh && \
+        tail -f /dev/null
+volumes:
+   db_data:
+   minio_data:
+   backup_tmp:
+   minio_upload_tmp:
+   rclone_config:
