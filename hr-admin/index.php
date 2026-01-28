@@ -39,7 +39,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         'employees' => ['export_employees'],
         'add_post' => ['create'],
         'edit_post' => ['update'],
-        'post_assignments' => ['assign', 'remove']
+        'post_assignments' => ['assign', 'remove'],
+        'leaves' => ['approve', 'reject']
     ];
     
     $shouldSkipJson = !$isAjax && 
