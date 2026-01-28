@@ -10,14 +10,81 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     $action = $_POST['action'];
     $request_id = $_POST['request_id'] ?? '';
     
-    if ($action === 'approve' && $request_id) {
-        $notes = $_POST['approval_notes'] ?? '';
-        // Handle approval (to be implemented with database)
-        redirect_with_message('?page=leaves', 'Leave request approved successfully!', 'success');
-    } elseif ($action === 'reject' && $request_id) {
-        $notes = $_POST['rejection_notes'] ?? '';
-        // Handle rejection (to be implemented with database)
-        redirect_with_message('?page=leaves', 'Leave request rejected.', 'info');
+    if (($action === 'approve' || $action === 'reject') && $request_id) {
+        try {
+            // Determine which table to use
+            $check_table = $pdo->query("SHOW TABLES LIKE 'leave_requests'");
+            $table_name = ($check_table->rowCount() > 0) ? 'leave_requests' : 'time_off_requests';
+            
+            // Get current user ID
+            $processed_by = $_SESSION['user_id'] ?? $_SESSION['id'] ?? null;
+            
+            if ($action === 'approve') {
+                $notes = $_POST['approval_notes'] ?? '';
+                
+                if ($table_name === 'leave_requests') {
+                    $sql = "UPDATE leave_requests 
+                            SET status = 'approved', 
+                                processed_by = ?, 
+                                processed_date = NOW(),
+                                notes = ?
+                            WHERE id = ?";
+                } else {
+                    // time_off_requests table
+                    $sql = "UPDATE time_off_requests 
+                            SET status = 'approved', 
+                                approved_by = ?, 
+                                approved_at = NOW()
+                            WHERE id = ?";
+                }
+                
+                $params = $table_name === 'leave_requests' 
+                    ? [$processed_by, $notes, $request_id]
+                    : [$processed_by, $request_id];
+                
+                $stmt = $pdo->prepare($sql);
+                $stmt->execute($params);
+                
+                redirect_with_message('?page=leaves', 'Leave request approved successfully!', 'success');
+                
+            } elseif ($action === 'reject') {
+                $notes = $_POST['rejection_notes'] ?? '';
+                
+                if (empty($notes)) {
+                    redirect_with_message('?page=leaves', 'Rejection reason is required.', 'error');
+                    exit;
+                }
+                
+                if ($table_name === 'leave_requests') {
+                    $sql = "UPDATE leave_requests 
+                            SET status = 'rejected', 
+                                processed_by = ?, 
+                                processed_date = NOW(),
+                                notes = ?
+                            WHERE id = ?";
+                } else {
+                    // time_off_requests table
+                    $sql = "UPDATE time_off_requests 
+                            SET status = 'rejected', 
+                                approved_by = ?, 
+                                approved_at = NOW(),
+                                rejection_reason = ?
+                            WHERE id = ?";
+                }
+                
+                $params = $table_name === 'leave_requests' 
+                    ? [$processed_by, $notes, $request_id]
+                    : [$processed_by, $notes, $request_id];
+                
+                $stmt = $pdo->prepare($sql);
+                $stmt->execute($params);
+                
+                redirect_with_message('?page=leaves', 'Leave request rejected.', 'info');
+            }
+        } catch (Exception $e) {
+            error_log('Error processing leave request: ' . $e->getMessage());
+            redirect_with_message('?page=leaves', 'An error occurred while processing the request. Please try again.', 'error');
+        }
     }
 }
 
@@ -29,73 +96,222 @@ $leave_type = $_GET['leave_type'] ?? '';
 // Get all employees for filter dropdown
 $employees = get_employees();
 
-// Temporary: Mock data for leave requests (to be replaced with database)
-$leave_requests = [];
-$statuses = ['pending', 'approved', 'rejected'];
-$leave_types = ['Sick Leave', 'Vacation Leave', 'Emergency Leave', 'Maternity Leave', 'Paternity Leave'];
-$employee_roles = ['Head of Department', 'Software Architect', 'Senior Developer', 'QA Engineer', 'Developer', 'Project Manager'];
-
-// Generate more realistic employee names and data
-$employee_names = [
-    ['Alexey', 'Sergeevich', 'Berestov'],
-    ['Maria', 'Vladimirovna', 'Rodionova'],
-    ['Dmitry', 'Alexeevich', 'Korneev'],
-    ['Elena', 'Viktorovna', 'Vorontsova'],
-    ['Andrey', 'Igorevich', 'Streltsov'],
-    ['Anna', 'Sergeevna', 'Demidova'],
-    ['Mikhail', 'Nikolaevich', 'Lazarev'],
-    ['Sergey', 'Vladimirovich', 'Saveliev'],
-    ['Olga', 'Alexandrovna', 'Orlova'],
-    ['Alexander', 'Pavlovich', 'Krylov'],
-];
-
-for ($i = 0; $i < 10; $i++) {
-    $status = 'pending'; // Focus on pending requests for inbox
-    $type = $leave_types[array_rand($leave_types)];
-    $start_date = date('Y-m-d', strtotime('+' . rand(1, 90) . ' days'));
-    $end_date = date('Y-m-d', strtotime($start_date . ' +' . rand(4, 14) . ' days'));
-    $days = (strtotime($end_date) - strtotime($start_date)) / (60 * 60 * 24) + 1;
-    $remaining_leave = rand(5, 28);
+// Get leave requests from database
+$table_name = 'leave_requests'; // Default table name
+try {
+    // Check if leave_requests table exists, otherwise try time_off_requests
+    $check_table = $pdo->query("SHOW TABLES LIKE 'leave_requests'");
+    if ($check_table->rowCount() == 0) {
+        // Try time_off_requests as fallback
+        $check_table = $pdo->query("SHOW TABLES LIKE 'time_off_requests'");
+        if ($check_table->rowCount() > 0) {
+            $table_name = 'time_off_requests';
+        }
+    }
     
-    $name_parts = $employee_names[$i % count($employee_names)];
-    $full_name = $name_parts[0] . ' ' . $name_parts[1] . ' ' . $name_parts[2];
+    // Use get_leave_requests function if available and table exists, otherwise query directly
+    if (function_exists('get_leave_requests') && $table_name === 'leave_requests') {
+        $leave_requests_raw = get_leave_requests(
+            $status_filter ?: null,
+            $employee_id ?: null,
+            $leave_type ?: null
+        );
+    } else {
+        // Query directly from database (handles both leave_requests and time_off_requests)
+        if ($table_name === 'time_off_requests') {
+            // Map time_off_requests columns to leave_requests format
+            $sql = "SELECT tor.id, tor.employee_id, tor.request_type as leave_type,
+                           tor.start_date, tor.end_date, tor.total_days,
+                           tor.reason, tor.status,
+                           tor.approved_by as processed_by,
+                           tor.approved_at as processed_date,
+                           tor.rejection_reason as notes,
+                           tor.created_at as request_date,
+                           e.first_name, e.surname, e.middle_name, e.post,
+                           CONCAT(e.surname, ', ', e.first_name, 
+                                  IF(e.middle_name IS NOT NULL AND e.middle_name != '', CONCAT(' ', e.middle_name), '')) as employee_name,
+                           u.name as processed_by_name
+                    FROM time_off_requests tor
+                    LEFT JOIN employees e ON tor.employee_id = e.id
+                    LEFT JOIN users u ON tor.approved_by = u.id
+                    WHERE 1=1";
+        } else {
+            $sql = "SELECT lr.*, 
+                           e.first_name, e.surname, e.middle_name, e.post,
+                           CONCAT(e.surname, ', ', e.first_name, 
+                                  IF(e.middle_name IS NOT NULL AND e.middle_name != '', CONCAT(' ', e.middle_name), '')) as employee_name,
+                           u.name as processed_by_name
+                    FROM leave_requests lr
+                    LEFT JOIN employees e ON lr.employee_id = e.id
+                    LEFT JOIN users u ON lr.processed_by = u.id
+                    WHERE 1=1";
+        }
+        
+        $params = [];
+        
+        if ($status_filter) {
+            $sql .= " AND " . ($table_name === 'time_off_requests' ? 'tor' : 'lr') . ".status = ?";
+            $params[] = $status_filter;
+        }
+        
+        if ($employee_id) {
+            $sql .= " AND " . ($table_name === 'time_off_requests' ? 'tor' : 'lr') . ".employee_id = ?";
+            $params[] = $employee_id;
+        }
+        
+        if ($leave_type) {
+            $column = $table_name === 'time_off_requests' ? 'request_type' : 'leave_type';
+            $sql .= " AND " . ($table_name === 'time_off_requests' ? 'tor' : 'lr') . ".{$column} = ?";
+            $params[] = $leave_type;
+        }
+        
+        $order_column = $table_name === 'time_off_requests' ? 'created_at' : 'request_date';
+        $sql .= " ORDER BY " . ($table_name === 'time_off_requests' ? 'tor' : 'lr') . ".{$order_column} DESC";
+        
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
+        $leave_requests_raw = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
     
-    $leave_requests[] = [
-        'id' => $i + 1,
-        'employee_id' => $i + 1,
-        'employee_name' => $full_name,
-        'employee_post' => $employee_roles[array_rand($employee_roles)],
-        'leave_type' => $type,
-        'start_date' => $start_date,
-        'end_date' => $end_date,
-        'days' => $days,
-        'remaining_leave' => $remaining_leave,
-        'reason' => 'Personal matters that require attention.',
-        'status' => $status,
-        'request_date' => date('Y-m-d H:i:s', strtotime('-' . rand(1, 30) . ' days')),
-        'processed_by' => null,
-        'processed_date' => null,
-        'notes' => null,
-    ];
+    // Transform database results to match expected format
+    $leave_requests = [];
+    foreach ($leave_requests_raw as $req) {
+        // Calculate days between start and end date
+        $days = 0;
+        if (!empty($req['start_date']) && !empty($req['end_date'])) {
+            $start = new DateTime($req['start_date']);
+            $end = new DateTime($req['end_date']);
+            $days = $start->diff($end)->days + 1; // +1 to include both start and end dates
+        } elseif (!empty($req['total_days'])) {
+            $days = (int)$req['total_days'];
+        }
+        
+        // Build employee name from database fields
+        $employee_name = '';
+        if (!empty($req['employee_name'])) {
+            $employee_name = $req['employee_name'];
+        } elseif (!empty($req['surname']) && !empty($req['first_name'])) {
+            $employee_name = $req['surname'] . ', ' . $req['first_name'];
+            if (!empty($req['middle_name'])) {
+                $employee_name .= ' ' . $req['middle_name'];
+            }
+        }
+        
+        $leave_requests[] = [
+            'id' => $req['id'] ?? null,
+            'employee_id' => $req['employee_id'] ?? null,
+            'employee_name' => $employee_name,
+            'employee_post' => $req['post'] ?? '',
+            'leave_type' => $req['leave_type'] ?? '',
+            'start_date' => $req['start_date'] ?? '',
+            'end_date' => $req['end_date'] ?? '',
+            'days' => $days,
+            'remaining_leave' => $req['remaining_leave'] ?? null,
+            'reason' => $req['reason'] ?? '',
+            'status' => $req['status'] ?? 'pending',
+            'request_date' => $req['request_date'] ?? $req['created_at'] ?? date('Y-m-d H:i:s'),
+            'processed_by' => $req['processed_by'] ?? null,
+            'processed_by_name' => $req['processed_by_name'] ?? null,
+            'processed_date' => $req['processed_date'] ?? $req['approved_at'] ?? null,
+            'notes' => $req['notes'] ?? $req['rejection_reason'] ?? null,
+        ];
+    }
+    
+} catch (Exception $e) {
+    error_log('Error fetching leave requests: ' . $e->getMessage());
+    $leave_requests = [];
 }
 
-// Apply filters
-$filtered_requests = array_filter($leave_requests, function($req) use ($status_filter, $employee_id, $leave_type) {
-    if ($status_filter && $req['status'] !== $status_filter) return false;
-    if ($employee_id && $req['employee_id'] != $employee_id) return false;
-    if ($leave_type && $req['leave_type'] !== $leave_type) return false;
-    return true;
-});
+// Get unique leave types from database for filter dropdown
+$leave_types = [];
+try {
+    // Check which table exists
+    $check_table = $pdo->query("SHOW TABLES LIKE 'leave_requests'");
+    if ($check_table->rowCount() > 0) {
+        $stmt = $pdo->query("SELECT DISTINCT leave_type FROM leave_requests WHERE leave_type IS NOT NULL AND leave_type != '' ORDER BY leave_type");
+        $types = $stmt->fetchAll(PDO::FETCH_COLUMN);
+        $leave_types = $types ?: [];
+    } else {
+        // Try time_off_requests
+        $check_table = $pdo->query("SHOW TABLES LIKE 'time_off_requests'");
+        if ($check_table->rowCount() > 0) {
+            $stmt = $pdo->query("SELECT DISTINCT request_type FROM time_off_requests WHERE request_type IS NOT NULL AND request_type != '' ORDER BY request_type");
+            $types = $stmt->fetchAll(PDO::FETCH_COLUMN);
+            // Map time_off_requests types to readable format
+            $type_map = [
+                'vacation' => 'Vacation Leave',
+                'sick' => 'Sick Leave',
+                'personal' => 'Personal Leave',
+                'emergency' => 'Emergency Leave',
+                'maternity' => 'Maternity Leave',
+                'paternity' => 'Paternity Leave',
+                'bereavement' => 'Bereavement Leave',
+                'other' => 'Other'
+            ];
+            $leave_types = array_map(function($type) use ($type_map) {
+                return $type_map[strtolower($type)] ?? ucfirst($type) . ' Leave';
+            }, $types);
+        }
+    }
+    
+    // Fallback to default types if no types found
+    if (empty($leave_types)) {
+        $leave_types = ['Sick Leave', 'Vacation Leave', 'Emergency Leave', 'Maternity Leave', 'Paternity Leave'];
+    }
+} catch (Exception $e) {
+    // Fallback to default types if query fails
+    $leave_types = ['Sick Leave', 'Vacation Leave', 'Emergency Leave', 'Maternity Leave', 'Paternity Leave'];
+}
 
-// Get statistics
+// Filtered requests (already filtered by database query, but keep for consistency)
+$filtered_requests = $leave_requests;
+
+// Get statistics from database
 $stats = [
-    'pending' => count(array_filter($leave_requests, fn($r) => $r['status'] === 'pending')),
-    'approved' => count(array_filter($leave_requests, fn($r) => $r['status'] === 'approved')),
-    'rejected' => count(array_filter($leave_requests, fn($r) => $r['status'] === 'rejected')),
-    'total' => count($leave_requests),
+    'pending' => 0,
+    'approved' => 0,
+    'rejected' => 0,
+    'total' => 0,
 ];
 
-$days_pending = array_sum(array_map(fn($r) => $r['status'] === 'pending' ? $r['days'] : 0, $leave_requests));
+try {
+    $stmt = $pdo->query("SELECT status, COUNT(*) as count FROM {$table_name} GROUP BY status");
+    $status_counts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    foreach ($status_counts as $row) {
+        $status = strtolower($row['status']);
+        if (isset($stats[$status])) {
+            $stats[$status] = (int)$row['count'];
+        }
+    }
+    
+    $stmt = $pdo->query("SELECT COUNT(*) as total FROM {$table_name}");
+    $total_result = $stmt->fetch(PDO::FETCH_ASSOC);
+    $stats['total'] = (int)($total_result['total'] ?? 0);
+} catch (Exception $e) {
+    error_log('Error fetching leave statistics: ' . $e->getMessage());
+}
+
+$days_pending = 0;
+try {
+    
+    if ($table_name === 'time_off_requests') {
+        $stmt = $pdo->query("SELECT SUM(total_days) as total_days 
+                             FROM {$table_name} 
+                             WHERE status = 'pending' 
+                             AND total_days IS NOT NULL");
+    } else {
+        $stmt = $pdo->query("SELECT SUM(DATEDIFF(end_date, start_date) + 1) as total_days 
+                             FROM {$table_name} 
+                             WHERE status = 'pending' 
+                             AND start_date IS NOT NULL 
+                             AND end_date IS NOT NULL");
+    }
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    $days_pending = (int)($result['total_days'] ?? 0);
+} catch (Exception $e) {
+    error_log('Error calculating pending days: ' . $e->getMessage());
+}
 ?>
 
 <style>
