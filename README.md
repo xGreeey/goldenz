@@ -12,23 +12,42 @@ Comprehensive human resources management system designed specifically for Golden
 
 ## 🚀 Quick Start
 
-### Installation (XAMPP)
+### Installation (Docker)
 
-1. **Clone or extract** the project to: `C:\xampp\htdocs\golden\goldenz`
+1. **Prerequisites**:
+   - Docker Desktop installed and running
+   - Git (for cloning the repository)
 
-2. **Import Database**:
-   - Open phpMyAdmin (`http://localhost/phpmyadmin`)
-   - Create database: `CREATE DATABASE goldenz_hr CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;`
-   - Import `goldenz_hr.sql` into the `goldenz_hr` database
+2. **Clone or navigate** to the project directory:
+   ```powershell
+   cd C:\docker-projects\goldenz_hr_system
+   ```
 
-3. **Configure Environment** (if needed):
-   - Copy `.env.example` to `.env` (if using environment variables)
-   - Update database credentials in `bootstrap/env.php` or `config/database.php`
+3. **Start Docker Services**:
+   ```powershell
+   cd C:\docker-projects\goldenz_hr_system
+   docker-compose up -d
+   ```
+   
+   Or use the provided PowerShell script:
+   ```powershell
+   .\start-docker-services.ps1
+   ```
 
-4. **Access the System**:
-   - Login Page: `http://localhost/golden/goldenz/landing/`
-   - HR Admin: `http://localhost/golden/goldenz/hr-admin/`
-   - Super Admin: `http://localhost/golden/goldenz/super-admin/`
+4. **Initialize Database**:
+   - The database will be automatically created on first run
+   - Import `sql/goldenz_hr.sql` via phpMyAdmin if needed
+   - Access phpMyAdmin at: `http://localhost:8080`
+     - Server: `db`
+     - Username: `root`
+     - Password: `Suomynona027`
+
+5. **Access the System**:
+   - Login Page: `http://localhost/landing/`
+   - HR Admin: `http://localhost/hr-admin/`
+   - Super Admin: `http://localhost/super-admin/`
+   - phpMyAdmin: `http://localhost:8080`
+   - MinIO Console: `http://localhost:9001` (goldenz / SUOMYNONA)
 
 ---
 
@@ -53,6 +72,8 @@ Comprehensive human resources management system designed specifically for Golden
 - Employee status tracking (Active, Inactive, Suspended, Terminated)
 - Comprehensive employee search and filtering
 - Two-page employee application form with digital signatures
+- Employee document management with secure file storage
+- Violation tracking and history
 
 ### 📍 Post & Assignment Management
 - Security post creation and management
@@ -73,6 +94,21 @@ Comprehensive human resources management system designed specifically for Golden
 - Audit trail for all system activities
 - Security event logging
 - System logs for developers
+- Leave balance tracking and reports
+- Attendance and DTR management
+
+### 💬 Communication & Collaboration
+- Private messaging system (chat)
+- Employee feed and activity stream
+- Team management
+- Task assignment and tracking
+- Events and announcements
+
+### 📁 Document Management
+- Secure employee file storage
+- Document upload and organization
+- File access control by role
+- Integration with MinIO object storage
 
 ### 👤 User Management (Super Admin)
 - Multi-role support (Super Admin, HR Admin, HR, Developer, Accounting, Operations)
@@ -91,6 +127,13 @@ Comprehensive human resources management system designed specifically for Golden
 - CSRF protection
 - SQL injection prevention
 
+### 💾 Backup & Storage
+- Automated database backups every 30 minutes
+- Backups stored in MinIO object storage
+- Backup retention policy (90 days default)
+- Secure file storage with MinIO integration
+- Google Drive backup support via rclone
+
 ---
 
 ## 🎨 System Architecture
@@ -103,16 +146,20 @@ Comprehensive human resources management system designed specifically for Golden
 - **Fonts**: Segoe UI, Inter, Open Sans (system fonts for performance)
 
 ### Backend
-- **Language**: PHP 7.4+
-- **Database**: MySQL 5.7+ / MariaDB 10.4+
+- **Language**: PHP 8.2
+- **Database**: MySQL 8.0
 - **Architecture**: MVC pattern with custom routing
 - **Authentication**: Session-based with secure token management
 - **Email**: PHPMailer for password reset and notifications
+- **Dependency Management**: Composer (AWS SDK for PHP)
+- **Containerization**: Docker with Docker Compose
+- **Object Storage**: MinIO (S3-compatible)
+- **Backup Tools**: MinIO Client (mc), rclone
 
 ### Database
 - **Engine**: InnoDB (ACID compliance, foreign key support)
 - **Charset**: utf8mb4 with unicode collation
-- **Tables**: 15+ core tables (employees, users, posts, alerts, audit_logs, etc.)
+- **Tables**: 20+ core tables (employees, users, posts, alerts, audit_logs, chat_messages, employee_files, violations, etc.)
 - **Views**: 3 materialized views for performance
 - **Indexes**: Optimized for common query patterns
 
@@ -121,35 +168,53 @@ Comprehensive human resources management system designed specifically for Golden
 ## 📂 Project Structure
 
 ```
-goldenz/
-├── app/                    # Application core
-│   ├── Core/              # Core classes (Database, Auth, Config)
-│   ├── Helpers/           # Helper functions
-│   ├── Middleware/        # Authentication & role middleware
-│   └── Models/            # Data models (Employee, User)
-├── assets/                # Frontend assets
-│   ├── css/              # Stylesheets
-│   ├── js/               # JavaScript files
-│   └── icons/            # Custom icon set
-├── bootstrap/             # Application bootstrap
-├── config/                # Configuration files
-├── includes/              # Reusable components
-│   ├── headers/          # Role-specific headers
-│   └── page-header.php   # Global sticky header
-├── landing/               # Login and authentication pages
-├── pages/                 # Application pages
-├── storage/               # Storage directory
-│   ├── cache/            # Cached data
-│   ├── logs/             # Application logs
-│   └── sessions/         # Session files
-├── uploads/               # User-uploaded files
-│   ├── employees/        # Employee photos & fingerprints
-│   └── users/            # User avatars
-├── goldenz_hr.sql        # Main database schema
-├── README.md             # This file
-├── CHANGELOG.md          # Detailed change history
-├── ENV_SETUP.md          # Environment setup guide
-└── GITHUB_SETUP.md       # Git configuration guide
+goldenz_hr_system/         # Project root
+├── src/                   # Application source code
+│   ├── app/              # Application core
+│   │   ├── Core/         # Core classes (Database, Auth, Config)
+│   │   ├── Helpers/      # Helper functions
+│   │   ├── Middleware/   # Authentication & role middleware
+│   │   └── Models/       # Data models (Employee, User)
+│   ├── api/              # API endpoints
+│   │   ├── chat.php      # Chat/messaging API
+│   │   └── employee_files.php  # File management API
+│   ├── assets/           # Frontend assets
+│   │   ├── css/          # Stylesheets
+│   │   ├── js/           # JavaScript files
+│   │   └── icons/        # Custom icon set
+│   ├── bootstrap/        # Application bootstrap
+│   ├── config/           # Configuration files
+│   ├── cron/             # Scheduled tasks
+│   │   ├── backup-to-minio.php  # Automated backup script
+│   │   └── README.md     # Backup documentation
+│   ├── includes/         # Reusable components
+│   │   ├── headers/      # Role-specific headers
+│   │   └── page-header.php  # Global sticky header
+│   ├── landing/          # Login and authentication pages
+│   ├── pages/            # Application pages
+│   │   ├── chat.php      # Chat interface
+│   │   ├── documents.php # Document management
+│   │   ├── employees.php # Employee management
+│   │   └── ...           # Other pages
+│   ├── sql/              # Database files
+│   │   ├── goldenz_hr.sql  # Main database schema
+│   │   └── migrations/   # Database migrations
+│   ├── storage/          # Storage directory
+│   │   ├── cache/        # Cached data
+│   │   ├── logs/         # Application logs
+│   │   └── sessions/     # Session files
+│   ├── uploads/          # User-uploaded files (local fallback)
+│   │   ├── employees/    # Employee photos & fingerprints
+│   │   └── users/        # User avatars
+│   ├── composer.json     # PHP dependencies
+│   └── README.md         # This file
+├── docker-compose.yml    # Docker services configuration
+├── Dockerfile            # Web container image
+├── mysql-init.sql        # Database initialization script
+├── scripts/              # Utility scripts
+│   └── backup.sh         # Backup script
+├── start-containers.ps1  # PowerShell startup script
+└── start-docker-services.ps1  # Docker services startup script
 ```
 
 ---
@@ -167,6 +232,13 @@ goldenz/
 - `dtr_entries` - Daily time records
 - `leave_balances` - Employee leave balances
 - `time_off_requests` - Leave requests
+- `chat_messages` - Private messaging system
+- `chat_conversations` - Chat conversation metadata
+- `chat_typing_status` - Real-time typing indicators
+- `employee_files` - Employee document metadata
+- `file_audit_logs` - File operation audit trail
+- `violations` - Employee violation records
+- `violation_types` - Violation type definitions
 
 ### Views
 - `employee_details` - Enhanced employee information
@@ -179,23 +251,46 @@ goldenz/
 
 ## 🔧 Configuration
 
+### Docker Services
+The system runs in Docker containers. Configuration is managed via environment variables in `docker-compose.yml` at the project root:
+
+**Services:**
+- **web**: PHP 8.2 Apache container (ports 80, 443)
+- **db**: MySQL 8.0 database (internal)
+- **phpmyadmin**: Database management (port 8080)
+- **minio**: Object storage (ports 9000, 9001)
+- **db_backup**: Automated backup service
+
+**Environment Variables:**
+- Database credentials: Set in `docker-compose.yml`
+- MinIO credentials: `goldenz` / `SUOMYNONA`
+- Backup schedule: `*/30 * * * *` (every 30 minutes)
+
 ### Database Configuration
-Edit `config/database.php`:
-```php
-return [
-    'host' => 'localhost',
-    'database' => 'goldenz_hr',
-    'username' => 'root',
-    'password' => '',
-    'charset' => 'utf8mb4',
-];
-```
+Database settings are configured via Docker environment variables. The connection is automatically established using:
+- Host: `db` (Docker service name)
+- Database: `goldenz_hr`
+- Username/Password: As set in `docker-compose.yml`
+
+### MinIO Storage Configuration
+MinIO is used for object storage (employee files, backups):
+- Endpoint: `http://minio:9000` (internal) or `http://localhost:9000` (external)
+- Bucket: `goldenz-uploads`
+- Console: `http://localhost:9001`
 
 ### Email Configuration (Password Reset)
 Edit `config/mail.php` for SMTP settings.
 
 ### Session Configuration
 Edit `config/session.php` for session timeout and security settings.
+
+### Automated Backups
+Database backups run automatically every 30 minutes:
+- Location: MinIO bucket `goldenz-uploads/db-backups/`
+- Retention: 90 days (configurable)
+- Logs: `storage/logs/backup-cron.log`
+
+See `cron/README.md` for detailed backup documentation.
 
 ---
 
@@ -211,14 +306,49 @@ All system documentation is now embedded as comments within the code files:
 - **Component Structure**: See comments in `includes/header.php`, `includes/sidebar.php`, `includes/page-header.php`
 
 ### Additional Documentation Files
-- `CHANGELOG.md` - Detailed history of all changes and updates
-- `ENV_SETUP.md` - Step-by-step environment configuration
-- `GITHUB_SETUP.md` - Git repository setup and workflow
-- `LICENSE` - Software license agreement (EULA)
+- `cron/README.md` - Automated backup system documentation
+- Docker setup guides (at project root):
+  - `MINIO_SETUP.md` - MinIO object storage setup
+  - `BACKUP_GUIDE.md` - Backup and restore procedures
+  - `RCLONE_SETUP.md` - Google Drive backup configuration
+  - `REBUILD_INSTRUCTIONS.md` - Container rebuild procedures
+  - `CHAT_SYSTEM_README.md` - Chat system documentation
+- `guide md/` - Additional system guides and documentation
 
 ---
 
 ## 🛠 Development
+
+### Local Development Setup
+
+1. **Start Docker containers**:
+   ```powershell
+   cd C:\docker-projects\goldenz_hr_system
+   docker-compose up -d
+   ```
+
+2. **View logs**:
+   ```powershell
+   docker-compose logs -f web
+   ```
+
+3. **Access containers**:
+   ```powershell
+   docker exec -it hr_web bash
+   docker exec -it hr_db mysql -u root -p
+   ```
+
+4. **Install PHP dependencies** (if needed):
+   ```powershell
+   docker exec hr_web composer install
+   ```
+
+5. **Rebuild containers** (after Dockerfile changes):
+   ```powershell
+   docker-compose down
+   docker-compose build
+   docker-compose up -d
+   ```
 
 ### Code Style
 - **PHP**: Follow PSR-12 coding standards
@@ -228,7 +358,7 @@ All system documentation is now embedded as comments within the code files:
 
 ### Git Workflow
 - **Main Branch**: `main` (stable production code)
-- **Backup Branch**: `backup` (development and testing)
+- **Development Branch**: `running-docker` (current development)
 - Commit messages follow conventional commit format
 
 ### Testing
@@ -241,10 +371,11 @@ All system documentation is now embedded as comments within the code files:
 ## 🚨 Maintenance
 
 ### Regular Tasks
-- **Daily**: Automated database backups (via system)
+- **Automated**: Database backups every 30 minutes to MinIO
+- **Daily**: Review backup logs and verify MinIO storage
 - **Weekly**: Review security logs and audit trails
-- **Monthly**: Archive old audit logs, review user permissions
-- **Quarterly**: Update dependencies, security patches
+- **Monthly**: Archive old audit logs, review user permissions, check MinIO storage usage
+- **Quarterly**: Update Docker images, dependencies, security patches
 
 ### Database Optimization
 ```sql
@@ -258,18 +389,66 @@ OPTIMIZE TABLE employees, users, audit_logs, employee_alerts;
 DELETE FROM audit_logs WHERE created_at < DATE_SUB(NOW(), INTERVAL 90 DAY);
 ```
 
+### Docker Maintenance
+```powershell
+# View running containers
+docker ps
+
+# View container logs
+docker logs hr_web
+docker logs hr_db
+
+# Restart services
+docker-compose restart
+
+# Stop all services
+docker-compose down
+
+# Remove volumes (⚠️ deletes data)
+docker-compose down -v
+```
+
+### Backup Management
+- View backups in MinIO Console: `http://localhost:9001`
+- Check backup logs: `docker exec hr_web tail -f /var/www/html/storage/logs/backup-cron.log`
+- Manual backup: `docker exec hr_web php /var/www/html/cron/backup-to-minio.php`
+
 ---
 
 ## 🐛 Troubleshooting
 
 ### Common Issues
 
+**Docker containers not starting**
+- Ensure Docker Desktop is running
+- Check Docker logs: `docker-compose logs`
+- Verify ports 80, 443, 8080, 9000, 9001 are not in use
+- Try: `docker-compose down && docker-compose up -d`
+
+**Database connection errors**
+- Verify database container is running: `docker ps | grep hr_db`
+- Check database logs: `docker logs hr_db`
+- Verify credentials in `docker-compose.yml`
+- Test connection: `docker exec hr_web php -r "echo getenv('DB_HOST');"`
+
 **"Duplicate entry for key 'PRIMARY'"**
 - Run: `ALTER TABLE table_name AUTO_INCREMENT = (SELECT MAX(id) + 1 FROM table_name);`
+- Access via phpMyAdmin: `http://localhost:8080`
 
 **"Session expired" immediately after login**
-- Check PHP session configuration in `php.ini`
-- Ensure `storage/sessions/` directory is writable
+- Check PHP session configuration
+- Ensure `storage/sessions/` directory is writable: `docker exec hr_web chmod -R 777 /var/www/html/storage/sessions`
+
+**MinIO upload failures**
+- Verify MinIO container is running: `docker ps | grep hr_minio`
+- Check MinIO logs: `docker logs hr_minio`
+- Verify AWS SDK is installed: `docker exec hr_web composer show aws/aws-sdk-php`
+- Test MinIO connection: `docker exec hr_web mc alias list`
+
+**Backups not running**
+- Check cron service: `docker exec hr_web service cron status`
+- View backup logs: `docker exec hr_web tail -f /var/www/html/storage/logs/backup-cron.log`
+- Test backup manually: `docker exec hr_web php /var/www/html/cron/backup-to-minio.php`
 
 **Numbers displaying as boxes**
 - Clear browser cache
@@ -284,19 +463,34 @@ DELETE FROM audit_logs WHERE created_at < DATE_SUB(NOW(), INTERVAL 90 DAY);
 
 ## 📋 System Requirements
 
-### Server Requirements
-- **PHP**: 7.4 or higher
-- **MySQL**: 5.7+ or MariaDB 10.4+
-- **Web Server**: Apache 2.4+ with mod_rewrite
-- **RAM**: Minimum 512MB, Recommended 2GB+
-- **Storage**: Minimum 500MB for application + database
+### Host System Requirements
+- **OS**: Windows 10/11, macOS, or Linux
+- **Docker**: Docker Desktop 4.0+ (or Docker Engine 20.10+)
+- **Docker Compose**: 2.0+ (included with Docker Desktop)
+- **RAM**: Minimum 4GB, Recommended 8GB+
+- **Storage**: Minimum 10GB free space
+- **Ports**: 80, 443, 8080, 9000, 9001 must be available
 
-### PHP Extensions Required
+### Container Requirements
+- **PHP**: 8.2 (in Docker container)
+- **MySQL**: 8.0 (in Docker container)
+- **Apache**: 2.4+ (in Docker container)
+- **MinIO**: Latest (S3-compatible object storage)
+
+### PHP Extensions (Included in Docker Image)
 - `pdo_mysql` - Database connectivity
+- `mysqli` - MySQL improved extension
+- `curl` - HTTP client
 - `mbstring` - String handling
 - `openssl` - Secure password hashing
 - `fileinfo` - File upload validation
-- `gd` or `imagick` - Image processing
+- `gd` - Image processing
+
+### Additional Tools (Included)
+- **Composer**: PHP dependency manager
+- **MinIO Client (mc)**: Object storage management
+- **rclone**: Cloud storage sync (Google Drive support)
+- **Cron**: Scheduled task execution
 
 ### Browser Support
 - Chrome 90+
@@ -337,7 +531,8 @@ This software is proprietary and licensed exclusively for use by Golden Z-5 Secu
 **Company**: Golden Z-5 Security and Investigation Agency, Inc.  
 **License**: PNP-CSG-SAGSD | SEC Registered  
 **Version**: 2.0  
-**Last Updated**: January 2026
+**Last Updated**: January 2026  
+**Deployment**: Docker-based (PHP 8.2, MySQL 8.0, MinIO)
 
 ---
 
