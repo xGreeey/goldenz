@@ -26,39 +26,7 @@ $selected_tag = $_GET['tag'] ?? '';
 // Get all employees for filter dropdown
 $employees = get_employees();
 
-// Document categories with stats
-$categories = [
-    [
-        'name' => 'Personal Records',
-        'file_count' => 127,
-        'size' => '45.8 mb',
-        'color' => '#c8f4e0',
-        'icon' => 'fa-id-card'
-    ],
-    [
-        'name' => 'Employment Contracts',
-        'file_count' => 89,
-        'size' => '12.3 mb',
-        'color' => '#d4e8ff',
-        'icon' => 'fa-file-contract'
-    ],
-    [
-        'name' => 'Government IDs',
-        'file_count' => 156,
-        'size' => '67.2 mb',
-        'color' => '#fff4cc',
-        'icon' => 'fa-id-badge'
-    ],
-    [
-        'name' => 'Certifications',
-        'file_count' => 94,
-        'size' => '28.9 mb',
-        'color' => '#ffe4d9',
-        'icon' => 'fa-certificate'
-    ],
-];
-
-// Available tags
+// Available tags (document types)
 $available_tags = [
     ['name' => 'Urgent', 'color' => '#ef4444'],
     ['name' => 'NBI Clearance', 'color' => '#8b5cf6'],
@@ -66,53 +34,217 @@ $available_tags = [
     ['name' => 'TOR', 'color' => '#10b981'],
     ['name' => 'Contract', 'color' => '#f59e0b'],
     ['name' => 'Medical', 'color' => '#ec4899'],
+    ['name' => 'Personal Records', 'color' => '#c8f4e0'],
+    ['name' => 'Employment Contract', 'color' => '#d4e8ff'],
+    ['name' => 'Government ID', 'color' => '#fff4cc'],
+    ['name' => 'Certification', 'color' => '#ffe4d9'],
 ];
 
-// Temporary: Mock data for documents - Frontend-only mock structure
-// Grouped by employee to represent one-folder-per-employee structure
-$documents = [
-    ['id' => 1, 'name' => 'John_Doe_NBI.pdf', 'tag' => 'NBI Clearance', 'tag_color' => '#8b5cf6', 'size' => '1.23 mb', 'modified' => '24.02.2022', 'employee' => 'John Doe', 'employee_id' => 1],
-    ['id' => 2, 'name' => 'Maria_Santos_Birth_Cert.pdf', 'tag' => 'Birth Certificate', 'tag_color' => '#06b6d4', 'size' => '890 kb', 'modified' => '23.02.2022', 'employee' => 'Maria Santos', 'employee_id' => 2],
-    ['id' => 3, 'name' => 'Pedro_Cruz_Contract_2024.pdf', 'tag' => 'Contract', 'tag_color' => '#f59e0b', 'size' => '2.45 mb', 'modified' => '22.02.2022', 'employee' => 'Pedro Cruz', 'employee_id' => 3],
-    ['id' => 4, 'name' => 'Ana_Reyes_Medical_Cert.pdf', 'tag' => 'Medical', 'tag_color' => '#ec4899', 'size' => '567 kb', 'modified' => '21.02.2022', 'employee' => 'Ana Reyes', 'employee_id' => 4],
-    ['id' => 5, 'name' => 'Luis_Bautista_TOR.pdf', 'tag' => 'TOR', 'tag_color' => '#10b981', 'size' => '3.12 mb', 'modified' => '20.02.2022', 'employee' => 'Luis Bautista', 'employee_id' => 5],
-    ['id' => 6, 'name' => 'Elena_Garcia_NBI.pdf', 'tag' => 'NBI Clearance', 'tag_color' => '#8b5cf6', 'size' => '1.05 mb', 'modified' => '19.02.2022', 'employee' => 'Elena Garcia', 'employee_id' => 6],
-    ['id' => 7, 'name' => 'Carlos_Mendoza_Contract.pdf', 'tag' => 'Contract', 'tag_color' => '#f59e0b', 'size' => '1.89 mb', 'modified' => '18.02.2022', 'employee' => 'Carlos Mendoza', 'employee_id' => 7],
-    ['id' => 8, 'name' => 'Sofia_Torres_Birth_Cert.pdf', 'tag' => 'Birth Certificate', 'tag_color' => '#06b6d4', 'size' => '756 kb', 'modified' => '17.02.2022', 'employee' => 'Sofia Torres', 'employee_id' => 8],
-    ['id' => 9, 'name' => 'Miguel_Ramos_Medical.pdf', 'tag' => 'Medical', 'tag_color' => '#ec4899', 'size' => '425 kb', 'modified' => '16.02.2022', 'employee' => 'Miguel Ramos', 'employee_id' => 9],
-    ['id' => 10, 'name' => 'Isabel_Flores_TOR.pdf', 'tag' => 'TOR', 'tag_color' => '#10b981', 'size' => '2.67 mb', 'modified' => '15.02.2022', 'employee' => 'Isabel Flores', 'employee_id' => 10],
-];
-
-// Group documents by employee for folder structure (frontend-only grouping)
-$employee_folders = [];
-foreach ($documents as $doc) {
-    $emp_name = $doc['employee'];
-    $emp_id = $doc['employee_id'] ?? null;
-    
-    if (!isset($employee_folders[$emp_name])) {
-        $employee_folders[$emp_name] = [
-            'employee_name' => $emp_name,
-            'employee_id' => $emp_id,
-            'documents' => []
-        ];
-    }
-    $employee_folders[$emp_name]['documents'][] = $doc;
+// Helper function to format file size
+function format_file_size($bytes) {
+    if ($bytes == 0) return '0 B';
+    $units = ['B', 'KB', 'MB', 'GB'];
+    $i = floor(log($bytes, 1024));
+    return round($bytes / pow(1024, $i), 2) . ' ' . $units[$i];
 }
 
-// Sort folders alphabetically
-ksort($employee_folders);
+// Helper function to get tag color
+function get_tag_color($tag_name, $available_tags) {
+    foreach ($available_tags as $tag) {
+        if (strcasecmp($tag['name'], $tag_name) === 0) {
+            return $tag['color'];
+        }
+    }
+    return '#6b7280'; // Default gray color
+}
 
-// Storage breakdown
-$storage_breakdown = [
-    ['type' => 'Documents', 'size' => '89.2', 'unit' => 'mb', 'icon' => 'fa-file-pdf', 'color' => '#3b82f6'],
-    ['type' => 'Images', 'size' => '34.8', 'unit' => 'mb', 'icon' => 'fa-image', 'color' => '#8b5cf6'],
-    ['type' => 'Scans', 'size' => '28.4', 'unit' => 'mb', 'icon' => 'fa-file-image', 'color' => '#06b6d4'],
-    ['type' => 'Other', 'size' => '1.7', 'unit' => 'mb', 'icon' => 'fa-folder', 'color' => '#6b7280'],
+// Check if employee_documents table exists and fetch documents
+$employee_folders = [];
+$all_documents = [];
+
+try {
+    // Check if table exists
+    $table_check = $pdo->query("SHOW TABLES LIKE 'employee_documents'");
+    $table_exists = $table_check->rowCount() > 0;
+    
+    if ($table_exists) {
+        // Fetch all documents
+        $documents_sql = "SELECT ed.*, 
+                                 e.id as employee_id,
+                                 e.surname, 
+                                 e.first_name,
+                                 e.middle_name,
+                                 CONCAT(e.surname, ', ', e.first_name) as employee_name,
+                                 u.name as uploaded_by_name
+                          FROM employee_documents ed
+                          LEFT JOIN employees e ON ed.employee_id = e.id
+                          LEFT JOIN users u ON ed.uploaded_by = u.id
+                          ORDER BY ed.upload_date DESC";
+        
+        $documents_stmt = $pdo->prepare($documents_sql);
+        $documents_stmt->execute();
+        $all_documents = $documents_stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+} catch (Exception $e) {
+    error_log('Error fetching documents: ' . $e->getMessage());
+    $all_documents = [];
+}
+
+// Process employees and create folders
+foreach ($employees as $employee) {
+    $employee_id = $employee['id'];
+    $employee_name = trim(($employee['surname'] ?? '') . ', ' . ($employee['first_name'] ?? ''));
+    if (empty($employee_name) || $employee_name === ', ') {
+        $employee_name = 'Employee #' . $employee_id;
+    }
+    
+    // Get documents for this employee
+    $employee_docs = [];
+    foreach ($all_documents as $doc) {
+        if (isset($doc['employee_id']) && $doc['employee_id'] == $employee_id) {
+            $file_size = isset($doc['file_size']) ? (int)$doc['file_size'] : 0;
+            $document_type = $doc['document_type'] ?? 'Other';
+            
+            $employee_docs[] = [
+                'id' => $doc['id'] ?? null,
+                'name' => $doc['filename'] ?? $doc['file_name'] ?? 'Unknown',
+                'tag' => $document_type,
+                'tag_color' => get_tag_color($document_type, $available_tags),
+                'size' => format_file_size($file_size),
+                'modified' => isset($doc['upload_date']) ? date('d.m.Y', strtotime($doc['upload_date'])) : 'N/A',
+                'employee' => $employee_name,
+                'employee_id' => $employee_id,
+                'file_path' => $doc['file_path'] ?? $doc['filepath'] ?? null,
+                'uploaded_by' => $doc['uploaded_by_name'] ?? 'Unknown'
+            ];
+        }
+    }
+    
+    // Create folder for this employee (even if no documents)
+    $employee_folders[$employee_id] = [
+        'employee_name' => $employee_name,
+        'employee_id' => $employee_id,
+        'documents' => $employee_docs
+    ];
+}
+
+// Apply search and tag filters
+if (!empty($search) || !empty($selected_tag)) {
+    $filtered_folders = [];
+    foreach ($employee_folders as $folder) {
+        $matches_search = true;
+        $matches_tag = true;
+        
+        // Search filter - check employee name
+        if (!empty($search)) {
+            $search_lower = strtolower($search);
+            $employee_name_lower = strtolower($folder['employee_name']);
+            $matches_search = strpos($employee_name_lower, $search_lower) !== false;
+            
+            // Also check document names if search doesn't match employee name
+            if (!$matches_search) {
+                foreach ($folder['documents'] as $doc) {
+                    if (strpos(strtolower($doc['name']), $search_lower) !== false) {
+                        $matches_search = true;
+                        break;
+                    }
+                }
+            }
+        }
+        
+        // Tag filter - check if any document matches the tag
+        if (!empty($selected_tag)) {
+            $matches_tag = false;
+            foreach ($folder['documents'] as $doc) {
+                if (strcasecmp($doc['tag'], $selected_tag) === 0) {
+                    $matches_tag = true;
+                    break;
+                }
+            }
+        }
+        
+        // If tag filter is active and folder has no matching documents, exclude it
+        // But if search matches, include it even if tag doesn't match
+        if ($matches_search && ($matches_tag || empty($selected_tag) || !empty($search))) {
+            // If tag filter is active, filter documents within the folder
+            if (!empty($selected_tag) && $matches_tag) {
+                $filtered_docs = [];
+                foreach ($folder['documents'] as $doc) {
+                    if (strcasecmp($doc['tag'], $selected_tag) === 0) {
+                        $filtered_docs[] = $doc;
+                    }
+                }
+                $folder['documents'] = $filtered_docs;
+            }
+            $filtered_folders[] = $folder;
+        }
+    }
+    $employee_folders = $filtered_folders;
+}
+
+// Sort folders by employee name
+usort($employee_folders, function($a, $b) {
+    return strcasecmp($a['employee_name'], $b['employee_name']);
+});
+
+// Calculate category stats from actual documents
+$category_stats = [
+    'Personal Records' => ['count' => 0, 'size' => 0],
+    'Employment Contracts' => ['count' => 0, 'size' => 0],
+    'Government IDs' => ['count' => 0, 'size' => 0],
+    'Certifications' => ['count' => 0, 'size' => 0],
 ];
 
-$total_used = 154.1; // mb
-$total_space = 500; // mb
-$percentage_used = ($total_used / $total_space) * 100;
+foreach ($all_documents as $doc) {
+    $doc_type = strtolower($doc['document_type'] ?? '');
+    $file_size = isset($doc['file_size']) ? (int)$doc['file_size'] : 0;
+    
+    if (stripos($doc_type, 'personal') !== false || stripos($doc_type, 'record') !== false) {
+        $category_stats['Personal Records']['count']++;
+        $category_stats['Personal Records']['size'] += $file_size;
+    } elseif (stripos($doc_type, 'contract') !== false || stripos($doc_type, 'employment') !== false) {
+        $category_stats['Employment Contracts']['count']++;
+        $category_stats['Employment Contracts']['size'] += $file_size;
+    } elseif (stripos($doc_type, 'government') !== false || stripos($doc_type, 'id') !== false || stripos($doc_type, 'nbi') !== false) {
+        $category_stats['Government IDs']['count']++;
+        $category_stats['Government IDs']['size'] += $file_size;
+    } elseif (stripos($doc_type, 'certif') !== false || stripos($doc_type, 'tor') !== false) {
+        $category_stats['Certifications']['count']++;
+        $category_stats['Certifications']['size'] += $file_size;
+    }
+}
+
+// Document categories with stats
+$categories = [
+    [
+        'name' => 'Personal Records',
+        'file_count' => $category_stats['Personal Records']['count'],
+        'size' => format_file_size($category_stats['Personal Records']['size']),
+        'color' => '#c8f4e0',
+        'icon' => 'fa-id-card'
+    ],
+    [
+        'name' => 'Employment Contracts',
+        'file_count' => $category_stats['Employment Contracts']['count'],
+        'size' => format_file_size($category_stats['Employment Contracts']['size']),
+        'color' => '#d4e8ff',
+        'icon' => 'fa-file-contract'
+    ],
+    [
+        'name' => 'Government IDs',
+        'file_count' => $category_stats['Government IDs']['count'],
+        'size' => format_file_size($category_stats['Government IDs']['size']),
+        'color' => '#fff4cc',
+        'icon' => 'fa-id-badge'
+    ],
+    [
+        'name' => 'Certifications',
+        'file_count' => $category_stats['Certifications']['count'],
+        'size' => format_file_size($category_stats['Certifications']['size']),
+        'color' => '#ffe4d9',
+        'icon' => 'fa-certificate'
+    ],
+];
 ?>
 
 <div class="container-fluid hrdash">
@@ -138,7 +270,7 @@ $percentage_used = ($total_used / $total_space) * 100;
 
     <div class="row g-4">
         <!-- Main Content -->
-        <div class="col-xl-9">
+        <div class="col-xl-12">
             <!-- All Files Section -->
             <div class="card card-modern mb-4">
                 <div class="card-body-modern">
@@ -273,12 +405,39 @@ $percentage_used = ($total_used / $total_space) * 100;
                                                                             <i class="fas fa-ellipsis-vertical"></i>
                                                                         </button>
                                                                         <ul class="dropdown-menu dropdown-menu-end">
-                                                                            <li><a class="dropdown-item" href="#"><i class="fas fa-eye me-2"></i>View</a></li>
-                                                                            <li><a class="dropdown-item" href="#"><i class="fas fa-download me-2"></i>Download</a></li>
-                                                                            <li><a class="dropdown-item" href="#"><i class="fas fa-edit me-2"></i>Rename</a></li>
-                                                                            <li><a class="dropdown-item" href="#"><i class="fas fa-share me-2"></i>Share</a></li>
+                                                                            <?php if (!empty($doc['file_path'])): ?>
+                                                                                <?php
+                                                                                // Determine file URL based on storage type
+                                                                                $file_url = null;
+                                                                                if (strpos($doc['file_path'], 'minio://') === 0) {
+                                                                                    // MinIO file - use storage URL helper if available
+                                                                                    $minio_path = substr($doc['file_path'], 8);
+                                                                                    if (function_exists('get_storage_url')) {
+                                                                                        $file_url = get_storage_url($minio_path);
+                                                                                    }
+                                                                                } elseif (strpos($doc['file_path'], 'http://') === 0 || strpos($doc['file_path'], 'https://') === 0) {
+                                                                                    // Full URL
+                                                                                    $file_url = $doc['file_path'];
+                                                                                } else {
+                                                                                    // Local file
+                                                                                    $file_url = '/' . ltrim($doc['file_path'], '/');
+                                                                                }
+                                                                                ?>
+                                                                                <?php if ($file_url): ?>
+                                                                                    <li><a class="dropdown-item" href="<?php echo htmlspecialchars($file_url); ?>" target="_blank"><i class="fas fa-eye me-2"></i>View</a></li>
+                                                                                    <li><a class="dropdown-item" href="<?php echo htmlspecialchars($file_url); ?>" download><i class="fas fa-download me-2"></i>Download</a></li>
+                                                                                <?php else: ?>
+                                                                                    <li><a class="dropdown-item" href="#" onclick="alert('File path not available'); return false;"><i class="fas fa-eye me-2"></i>View</a></li>
+                                                                                    <li><a class="dropdown-item" href="#" onclick="alert('File path not available'); return false;"><i class="fas fa-download me-2"></i>Download</a></li>
+                                                                                <?php endif; ?>
+                                                                            <?php else: ?>
+                                                                                <li><a class="dropdown-item" href="#" onclick="alert('File not available'); return false;"><i class="fas fa-eye me-2"></i>View</a></li>
+                                                                                <li><a class="dropdown-item" href="#" onclick="alert('File not available'); return false;"><i class="fas fa-download me-2"></i>Download</a></li>
+                                                                            <?php endif; ?>
+                                                                            <li><a class="dropdown-item" href="#" onclick="alert('Rename functionality coming soon'); return false;"><i class="fas fa-edit me-2"></i>Rename</a></li>
+                                                                            <li><a class="dropdown-item" href="#" onclick="alert('Share functionality coming soon'); return false;"><i class="fas fa-share me-2"></i>Share</a></li>
                                                                             <li><hr class="dropdown-divider"></li>
-                                                                            <li><a class="dropdown-item text-danger" href="#"><i class="fas fa-trash me-2"></i>Delete</a></li>
+                                                                            <li><a class="dropdown-item text-danger" href="#" onclick="if(confirm('Are you sure you want to delete this document?')) { deleteDocument(<?php echo $doc['id']; ?>); } return false;"><i class="fas fa-trash me-2"></i>Delete</a></li>
                                                                         </ul>
                                                                     </div>
                                                                 </td>
@@ -292,61 +451,6 @@ $percentage_used = ($total_used / $total_space) * 100;
                                 </div>
                             <?php endforeach; ?>
                         <?php endif; ?>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Right Sidebar - Space Usage -->
-        <div class="col-xl-3">
-            <div class="card card-modern mb-4">
-                <div class="card-body-modern">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h6 class="mb-0 fw-bold">Storage Space</h6>
-                    </div>
-
-                    <!-- Storage Gauge -->
-                    <div class="storage-gauge-container mb-4">
-                        <div class="storage-gauge">
-                            <svg viewBox="0 0 200 200" class="gauge-svg">
-                                <!-- Background circle -->
-                                <circle cx="100" cy="100" r="80" fill="none" stroke="#f3f4f6" stroke-width="20"/>
-                                <!-- Progress circle -->
-                                <circle cx="100" cy="100" r="80" fill="none" stroke="#3b82f6" stroke-width="20"
-                                        stroke-dasharray="<?php echo $percentage_used * 5.026; ?> 502.6"
-                                        stroke-linecap="round"
-                                        transform="rotate(-90 100 100)"/>
-                            </svg>
-                            <div class="gauge-center">
-                                <div class="gauge-value"><?php echo number_format($total_used, 1); ?> mb</div>
-                                <div class="gauge-label">of <?php echo $total_space; ?> mb</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Storage Breakdown -->
-                    <div class="storage-breakdown">
-                        <?php foreach ($storage_breakdown as $item): ?>
-                            <div class="breakdown-item">
-                                <div class="breakdown-icon" style="background-color: <?php echo $item['color']; ?>20;">
-                                    <i class="fas <?php echo $item['icon']; ?>" style="color: <?php echo $item['color']; ?>;"></i>
-                                </div>
-                                <div class="breakdown-info">
-                                    <div class="breakdown-type"><?php echo $item['type']; ?></div>
-                                    <div class="breakdown-size"><?php echo $item['size'] . ' ' . $item['unit']; ?></div>
-                                </div>
-                            </div>
-                        <?php endforeach; ?>
-                    </div>
-
-                    <!-- Quick Actions -->
-                    <div class="d-grid gap-2 mt-4">
-                        <button type="button" class="btn btn-primary-modern" data-bs-toggle="modal" data-bs-target="#uploadDocumentModal">
-                            <i class="fas fa-upload me-2"></i>Upload Document
-                        </button>
-                        <button type="button" class="btn btn-outline-modern" onclick="window.location.href='?page=employees'">
-                            <i class="fas fa-users me-2"></i>View Employees
-                        </button>
                     </div>
                 </div>
             </div>
@@ -524,91 +628,6 @@ $percentage_used = ($total_used / $total_space) * 100;
     text-transform: uppercase;
     letter-spacing: 0.3px;
 }
-
-/* Storage Gauge - Golden Z-5 Style */
-.storage-gauge {
-    position: relative;
-    width: 200px;
-    height: 200px;
-    margin: 0 auto;
-}
-
-.gauge-svg {
-    width: 100%;
-    height: 100%;
-    filter: drop-shadow(0 4px 6px rgba(59, 130, 246, 0.1));
-}
-
-.gauge-center {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    text-align: center;
-}
-
-.gauge-value {
-    font-size: 2rem;
-    font-weight: 700;
-    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    line-height: 1.2;
-}
-
-.gauge-label {
-    font-size: 0.85rem;
-    opacity: 0.7;
-    margin-top: 0.5rem;
-}
-
-/* Storage Breakdown */
-.storage-breakdown {
-    display: flex;
-    flex-direction: column;
-    gap: 1.25rem;
-    margin-top: 2rem;
-}
-
-.breakdown-item {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 0.5rem;
-    border-radius: 10px;
-    transition: all 0.2s ease;
-}
-
-.breakdown-item:hover {
-    background-color: rgba(59, 130, 246, 0.03);
-}
-
-.breakdown-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1rem;
-}
-
-.breakdown-info {
-    flex: 1;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.breakdown-type {
-    font-weight: 600;
-}
-
-.breakdown-size {
-    font-weight: 600;
-    color: #3b82f6;
-}
 </style>
 
 <script>
@@ -752,6 +771,34 @@ document.addEventListener('pageLoaded', function(e) {
         }
     }
 });
+
+// Delete document
+function deleteDocument(documentId) {
+    if (!documentId) {
+        alert('Invalid document ID');
+        return;
+    }
+    
+    // Create form and submit via POST
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '?page=documents';
+    
+    const actionInput = document.createElement('input');
+    actionInput.type = 'hidden';
+    actionInput.name = 'action';
+    actionInput.value = 'delete_document';
+    form.appendChild(actionInput);
+    
+    const docIdInput = document.createElement('input');
+    docIdInput.type = 'hidden';
+    docIdInput.name = 'document_id';
+    docIdInput.value = documentId;
+    form.appendChild(docIdInput);
+    
+    document.body.appendChild(form);
+    form.submit();
+}
 
 // Export documents to CSV
 function exportDocuments() {
