@@ -8,124 +8,8 @@ $pdo = get_db_connection();
 // Get violation ID from URL (optional - if provided, show only that violation's history)
 $violation_id = $_GET['violation_id'] ?? null;
 
-// Generate mock violation history data
-function generateMockViolationHistory($violation_id = null) {
-    $mockData = [];
-    $actions = ['INSERT', 'UPDATE', 'UPDATE', 'UPDATE', 'DELETE'];
-    $users = [
-        ['username' => 'admin', 'first_name' => 'John', 'last_name' => 'Doe'],
-        ['username' => 'hr_manager', 'first_name' => 'Jane', 'last_name' => 'Smith'],
-        ['username' => 'supervisor', 'first_name' => 'Mike', 'last_name' => 'Johnson'],
-    ];
-    $violations = [
-        ['name' => 'Tardiness', 'reference_no' => 'VT-001', 'description' => 'Employee arriving late to work or assigned post without valid reason'],
-        ['name' => 'Absence Without Leave', 'reference_no' => 'VT-002', 'description' => 'Employee fails to report for duty without approved leave or valid excuse'],
-        ['name' => 'Insubordination', 'reference_no' => 'VT-003', 'description' => 'Refusal to obey lawful orders or disrespectful behavior towards superiors'],
-        ['name' => 'Violation of Company Policy', 'reference_no' => 'VT-004', 'description' => 'Any act that violates established company rules and regulations'],
-    ];
-    
-    $baseDate = new DateTime();
-    $baseDate->modify('-30 days');
-    
-    for ($i = 0; $i < 8; $i++) {
-        $user = $users[$i % count($users)];
-        $violation = $violations[$i % count($violations)];
-        $action = $actions[$i % count($actions)];
-        
-        // Skip if viewing specific violation and this doesn't match
-        if ($violation_id && $i % 2 !== 0) {
-            continue;
-        }
-        
-        $date = clone $baseDate;
-        $date->modify('+' . ($i * 3) . ' days');
-        $date->modify('+' . ($i * 2) . ' hours');
-        
-        $oldValues = null;
-        $newValues = null;
-        
-        // Determine category based on reference number pattern
-        $category = 'Minor';
-        $subcategory = null;
-        if (strpos($violation['reference_no'], 'MIN-') === false) {
-            if (strpos($violation['reference_no'], 'A.') !== false || 
-                strpos($violation['reference_no'], 'B.') !== false ||
-                strpos($violation['reference_no'], 'C.') !== false ||
-                strpos($violation['reference_no'], 'D.') !== false) {
-                $category = 'Major';
-                $subcategory = substr($violation['reference_no'], 0, 1);
-            } else {
-                $category = 'Major';
-            }
-        }
-        
-        if ($action === 'INSERT') {
-            $newValues = json_encode([
-                'reference_no' => $violation['reference_no'],
-                'description' => $violation['description'],
-                'category' => $category,
-                'subcategory' => $subcategory,
-                'first_offense' => 'Verbal Warning',
-                'second_offense' => 'Written Warning',
-                'third_offense' => 'Suspension',
-                'fourth_offense' => 'Termination',
-                'fifth_offense' => null
-            ]);
-        } elseif ($action === 'UPDATE') {
-            $oldValues = json_encode([
-                'reference_no' => $violation['reference_no'],
-                'description' => $violation['description'],
-                'category' => $category,
-                'first_offense' => 'Verbal Warning',
-                'second_offense' => 'Written Warning',
-            ]);
-            $newValues = json_encode([
-                'reference_no' => $violation['reference_no'],
-                'description' => $violation['description'],
-                'category' => $category,
-                'first_offense' => 'Written Warning',
-                'second_offense' => 'Suspension',
-            ]);
-        } else {
-            $oldValues = json_encode([
-                'reference_no' => $violation['reference_no'],
-                'description' => $violation['description'],
-                'category' => $category,
-                'first_offense' => 'Verbal Warning',
-            ]);
-        }
-        
-        $mockData[] = [
-            'id' => $i + 1,
-            'user_id' => $i + 1,
-            'action' => $action,
-            'table_name' => 'violation_types',
-            'record_id' => $i + 1,
-            'old_values' => $oldValues,
-            'new_values' => $newValues,
-            'created_at' => $date->format('Y-m-d H:i:s'),
-            'username' => $user['username'],
-            'first_name' => $user['first_name'],
-            'last_name' => $user['last_name'],
-            'reference_no' => $violation['reference_no'],
-            'violation_name' => $violation['name'],
-            'violation_description' => $violation['description'],
-            'category' => $category,
-            'subcategory' => $subcategory,
-            'first_offense' => 'Verbal Warning',
-            'second_offense' => 'Written Warning',
-            'third_offense' => 'Suspension',
-            'fourth_offense' => 'Termination',
-            'fifth_offense' => null
-        ];
-    }
-    
-    return $mockData;
-}
-
 // Fetch violation edit history from audit logs
 $violation_history = [];
-$use_mock_data = false;
 
 try {
     $sql = "
@@ -150,7 +34,8 @@ try {
             vt.second_offense,
             vt.third_offense,
             vt.fourth_offense,
-            vt.fifth_offense
+            vt.fifth_offense,
+            vt.ra5487_compliant
         FROM audit_logs al
         LEFT JOIN users u ON al.user_id = u.id
         LEFT JOIN violation_types vt ON al.record_id = vt.id
@@ -170,15 +55,9 @@ try {
     $history_stmt->execute($params);
     $violation_history = $history_stmt->fetchAll(PDO::FETCH_ASSOC);
     
-    // Use mock data if no real data exists (for UI preview)
-    if (empty($violation_history)) {
-        $use_mock_data = true;
-        $violation_history = generateMockViolationHistory($violation_id);
-    }
 } catch (PDOException $e) {
     error_log("Error fetching violation history: " . $e->getMessage());
-    $use_mock_data = true;
-    $violation_history = generateMockViolationHistory($violation_id);
+    $violation_history = [];
 }
 
 // Get violation name for title if viewing specific violation
@@ -410,7 +289,15 @@ function formatChanges($oldData, $newData, $action, $fields) {
                                     $userName = getUserName($entry);
                                     $actionBadge = getActionBadge($entry['action']);
                                     $dateTime = formatDateTime($entry['created_at']);
-                                    $refNo = escapeHtml($entry['reference_no'] ?? 'N/A');
+                                    
+                                    // Get reference_no from entry (if violation_types still exists) or from old_values/new_values
+                                    $refNo = $entry['reference_no'] ?? null;
+                                    if (!$refNo && $newValues && isset($newValues['reference_no'])) {
+                                        $refNo = $newValues['reference_no'];
+                                    } elseif (!$refNo && $oldValues && isset($oldValues['reference_no'])) {
+                                        $refNo = $oldValues['reference_no'];
+                                    }
+                                    $refNo = escapeHtml($refNo ?? 'N/A');
                                     
                                     // Determine severity from current entry or from changes
                                     $severity = null;
@@ -426,8 +313,15 @@ function formatChanges($oldData, $newData, $action, $fields) {
                                         $subcategory = $oldValues['subcategory'] ?? null;
                                     }
                                     
-                                    // Determine severity display
-                                    if (!empty($subcategory)) {
+                                    // Determine severity display - check ra5487_compliant flag
+                                    $ra5487Compliant = $entry['ra5487_compliant'] ?? 0;
+                                    if ($newValues && isset($newValues['ra5487_compliant'])) {
+                                        $ra5487Compliant = $newValues['ra5487_compliant'];
+                                    } elseif ($oldValues && isset($oldValues['ra5487_compliant'])) {
+                                        $ra5487Compliant = $oldValues['ra5487_compliant'];
+                                    }
+                                    
+                                    if ($ra5487Compliant || !empty($subcategory)) {
                                         $severity = 'RA 5487';
                                     } elseif ($category === 'Minor') {
                                         $severity = 'Minor';
