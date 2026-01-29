@@ -351,6 +351,15 @@ if ($userRole === 'hr_admin') {
                 case 'posts':
                     include $pagesPath . 'posts.php';
                     break;
+                case 'hiring':
+                    include $pagesPath . 'hiring.php';
+                    break;
+                case 'onboarding':
+                    include $pagesPath . 'onboarding.php';
+                    break;
+                case 'handbook':
+                    include $pagesPath . 'handbook.php';
+                    break;
                 case 'feed':
                     include $pagesPath . 'feed.php';
                     break;
