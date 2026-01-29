@@ -39,6 +39,22 @@ if ($user_role === 'developer') {
             'page' => 'employees',
             'section' => null,
         ],
+        // Hire dropdown (HR/Admin portal) - placed below Employees
+        [
+            'title' => 'Hire',
+            'page' => 'hiring',
+            'section' => 'hire',
+            'children' => [
+                [
+                    'title' => 'Onboarding',
+                    'page' => 'onboarding',
+                ],
+                [
+                    'title' => 'Hiring',
+                    'page' => 'hiring',
+                ],
+            ],
+        ],
         [
             'title' => 'Posts',
             'page' => 'posts',
