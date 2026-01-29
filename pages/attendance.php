@@ -362,11 +362,6 @@ $avg_hours = array_sum(array_column($attendance_records, 'hours_worked')) / max(
                         </select>
                     </div>
                     <div class="col-auto">
-                        <button type="submit" class="btn btn-primary-modern">
-                            <i class="fas fa-filter me-2"></i>Filter
-                        </button>
-                    </div>
-                    <div class="col-auto">
                         <button type="button" class="btn btn-outline-modern" onclick="window.location.href='?page=attendance'" title="Clear Filters">
                             <i class="fas fa-times"></i>
                         </button>
