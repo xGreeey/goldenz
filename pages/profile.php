@@ -365,35 +365,6 @@ if (!empty($display_first_name) || !empty($display_last_name)) {
                                 </div>
                             <?php endif; ?>
                         </div>
-                        <?php if ($member_since || $last_login): ?>
-                        <div class="profile-summary-meta">
-                            <?php if ($member_since): ?>
-                                <div class="profile-summary-meta-item">
-                                    <i class="fas fa-calendar-plus" aria-hidden="true"></i>
-                                    <span>Member since <?php echo date('M Y', strtotime($member_since)); ?></span>
-                                </div>
-                            <?php endif; ?>
-                            <?php if ($last_login): ?>
-                                <div class="profile-summary-meta-item">
-                                    <i class="fas fa-clock" aria-hidden="true"></i>
-                                    <span>
-                                        <?php 
-                                        $login_time = strtotime($last_login);
-                                        $now = time();
-                                        $diff = $now - $login_time;
-                                        if ($diff < 3600) {
-                                            echo 'Last login ' . floor($diff / 60) . ' minutes ago';
-                                        } elseif ($diff < 86400) {
-                                            echo 'Last login ' . floor($diff / 3600) . ' hours ago';
-                                        } else {
-                                            echo 'Last login ' . date('M d, Y', $login_time);
-                                        }
-                                        ?>
-                                    </span>
-                                </div>
-                            <?php endif; ?>
-                        </div>
-                        <?php endif; ?>
                     </div>
                 </div>
             </div>
