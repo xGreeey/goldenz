@@ -80,6 +80,139 @@ function getActiveSection($page) {
 $page = $_GET['page'] ?? 'dashboard';
 $activeSection = getActiveSection($page);
 
+// Handle export requests BEFORE any HTML output
+if ($page === 'violations' && isset($_GET['action']) && $_GET['action'] === 'export' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Include database connection
+    include __DIR__ . '/database.php';
+    
+    $pdo = get_db_connection();
+    $export_scope = $_POST['export_scope'] ?? 'filtered';
+    $export_format = $_POST['export_format'] ?? 'csv';
+    $export_columns = $_POST['export_columns'] ?? [];
+    $export_filters = $_POST['export_filters'] ?? [];
+    
+    if (empty($export_columns)) {
+        $_SESSION['export_error'] = 'Please select at least one column to export.';
+        header('Location: ?page=violations');
+        exit;
+    }
+    
+    try {
+        // Build query based on scope
+        if ($export_scope === 'all') {
+            $sql = "SELECT ev.*, 
+                           e.first_name, e.surname, e.post, e.employee_no,
+                           CONCAT(e.surname, ', ', e.first_name) as employee_name,
+                           vt.name as violation_type_name,
+                           vt.reference_no as violation_type_ref
+                    FROM employee_violations ev
+                    LEFT JOIN employees e ON ev.employee_id = e.id
+                    LEFT JOIN violation_types vt ON ev.violation_type_id = vt.id
+                    ORDER BY ev.violation_date DESC";
+            $params = [];
+        } else {
+            // Use current filters
+            $sql = "SELECT ev.*, 
+                           e.first_name, e.surname, e.post, e.employee_no,
+                           CONCAT(e.surname, ', ', e.first_name) as employee_name,
+                           vt.name as violation_type_name,
+                           vt.reference_no as violation_type_ref
+                    FROM employee_violations ev
+                    LEFT JOIN employees e ON ev.employee_id = e.id
+                    LEFT JOIN violation_types vt ON ev.violation_type_id = vt.id
+                    WHERE 1=1";
+            $params = [];
+            
+            if (!empty($export_filters['employee_id'])) {
+                $sql .= " AND ev.employee_id = ?";
+                $params[] = $export_filters['employee_id'];
+            }
+            if (!empty($export_filters['severity'])) {
+                $sql .= " AND ev.severity = ?";
+                $params[] = $export_filters['severity'];
+            }
+            if (!empty($export_filters['violation_type'])) {
+                $sql .= " AND ev.violation_type_id = ?";
+                $params[] = $export_filters['violation_type'];
+            }
+            
+            $sql .= " ORDER BY ev.violation_date DESC";
+        }
+        
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
+        $violations_to_export = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Column mapping
+        $column_map = [
+            'date' => ['label' => 'Violation Date', 'value' => fn($v) => $v['violation_date'] ? date('Y-m-d', strtotime($v['violation_date'])) : ''],
+            'employee' => ['label' => 'Employee Name', 'value' => fn($v) => $v['employee_name'] ?? ''],
+            'employee_no' => ['label' => 'Employee Number', 'value' => fn($v) => $v['employee_no'] ?? ''],
+            'post' => ['label' => 'Post/Position', 'value' => fn($v) => $v['post'] ?? ''],
+            'violation_type' => ['label' => 'Violation Type', 'value' => fn($v) => ($v['violation_type_ref'] ?? '') . ' - ' . ($v['violation_type_name'] ?? '')],
+            'severity' => ['label' => 'Severity', 'value' => fn($v) => $v['severity'] ?? ''],
+            'description' => ['label' => 'Description', 'value' => fn($v) => $v['description'] ?? ''],
+            'sanction' => ['label' => 'Sanction', 'value' => fn($v) => $v['sanction'] ?? ''],
+            'sanction_date' => ['label' => 'Sanction Date', 'value' => fn($v) => $v['sanction_date'] ? date('Y-m-d', strtotime($v['sanction_date'])) : ''],
+            'reported_by' => ['label' => 'Reported By', 'value' => fn($v) => $v['reported_by'] ?? ''],
+            'status' => ['label' => 'Status', 'value' => fn($v) => $v['status'] ?? 'Pending']
+        ];
+        
+        // Generate CSV
+        if ($export_format === 'csv') {
+            // Clear all output buffers
+            while (ob_get_level()) {
+                ob_end_clean();
+            }
+            
+            header('Content-Type: text/csv; charset=utf-8');
+            header('Content-Disposition: attachment; filename="violations_export_' . date('Y-m-d_His') . '.csv"');
+            header('Pragma: no-cache');
+            header('Expires: 0');
+            header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+            
+            $output = fopen('php://output', 'w');
+            
+            // Add BOM for UTF-8 Excel compatibility
+            fprintf($output, chr(0xEF).chr(0xBB).chr(0xBF));
+            
+            // Headers
+            $headers = [];
+            foreach ($export_columns as $col) {
+                if (isset($column_map[$col])) {
+                    $headers[] = $column_map[$col]['label'];
+                }
+            }
+            fputcsv($output, $headers);
+            
+            // Data rows
+            foreach ($violations_to_export as $violation) {
+                $row = [];
+                foreach ($export_columns as $col) {
+                    if (isset($column_map[$col])) {
+                        $row[] = $column_map[$col]['value']($violation);
+                    }
+                }
+                fputcsv($output, $row);
+            }
+            
+            fclose($output);
+            exit;
+        }
+        
+        // For Excel/PDF, redirect with message
+        $_SESSION['export_error'] = 'Export format ' . strtoupper($export_format) . ' is not yet implemented. Please use CSV format.';
+        header('Location: ?page=violations');
+        exit;
+        
+    } catch (PDOException $e) {
+        error_log("Error exporting violations: " . $e->getMessage());
+        $_SESSION['export_error'] = 'Error exporting violations: ' . $e->getMessage();
+        header('Location: ?page=violations');
+        exit;
+    }
+}
+
 // Portal-scoped body class (used for portal-only styling overrides)
 $portalBodyClass = '';
 $userRole = $_SESSION['user_role'] ?? '';

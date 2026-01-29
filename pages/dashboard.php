@@ -28,6 +28,41 @@ try {
     $job_levels['full_time'] = $stats['active_employees'] ?? 0;
 }
 
+// Recent violations for HR dashboard (active employees)
+$recent_violations = [];
+$violations_employee_count = 0;
+try {
+    $sql = "SELECT 
+                ev.id,
+                ev.employee_id,
+                ev.violation_date,
+                ev.severity,
+                ev.status,
+                CONCAT(e.surname, ', ', e.first_name) AS employee_name,
+                e.post,
+                vt.name AS violation_type_name
+            FROM employee_violations ev
+            LEFT JOIN employees e ON ev.employee_id = e.id
+            LEFT JOIN violation_types vt ON ev.violation_type_id = vt.id
+            WHERE e.status = 'Active'
+            ORDER BY ev.violation_date DESC
+            LIMIT 6";
+    $stmt = $pdo->query($sql);
+    $recent_violations = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Count distinct active employees who have at least one violation
+    $countSql = "SELECT COUNT(DISTINCT ev.employee_id) AS total
+                FROM employee_violations ev
+                LEFT JOIN employees e ON ev.employee_id = e.id
+                WHERE e.status = 'Active'";
+    $countStmt = $pdo->query($countSql);
+    $violations_employee_count = (int)($countStmt->fetchColumn() ?? 0);
+} catch (Exception $e) {
+    // If employee_violations table doesn't exist or query fails, keep empty list
+    $recent_violations = [];
+    $violations_employee_count = 0;
+}
+
 // Guard types (employee_type) - only active employees
 $guard_types = [];
 $gtStmt = $pdo->query("SELECT COALESCE(employee_type, 'N/A') as type, COUNT(*) as total 
@@ -548,8 +583,84 @@ $today_schedule = get_schedule_events($todayDate);
             </div>
         </div>
 
-        <!-- Right column: Today's schedule and Shortcuts -->
+        <!-- Right column: Violations summary, Today's schedule and Shortcuts -->
         <div class="col-xl-4 d-flex flex-column gap-4">
+            <!-- Violation Summary -->
+            <div class="card hrdash-card hrdash-violations-summary d-flex flex-column">
+                <div class="hrdash-card__header">
+                    <div>
+                        <h5 class="hrdash-card__title">Violation Summary</h5>
+                        <div class="hrdash-card__subtitle">
+                            <?php echo number_format((int)($violations_employee_count ?? 0)); ?> employee(s) with violation(s) • Recent violations for active employees
+                        </div>
+                    </div>
+                    <div>
+                        <a href="?page=violations" class="btn btn-outline-modern btn-sm" title="View all violations">
+                            <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="hrdash-card__body flex-grow-1">
+                    <div class="table-responsive">
+                        <table class="table hrdash-table mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Employee</th>
+                                    <th>Date</th>
+                                    <th>Severity</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php if (empty($recent_violations)): ?>
+                                    <tr>
+                                        <td colspan="3" class="text-center py-4 text-muted">
+                                            No recent violations found.
+                                        </td>
+                                    </tr>
+                                <?php else: ?>
+                                    <?php foreach ($recent_violations as $v): ?>
+                                        <?php
+                                            $dateVal = $v['violation_date'] ?? null;
+                                            $dateDisplay = 'N/A';
+                                            if (!empty($dateVal) && $dateVal !== '0000-00-00') {
+                                                $ts = strtotime($dateVal);
+                                                if ($ts !== false) {
+                                                    $dateDisplay = date('M d, Y', $ts);
+                                                } else {
+                                                    $dateDisplay = htmlspecialchars((string)$dateVal);
+                                                }
+                                            }
+                                            $severity = $v['severity'] ?? '';
+                                            $severityClass = '';
+                                            if ($severity === 'Major') {
+                                                $severityClass = 'badge bg-danger';
+                                            } elseif ($severity === 'Minor') {
+                                                $severityClass = 'badge bg-warning text-dark';
+                                            } else {
+                                                $severityClass = 'badge bg-secondary';
+                                            }
+                                        ?>
+                                        <tr>
+                                            <td>
+                                                <a href="?page=view_employee&id=<?php echo (int)($v['employee_id'] ?? 0); ?>" class="text-decoration-none fw-semibold">
+                                                    <?php echo htmlspecialchars($v['employee_name'] ?? 'Unknown'); ?>
+                                                </a>
+                                            </td>
+                                            <td><?php echo htmlspecialchars($dateDisplay); ?></td>
+                                            <td>
+                                                <span class="<?php echo $severityClass; ?>">
+                                                    <?php echo htmlspecialchars($severity ?: 'N/A'); ?>
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
             <!-- Today's schedule -->
             <div class="card hrdash-card hrdash-schedule d-flex flex-column">
                 <div class="hrdash-card__header">
