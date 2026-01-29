@@ -76,6 +76,73 @@ if ($violation_id) {
     }
 }
 
+// Fetch all violation types for the table
+$violation_types_list = [];
+try {
+    $sql = "SELECT 
+                id,
+                reference_no,
+                name,
+                category,
+                subcategory,
+                description,
+                first_offense,
+                second_offense,
+                third_offense,
+                fourth_offense,
+                fifth_offense,
+                ra5487_compliant,
+                is_active,
+                created_at,
+                updated_at
+            FROM violation_types
+            ORDER BY 
+                CASE category
+                    WHEN 'Major' THEN 1
+                    WHEN 'Minor' THEN 2
+                    ELSE 3
+                END,
+                subcategory,
+                reference_no";
+    $stmt = $pdo->query($sql);
+    $violation_types_list = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    error_log("Error fetching violation types: " . $e->getMessage());
+    $violation_types_list = [];
+}
+
+// Get filter parameters
+$filter_category = $_GET['filter_category'] ?? '';
+$filter_ra5487 = $_GET['filter_ra5487'] ?? '';
+$filter_active = $_GET['filter_active'] ?? '';
+$search_query = $_GET['search'] ?? '';
+
+// Apply server-side filters
+$filtered_types = $violation_types_list ?? [];
+
+if ($filter_category) {
+    $filtered_types = array_filter($filtered_types, function($vt) use ($filter_category) {
+        return $vt['category'] === $filter_category;
+    });
+}
+
+if ($filter_ra5487 !== '') {
+    $filtered_types = array_filter($filtered_types, function($vt) use ($filter_ra5487) {
+        return (int)$vt['ra5487_compliant'] === (int)$filter_ra5487;
+    });
+}
+
+if ($filter_active !== '') {
+    $filtered_types = array_filter($filtered_types, function($vt) use ($filter_active) {
+        return (int)$vt['is_active'] === (int)$filter_active;
+    });
+}
+
+// Note: Search filtering is done client-side for instant feedback
+// Server-side search removed - handled by JavaScript
+
+$filtered_types = array_values($filtered_types);
+
 // Fields to display in history (Ref No, Description, Severity, Sanctions)
 // Based on violation_types table structure
 $fields = [
@@ -223,4 +290,296 @@ function formatChanges($oldData, $newData, $action, $fields) {
             <i class="fas fa-arrow-left me-1"></i>Back to Violation Types
         </a>
     </div>
+
+    <!-- Violation Types Table Section -->
+    <div class="card card-modern mb-4">
+        <div class="card-header-modern d-flex justify-content-between align-items-center">
+            <div>
+                <h5 class="card-title-modern">Violation Types</h5>
+                <div class="card-subtitle">View and filter violation types</div>
+            </div>
+        </div>
+        <div class="card-body-modern">
+            <!-- Filter Section -->
+            <form method="GET" action="" id="violationTypesFilterForm" class="d-flex gap-2 align-items-end" style="flex-wrap: nowrap;">
+                <input type="hidden" name="page" value="violation_history">
+                <div class="flex-grow-1" style="min-width: 0;">
+                    <label class="form-label" style="font-size: 0.75rem; margin-bottom: 0.25rem; font-weight: 500;">Search</label>
+                    <input type="text" id="violationTypesSearch" class="form-control form-control-sm" 
+                           placeholder="Search reference, name, or description" 
+                           autocomplete="off">
+                </div>
+                <div style="flex: 0 0 auto; min-width: 160px;">
+                    <label class="form-label" style="font-size: 0.75rem; margin-bottom: 0.25rem; font-weight: 500;">Category</label>
+                    <select name="filter_category" id="violationTypesCategoryFilter" class="form-select form-select-sm">
+                        <option value="" <?php echo $filter_category === '' ? 'selected' : ''; ?>>All</option>
+                        <option value="Major" <?php echo $filter_category === 'Major' ? 'selected' : ''; ?>>Major</option>
+                        <option value="Minor" <?php echo $filter_category === 'Minor' ? 'selected' : ''; ?>>Minor</option>
+                    </select>
+                </div>
+                <div style="flex: 0 0 auto; min-width: 160px;">
+                    <label class="form-label" style="font-size: 0.75rem; margin-bottom: 0.25rem; font-weight: 500;">RA 5487 Compliant</label>
+                    <select name="filter_ra5487" id="violationTypesRa5487Filter" class="form-select form-select-sm">
+                        <option value="" <?php echo $filter_ra5487 === '' ? 'selected' : ''; ?>>All</option>
+                        <option value="1" <?php echo $filter_ra5487 === '1' ? 'selected' : ''; ?>>Yes</option>
+                        <option value="0" <?php echo $filter_ra5487 === '0' ? 'selected' : ''; ?>>No</option>
+                    </select>
+                </div>
+                <div style="flex: 0 0 auto; min-width: 160px;">
+                    <label class="form-label" style="font-size: 0.75rem; margin-bottom: 0.25rem; font-weight: 500;">Status</label>
+                    <select name="filter_active" id="violationTypesActiveFilter" class="form-select form-select-sm">
+                        <option value="" <?php echo $filter_active === '' ? 'selected' : ''; ?>>All</option>
+                        <option value="1" <?php echo $filter_active === '1' ? 'selected' : ''; ?>>Active</option>
+                        <option value="0" <?php echo $filter_active === '0' ? 'selected' : ''; ?>>Inactive</option>
+                    </select>
+                </div>
+                <div style="flex: 0 0 auto;">
+                    <label class="form-label" style="font-size: 0.75rem; margin-bottom: 0.25rem; font-weight: 500; visibility: hidden;">Reset</label>
+                    <a class="btn btn-outline-modern btn-sm" href="?page=violation_history" title="Reset">
+                        <i class="fas fa-redo"></i>
+                    </a>
+                </div>
+                <div style="flex: 0 0 30%; min-width: 120px; text-align: right; margin-left: auto;">
+                    <div style="font-size: 0.6875rem; color: #64748b; margin-bottom: 0.125rem;">Results</div>
+                    <div id="violation-types-count" style="font-size: 1rem; font-weight: 600; color: #1e3a8a;"><?php echo number_format(count($filtered_types)); ?></div>
+                </div>
+            </form>
+
+            <!-- Table -->
+            <div class="table-responsive mt-3">
+                <table class="table table-hover align-middle" id="violationTypesTable">
+                    <thead>
+                        <tr>
+                            <th>Reference #</th>
+                            <th>Name</th>
+                            <th>Category</th>
+                            <th>Subcategory</th>
+                            <th>Description</th>
+                            <th>1st Offense</th>
+                            <th>2nd Offense</th>
+                            <th>3rd Offense</th>
+                            <th>4th Offense</th>
+                            <th>5th Offense</th>
+                            <th>RA 5487</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="violationTypesTableBody">
+                        <?php if (empty($violation_types_list)): ?>
+                            <tr>
+                                <td colspan="12" class="text-center py-5">
+                                    <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                                    <p class="text-muted mb-0">No violation types found</p>
+                                </td>
+                            </tr>
+                        <?php else: ?>
+                            <?php if (empty($filtered_types)): ?>
+                                <tr>
+                                    <td colspan="12" class="text-center py-5">
+                                        <i class="fas fa-filter fa-3x text-muted mb-3"></i>
+                                        <p class="text-muted mb-0">No violation types match the selected filters</p>
+                                    </td>
+                                </tr>
+                            <?php else: ?>
+                                <?php foreach ($filtered_types as $vt): ?>
+                                <tr class="violation-type-row" 
+                                    data-reference="<?php echo htmlspecialchars(strtolower($vt['reference_no'] ?? '')); ?>"
+                                    data-name="<?php echo htmlspecialchars(strtolower($vt['name'] ?? '')); ?>"
+                                    data-description="<?php echo htmlspecialchars(strtolower($vt['description'] ?? '')); ?>"
+                                    data-category="<?php echo htmlspecialchars($vt['category'] ?? ''); ?>"
+                                    data-ra5487="<?php echo (int)$vt['ra5487_compliant']; ?>"
+                                    data-active="<?php echo (int)$vt['is_active']; ?>">
+                                    <td>
+                                        <span class="text-muted small"><?php echo htmlspecialchars($vt['reference_no'] ?? 'N/A'); ?></span>
+                                    </td>
+                                    <td>
+                                        <div class="fw-semibold"><?php echo htmlspecialchars($vt['name'] ?? 'N/A'); ?></div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-<?php echo ($vt['category'] ?? '') === 'Major' ? 'danger' : 'warning'; ?>-subtle text-<?php echo ($vt['category'] ?? '') === 'Major' ? 'danger' : 'warning'; ?> fw-semibold">
+                                            <?php echo htmlspecialchars($vt['category'] ?? 'N/A'); ?>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="small"><?php echo htmlspecialchars($vt['subcategory'] ?? '—'); ?></span>
+                                    </td>
+                                    <td>
+                                        <div class="small text-muted" style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="<?php echo htmlspecialchars($vt['description'] ?? ''); ?>">
+                                            <?php echo htmlspecialchars($vt['description'] ?? '—'); ?>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="small"><?php echo htmlspecialchars($vt['first_offense'] ?? '—'); ?></span>
+                                    </td>
+                                    <td>
+                                        <span class="small"><?php echo htmlspecialchars($vt['second_offense'] ?? '—'); ?></span>
+                                    </td>
+                                    <td>
+                                        <span class="small"><?php echo htmlspecialchars($vt['third_offense'] ?? '—'); ?></span>
+                                    </td>
+                                    <td>
+                                        <span class="small"><?php echo htmlspecialchars($vt['fourth_offense'] ?? '—'); ?></span>
+                                    </td>
+                                    <td>
+                                        <span class="small"><?php echo htmlspecialchars($vt['fifth_offense'] ?? '—'); ?></span>
+                                    </td>
+                                    <td>
+                                        <?php if ((int)$vt['ra5487_compliant'] === 1): ?>
+                                            <span class="badge bg-success-subtle text-success fw-semibold">Yes</span>
+                                        <?php else: ?>
+                                            <span class="badge bg-secondary-subtle text-secondary fw-semibold">No</span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td>
+                                        <?php if ((int)$vt['is_active'] === 1): ?>
+                                            <span class="badge bg-success-subtle text-success fw-semibold">Active</span>
+                                        <?php else: ?>
+                                            <span class="badge bg-secondary-subtle text-secondary fw-semibold">Inactive</span>
+                                        <?php endif; ?>
+                                    </td>
+                                </tr>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 </div>
+
+<style>
+.violation-types-table thead th {
+    background: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+    color: #374151;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    padding: 0.75rem 1rem;
+    white-space: nowrap;
+}
+.violation-types-table tbody td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #f3f4f6;
+    vertical-align: middle;
+}
+.violation-types-table tbody tr:hover {
+    background: #f9fafb;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Server-side filter form submission
+    const categorySelect = document.getElementById('violationTypesCategoryFilter');
+    const ra5487Select = document.getElementById('violationTypesRa5487Filter');
+    const activeSelect = document.getElementById('violationTypesActiveFilter');
+    
+    if (categorySelect) {
+        categorySelect.addEventListener('change', () => {
+            document.getElementById('violationTypesFilterForm')?.submit();
+        });
+    }
+    
+    if (ra5487Select) {
+        ra5487Select.addEventListener('change', () => {
+            document.getElementById('violationTypesFilterForm')?.submit();
+        });
+    }
+    
+    if (activeSelect) {
+        activeSelect.addEventListener('change', () => {
+            document.getElementById('violationTypesFilterForm')?.submit();
+        });
+    }
+
+    // Client-side search filtering
+    function initViolationTypesSearch() {
+        const searchInput = document.getElementById('violationTypesSearch');
+        const tableBody = document.getElementById('violationTypesTableBody');
+        const countEl = document.getElementById('violation-types-count');
+        const rows = () => Array.from(tableBody?.querySelectorAll('tr.violation-type-row') || []);
+
+        const updateCount = () => {
+            if (!countEl) return;
+            const visible = rows().filter(r => r.style.display !== 'none').length;
+            countEl.textContent = visible.toLocaleString();
+        };
+
+        if (searchInput) {
+            let searchTimeout;
+            searchInput.addEventListener('input', () => {
+                window.clearTimeout(searchTimeout);
+                searchTimeout = window.setTimeout(() => {
+                    const q = (searchInput.value || '').trim().toLowerCase();
+                    const categoryFilter = categorySelect ? categorySelect.value : '';
+                    const ra5487Filter = ra5487Select ? ra5487Select.value : '';
+                    const activeFilter = activeSelect ? activeSelect.value : '';
+                    
+                    rows().forEach(row => {
+                        const reference = row.dataset.reference || '';
+                        const name = row.dataset.name || '';
+                        const description = row.dataset.description || '';
+                        const category = row.dataset.category || '';
+                        const ra5487 = row.dataset.ra5487 || '';
+                        const active = row.dataset.active || '';
+                        
+                        const matchesSearch = !q || 
+                            reference.includes(q) || 
+                            name.includes(q) || 
+                            description.includes(q);
+                        
+                        const matchesCategory = !categoryFilter || category === categoryFilter;
+                        const matchesRa5487 = !ra5487Filter || ra5487 === ra5487Filter;
+                        const matchesActive = !activeFilter || active === activeFilter;
+                        
+                        if (matchesSearch && matchesCategory && matchesRa5487 && matchesActive) {
+                            row.style.display = '';
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    });
+                    updateCount();
+                }, 150);
+            });
+            
+            // Trigger initial filter if there's a value
+            if (searchInput.value) {
+                const q = (searchInput.value || '').trim().toLowerCase();
+                const categoryFilter = categorySelect ? categorySelect.value : '';
+                const ra5487Filter = ra5487Select ? ra5487Select.value : '';
+                const activeFilter = activeSelect ? activeSelect.value : '';
+                
+                rows().forEach(row => {
+                    const reference = row.dataset.reference || '';
+                    const name = row.dataset.name || '';
+                    const description = row.dataset.description || '';
+                    const category = row.dataset.category || '';
+                    const ra5487 = row.dataset.ra5487 || '';
+                    const active = row.dataset.active || '';
+                    
+                    const matchesSearch = !q || 
+                        reference.includes(q) || 
+                        name.includes(q) || 
+                        description.includes(q);
+                    
+                    const matchesCategory = !categoryFilter || category === categoryFilter;
+                    const matchesRa5487 = !ra5487Filter || ra5487 === ra5487Filter;
+                    const matchesActive = !activeFilter || active === activeFilter;
+                    
+                    if (matchesSearch && matchesCategory && matchesRa5487 && matchesActive) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            }
+        }
+        updateCount();
+    }
+    
+    initViolationTypesSearch();
+});
+</script>
